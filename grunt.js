@@ -51,7 +51,10 @@ module.exports = function(grunt) {
         console: true
       }
     },
-    uglify: {}
+    uglify: {},
+    server: {
+      base: 'public/'
+    }
   });
 
   // Default task.
@@ -70,7 +73,8 @@ module.exports = function(grunt) {
   // Nodejs libs.
   var path = require('path');
   // External libs.
-  var connect = require('connect');
+  var connect = require('connect'),
+      compiler = require('connect-compiler');
 
   // ==========================================================================
   // TASKS
@@ -83,13 +87,6 @@ module.exports = function(grunt) {
     var port = grunt.config('server.port') || 8000;
     var base = path.resolve(grunt.config('server.base') || '.');
 
-    var middleware = [
-      // Serve static files.
-      connect.static(base),
-      // Make empty directories browsable. (overkill?)
-      connect.directory(base)
-    ];
-
     // If --debug was specified, enable logging.
     if (grunt.option('debug')) {
       connect.logger.format('grunt', ('[D] server :method :url :status ' +
@@ -99,7 +96,18 @@ module.exports = function(grunt) {
 
     // Start server.
     grunt.log.writeln('Starting static web server on port ' + port + '.');
-    connect.apply(null, middleware).listen(port);
+
+    var jsPath = path.resolve('lib');
+    var app = connect()
+      .use(compiler({
+          enabled : [ 'coffee' ],
+          src: 'src',
+          dest: 'lib'
+      }))
+      .use(connect.directory(base))
+      .use(connect.static(base))
+      .use(connect.static(jsPath))
+      .listen(port);
 
     grunt.log.writeln('Press CTRL + C to stop the server.');
   });
