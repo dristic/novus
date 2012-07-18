@@ -53,3 +53,22 @@ gl.implement
   drawable: (options) ->
     gl.prototype.extend.call this, options
     gl.prototype.extend.call this.prototype, options
+    this
+
+# Gleam.Square
+gl.implement
+  square: (options) ->
+    defaults =
+      color: '#CCC'
+      width: 10
+      height: 10
+      x: 10
+      y: 10
+    gl.prototype.extend.call defaults, options
+    gl.drawable.call this, defaults
+    this
+
+gl.prototype.extend.call gl.square.prototype,
+  draw: (context) ->
+    context.color @color
+    context.fillRect @x, @y, @width, @height

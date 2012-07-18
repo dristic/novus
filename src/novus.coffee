@@ -4,12 +4,8 @@ window.onload = () ->
   glcanvas.size 200, 200
   glcanvas.background '#000'
 
-  square = new gl.drawable
-    color: '#FFF'
-    width: 100
-    height: 150
-    draw: (context) ->
-      context.color @color
-      context.fillRect 10, 10, @width, @height
+  square = new gl.square
+    color: '#0F0'
+    y: 30
 
   glcanvas.draw square
