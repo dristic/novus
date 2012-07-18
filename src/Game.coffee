@@ -1,6 +1,6 @@
 class Game
   constructor: () ->
-    console.log('game created')
+    console.log 'game created'
 
   start: (id) ->
-    console.log(id)
+    console.log id

@@ -1,10 +1,15 @@
 window.onload = () ->
-  console.log('working')
+  glcanvas = gl 'canvas'
 
-  game = new Game()
-  game.start(20)
-
-  glcanvas = gl document.querySelector('canvas')
-  console.log glcanvas
   glcanvas.size 200, 200
   glcanvas.background '#000'
+
+  square = new gl.drawable
+    color: '#FFF'
+    width: 100
+    height: 150
+    draw: (context) ->
+      context.color @color
+      context.fillRect 10, 10, @width, @height
+
+  glcanvas.draw square

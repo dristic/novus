@@ -5,11 +5,11 @@ module.exports = function(grunt) {
   grunt.initConfig({
     meta: {
       version: '0.1.0',
-      banner: '/*! PROJECT_NAME - v<%= meta.version %> - ' +
+      banner: '/*! Novus - v<%= meta.version %> - ' +
         '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-        '* http://PROJECT_WEBSITE/\n' +
+        '* http://danristic.com/\n' +
         '* Copyright (c) <%= grunt.template.today("yyyy") %> ' +
-        'YOUR_NAME; Licensed MIT */'
+        'Dan Ristic; Licensed MIT */'
     },
     lint: {
       files: ['lib/**/*.js', 'test/**/*.js']
