@@ -12,6 +12,8 @@ This project is built on top of Node.js technologies. Before you start, install 
  * connect : Web server middleware
  * connect-compiler : Web request compiler for .coffee, sass, jade, and more
  * coffee-script : Scripting language that compiles to Javascript
+ * stylus : Css framework
+ * nib : Stylus plugin for css3 functions (gradient, buttons, etc.)
 
  ## Project Layout
 

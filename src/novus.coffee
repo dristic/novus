@@ -1,7 +1,7 @@
 window.onload = () ->
   glcanvas = gl 'canvas'
 
-  glcanvas.size 200, 200
+  glcanvas.size 500, 500
   glcanvas.background '#000'
 
   square = new gl.square

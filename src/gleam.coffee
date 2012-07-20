@@ -8,17 +8,17 @@ gl.prototype =
   init: (canvas) ->
     if typeof canvas is 'string'
       canvas = document.querySelector canvas
-    this.canvas = canvas
-    this.context = gl.context canvas.getContext '2d'
-    this.objects = []
+    @canvas = canvas
+    @context = gl.context canvas.getContext '2d'
+    @objects = []
     this
 
   size: (width, height) ->
-    this.width = width
-    this.height = height
+    @canvas.width = width
+    @canvas.height = height
 
   background: (color) ->
-    this.canvas.style.background = color
+    @canvas.style.background = color
 
   draw: (object) ->
     object.draw @context, @canvas
@@ -45,14 +45,14 @@ gl.prototype.extend.call gl,
 # Context decorator to give drawable objects more options.
 gl.prototype.extend.call gl.context.prototype,
   color: (color) ->
-    this.fillStyle = color
+    @fillStyle = color
 
 # Gleam.Drawable
 # This allows you to create a drawable object for gleam.
 gl.implement
   drawable: (options) ->
     gl.prototype.extend.call this, options
-    gl.prototype.extend.call this.prototype, options
+    gl.prototype.extend.call @prototype, options
     this
 
 # Gleam.Square
