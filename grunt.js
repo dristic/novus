@@ -100,9 +100,10 @@ module.exports = function(grunt) {
     var jsPath = path.resolve('lib');
     var app = connect()
       .use(compiler({
-        enabled : [ 'coffee' ],
+        enabled : [ 'snockets', 'coffee' ],
         src: 'src',
-        dest: 'lib'
+        dest: 'lib',
+        cascade: true
       }))
       .use(compiler({
         enabled: [ 'stylus' ],

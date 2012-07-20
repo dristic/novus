@@ -47,6 +47,9 @@ gl.prototype.extend.call gl.context.prototype,
   color: (color) ->
     @fillStyle = color
 
+  clear: () ->
+    @clearRect 0, 0, @canvas.width, @canvas.height
+
 # Gleam.Drawable
 # This allows you to create a drawable object for gleam.
 gl.implement
