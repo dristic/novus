@@ -23,7 +23,7 @@
     };
     glcanvas.draw(square);
     up = down = left = right = false;
-    speed = 3;
+    speed = 5;
     update = function() {
       var dimensions;
       if (left) {

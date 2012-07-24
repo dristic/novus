@@ -97,14 +97,17 @@ module.exports = function(grunt) {
     // Start server.
     grunt.log.writeln('Starting static web server on port ' + port + '.');
 
-    var jsPath = path.resolve('lib');
+    require('child_process').spawn('toaster', ['-wd']);
+
+    var jsPath = path.resolve('dist-debug');
+    var toasterPath = path.resolve('dist');
     var app = connect()
-      .use(compiler({
-        enabled : [ 'snockets', 'coffee' ],
-        src: 'src',
-        dest: 'lib',
-        cascade: true
-      }))
+      // .use(compiler({
+      //   enabled : [ 'coffee' ],
+      //   src: 'src',
+      //   dest: 'lib',
+      //   cascade: true
+      // }))
       .use(compiler({
         enabled: [ 'stylus' ],
         src: 'public',
@@ -113,6 +116,7 @@ module.exports = function(grunt) {
       .use(connect.directory(base))
       .use(connect.static(base))
       .use(connect.static(jsPath))
+      .use(connect.static(toasterPath))
       .listen(port);
 
     grunt.log.writeln('Press CTRL + C to stop the server.');

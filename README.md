@@ -14,6 +14,7 @@ This project is built on top of Node.js technologies. Before you start, install 
  * coffee-script : Scripting language that compiles to Javascript
  * stylus : Css framework
  * nib : Stylus plugin for css3 functions (gradient, buttons, etc.)
+ * coffee-toaster: Dependency management for coffee files
 
  ## Project Layout
 

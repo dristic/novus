@@ -25,7 +25,7 @@ window.onload = () ->
   glcanvas.draw square
 
   up = down = left = right = false
-  speed = 3
+  speed = 5
 
   update = () ->
     if left then square.rotation -= 0.1
@@ -34,8 +34,8 @@ window.onload = () ->
       square.y -= speed * Math.cos(square.rotation)
       square.x += speed * Math.sin(square.rotation)
     if down
-      square.y += speed * Math.cos(square.rotation)
-      square.x -= speed * Math.sin(square.rotation)
+      square.y += speed / 2 * Math.cos(square.rotation)
+      square.x -= speed / 2 * Math.sin(square.rotation)
 
     # Boundary Wrapping
     dimensions = glcanvas.size()
