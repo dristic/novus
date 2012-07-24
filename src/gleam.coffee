@@ -47,6 +47,12 @@ gl.prototype.extend.call gl.context.prototype,
   color: (color) ->
     @fillStyle = color
 
+  strokeColor: (color) ->
+    @strokeStyle = color
+
+  strokeWidth: (width) ->
+    @lineWidth = width
+
   clear: () ->
     @clearRect 0, 0, @canvas.width, @canvas.height
 

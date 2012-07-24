@@ -10,3 +10,7 @@ nv.extend
   keydown: (key, callback) ->
     $(document).on 'keydown', (event) ->
       if event.keyCode is key then callback()
+
+  keyup: (key, callback) ->
+    $(document).on 'keyup', (event) ->
+      if event.keyCode is key then callback()

@@ -7,25 +7,55 @@ window.onload = () ->
   square = new gl.square
     color: '#0F0'
     y: 30
+    width: 50
+    height: 50
+
+  square.draw = (context) ->
+    context.strokeColor '#FFF'
+    context.strokeWidth 4
+    context.beginPath()
+    context.moveTo @x, @y
+    context.lineTo @x + (@width / 2), @y - @height
+    context.lineTo @x + @width, @y
+    context.lineTo @x, @y
+    context.stroke()
+    context.closePath()
 
   glcanvas.draw square
 
-  nv.keydown nv.Key.A, () ->
+  up = down = left = right = false
+
+  update = () ->
+    if left then square.x -= 10
+    if right then square.x += 10
+    if up then square.y -= 10
+    if down then square.y += 10
+
     glcanvas.context.clear()
-    square.x -= 10
     glcanvas.draw square
+
+  setInterval update, (1 / 60) * 1000
+
+  nv.keydown nv.Key.A, () ->
+    left = true
+
+  nv.keyup nv.Key.A, () ->
+    left = false
 
   nv.keydown nv.Key.S, () ->
-    glcanvas.context.clear()
-    square.y += 10
-    glcanvas.draw square
+    down = true
+
+  nv.keyup nv.Key.S, () ->
+    down = false
 
   nv.keydown nv.Key.D, () ->
-    glcanvas.context.clear()
-    square.x += 10
-    glcanvas.draw square
+    right = true
+
+  nv.keyup nv.Key.D, () ->
+    right = false
 
   nv.keydown nv.Key.W, () ->
-    glcanvas.context.clear()
-    square.y -= 10
-    glcanvas.draw square
+    up = true
+
+  nv.keyup nv.Key.W, () ->
+    up = false
