@@ -14,8 +14,13 @@ gl.prototype =
     this
 
   size: (width, height) ->
-    @canvas.width = width
-    @canvas.height = height
+    if width? and height?
+      @canvas.width = width
+      @canvas.height = height
+
+    dimensions =
+      width: @canvas.width
+      height: @canvas.height
 
   background: (color) ->
     @canvas.style.background = color
@@ -52,6 +57,26 @@ gl.prototype.extend.call gl.context.prototype,
 
   strokeWidth: (width) ->
     @lineWidth = width
+
+  # Creates a line using the arguments passed in
+  # Arguments must be divisible by "2"
+  line: () ->
+    @beginPath()
+    @moveTo Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
+
+    while arguments.length > 0
+      @lineTo Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
+
+    @stroke()
+    @closePath()
+
+  rotateAround: (x, y, angle, func) ->
+    @save()
+    @translate(x, y)
+    @rotate(angle)
+    @translate(-x, -y)
+    func()
+    @restore()
 
   clear: () ->
     @clearRect 0, 0, @canvas.width, @canvas.height
