@@ -8,13 +8,13 @@ Novus is a multiplayer asteroids style game written in javascript and HTML 5. It
 
 This project is built on top of Node.js technologies. Before you start, install the following packages using `$ sudo npm install <package_name>`
 
- * grunt : Command line build tool (use -g for global install)
+ * (-g) grunt : Command line build tool (use -g for global install)
  * connect : Web server middleware
  * connect-compiler : Web request compiler for .coffee, sass, jade, and more
  * coffee-script : Scripting language that compiles to Javascript
  * stylus : Css framework
  * nib : Stylus plugin for css3 functions (gradient, buttons, etc.)
- * coffee-toaster: Dependency management for coffee files
+ * (-g) coffee-toaster: Dependency management for coffee files
 
  ## Project Layout
 

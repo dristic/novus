@@ -12,7 +12,7 @@ toast 'src'
 	# bare: false
 	# packaging: true
 	# expose: ''
-	# minify: true
+	minify: true
 
 	# => HTTPFOLDER (optional), RELEASE / DEBUG (required)
 	httpfolder: ''

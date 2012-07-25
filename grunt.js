@@ -53,19 +53,27 @@ module.exports = function(grunt) {
     },
     uglify: {},
     server: {
-      base: 'public/'
+      base: '.'
     }
   });
 
   // Default task.
   grunt.registerTask('default', 'lint qunit concat min');
 
-  grunt.registerTask('build', 'coffee qunit concat min');
+  grunt.registerTask('build', 'coffee qunit');
 
   grunt.registerTask('coffee', 'Compiles coffeescript into js files.', function () {
     var exec = require('child_process').exec,
         done = this.async();
-    exec('coffee --compile --output lib/ src/', function () {
+    exec('toaster -c', function () {
+      done();
+    });
+  });
+
+  grunt.registerTask('deploy', 'Deploys the project to dotcloud.', function () {
+    var exec = require('child_process').exec,
+        done = this.async();
+    exec('dotcloud push novus', function () {
       done();
     });
   });
@@ -115,7 +123,7 @@ module.exports = function(grunt) {
       }))
       .use(connect.directory(base))
       .use(connect.static(base))
-      .use(connect.static(jsPath))
+      //.use(connect.static(jsPath))
       .use(connect.static(toasterPath))
       .listen(port);
 
