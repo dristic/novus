@@ -10,23 +10,23 @@ gl.prototype =
       canvas = document.querySelector canvas
     else
       canvas = document.createElement 'canvas'
-    @canvas = canvas
-    @context = gl.context canvas.getContext('2d')
-    @objects = []
-    this
+    gl.prototype.extend.call canvas, gl.prototype
+    canvas.context = gl.context canvas.getContext('2d')
+    canvas.objects = []
+    canvas
 
   size: (width, height) ->
     if width? and height?
-      @canvas.width = width
-      @canvas.height = height
+      @width = width
+      @height = height
       this
     else
       dimensions =
-        width: @canvas.width
-        height: @canvas.height
+        width: @width
+        height: @height
 
   background: (color) ->
-    @canvas.style.background = color
+    @style.background = color
 
   draw: (object) ->
     object.draw @context, this

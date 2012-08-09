@@ -12,26 +12,26 @@
       } else {
         canvas = document.createElement('canvas');
       }
-      this.canvas = canvas;
-      this.context = gl.context(canvas.getContext('2d'));
-      this.objects = [];
-      return this;
+      gl.prototype.extend.call(canvas, gl.prototype);
+      canvas.context = gl.context(canvas.getContext('2d'));
+      canvas.objects = [];
+      return canvas;
     },
     size: function(width, height) {
       var dimensions;
       if ((width != null) && (height != null)) {
-        this.canvas.width = width;
-        this.canvas.height = height;
+        this.width = width;
+        this.height = height;
         return this;
       } else {
         return dimensions = {
-          width: this.canvas.width,
-          height: this.canvas.height
+          width: this.width,
+          height: this.height
         };
       }
     },
     background: function(color) {
-      return this.canvas.style.background = color;
+      return this.style.background = color;
     },
     draw: function(object) {
       return object.draw(this.context, this);

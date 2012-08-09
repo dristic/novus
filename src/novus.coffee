@@ -17,7 +17,7 @@ window.onload = () ->
 
   bg = new gl.drawable
     draw: (context, canvas) ->
-      context.drawImage bg.canvas.canvas, @x, @y
+      context.drawImage bg.canvas, @x, @y
 
   bg.canvas = gl().size 700, 700
   bg.x = 0

@@ -7,7 +7,7 @@
     glcanvas.background('#000');
     bg = new gl.drawable({
       draw: function(context, canvas) {
-        return context.drawImage(bg.canvas.canvas, this.x, this.y);
+        return context.drawImage(bg.canvas, this.x, this.y);
       }
     });
     bg.canvas = gl().size(700, 700);
