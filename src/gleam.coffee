@@ -8,8 +8,10 @@ gl.prototype =
   init: (canvas) ->
     if typeof canvas is 'string'
       canvas = document.querySelector canvas
+    else
+      canvas = document.createElement 'canvas'
     @canvas = canvas
-    @context = gl.context canvas.getContext '2d'
+    @context = gl.context canvas.getContext('2d')
     @objects = []
     this
 
@@ -17,16 +19,17 @@ gl.prototype =
     if width? and height?
       @canvas.width = width
       @canvas.height = height
-
-    dimensions =
-      width: @canvas.width
-      height: @canvas.height
+      this
+    else
+      dimensions =
+        width: @canvas.width
+        height: @canvas.height
 
   background: (color) ->
     @canvas.style.background = color
 
   draw: (object) ->
-    object.draw @context, @canvas
+    object.draw @context, this
 
   extend: (object) ->
     this[key] = object[key] for key of object
@@ -57,6 +60,13 @@ gl.prototype.extend.call gl.context.prototype,
 
   strokeWidth: (width) ->
     @lineWidth = width
+
+  # Wraps function in begin/close path and fill
+  fillPath: (func) ->
+    @beginPath()
+    func(this)
+    @fill()
+    @closePath()
 
   # Creates a line using the arguments passed in
   # Arguments must be divisible by "2"

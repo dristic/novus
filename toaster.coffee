@@ -6,7 +6,11 @@ toast 'src'
 
 	# => VENDORS (optional)
 	# vendors: ['vendors/x.js', 'vendors/y.js', ... ]
-	vendors: ['lib/vendor/zepto.js']
+	vendors: [
+		#'lib/vendor/pubnub-3.1.min.js',
+		#'lib/vendor/socket.io.min.js',
+		'lib/vendor/zepto.js'
+	]
 
 	# => OPTIONS (optional, default values listed)
 	# bare: false

@@ -9,6 +9,8 @@
     init: function(canvas) {
       if (typeof canvas === 'string') {
         canvas = document.querySelector(canvas);
+      } else {
+        canvas = document.createElement('canvas');
       }
       this.canvas = canvas;
       this.context = gl.context(canvas.getContext('2d'));
@@ -20,17 +22,19 @@
       if ((width != null) && (height != null)) {
         this.canvas.width = width;
         this.canvas.height = height;
+        return this;
+      } else {
+        return dimensions = {
+          width: this.canvas.width,
+          height: this.canvas.height
+        };
       }
-      return dimensions = {
-        width: this.canvas.width,
-        height: this.canvas.height
-      };
     },
     background: function(color) {
       return this.canvas.style.background = color;
     },
     draw: function(object) {
-      return object.draw(this.context, this.canvas);
+      return object.draw(this.context, this);
     },
     extend: function(object) {
       var key;
@@ -64,6 +68,12 @@
     },
     strokeWidth: function(width) {
       return this.lineWidth = width;
+    },
+    fillPath: function(func) {
+      this.beginPath();
+      func(this);
+      this.fill();
+      return this.closePath();
     },
     line: function() {
       this.beginPath();

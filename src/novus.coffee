@@ -1,8 +1,37 @@
+#<< common
+#<< nub
+#<< gleam
+
 window.onload = () ->
+  # Setup network connection
+  # connection = nub()
+
+  # id = Math.random()
+  # connection.auth 'Dan#{id}'
+
+  # Setup gl canvas
   glcanvas = gl 'canvas'
 
   glcanvas.size 500, 500
   glcanvas.background '#000'
+
+  bg = new gl.drawable
+    draw: (context, canvas) ->
+      context.drawImage bg.canvas.canvas, @x, @y
+
+  bg.canvas = gl().size 700, 700
+  bg.x = 0
+  bg.y = 0
+
+  i = 0
+  until i > 100
+    i++
+    x = Math.random() * 700
+    y = Math.random() * 700
+    radius = (Math.random() * 2) + 0.5
+    bg.canvas.context.fillPath (context) ->
+      context.color '#FFFFFF'
+      context.arc x, y, radius, 0, Math.PI * 2, true
 
   square = new gl.square
     color: '#0F0'
@@ -45,10 +74,14 @@ window.onload = () ->
     if square.y < 0 then square.y = dimensions.height
     else if square.y > dimensions.height then square.y = 0
 
+    bg.x = -square.x * 0.05
+    bg.y = -square.y * 0.05
+
     glcanvas.context.clear()
+    glcanvas.draw bg
     glcanvas.draw square
 
-  setInterval update, (1 / 60) * 1000
+  nv.animationUpdate 60, update
 
   nv.keydown nv.Key.A, () ->
     left = true

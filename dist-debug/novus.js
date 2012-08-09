@@ -1377,6 +1377,7 @@ __t = function(ns) {
 
 
 document.write('<scri'+'pt src="/toaster/key.js"></scr'+'ipt>')
+document.write('<scri'+'pt src="/toaster/nub.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/common.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/game.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/gleam.js"></scr'+'ipt>')

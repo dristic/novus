@@ -1,10 +1,29 @@
 (function() {
 
   window.onload = function() {
-    var down, glcanvas, left, right, speed, square, up, update;
+    var bg, down, glcanvas, i, left, radius, right, speed, square, up, update, x, y;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
+    bg = new gl.drawable({
+      draw: function(context, canvas) {
+        return context.drawImage(bg.canvas.canvas, this.x, this.y);
+      }
+    });
+    bg.canvas = gl().size(700, 700);
+    bg.x = 0;
+    bg.y = 0;
+    i = 0;
+    while (!(i > 100)) {
+      i++;
+      x = Math.random() * 700;
+      y = Math.random() * 700;
+      radius = (Math.random() * 2) + 0.5;
+      bg.canvas.context.fillPath(function(context) {
+        context.color('#FFFFFF');
+        return context.arc(x, y, radius, 0, Math.PI * 2, true);
+      });
+    }
     square = new gl.square({
       color: '#0F0',
       y: 30,
@@ -51,10 +70,13 @@
       } else if (square.y > dimensions.height) {
         square.y = 0;
       }
+      bg.x = -square.x * 0.05;
+      bg.y = -square.y * 0.05;
       glcanvas.context.clear();
+      glcanvas.draw(bg);
       return glcanvas.draw(square);
     };
-    setInterval(update, (1 / 60) * 1000);
+    nv.animationUpdate(60, update);
     nv.keydown(nv.Key.A, function() {
       return left = true;
     });
