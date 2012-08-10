@@ -1,11 +1,5 @@
 (function() {
-  var cancelFrame, requestFrame, _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
-
-  requestFrame = (_ref = (_ref1 = (_ref2 = (_ref3 = (_ref4 = window.requestAnimationFrame) != null ? _ref4 : window.webkitRequestAnimationFrame) != null ? _ref3 : window.mozRequestAnimationFrame) != null ? _ref2 : window.oRequestAnimationFrame) != null ? _ref1 : window.msRequestAnimationFrame) != null ? _ref : function(callback) {
-    return setTimeout(callback, 17);
-  };
-
-  cancelFrame = (_ref5 = (_ref6 = (_ref7 = (_ref8 = (_ref9 = (_ref10 = window.cancelRequestAnimationFrame) != null ? _ref10 : window.webkitCancelAnimationFrame) != null ? _ref9 : window.webkitCancelRequestAnimationFrame) != null ? _ref8 : window.mozCancelRequestAnimationFrame) != null ? _ref7 : window.oCancelRequestAnimationFrame) != null ? _ref6 : window.msCancelRequestAnimationFrame) != null ? _ref5 : clearTimeout;
+  var Gamepad;
 
   nv.extend = function(other) {
     var key, _results;
@@ -39,19 +33,36 @@
           return callback();
         }
       });
-    },
-    animationUpdate: function(fps, func) {
-      var lastTime, update;
-      lastTime = Date.now();
-      update = function() {
-        var delta, now;
-        now = Date.now();
-        delta = now - lastTime;
-        func(delta);
-        return requestFrame(update);
-      };
-      return requestFrame(update);
     }
   });
+
+  Gamepad = (function() {
+
+    function Gamepad() {
+      this.gamepad = navigator.webkitGamepad;
+      this.state = {};
+    }
+
+    Gamepad.prototype.aliasKey = function(button, key) {
+      var _this = this;
+      nv.keydown(key, function() {
+        return _this.state[button] = true;
+      });
+      return nv.keyup(key, function() {
+        return _this.state[button] = false;
+      });
+    };
+
+    Gamepad.prototype.getState = function() {
+      return this.state;
+    };
+
+    return Gamepad;
+
+  })();
+
+  nv.gamepad = function() {
+    return new Gamepad;
+  };
 
 }).call(this);

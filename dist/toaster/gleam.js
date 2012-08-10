@@ -1,5 +1,11 @@
 (function() {
-  var gl;
+  var cancelFrame, gl, requestFrame, _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+
+  requestFrame = (_ref = (_ref1 = (_ref2 = (_ref3 = (_ref4 = window.requestAnimationFrame) != null ? _ref4 : window.webkitRequestAnimationFrame) != null ? _ref3 : window.mozRequestAnimationFrame) != null ? _ref2 : window.oRequestAnimationFrame) != null ? _ref1 : window.msRequestAnimationFrame) != null ? _ref : function(callback) {
+    return setTimeout(callback, 17);
+  };
+
+  cancelFrame = (_ref5 = (_ref6 = (_ref7 = (_ref8 = (_ref9 = (_ref10 = window.cancelRequestAnimationFrame) != null ? _ref10 : window.webkitCancelAnimationFrame) != null ? _ref9 : window.webkitCancelRequestAnimationFrame) != null ? _ref8 : window.mozCancelRequestAnimationFrame) != null ? _ref7 : window.oCancelRequestAnimationFrame) != null ? _ref6 : window.msCancelRequestAnimationFrame) != null ? _ref5 : clearTimeout;
 
   gl = function(canvas) {
     return new gl.prototype.init(canvas);
@@ -15,6 +21,8 @@
       gl.prototype.extend.call(canvas, gl.prototype);
       canvas.context = gl.context(canvas.getContext('2d'));
       canvas.objects = [];
+      canvas.requestFrameKey = null;
+      canvas.updating = false;
       return canvas;
     },
     size: function(width, height) {
@@ -35,6 +43,44 @@
     },
     draw: function(object) {
       return object.draw(this.context, this);
+    },
+    addDrawable: function(object) {
+      return this.objects.push(object);
+    },
+    removeDrawable: function(object) {
+      return this.objects.slice(this.objects.indexOf(object), 1);
+    },
+    drawObjects: function() {
+      var object, _i, _len, _ref11, _results;
+      _ref11 = this.objects;
+      _results = [];
+      for (_i = 0, _len = _ref11.length; _i < _len; _i++) {
+        object = _ref11[_i];
+        _results.push(this.draw(object));
+      }
+      return _results;
+    },
+    startDrawUpdate: function(fps, func) {
+      var lastTime, update,
+        _this = this;
+      this.updating = true;
+      lastTime = Date.now();
+      update = function() {
+        var delta, now;
+        now = Date.now();
+        delta = now - lastTime;
+        delta /= 1000;
+        func(delta);
+        _this.context.clear();
+        _this.drawObjects();
+        return _this.requestFrameKey = requestFrame(update);
+      };
+      return this.requestFrameKey = requestFrame(update);
+    },
+    stopDrawUpdate: function() {
+      this.updating = false;
+      cancelFrame(this.requestFrameKey);
+      return this.requestFrameKey = null;
     },
     extend: function(object) {
       var key;

@@ -1,8 +1,5 @@
 #<< key
 
-requestFrame = window.requestAnimationFrame ? window.webkitRequestAnimationFrame ? window.mozRequestAnimationFrame ? window.oRequestAnimationFrame ? window.msRequestAnimationFrame ? (callback) -> return setTimeout(callback, 17)
-cancelFrame = window.cancelRequestAnimationFrame ? window.webkitCancelAnimationFrame ? window.webkitCancelRequestAnimationFrame ? window.mozCancelRequestAnimationFrame ? window.oCancelRequestAnimationFrame ? window.msCancelRequestAnimationFrame ? clearTimeout
-
 nv.extend = (other) ->
   this[key] = other[key] for key of other
 
@@ -18,15 +15,19 @@ nv.extend
     $(document).on 'keyup', (event) ->
       if event.keyCode is key then callback()
 
-  animationUpdate: (fps, func) ->
-    lastTime = Date.now()
+class Gamepad
+  constructor: () ->
+    @gamepad = navigator.webkitGamepad
+    @state = {}
 
-    update = () ->
-      now = Date.now()
-      delta = now - lastTime
+  aliasKey: (button, key) ->
+    nv.keydown key, () =>
+      @state[button] = true
+    nv.keyup key, () =>
+      @state[button] = false
 
-      func delta
+  getState: () ->
+    @state
 
-      requestFrame update
-
-    requestFrame update
+nv.gamepad = () ->
+  new Gamepad

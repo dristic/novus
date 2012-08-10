@@ -1,3 +1,6 @@
+requestFrame = window.requestAnimationFrame ? window.webkitRequestAnimationFrame ? window.mozRequestAnimationFrame ? window.oRequestAnimationFrame ? window.msRequestAnimationFrame ? (callback) -> return setTimeout(callback, 17)
+cancelFrame = window.cancelRequestAnimationFrame ? window.webkitCancelAnimationFrame ? window.webkitCancelRequestAnimationFrame ? window.mozCancelRequestAnimationFrame ? window.oCancelRequestAnimationFrame ? window.msCancelRequestAnimationFrame ? clearTimeout
+
 gl = (canvas) ->
   return new gl.prototype.init(canvas)
 
@@ -13,6 +16,8 @@ gl.prototype =
     gl.prototype.extend.call canvas, gl.prototype
     canvas.context = gl.context canvas.getContext('2d')
     canvas.objects = []
+    canvas.requestFrameKey = null
+    canvas.updating = false
     canvas
 
   size: (width, height) ->
@@ -30,6 +35,38 @@ gl.prototype =
 
   draw: (object) ->
     object.draw @context, this
+
+  addDrawable: (object) ->
+    @objects.push object
+
+  removeDrawable: (object) ->
+    @objects.slice @objects.indexOf(object), 1
+
+  drawObjects: () ->
+    @draw object for object in @objects
+
+  startDrawUpdate: (fps, func) ->
+    @updating = true
+    lastTime = Date.now()
+
+    update = () =>
+      now = Date.now()
+      delta = now - lastTime
+      delta /= 1000
+
+      func delta
+
+      @context.clear()
+      @drawObjects()
+
+      @requestFrameKey = requestFrame update
+
+    @requestFrameKey = requestFrame update
+
+  stopDrawUpdate: () ->
+    @updating = false
+    cancelFrame @requestFrameKey
+    @requestFrameKey = null
 
   extend: (object) ->
     this[key] = object[key] for key of object
