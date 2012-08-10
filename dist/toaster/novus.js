@@ -142,21 +142,15 @@
         }
       }
       dimensions = glcanvas.size();
-      if (ship.x < 0) {
-        ship.x = dimensions.height;
-      } else if (ship.x > dimensions.height) {
-        ship.x = 0;
-      }
-      if (ship.y < 0) {
-        ship.y = dimensions.height;
-      } else if (ship.y > dimensions.height) {
-        ship.y = 0;
-      }
       bg.x = -ship.x * 0.05;
       bg.y = -ship.y * 0.05;
       bg2.x = -ship.x * 0.01;
       return bg2.y = -ship.y * 0.01;
     };
+    glcanvas.camera = nv.camera();
+    glcanvas.camera.follow(ship, 250, 250);
+    glcanvas.camera.zoom(0.5);
+    glcanvas.camera.zoom(1, 2000);
     return glcanvas.startDrawUpdate(60, update);
   };
 

@@ -54,10 +54,16 @@ gl.prototype =
       delta = now - lastTime
       delta /= 1000
 
-      func delta
+      coords = func delta
 
+      @context.save()
       @context.clear()
+
+      if @camera then @camera.update delta, @context
+
       @drawObjects()
+
+      @context.restore()
 
       lastTime = now
 

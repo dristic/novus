@@ -1,5 +1,5 @@
 (function() {
-  var Gamepad;
+  var Camera, Gamepad;
 
   nv.extend = function(other) {
     var key, _results;
@@ -63,6 +63,64 @@
 
   nv.gamepad = function() {
     return new Gamepad;
+  };
+
+  Camera = (function() {
+
+    function Camera() {
+      this.following = null;
+      this.x = 0;
+      this.y = 0;
+      this.offsetX = 0;
+      this.offsetY = 0;
+      this.zoomValue = 1;
+    }
+
+    Camera.prototype.follow = function(object, offsetX, offsetY) {
+      this.following = object;
+      this.offsetX = offsetX;
+      return this.offsetY = offsetY;
+    };
+
+    Camera.prototype.zoom = function(distance, duration) {
+      var initial, startTime,
+        _this = this;
+      if (duration) {
+        startTime = Date.now();
+        initial = this.zoomValue;
+        return this.onUpdate = function(dt) {
+          var diff, now;
+          now = Date.now();
+          diff = now - startTime;
+          _this.zoomValue = (distance - initial) * (diff / duration) + initial;
+          if (diff > duration) {
+            _this.onUpdate = null;
+            return _this.zoomValue = distance;
+          }
+        };
+      } else {
+        return this.zoomValue = distance;
+      }
+    };
+
+    Camera.prototype.update = function(dt, context) {
+      if (this.following) {
+        this.x = -this.following.x * this.zoomValue + this.offsetX;
+        this.y = -this.following.y * this.zoomValue + this.offsetY;
+      }
+      if (this.onUpdate) {
+        this.onUpdate(dt);
+      }
+      context.translate(this.x, this.y);
+      return context.scale(this.zoomValue, this.zoomValue);
+    };
+
+    return Camera;
+
+  })();
+
+  nv.camera = function() {
+    return new Camera;
   };
 
 }).call(this);

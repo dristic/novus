@@ -66,13 +66,18 @@
       this.updating = true;
       lastTime = Date.now();
       update = function() {
-        var delta, now;
+        var coords, delta, now;
         now = Date.now();
         delta = now - lastTime;
         delta /= 1000;
-        func(delta);
+        coords = func(delta);
+        _this.context.save();
         _this.context.clear();
+        if (_this.camera) {
+          _this.camera.update(delta, _this.context);
+        }
         _this.drawObjects();
+        _this.context.restore();
         lastTime = now;
         return _this.requestFrameKey = requestFrame(update);
       };
