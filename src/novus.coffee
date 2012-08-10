@@ -27,7 +27,7 @@ class Bullet
     @x = x
     @y = y
     @angle = angle
-    @speed = 2
+    @speed = 400
     @radius = 3
 
   update: (dt) ->

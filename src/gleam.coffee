@@ -59,6 +59,8 @@ gl.prototype =
       @context.clear()
       @drawObjects()
 
+      lastTime = now
+
       @requestFrameKey = requestFrame update
 
     @requestFrameKey = requestFrame update

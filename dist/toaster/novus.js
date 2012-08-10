@@ -36,7 +36,7 @@
       this.x = x;
       this.y = y;
       this.angle = angle;
-      this.speed = 2;
+      this.speed = 400;
       this.radius = 3;
     }
 

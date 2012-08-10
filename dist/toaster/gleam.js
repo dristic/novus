@@ -73,6 +73,7 @@
         func(delta);
         _this.context.clear();
         _this.drawObjects();
+        lastTime = now;
         return _this.requestFrameKey = requestFrame(update);
       };
       return this.requestFrameKey = requestFrame(update);
