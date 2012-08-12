@@ -6,13 +6,6 @@ body {
   background: -ms-linear-gradient(top, #ccc 0%, #999 100%) no-repeat;
   background: linear-gradient(top, #ccc 0%, #999 100%) no-repeat;
   background-color: #999;
-}
-canvas {
-  -webkit-border-radius: 20px;
-  border-radius: 20px;
-  border: 10px solid #fff;
-  margin: 0 auto 0 auto;
-  display: block;
-  -webkit-box-shadow: rgba(0,0,0,0.3) 0px 5px 50px;
-  box-shadow: rgba(0,0,0,0.3) 0px 5px 50px;
+  margin: 0;
+  padding: 0;
 }

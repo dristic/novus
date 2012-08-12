@@ -19,12 +19,38 @@ class Gamepad
   constructor: () ->
     @gamepad = navigator.webkitGamepad
     @state = {}
+    @listeners = {}
 
   aliasKey: (button, key) ->
     nv.keydown key, () =>
-      @state[button] = true
+      @fireButton(button)
     nv.keyup key, () =>
       @state[button] = false
+
+  fireButton: (button) ->
+    @state[button] = true
+    listeners = @listeners[button]
+    if listeners instanceof Array
+      for listener in listeners
+        listener(button)
+
+  onButtonPress: (button, func) ->
+    listeners = @listeners[button]
+
+    if not listeners then listeners = []
+
+    listeners.push func
+    @listeners[button] = listeners
+    func
+
+  offButtonPress: (button, func) ->
+    listeners = @listeners[button]
+
+    if listeners.indexOf func not 0
+      listeners.splice listeners.indexOf(func), 1
+
+    @listeners[button] = listeners
+    func
 
   getState: () ->
     @state
@@ -62,8 +88,11 @@ class Camera
     else
       @zoomValue = distance
 
-  update: (dt, context) ->
+  update: (dt, context, canvas) ->
     if @following
+      size = canvas.size()
+      @offsetX = size.width / 2
+      @offsetY = size.height / 2
       @x = -@following.x * @zoomValue + @offsetX
       @y = -@following.y * @zoomValue + @offsetY
 

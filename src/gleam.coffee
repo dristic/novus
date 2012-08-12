@@ -30,6 +30,12 @@ gl.prototype =
         width: @width
         height: @height
 
+  fullscreen: () ->
+    @size window.innerWidth, window.innerHeight
+
+    window.addEventListener 'resize', (event) =>
+      @size window.innerWidth, window.innerHeight      
+
   background: (color) ->
     @style.background = color
 
@@ -59,7 +65,7 @@ gl.prototype =
       @context.save()
       @context.clear()
 
-      if @camera then @camera.update delta, @context
+      if @camera then @camera.update delta, @context, this
 
       @drawObjects()
 

@@ -1,10 +1,15 @@
 (function() {
-  var Connection;
+  var Connection,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Connection = (function() {
+  Connection = (function(_super) {
+
+    __extends(Connection, _super);
 
     function Connection() {
       var _this = this;
+      this.listeners = {};
       this.connection = this.connectToChannel('novus');
       this.connection.on('connect', function() {
         return console.log('Connected!');
@@ -18,7 +23,15 @@
     }
 
     Connection.prototype.handleMessage = function(message) {
-      return console.log(message);
+      console.log(message);
+      if (message.id) {
+        return this.fire(message.id, message);
+      }
+    };
+
+    Connection.prototype.send = function(id, data) {
+      data.id = id;
+      return this.connection.emit('message', data);
     };
 
     Connection.prototype.connectToChannel = function(channel) {
@@ -44,7 +57,7 @@
 
     return Connection;
 
-  })();
+  })(EventDispatcher);
 
   window.nub = function() {
     return new Connection();

@@ -110,12 +110,6 @@ module.exports = function(grunt) {
     var jsPath = path.resolve('dist-debug');
     var toasterPath = path.resolve('dist');
     var app = connect()
-      // .use(compiler({
-      //   enabled : [ 'coffee' ],
-      //   src: 'src',
-      //   dest: 'lib',
-      //   cascade: true
-      // }))
       .use(compiler({
         enabled: [ 'stylus' ],
         src: 'public',

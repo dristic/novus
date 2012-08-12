@@ -41,16 +41,52 @@
     function Gamepad() {
       this.gamepad = navigator.webkitGamepad;
       this.state = {};
+      this.listeners = {};
     }
 
     Gamepad.prototype.aliasKey = function(button, key) {
       var _this = this;
       nv.keydown(key, function() {
-        return _this.state[button] = true;
+        return _this.fireButton(button);
       });
       return nv.keyup(key, function() {
         return _this.state[button] = false;
       });
+    };
+
+    Gamepad.prototype.fireButton = function(button) {
+      var listener, listeners, _i, _len, _results;
+      this.state[button] = true;
+      listeners = this.listeners[button];
+      if (listeners instanceof Array) {
+        _results = [];
+        for (_i = 0, _len = listeners.length; _i < _len; _i++) {
+          listener = listeners[_i];
+          _results.push(listener(button));
+        }
+        return _results;
+      }
+    };
+
+    Gamepad.prototype.onButtonPress = function(button, func) {
+      var listeners;
+      listeners = this.listeners[button];
+      if (!listeners) {
+        listeners = [];
+      }
+      listeners.push(func);
+      this.listeners[button] = listeners;
+      return func;
+    };
+
+    Gamepad.prototype.offButtonPress = function(button, func) {
+      var listeners;
+      listeners = this.listeners[button];
+      if (listeners.indexOf(func(!0))) {
+        listeners.splice(listeners.indexOf(func), 1);
+      }
+      this.listeners[button] = listeners;
+      return func;
     };
 
     Gamepad.prototype.getState = function() {
@@ -103,8 +139,12 @@
       }
     };
 
-    Camera.prototype.update = function(dt, context) {
+    Camera.prototype.update = function(dt, context, canvas) {
+      var size;
       if (this.following) {
+        size = canvas.size();
+        this.offsetX = size.width / 2;
+        this.offsetY = size.height / 2;
         this.x = -this.following.x * this.zoomValue + this.offsetX;
         this.y = -this.following.y * this.zoomValue + this.offsetY;
       }

@@ -1,75 +1,24 @@
 #<< common
 #<< nub
 #<< gleam
+#<< debug
+#<< assets
 
-class Bg
-  constructor: () ->
-    @canvas = gl().size 700, 700
-    @x = 0
-    @y = 0
-
-    i = 0
-    until i > 100
-      i++
-      x = Math.random() * 700
-      y = Math.random() * 700
-      radius = (Math.random() * 2) + 0.5
-      @canvas.context.fillPath (context) ->
-        context.color '#FFFFFF'
-        context.arc x, y, radius, 0, Math.PI * 2, true
-
-  draw: (context, canvas) ->
-    context.drawImage @canvas, @x, @y
-
-class Bullet
-  constructor: (x, y, angle) ->
-    @drawable = new gl.drawable
-    @x = x
-    @y = y
-    @angle = angle
-    @speed = 400
-    @radius = 3
-
-  update: (dt) ->
-    @x += @speed * Math.sin(@angle) * dt
-    @y -= @speed * Math.cos(@angle) * dt
-
-    if @x < -100 or @x > 900
-      if @y < -100 or @y > 900
-        @delete = true
-
-  draw: (context) ->
-    context.fillPath (context) =>
-      context.color '#ff7600'
-      context.arc @x, @y, @radius, 0, Math.PI * 2, true
-
-class Ship
-  constructor: () ->
-    @drawable = new gl.square
-    @color = '#0F0'
-    @x = 0
-    @y = 30
-    @width = 12
-    @height = 18
-    @rotation = 0
-    @strokeWidth = 2
-
-  draw: (context) ->
-    context.strokeColor '#FFF'
-    context.strokeWidth @strokeWidth
-
-    context.rotateAround @x + (@width / 2), @y + (@height / 2), @rotation, () =>
-      context.line @x, @y + @height,
-        @x + (@width / 2), @y,
-        @x + @width, @y + @height,
-        @x, @y + @height
-
-window.onload = () ->
+$(() ->
   # Setup network connection
-  # connection = nub()
+  connection = nub()
 
-  # id = Math.random()
-  # connection.auth 'Dan#{id}'
+  id = Math.random()
+  id = "Dan#{id}"
+  connection.auth id
+
+  connection.on 'asdf', (event) ->
+    if event.userId isnt id
+      glcanvas.addDrawable new nv.assets.Ship
+
+  connection.send 'asdf',
+    userId: id
+    something: 'herro'
 
   # Setup gl canvas
   glcanvas = gl 'canvas'
@@ -77,9 +26,11 @@ window.onload = () ->
   glcanvas.size 500, 500
   glcanvas.background '#000'
 
-  ship = new Ship
-  bg = new Bg
-  bg2 = new Bg
+  glcanvas.fullscreen()
+
+  ship = new nv.assets.Ship
+  bg = new nv.assets.Bg
+  bg2 = new nv.assets.Bg
 
   glcanvas.addDrawable ship
   glcanvas.addDrawable bg
@@ -109,13 +60,13 @@ window.onload = () ->
 
     # Shooting
     if state.shoot and shootDelay is 0
-      glcanvas.addDrawable new Bullet ship.x, ship.y, ship.rotation
+      glcanvas.addDrawable new nv.assets.Bullet ship.x, ship.y, ship.rotation
       shootDelay = 10
 
     if shootDelay then shootDelay--
 
     for object in glcanvas.objects
-      if object instanceof Bullet
+      if object instanceof nv.assets.Bullet
         object.update dt
         if object.delete then glcanvas.removeDrawable object
 
@@ -139,3 +90,4 @@ window.onload = () ->
   glcanvas.camera.zoom 1, 2000
 
   glcanvas.startDrawUpdate 60, update
+)

@@ -1,5 +1,9 @@
-class Connection
+#<< grounds
+
+class Connection extends EventDispatcher
   constructor: () ->
+    @listeners = {}
+
     @connection = @connectToChannel 'novus'
 
     @connection.on 'connect', () ->
@@ -13,6 +17,13 @@ class Connection
 
   handleMessage: (message) ->
     console.log message
+
+    if message.id
+      @fire message.id, message
+
+  send: (id, data) ->
+    data.id = id
+    @connection.emit 'message', data
 
   connectToChannel: (channel) ->
     io.connect 'http://pubsub.pubnub.com',

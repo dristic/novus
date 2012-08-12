@@ -38,6 +38,13 @@
         };
       }
     },
+    fullscreen: function() {
+      var _this = this;
+      this.size(window.innerWidth, window.innerHeight);
+      return window.addEventListener('resize', function(event) {
+        return _this.size(window.innerWidth, window.innerHeight);
+      });
+    },
     background: function(color) {
       return this.style.background = color;
     },
@@ -74,7 +81,7 @@
         _this.context.save();
         _this.context.clear();
         if (_this.camera) {
-          _this.camera.update(delta, _this.context);
+          _this.camera.update(delta, _this.context, _this);
         }
         _this.drawObjects();
         _this.context.restore();
