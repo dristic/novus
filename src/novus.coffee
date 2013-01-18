@@ -1,24 +1,24 @@
-#<< common
-#<< nub
-#<< gleam
-#<< debug
-#<< assets
+#= require common
+#= require nub
+#= require gleam
+#= require debug
+#= require assets
 
 $(() ->
   # Setup network connection
-  connection = nub()
+  # connection = nub()
 
-  id = Math.random()
-  id = "Dan#{id}"
-  connection.auth id
+  # id = Math.random()
+  # id = "Dan#{id}"
+  # connection.auth id
 
-  connection.on 'asdf', (event) ->
-    if event.userId isnt id
-      glcanvas.addDrawable new nv.assets.Ship
+  # connection.on 'asdf', (event) ->
+  #   if event.userId isnt id
+  #     glcanvas.addDrawable new nv.assets.Ship
 
-  connection.send 'asdf',
-    userId: id
-    something: 'herro'
+  # connection.send 'asdf',
+  #   userId: id
+  #   something: 'herro'
 
   # Setup gl canvas
   glcanvas = gl 'canvas'

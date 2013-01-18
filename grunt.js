@@ -82,7 +82,8 @@ module.exports = function(grunt) {
   var path = require('path');
   // External libs.
   var connect = require('connect'),
-      compiler = require('connect-compiler');
+      compiler = require('connect-compiler'),
+      coffeescript = require('connect-coffee-script');
 
   // ==========================================================================
   // TASKS
@@ -107,19 +108,27 @@ module.exports = function(grunt) {
 
     require('child_process').spawn('toaster', ['-wd']);
 
-    var jsPath = path.resolve('dist-debug');
-    var toasterPath = path.resolve('dist');
+    var jsPath = path.resolve('dist-debug'),
+        snockets = require('snockets');
     var app = connect()
-      .use(compiler({
-        enabled: [ 'stylus' ],
-        src: 'public',
-        dest: 'public'
-      }))
-      .use(connect.directory(base))
-      .use(connect.static(base))
-      //.use(connect.static(jsPath))
-      .use(connect.static(toasterPath))
-      .listen(port);
+        .use(compiler({
+          enabled: [ 'stylus' ],
+          src: 'public',
+          dest: 'public'
+        }))
+        .use(coffeescript({
+          src: __dirname,
+          bare: true,
+          compile: function (str, options, coffeePath) {
+            js = new snockets().getConcatenation(coffeePath, { minify: false, async: false });
+            return js;
+          }
+        }))
+        .use(connect.directory(base))
+        .use(connect.static(base))
+        //.use(connect.static(jsPath))
+        //.use(connect.static(toasterPath))
+        .listen(port);
 
     grunt.log.writeln('Press CTRL + C to stop the server.');
   });

@@ -1439,35 +1439,13 @@ window.Zepto = Zepto
     $.fn[m] = function(callback){ return this.bind(m, callback) }
   })
 })(Zepto)
-var __t;
 
-__t = function(ns) {
-  var curr, index, part, parts, _i, _len;
-  curr = null;
-  parts = [].concat = ns.split(".");
-  for (index = _i = 0, _len = parts.length; _i < _len; index = ++_i) {
-    part = parts[index];
-    if (curr === null) {
-      curr = eval(part);
-      continue;
-    } else {
-      if (curr[part] == null) {
-        curr = curr[part] = {};
-      } else {
-        curr = curr[part];
-      }
-    }
-  }
-  return curr;
-};
-
-
-document.write('<scri'+'pt src="/toaster/grounds.js"></scr'+'ipt>')
-document.write('<scri'+'pt src="/toaster/key.js"></scr'+'ipt>')
-document.write('<scri'+'pt src="/toaster/nub.js"></scr'+'ipt>')
+document.write('<scri'+'pt src="/toaster/Game.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/assets.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/common.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/debug.js"></scr'+'ipt>')
-document.write('<scri'+'pt src="/toaster/game.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/gleam.js"></scr'+'ipt>')
+document.write('<scri'+'pt src="/toaster/grounds.js"></scr'+'ipt>')
+document.write('<scri'+'pt src="/toaster/key.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/novus.js"></scr'+'ipt>')
+document.write('<scri'+'pt src="/toaster/nub.js"></scr'+'ipt>')

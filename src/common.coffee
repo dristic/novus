@@ -1,4 +1,4 @@
-#<< key
+#= require key
 
 nv.extend = (other) ->
   this[key] = other[key] for key of other

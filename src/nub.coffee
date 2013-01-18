@@ -1,4 +1,4 @@
-#<< grounds
+#= require grounds
 
 class Connection extends EventDispatcher
   constructor: () ->
