@@ -778,7 +778,7 @@
 }).call(this);
 
 (function() {
-  var AsteroidController, _ref,
+  var AsteroidController, ShipController, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -801,16 +801,60 @@
 
   })(nv.Controller);
 
+  ShipController = (function(_super) {
+
+    __extends(ShipController, _super);
+
+    function ShipController(asset, gamepad, canvas) {
+      this.gamepad = gamepad;
+      this.canvas = canvas;
+      ShipController.__super__.constructor.apply(this, arguments);
+      this.speed = 5;
+      this.shootDelay = 10;
+    }
+
+    ShipController.prototype.update = function(dt) {
+      var state;
+      state = this.gamepad.getState();
+      if (state.left) {
+        this.asset.rotation -= 0.1;
+      }
+      if (state.right) {
+        this.asset.rotation += 0.1;
+      }
+      if (state.up) {
+        this.asset.y -= this.speed * Math.cos(this.asset.rotation);
+        this.asset.x += this.speed * Math.sin(this.asset.rotation);
+      }
+      if (state.down) {
+        this.asset.y += this.speed / 2 * Math.cos(this.asset.rotation);
+        this.asset.x -= this.speed / 2 * Math.sin(this.asset.rotation);
+      }
+      if (state.shoot && this.shootDelay === 0) {
+        this.canvas.addDrawable(new nv.assets.Bullet(this.asset.x, this.asset.y, this.asset.rotation));
+        this.shootDelay = 10;
+      }
+      if (this.shootDelay) {
+        return this.shootDelay--;
+      }
+    };
+
+    return ShipController;
+
+  })(nv.Controller);
+
   nv.controllers = (_ref = nv.controllers) != null ? _ref : {};
 
   nv.controllers.AsteroidController = AsteroidController;
+
+  nv.controllers.ShipController = ShipController;
 
 }).call(this);
 
 (function() {
 
   $(function() {
-    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, ship, shootDelay, speed, update;
+    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, ship, shipController, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
@@ -819,47 +863,24 @@
     bg = new nv.assets.Bg;
     bg2 = new nv.assets.Bg;
     asteroid = new nv.assets.Asteroid;
-    asteroidController = new nv.controllers.AsteroidController(asteroid);
-    controllers = [asteroidController];
-    glcanvas.addDrawable(ship);
-    glcanvas.addDrawable(bg);
-    glcanvas.addDrawable(bg2);
-    glcanvas.addDrawable(asteroid);
     gamepad = nv.gamepad();
     gamepad.aliasKey('left', nv.Key.A);
     gamepad.aliasKey('right', nv.Key.D);
     gamepad.aliasKey('up', nv.Key.W);
     gamepad.aliasKey('down', nv.Key.S);
     gamepad.aliasKey('shoot', nv.Key.Spacebar);
-    speed = 5;
-    shootDelay = 10;
+    asteroidController = new nv.controllers.AsteroidController(asteroid);
+    shipController = new nv.controllers.ShipController(ship, gamepad, glcanvas);
+    controllers = [asteroidController, shipController];
+    glcanvas.addDrawable(ship);
+    glcanvas.addDrawable(bg);
+    glcanvas.addDrawable(bg2);
+    glcanvas.addDrawable(asteroid);
     update = function(dt) {
-      var controller, dimensions, object, state, _i, _j, _len, _len1, _ref;
+      var controller, dimensions, object, _i, _j, _len, _len1, _ref;
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
         controller = controllers[_i];
         controller.update(dt);
-      }
-      state = gamepad.getState();
-      if (state.left) {
-        ship.rotation -= 0.1;
-      }
-      if (state.right) {
-        ship.rotation += 0.1;
-      }
-      if (state.up) {
-        ship.y -= speed * Math.cos(ship.rotation);
-        ship.x += speed * Math.sin(ship.rotation);
-      }
-      if (state.down) {
-        ship.y += speed / 2 * Math.cos(ship.rotation);
-        ship.x -= speed / 2 * Math.sin(ship.rotation);
-      }
-      if (state.shoot && shootDelay === 0) {
-        glcanvas.addDrawable(new nv.assets.Bullet(ship.x, ship.y, ship.rotation));
-        shootDelay = 10;
-      }
-      if (shootDelay) {
-        shootDelay--;
       }
       _ref = glcanvas.objects;
       for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {

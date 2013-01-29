@@ -35,45 +35,25 @@ $(() ->
   bg2 = new nv.assets.Bg
   asteroid = new nv.assets.Asteroid
 
-  asteroidController = new nv.controllers.AsteroidController asteroid
+  gamepad = nv.gamepad()
+  gamepad.aliasKey 'left', nv.Key.A
+  gamepad.aliasKey 'right', nv.Key.D
+  gamepad.aliasKey 'up', nv.Key.W
+  gamepad.aliasKey 'down', nv.Key.S
+  gamepad.aliasKey 'shoot', nv.Key.Spacebar
 
-  controllers = [asteroidController]
+  asteroidController = new nv.controllers.AsteroidController asteroid
+  shipController = new nv.controllers.ShipController ship, gamepad, glcanvas
+
+  controllers = [asteroidController, shipController]
 
   glcanvas.addDrawable ship
   glcanvas.addDrawable bg
   glcanvas.addDrawable bg2
   glcanvas.addDrawable asteroid
 
-  gamepad = nv.gamepad()
-  gamepad.aliasKey 'left', nv.Key.A
-  gamepad.aliasKey 'right', nv.Key.D
-  gamepad.aliasKey 'up', nv.Key.W
-  gamepad.aliasKey 'down', nv.Key.S
-
-  gamepad.aliasKey 'shoot', nv.Key.Spacebar
-
-  speed = 5
-  shootDelay = 10
-
   update = (dt) ->
     controller.update dt for controller in controllers
-
-    state = gamepad.getState()
-    if state.left then ship.rotation -= 0.1
-    if state.right then ship.rotation += 0.1
-    if state.up
-      ship.y -= speed * Math.cos(ship.rotation)
-      ship.x += speed * Math.sin(ship.rotation)
-    if state.down
-      ship.y += speed / 2 * Math.cos(ship.rotation)
-      ship.x -= speed / 2 * Math.sin(ship.rotation)
-
-    # Shooting
-    if state.shoot and shootDelay is 0
-      glcanvas.addDrawable new nv.assets.Bullet ship.x, ship.y, ship.rotation
-      shootDelay = 10
-
-    if shootDelay then shootDelay--
 
     for object in glcanvas.objects
       if object instanceof nv.assets.Bullet
