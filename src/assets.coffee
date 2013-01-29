@@ -18,11 +18,8 @@ class Bg
     context.drawImage @canvas, @x, @y
 
 class Bullet
-  constructor: (x, y, angle) ->
+  constructor: (@x, @y, @angle) ->
     @drawable = new gl.drawable
-    @x = x
-    @y = y
-    @angle = angle
     @speed = 400
     @radius = 3
 
@@ -60,9 +57,31 @@ class Ship
         @x + @width, @y + @height,
         @x, @y + @height
 
+class Asteroid
+  constructor: () ->
+    @drawable = new gl.drawable
+    @color = '#FFF'
+    @x = 0
+    @y = 0
+    @width = 12
+    @height = 12
+    @rotation = 0
+    @strokeWidth = 2
+
+  draw: (context) ->
+    context.fillPath (context) =>
+      context.color @color
+      context.line @x, @y,
+        @x + 30, @y + 40,
+        @x + 35, @y + 50,
+        @x + 33, @y + 60,
+        @x - 10, @y + 50,
+        @x - 20, @y + 45
+
 $(() ->
   nv.assets =
     Ship: Ship
     Bullet: Bullet
     Bg: Bg
+    Asteroid: Asteroid
 )

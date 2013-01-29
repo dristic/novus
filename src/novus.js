@@ -1,6 +1,33 @@
 (function() {
   var _ref;
 
+  this.nv = (_ref = this.nv) != null ? _ref : {};
+
+}).call(this);
+
+(function() {
+
+  nv.Entity = (function() {
+
+    function Entity(plugins) {
+      this.plugins = plugins;
+    }
+
+    return Entity;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+
+
+}).call(this);
+
+(function() {
+  var _ref;
+
   window.nv = (_ref = window.nv) != null ? _ref : {};
 
   window.nv.Key = {
@@ -613,7 +640,7 @@
 }).call(this);
 
 (function() {
-  var Bg, Bullet, Ship;
+  var Asteroid, Bg, Bullet, Ship;
 
   Bg = (function() {
 
@@ -702,11 +729,37 @@
 
   })();
 
+  Asteroid = (function() {
+
+    function Asteroid() {
+      this.drawable = new gl.drawable;
+      this.color = '#FFF';
+      this.x = 0;
+      this.y = 0;
+      this.width = 12;
+      this.height = 12;
+      this.rotation = 0;
+      this.strokeWidth = 2;
+    }
+
+    Asteroid.prototype.draw = function(context) {
+      var _this = this;
+      return context.fillPath(function(context) {
+        context.color(_this.color);
+        return context.line(_this.x, _this.y, _this.x + 3, _this.y + 4, _this.x + 7, _this.y + 4, _this.x + 3, _this.y + 7);
+      });
+    };
+
+    return Asteroid;
+
+  })();
+
   $(function() {
     return nv.assets = {
       Ship: Ship,
       Bullet: Bullet,
-      Bg: Bg
+      Bg: Bg,
+      Asteroid: Asteroid
     };
   });
 
@@ -715,7 +768,7 @@
 (function() {
 
   $(function() {
-    var bg, bg2, gamepad, glcanvas, ship, shootDelay, speed, update;
+    var asteroid, bg, bg2, gamepad, glcanvas, ship, shootDelay, speed, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
@@ -723,9 +776,11 @@
     ship = new nv.assets.Ship;
     bg = new nv.assets.Bg;
     bg2 = new nv.assets.Bg;
+    asteroid = new nv.assets.Asteroid;
     glcanvas.addDrawable(ship);
     glcanvas.addDrawable(bg);
     glcanvas.addDrawable(bg2);
+    glcanvas.addDrawable(asteroid);
     gamepad = nv.gamepad();
     gamepad.aliasKey('left', nv.Key.A);
     gamepad.aliasKey('right', nv.Key.D);

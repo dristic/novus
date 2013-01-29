@@ -1,3 +1,4 @@
+#= require nv/novus
 #= require common
 #= require nub
 #= require gleam
@@ -31,10 +32,12 @@ $(() ->
   ship = new nv.assets.Ship
   bg = new nv.assets.Bg
   bg2 = new nv.assets.Bg
+  asteroid = new nv.assets.Asteroid
 
   glcanvas.addDrawable ship
   glcanvas.addDrawable bg
   glcanvas.addDrawable bg2
+  glcanvas.addDrawable asteroid
 
   gamepad = nv.gamepad()
   gamepad.aliasKey 'left', nv.Key.A

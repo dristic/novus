@@ -1,7 +1,7 @@
 (function() {
 
   $(function() {
-    var bg, bg2, gamepad, glcanvas, ship, shootDelay, speed, update;
+    var asteroid, bg, bg2, gamepad, glcanvas, ship, shootDelay, speed, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
@@ -9,9 +9,11 @@
     ship = new nv.assets.Ship;
     bg = new nv.assets.Bg;
     bg2 = new nv.assets.Bg;
+    asteroid = new nv.assets.Asteroid;
     glcanvas.addDrawable(ship);
     glcanvas.addDrawable(bg);
     glcanvas.addDrawable(bg2);
+    glcanvas.addDrawable(asteroid);
     gamepad = nv.gamepad();
     gamepad.aliasKey('left', nv.Key.A);
     gamepad.aliasKey('right', nv.Key.D);

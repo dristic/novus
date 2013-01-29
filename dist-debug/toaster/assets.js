@@ -1,5 +1,5 @@
 (function() {
-  var Bg, Bullet, Ship;
+  var Asteroid, Bg, Bullet, Ship;
 
   Bg = (function() {
 
@@ -32,10 +32,10 @@
   Bullet = (function() {
 
     function Bullet(x, y, angle) {
-      this.drawable = new gl.drawable;
       this.x = x;
       this.y = y;
       this.angle = angle;
+      this.drawable = new gl.drawable;
       this.speed = 400;
       this.radius = 3;
     }
@@ -88,11 +88,37 @@
 
   })();
 
+  Asteroid = (function() {
+
+    function Asteroid() {
+      this.drawable = new gl.drawable;
+      this.color = '#FFF';
+      this.x = 0;
+      this.y = 0;
+      this.width = 12;
+      this.height = 12;
+      this.rotation = 0;
+      this.strokeWidth = 2;
+    }
+
+    Asteroid.prototype.draw = function(context) {
+      var _this = this;
+      return context.fillPath(function(context) {
+        context.color(_this.color);
+        return context.line(_this.x, _this.y, _this.x + 30, _this.y + 40, _this.x + 35, _this.y + 50, _this.x + 33, _this.y + 60, _this.x - 10, _this.y + 50, _this.x - 20, _this.y + 45);
+      });
+    };
+
+    return Asteroid;
+
+  })();
+
   $(function() {
     return nv.assets = {
       Ship: Ship,
       Bullet: Bullet,
-      Bg: Bg
+      Bg: Bg,
+      Asteroid: Asteroid
     };
   });
 

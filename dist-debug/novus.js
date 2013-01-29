@@ -1439,6 +1439,7 @@ window.Zepto = Zepto
     $.fn[m] = function(callback){ return this.bind(m, callback) }
   })
 })(Zepto)
+var nv = {};
 
 document.write('<scri'+'pt src="/toaster/Game.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/assets.js"></scr'+'ipt>')
@@ -1449,3 +1450,6 @@ document.write('<scri'+'pt src="/toaster/grounds.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/key.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/novus.js"></scr'+'ipt>')
 document.write('<scri'+'pt src="/toaster/nub.js"></scr'+'ipt>')
+document.write('<scri'+'pt src="/toaster/nv/base.js"></scr'+'ipt>')
+document.write('<scri'+'pt src="/toaster/nv/entity.js"></scr'+'ipt>')
+document.write('<scri'+'pt src="/toaster/nv/novus.js"></scr'+'ipt>')
