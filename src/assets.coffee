@@ -70,13 +70,16 @@ class Asteroid
 
   draw: (context) ->
     context.fillPath (context) =>
-      context.color @color
+      context.color 'rgba(0, 0, 0, 0)'
+      context.strokeColor @color
+      context.strokeWidth 2
       context.line @x, @y,
-        @x + 30, @y + 40,
+        @x + 30, @y + 20,
         @x + 35, @y + 50,
-        @x + 33, @y + 60,
+        @x + 23, @y + 60,
         @x - 10, @y + 50,
-        @x - 20, @y + 45
+        @x - 20, @y + 15,
+        @x, @y
 
 $(() ->
   nv.assets =

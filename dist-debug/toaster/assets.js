@@ -104,8 +104,10 @@
     Asteroid.prototype.draw = function(context) {
       var _this = this;
       return context.fillPath(function(context) {
-        context.color(_this.color);
-        return context.line(_this.x, _this.y, _this.x + 30, _this.y + 40, _this.x + 35, _this.y + 50, _this.x + 33, _this.y + 60, _this.x - 10, _this.y + 50, _this.x - 20, _this.y + 45);
+        context.color('rgba(0, 0, 0, 0)');
+        context.strokeColor(_this.color);
+        context.strokeWidth(2);
+        return context.line(_this.x, _this.y, _this.x + 30, _this.y + 20, _this.x + 35, _this.y + 50, _this.x + 23, _this.y + 60, _this.x - 10, _this.y + 50, _this.x - 20, _this.y + 15, _this.x, _this.y);
       });
     };
 

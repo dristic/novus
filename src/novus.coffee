@@ -1,9 +1,10 @@
-#= require nv/novus
+#= require_tree nv
 #= require common
 #= require nub
 #= require gleam
 #= require debug
 #= require assets
+#= require controllers
 
 $(() ->
   # Setup network connection
@@ -34,6 +35,10 @@ $(() ->
   bg2 = new nv.assets.Bg
   asteroid = new nv.assets.Asteroid
 
+  asteroidController = new nv.controllers.AsteroidController asteroid
+
+  controllers = [asteroidController]
+
   glcanvas.addDrawable ship
   glcanvas.addDrawable bg
   glcanvas.addDrawable bg2
@@ -51,6 +56,8 @@ $(() ->
   shootDelay = 10
 
   update = (dt) ->
+    controller.update dt for controller in controllers
+
     state = gamepad.getState()
     if state.left then ship.rotation -= 0.1
     if state.right then ship.rotation += 0.1

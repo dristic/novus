@@ -7,6 +7,22 @@
 
 (function() {
 
+  nv.Controller = (function() {
+
+    function Controller(asset) {
+      this.asset = asset;
+    }
+
+    Controller.prototype.update = function(dt) {};
+
+    return Controller;
+
+  })();
+
+}).call(this);
+
+(function() {
+
   nv.Entity = (function() {
 
     function Entity(plugins) {
@@ -16,12 +32,6 @@
     return Entity;
 
   })();
-
-}).call(this);
-
-(function() {
-
-
 
 }).call(this);
 
@@ -673,10 +683,10 @@
   Bullet = (function() {
 
     function Bullet(x, y, angle) {
-      this.drawable = new gl.drawable;
       this.x = x;
       this.y = y;
       this.angle = angle;
+      this.drawable = new gl.drawable;
       this.speed = 400;
       this.radius = 3;
     }
@@ -745,8 +755,10 @@
     Asteroid.prototype.draw = function(context) {
       var _this = this;
       return context.fillPath(function(context) {
-        context.color(_this.color);
-        return context.line(_this.x, _this.y, _this.x + 3, _this.y + 4, _this.x + 7, _this.y + 4, _this.x + 3, _this.y + 7);
+        context.color('rgba(0, 0, 0, 0)');
+        context.strokeColor(_this.color);
+        context.strokeWidth(2);
+        return context.line(_this.x, _this.y, _this.x + 30, _this.y + 20, _this.x + 35, _this.y + 50, _this.x + 23, _this.y + 60, _this.x - 10, _this.y + 50, _this.x - 20, _this.y + 15, _this.x, _this.y);
       });
     };
 
@@ -766,9 +778,39 @@
 }).call(this);
 
 (function() {
+  var AsteroidController, _ref,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  AsteroidController = (function(_super) {
+
+    __extends(AsteroidController, _super);
+
+    function AsteroidController() {
+      AsteroidController.__super__.constructor.apply(this, arguments);
+      this.speed = 0.3;
+      this.direction = (Math.random() * Math.PI) - (Math.PI / 2);
+    }
+
+    AsteroidController.prototype.update = function(dt) {
+      this.asset.x += Math.sin(this.direction) * this.speed;
+      return this.asset.y += Math.cos(this.direction) * this.speed;
+    };
+
+    return AsteroidController;
+
+  })(nv.Controller);
+
+  nv.controllers = (_ref = nv.controllers) != null ? _ref : {};
+
+  nv.controllers.AsteroidController = AsteroidController;
+
+}).call(this);
+
+(function() {
 
   $(function() {
-    var asteroid, bg, bg2, gamepad, glcanvas, ship, shootDelay, speed, update;
+    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, ship, shootDelay, speed, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
@@ -777,6 +819,8 @@
     bg = new nv.assets.Bg;
     bg2 = new nv.assets.Bg;
     asteroid = new nv.assets.Asteroid;
+    asteroidController = new nv.controllers.AsteroidController(asteroid);
+    controllers = [asteroidController];
     glcanvas.addDrawable(ship);
     glcanvas.addDrawable(bg);
     glcanvas.addDrawable(bg2);
@@ -790,7 +834,11 @@
     speed = 5;
     shootDelay = 10;
     update = function(dt) {
-      var dimensions, object, state, _i, _len, _ref;
+      var controller, dimensions, object, state, _i, _j, _len, _len1, _ref;
+      for (_i = 0, _len = controllers.length; _i < _len; _i++) {
+        controller = controllers[_i];
+        controller.update(dt);
+      }
       state = gamepad.getState();
       if (state.left) {
         ship.rotation -= 0.1;
@@ -814,8 +862,8 @@
         shootDelay--;
       }
       _ref = glcanvas.objects;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        object = _ref[_i];
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        object = _ref[_j];
         if (object instanceof nv.assets.Bullet) {
           object.update(dt);
           if (object["delete"]) {

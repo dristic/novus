@@ -119,6 +119,7 @@ module.exports = function(grunt) {
         .use(coffeescript({
           src: __dirname,
           bare: true,
+          force: true,
           compile: function (str, options, coffeePath) {
             js = new snockets().getConcatenation(coffeePath, { minify: false, async: false });
             return js;

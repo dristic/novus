@@ -1,7 +1,7 @@
 (function() {
 
   $(function() {
-    var asteroid, bg, bg2, gamepad, glcanvas, ship, shootDelay, speed, update;
+    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, ship, shootDelay, speed, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
@@ -10,6 +10,8 @@
     bg = new nv.assets.Bg;
     bg2 = new nv.assets.Bg;
     asteroid = new nv.assets.Asteroid;
+    asteroidController = new nv.controllers.AsteroidController(asteroid);
+    controllers = [asteroidController];
     glcanvas.addDrawable(ship);
     glcanvas.addDrawable(bg);
     glcanvas.addDrawable(bg2);
@@ -23,7 +25,11 @@
     speed = 5;
     shootDelay = 10;
     update = function(dt) {
-      var dimensions, object, state, _i, _len, _ref;
+      var controller, dimensions, object, state, _i, _j, _len, _len1, _ref;
+      for (_i = 0, _len = controllers.length; _i < _len; _i++) {
+        controller = controllers[_i];
+        controller.update(dt);
+      }
       state = gamepad.getState();
       if (state.left) {
         ship.rotation -= 0.1;
@@ -47,8 +53,8 @@
         shootDelay--;
       }
       _ref = glcanvas.objects;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        object = _ref[_i];
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        object = _ref[_j];
         if (object instanceof nv.assets.Bullet) {
           object.update(dt);
           if (object["delete"]) {
