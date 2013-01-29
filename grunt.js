@@ -106,8 +106,6 @@ module.exports = function(grunt) {
     // Start server.
     grunt.log.writeln('Starting static web server on port ' + port + '.');
 
-    require('child_process').spawn('toaster', ['-wd']);
-
     var jsPath = path.resolve('dist-debug'),
         snockets = require('snockets');
     var app = connect()
@@ -127,8 +125,6 @@ module.exports = function(grunt) {
         }))
         .use(connect.directory(base))
         .use(connect.static(base))
-        //.use(connect.static(jsPath))
-        //.use(connect.static(toasterPath))
         .listen(port);
 
     grunt.log.writeln('Press CTRL + C to stop the server.');
