@@ -1,5 +1,5 @@
 class Bg
-  constructor: () ->
+  constructor: (@glcanvas) ->
     @canvas = gl().size 700, 700
     @x = 0
     @y = 0
@@ -15,7 +15,25 @@ class Bg
         context.arc x, y, radius, 0, Math.PI * 2, true
 
   draw: (context, canvas) ->
-    context.drawImage @canvas, @x, @y
+    camX = -@glcanvas.camera.x
+    camY = -@glcanvas.camera.y
+
+    startX = camX + ((@x - camX) % @canvas.width)
+    startY = camY + ((@y - camY) % @canvas.height)
+
+    if startX > camX then startX -= @canvas.width
+    if startY > camY then startY -= @canvas.height
+
+    curX = startX
+    curY = startY
+
+    while curX < camX + @glcanvas.width
+      while curY < camY + @glcanvas.height
+        context.drawImage @canvas, curX, curY
+        curY += @canvas.height
+
+      curY = startY
+      curX += @canvas.width
 
 class Bullet
   constructor: (@x, @y, @angle) ->

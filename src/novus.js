@@ -654,8 +654,9 @@
 
   Bg = (function() {
 
-    function Bg() {
+    function Bg(glcanvas) {
       var i, radius, x, y;
+      this.glcanvas = glcanvas;
       this.canvas = gl().size(700, 700);
       this.x = 0;
       this.y = 0;
@@ -673,7 +674,29 @@
     }
 
     Bg.prototype.draw = function(context, canvas) {
-      return context.drawImage(this.canvas, this.x, this.y);
+      var camX, camY, curX, curY, startX, startY, _results;
+      camX = -this.glcanvas.camera.x;
+      camY = -this.glcanvas.camera.y;
+      startX = camX + ((this.x - camX) % this.canvas.width);
+      startY = camY + ((this.y - camY) % this.canvas.height);
+      if (startX > camX) {
+        startX -= this.canvas.width;
+      }
+      if (startY > camY) {
+        startY -= this.canvas.height;
+      }
+      curX = startX;
+      curY = startY;
+      _results = [];
+      while (curX < camX + this.glcanvas.width) {
+        while (curY < camY + this.glcanvas.height) {
+          context.drawImage(this.canvas, curX, curY);
+          curY += this.canvas.height;
+        }
+        curY = startY;
+        _results.push(curX += this.canvas.width);
+      }
+      return _results;
     };
 
     return Bg;
@@ -854,14 +877,14 @@
 (function() {
 
   $(function() {
-    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, ship, shipController, update;
+    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, ship, shipController, square, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
     glcanvas.fullscreen();
     ship = new nv.assets.Ship;
-    bg = new nv.assets.Bg;
-    bg2 = new nv.assets.Bg;
+    bg = new nv.assets.Bg(glcanvas);
+    bg2 = new nv.assets.Bg(glcanvas);
     asteroid = new nv.assets.Asteroid;
     gamepad = nv.gamepad();
     gamepad.aliasKey('left', nv.Key.A);
@@ -876,6 +899,8 @@
     glcanvas.addDrawable(bg);
     glcanvas.addDrawable(bg2);
     glcanvas.addDrawable(asteroid);
+    square = new gl.square;
+    glcanvas.addDrawable(square);
     update = function(dt) {
       var controller, dimensions, object, _i, _j, _len, _len1, _ref;
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
@@ -893,10 +918,22 @@
         }
       }
       dimensions = glcanvas.size();
+      if (ship.x < 0) {
+        ship.x = dimensions.height;
+      } else if (ship.x > dimensions.height) {
+        ship.x = 0;
+      }
+      if (ship.y < 0) {
+        ship.y = dimensions.height;
+      } else if (ship.y > dimensions.height) {
+        ship.y = 0;
+      }
       bg.x = -ship.x * 0.05;
       bg.y = -ship.y * 0.05;
       bg2.x = -ship.x * 0.01;
-      return bg2.y = -ship.y * 0.01;
+      bg2.y = -ship.y * 0.01;
+      square.x = -glcanvas.camera.x;
+      return square.y = -glcanvas.camera.y;
     };
     glcanvas.camera = nv.camera();
     glcanvas.camera.follow(ship, 250, 250);
