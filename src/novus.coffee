@@ -34,9 +34,11 @@ $(() ->
   bg = new nv.assets.Background
   bg2 = new nv.assets.Background
   ship = new nv.assets.Ship
-  asteroid = new nv.assets.Asteroid
+  asteroid = new nv.assets.Asteroid(500,500)
+  asteroid2 = new nv.assets.Asteroid(500, 500)
+  asteroid3 = new nv.assets.Asteroid(500, 500)
 
-  asteroidController = new nv.controllers.AsteroidController [asteroid]
+  asteroidController = new nv.controllers.AsteroidController [asteroid, asteroid2, asteroid3]
   shipController = new nv.controllers.ShipController ship
   bulletController = new nv.controllers.BulletController []
 
@@ -45,7 +47,7 @@ $(() ->
   bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg)
   bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2)
   shipRenderer = new nv.renderers.ShipRenderer(glcanvas, ship)
-  asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid])
+  asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3])
 
   renderers = [bgRenderer, bg2Renderer, shipRenderer, asteroidRenderer]
 

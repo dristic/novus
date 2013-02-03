@@ -759,14 +759,14 @@
 
   Asteroid = (function() {
 
-    function Asteroid() {
+    function Asteroid(cw, ch) {
       this.id = null;
-      this.x = 0;
-      this.y = 0;
+      this.x = cw * Math.random();
+      this.y = ch * Math.random();
       this.width = 12;
       this.height = 12;
       this.rotation = 0;
-      this.speed = Math.random() + 0.2;
+      this.speed = Math.random() + 0.3;
       this.direction = (Math.random() * Math.PI) - (Math.PI / 2);
     }
 
@@ -997,7 +997,7 @@
 (function() {
 
   $(function() {
-    var asteroid, asteroidController, asteroidRenderer, bg, bg2, bg2Renderer, bgRenderer, bulletController, controllers, gamepad, glcanvas, renderers, ship, shipController, shipRenderer, shootDelay, speed, update;
+    var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg, bg2, bg2Renderer, bgRenderer, bulletController, controllers, gamepad, glcanvas, renderers, ship, shipController, shipRenderer, shootDelay, speed, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
@@ -1005,15 +1005,17 @@
     bg = new nv.assets.Background;
     bg2 = new nv.assets.Background;
     ship = new nv.assets.Ship;
-    asteroid = new nv.assets.Asteroid;
-    asteroidController = new nv.controllers.AsteroidController([asteroid]);
+    asteroid = new nv.assets.Asteroid(500, 500);
+    asteroid2 = new nv.assets.Asteroid(500, 500);
+    asteroid3 = new nv.assets.Asteroid(500, 500);
+    asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3]);
     shipController = new nv.controllers.ShipController(ship);
     bulletController = new nv.controllers.BulletController([]);
     controllers = [bulletController, asteroidController, shipController];
     bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg);
     bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2);
     shipRenderer = new nv.renderers.ShipRenderer(glcanvas, ship);
-    asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid]);
+    asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3]);
     renderers = [bgRenderer, bg2Renderer, shipRenderer, asteroidRenderer];
     gamepad = nv.gamepad();
     gamepad.aliasKey('left', nv.Key.A);

@@ -3,7 +3,7 @@ class Background
     @canvas = gl().size 700, 700
     @x = 0
     @y = 0
-    
+
     i = 0
     until i > 100
       i++
@@ -34,14 +34,14 @@ class Ship
 
 
 class Asteroid
-  constructor: () ->
+  constructor: (cw,ch) ->
     @id = null
-    @x = 0
-    @y = 0
+    @x = cw * Math.random()
+    @y = ch * Math.random()
     @width = 12
     @height = 12
     @rotation = 0
-    @speed = Math.random() + 0.2
+    @speed = Math.random() + 0.3
     @direction = (Math.random() * Math.PI) - (Math.PI / 2)
 
 
