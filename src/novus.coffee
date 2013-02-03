@@ -5,6 +5,7 @@
 #= require debug
 #= require assets
 #= require controllers
+#= require renderers
 
 $(() ->
   # Setup network connection
@@ -30,19 +31,23 @@ $(() ->
 
   glcanvas.fullscreen()
 
+  bg = new nv.assets.Background
+  bg2 = new nv.assets.Background
   ship = new nv.assets.Ship
-  bg = new nv.assets.Bg
-  bg2 = new nv.assets.Bg
   asteroid = new nv.assets.Asteroid
 
-  asteroidController = new nv.controllers.AsteroidController asteroid
+  asteroidController = new nv.controllers.AsteroidController [asteroid]
+  shipController = new nv.controllers.ShipController ship
+  bulletController = new nv.controllers.BulletController []
 
-  controllers = [asteroidController]
+  controllers = [bulletController, asteroidController, shipController]
 
-  glcanvas.addDrawable ship
-  glcanvas.addDrawable bg
-  glcanvas.addDrawable bg2
-  glcanvas.addDrawable asteroid
+  bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg)
+  bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2)
+  shipRenderer = new nv.renderers.ShipRenderer(glcanvas, ship)
+  asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid])
+
+  renderers = [bgRenderer, bg2Renderer, shipRenderer, asteroidRenderer]
 
   gamepad = nv.gamepad()
   gamepad.aliasKey 'left', nv.Key.A
@@ -56,37 +61,10 @@ $(() ->
   shootDelay = 10
 
   update = (dt) ->
-    controller.update dt for controller in controllers
-
-    state = gamepad.getState()
-    if state.left then ship.rotation -= 0.1
-    if state.right then ship.rotation += 0.1
-    if state.up
-      ship.y -= speed * Math.cos(ship.rotation)
-      ship.x += speed * Math.sin(ship.rotation)
-    if state.down
-      ship.y += speed / 2 * Math.cos(ship.rotation)
-      ship.x -= speed / 2 * Math.sin(ship.rotation)
-
-    # Shooting
-    if state.shoot and shootDelay is 0
-      glcanvas.addDrawable new nv.assets.Bullet ship.x, ship.y, ship.rotation
-      shootDelay = 10
-
-    if shootDelay then shootDelay--
-
-    for object in glcanvas.objects
-      if object instanceof nv.assets.Bullet
-        object.update dt
-        if object.delete then glcanvas.removeDrawable object
+    controller.update(dt, gamepad) for controller in controllers
 
     # Boundary Wrapping
     dimensions = glcanvas.size()
-    # if ship.x < 0 then ship.x = dimensions.height
-    # else if ship.x > dimensions.height then ship.x = 0
-
-    # if ship.y < 0 then ship.y = dimensions.height
-    # else if ship.y > dimensions.height then ship.y = 0
 
     bg.x = -ship.x * 0.05
     bg.y = -ship.y * 0.05
