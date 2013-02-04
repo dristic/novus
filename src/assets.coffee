@@ -99,10 +99,28 @@ class Asteroid
         @x - 20, @y + 15,
         @x, @y
 
+class Hud
+  constructor: (@glcanvas) ->
+    @x = 0
+    @y = 0
+    @width = @glcanvas.size().width
+    @height = @glcanvas.size().height
+    @color = "#FFF"
+
+  draw: (context) ->
+    context.strokeColor @color
+    context.strokeRect @x, @y, @width, @height
+
+    context.fillStyle = '#F00'
+    context.font = 'italic bold 30px sans-serif'
+    context.textBaseline = 'bottom'
+    context.fillText "Asteroids", @x + 10, @y
+
 $(() ->
   nv.assets =
     Ship: Ship
     Bullet: Bullet
     Bg: Bg
     Asteroid: Asteroid
+    Hud: Hud
 )

@@ -34,6 +34,7 @@ $(() ->
   bg = new nv.assets.Bg glcanvas
   bg2 = new nv.assets.Bg glcanvas
   asteroid = new nv.assets.Asteroid
+  hud = new nv.assets.Hud glcanvas
 
   gamepad = nv.gamepad()
   gamepad.aliasKey 'left', nv.Key.A
@@ -51,9 +52,7 @@ $(() ->
   glcanvas.addDrawable bg
   glcanvas.addDrawable bg2
   glcanvas.addDrawable asteroid
-
-  square = new gl.square
-  glcanvas.addDrawable square
+  glcanvas.addDrawable hud
 
   update = (dt) ->
     controller.update dt for controller in controllers
@@ -65,8 +64,8 @@ $(() ->
 
     # Boundary Wrapping
     dimensions = glcanvas.size()
-    if ship.x < 0 then ship.x = dimensions.height
-    else if ship.x > dimensions.height then ship.x = 0
+    if ship.x < 0 then ship.x = dimensions.width
+    else if ship.x > dimensions.width then ship.x = 0
 
     if ship.y < 0 then ship.y = dimensions.height
     else if ship.y > dimensions.height then ship.y = 0
@@ -76,10 +75,6 @@ $(() ->
 
     bg2.x = -ship.x * 0.01
     bg2.y = -ship.y * 0.01
-
-    square.x = -glcanvas.camera.x
-    square.y = -glcanvas.camera.y
-    #console.log glcanvas.camera.x, glcanvas.camera.y
 
   glcanvas.camera = nv.camera()
   glcanvas.camera.follow ship, 250, 250

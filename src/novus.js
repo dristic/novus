@@ -650,7 +650,7 @@
 }).call(this);
 
 (function() {
-  var Asteroid, Bg, Bullet, Ship;
+  var Asteroid, Bg, Bullet, Hud, Ship;
 
   Bg = (function() {
 
@@ -789,12 +789,37 @@
 
   })();
 
+  Hud = (function() {
+
+    function Hud(glcanvas) {
+      this.glcanvas = glcanvas;
+      this.x = 0;
+      this.y = 0;
+      this.width = this.glcanvas.size().width;
+      this.height = this.glcanvas.size().height;
+      this.color = "#FFF";
+    }
+
+    Hud.prototype.draw = function(context) {
+      context.strokeColor(this.color);
+      context.strokeRect(this.x, this.y, this.width, this.height);
+      context.fillStyle = '#F00';
+      context.font = 'italic bold 30px sans-serif';
+      context.textBaseline = 'bottom';
+      return context.fillText("Asteroids", this.x + 10, this.y);
+    };
+
+    return Hud;
+
+  })();
+
   $(function() {
     return nv.assets = {
       Ship: Ship,
       Bullet: Bullet,
       Bg: Bg,
-      Asteroid: Asteroid
+      Asteroid: Asteroid,
+      Hud: Hud
     };
   });
 
@@ -877,7 +902,7 @@
 (function() {
 
   $(function() {
-    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, ship, shipController, square, update;
+    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, hud, ship, shipController, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
@@ -886,6 +911,7 @@
     bg = new nv.assets.Bg(glcanvas);
     bg2 = new nv.assets.Bg(glcanvas);
     asteroid = new nv.assets.Asteroid;
+    hud = new nv.assets.Hud(glcanvas);
     gamepad = nv.gamepad();
     gamepad.aliasKey('left', nv.Key.A);
     gamepad.aliasKey('right', nv.Key.D);
@@ -899,8 +925,7 @@
     glcanvas.addDrawable(bg);
     glcanvas.addDrawable(bg2);
     glcanvas.addDrawable(asteroid);
-    square = new gl.square;
-    glcanvas.addDrawable(square);
+    glcanvas.addDrawable(hud);
     update = function(dt) {
       var controller, dimensions, object, _i, _j, _len, _len1, _ref;
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
@@ -919,8 +944,8 @@
       }
       dimensions = glcanvas.size();
       if (ship.x < 0) {
-        ship.x = dimensions.height;
-      } else if (ship.x > dimensions.height) {
+        ship.x = dimensions.width;
+      } else if (ship.x > dimensions.width) {
         ship.x = 0;
       }
       if (ship.y < 0) {
@@ -931,9 +956,7 @@
       bg.x = -ship.x * 0.05;
       bg.y = -ship.y * 0.05;
       bg2.x = -ship.x * 0.01;
-      bg2.y = -ship.y * 0.01;
-      square.x = -glcanvas.camera.x;
-      return square.y = -glcanvas.camera.y;
+      return bg2.y = -ship.y * 0.01;
     };
     glcanvas.camera = nv.camera();
     glcanvas.camera.follow(ship, 250, 250);
