@@ -36,6 +36,58 @@
 }).call(this);
 
 (function() {
+
+  nv.ObjectRenderer = (function() {
+
+    function ObjectRenderer(glcanvas, asset) {
+      this.asset = asset;
+      glcanvas.addDrawable(this);
+    }
+
+    ObjectRenderer.prototype.draw = function(dt) {};
+
+    return ObjectRenderer;
+
+  })();
+
+  nv.ObjectListRenderer = (function() {
+
+    function ObjectListRenderer(glcanvas, assets) {
+      var _this = this;
+      this.assets = assets;
+      this.classname = this.constructor.toString();
+      this.assetCounter = 0;
+      glcanvas.addDrawable(this);
+      $.each(this.assets, function(asset) {
+        return _this.acquireAsset(asset);
+      });
+    }
+
+    ObjectListRenderer.prototype.acquireAsset = function(asset) {
+      asset.id = this.classname + this.assetCounter++;
+      return asset;
+    };
+
+    ObjectListRenderer.prototype.add = function(asset) {
+      this.assets.push(this.acquireAsset(asset));
+      return asset;
+    };
+
+    ObjectListRenderer.prototype.remove = function(target) {
+      return this.assets = this.assets.filter(function(asset) {
+        return asset.id !== target.id;
+      });
+    };
+
+    ObjectListRenderer.prototype.draw = function(dt) {};
+
+    return ObjectListRenderer;
+
+  })();
+
+}).call(this);
+
+(function() {
   var _ref;
 
   window.nv = (_ref = window.nv) != null ? _ref : {};
@@ -650,16 +702,17 @@
 }).call(this);
 
 (function() {
-  var Asteroid, Bg, Bullet, Hud, Ship;
+  var Asteroid, Background, Bullet, Hud, Ship;
 
-  Bg = (function() {
+  Background = (function() {
 
-    function Bg(glcanvas) {
+    function Background() {
       var i, radius, x, y;
-      this.glcanvas = glcanvas;
       this.canvas = gl().size(700, 700);
       this.x = 0;
       this.y = 0;
+      this.width = this.canvas.width;
+      this.height = this.canvas.height;
       i = 0;
       while (!(i > 100)) {
         i++;
@@ -673,33 +726,7 @@
       }
     }
 
-    Bg.prototype.draw = function(context, canvas) {
-      var camX, camY, curX, curY, startX, startY, _results;
-      camX = -this.glcanvas.camera.x;
-      camY = -this.glcanvas.camera.y;
-      startX = camX + ((this.x - camX) % this.canvas.width);
-      startY = camY + ((this.y - camY) % this.canvas.height);
-      if (startX > camX) {
-        startX -= this.canvas.width;
-      }
-      if (startY > camY) {
-        startY -= this.canvas.height;
-      }
-      curX = startX;
-      curY = startY;
-      _results = [];
-      while (curX < camX + this.glcanvas.width) {
-        while (curY < camY + this.glcanvas.height) {
-          context.drawImage(this.canvas, curX, curY);
-          curY += this.canvas.height;
-        }
-        curY = startY;
-        _results.push(curX += this.canvas.width);
-      }
-      return _results;
-    };
-
-    return Bg;
+    return Background;
 
   })();
 
@@ -709,28 +736,11 @@
       this.x = x;
       this.y = y;
       this.angle = angle;
-      this.drawable = new gl.drawable;
+      this.id = null;
       this.speed = 400;
       this.radius = 3;
+      this.alive = true;
     }
-
-    Bullet.prototype.update = function(dt) {
-      this.x += this.speed * Math.sin(this.angle) * dt;
-      this.y -= this.speed * Math.cos(this.angle) * dt;
-      if (this.x < -100 || this.x > 900) {
-        if (this.y < -100 || this.y > 900) {
-          return this["delete"] = true;
-        }
-      }
-    };
-
-    Bullet.prototype.draw = function(context) {
-      var _this = this;
-      return context.fillPath(function(context) {
-        context.color('#ff7600');
-        return context.arc(_this.x, _this.y, _this.radius, 0, Math.PI * 2, true);
-      });
-    };
 
     return Bullet;
 
@@ -739,24 +749,14 @@
   Ship = (function() {
 
     function Ship() {
-      this.drawable = new gl.square;
-      this.color = '#0F0';
+      this.id = null;
       this.x = 0;
       this.y = 30;
       this.width = 12;
       this.height = 18;
       this.rotation = 0;
-      this.strokeWidth = 2;
+      this.speed = 5;
     }
-
-    Ship.prototype.draw = function(context) {
-      var _this = this;
-      context.strokeColor('#FFF');
-      context.strokeWidth(this.strokeWidth);
-      return context.rotateAround(this.x + (this.width / 2), this.y + (this.height / 2), this.rotation, function() {
-        return context.line(_this.x, _this.y + _this.height, _this.x + (_this.width / 2), _this.y, _this.x + _this.width, _this.y + _this.height, _this.x, _this.y + _this.height);
-      });
-    };
 
     return Ship;
 
@@ -764,26 +764,16 @@
 
   Asteroid = (function() {
 
-    function Asteroid() {
-      this.drawable = new gl.drawable;
-      this.color = '#FFF';
-      this.x = 0;
-      this.y = 0;
+    function Asteroid(cw, ch) {
+      this.id = null;
+      this.x = cw * Math.random();
+      this.y = ch * Math.random();
       this.width = 12;
       this.height = 12;
       this.rotation = 0;
-      this.strokeWidth = 2;
+      this.speed = Math.random() + 0.3;
+      this.direction = (Math.random() * Math.PI) - (Math.PI / 2);
     }
-
-    Asteroid.prototype.draw = function(context) {
-      var _this = this;
-      return context.fillPath(function(context) {
-        context.color('rgba(0, 0, 0, 0)');
-        context.strokeColor(_this.color);
-        context.strokeWidth(2);
-        return context.line(_this.x, _this.y, _this.x + 30, _this.y + 20, _this.x + 35, _this.y + 50, _this.x + 23, _this.y + 60, _this.x - 10, _this.y + 50, _this.x - 20, _this.y + 15, _this.x, _this.y);
-      });
-    };
 
     return Asteroid;
 
@@ -800,24 +790,15 @@
       this.color = "#FFF";
     }
 
-    Hud.prototype.draw = function(context) {
-      context.strokeColor(this.color);
-      context.strokeRect(this.x, this.y, this.width, this.height);
-      context.fillStyle = '#F00';
-      context.font = 'italic bold 30px sans-serif';
-      context.textBaseline = 'bottom';
-      return context.fillText("Asteroids", this.x + 10, this.y);
-    };
-
     return Hud;
 
   })();
 
   $(function() {
     return nv.assets = {
+      Background: Background,
       Ship: Ship,
       Bullet: Bullet,
-      Bg: Bg,
       Asteroid: Asteroid,
       Hud: Hud
     };
@@ -826,23 +807,67 @@
 }).call(this);
 
 (function() {
-  var AsteroidController, ShipController, _ref,
+  var AsteroidController, BulletController, ShipController,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BulletController = (function(_super) {
+
+    __extends(BulletController, _super);
+
+    function BulletController(ship) {
+      this.ship = ship;
+      BulletController.__super__.constructor.apply(this, arguments);
+      this.assets = [];
+      this.shotDelay = 10;
+    }
+
+    BulletController.prototype.update = function(dt, gamepad) {
+      var bullet, state;
+      state = gamepad.getState();
+      if (state.shoot && this.shotDelay === 0) {
+        bullet = new nv.assets.Bullet(this.ship.x, this.ship.y, this.ship.rotation);
+        this.assets.push(bullet);
+        $(document).trigger('new:bullet', {
+          asset: bullet
+        });
+        this.shotDelay = 10;
+      }
+      if (this.shotDelay) {
+        this.shotDelay--;
+      }
+      $.each(this.assets, function(index, asset) {
+        asset.x += asset.speed * Math.sin(asset.angle) * dt;
+        asset.y -= asset.speed * Math.cos(asset.angle) * dt;
+        if (asset.x < -100 || asset.x > 900) {
+          if (asset.y < -100 || asset.y > 900) {
+            return asset.alive = false;
+          }
+        }
+      });
+      return this.assets = this.assets.filter(function(asset) {
+        return asset.alive;
+      });
+    };
+
+    return BulletController;
+
+  })(nv.Controller);
 
   AsteroidController = (function(_super) {
 
     __extends(AsteroidController, _super);
 
-    function AsteroidController() {
+    function AsteroidController(assets) {
+      this.assets = assets;
       AsteroidController.__super__.constructor.apply(this, arguments);
-      this.speed = 0.3;
-      this.direction = (Math.random() * Math.PI) - (Math.PI / 2);
     }
 
     AsteroidController.prototype.update = function(dt) {
-      this.asset.x += Math.sin(this.direction) * this.speed;
-      return this.asset.y += Math.cos(this.direction) * this.speed;
+      return $.each(this.assets, function(index, asset) {
+        asset.x += Math.sin(asset.direction) * asset.speed;
+        return asset.y += Math.cos(asset.direction) * asset.speed;
+      });
     };
 
     return AsteroidController;
@@ -853,17 +878,16 @@
 
     __extends(ShipController, _super);
 
-    function ShipController(asset, gamepad, canvas) {
-      this.gamepad = gamepad;
+    function ShipController(asset, canvas) {
       this.canvas = canvas;
       ShipController.__super__.constructor.apply(this, arguments);
       this.speed = 5;
       this.shootDelay = 10;
     }
 
-    ShipController.prototype.update = function(dt) {
+    ShipController.prototype.update = function(dt, gamepad) {
       var state;
-      state = this.gamepad.getState();
+      state = gamepad.getState();
       if (state.left) {
         this.asset.rotation -= 0.1;
       }
@@ -876,14 +900,7 @@
       }
       if (state.down) {
         this.asset.y += this.speed / 2 * Math.cos(this.asset.rotation);
-        this.asset.x -= this.speed / 2 * Math.sin(this.asset.rotation);
-      }
-      if (state.shoot && this.shootDelay === 0) {
-        this.canvas.addDrawable(new nv.assets.Bullet(this.asset.x, this.asset.y, this.asset.rotation));
-        this.shootDelay = 10;
-      }
-      if (this.shootDelay) {
-        return this.shootDelay--;
+        return this.asset.x -= this.speed / 2 * Math.sin(this.asset.rotation);
       }
     };
 
@@ -891,68 +908,210 @@
 
   })(nv.Controller);
 
-  nv.controllers = (_ref = nv.controllers) != null ? _ref : {};
+  $(function() {
+    return nv.controllers = {
+      ShipController: ShipController,
+      BulletController: BulletController,
+      AsteroidController: AsteroidController
+    };
+  });
 
-  nv.controllers.AsteroidController = AsteroidController;
+}).call(this);
 
-  nv.controllers.ShipController = ShipController;
+(function() {
+  var AsteroidRenderer, BackgroundRenderer, BulletRenderer, HudRenderer, ShipRenderer,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  BackgroundRenderer = (function(_super) {
+
+    __extends(BackgroundRenderer, _super);
+
+    function BackgroundRenderer(glcanvas, asset) {
+      this.glcanvas = glcanvas;
+      BackgroundRenderer.__super__.constructor.apply(this, arguments);
+    }
+
+    BackgroundRenderer.prototype.draw = function(context, canvas) {
+      var camX, camY, curX, curY, startX, startY, _results;
+      camX = -this.glcanvas.camera.x;
+      camY = -this.glcanvas.camera.y;
+      startX = camX + ((this.asset.x - camX) % this.asset.width);
+      startY = camY + ((this.asset.y - camY) % this.asset.height);
+      if (startX > camX) {
+        startX -= this.asset.width;
+      }
+      if (startY > camY) {
+        startY -= this.asset.height;
+      }
+      curX = startX;
+      curY = startY;
+      _results = [];
+      while (curX < camX + this.glcanvas.width) {
+        while (curY < camY + this.glcanvas.height) {
+          context.drawImage(this.asset.canvas, curX, curY);
+          curY += this.asset.height;
+        }
+        curY = startY;
+        _results.push(curX += this.asset.width);
+      }
+      return _results;
+    };
+
+    return BackgroundRenderer;
+
+  })(nv.ObjectRenderer);
+
+  BulletRenderer = (function(_super) {
+
+    __extends(BulletRenderer, _super);
+
+    function BulletRenderer(glcanvas, bullets) {
+      var _this = this;
+      BulletRenderer.__super__.constructor.apply(this, arguments);
+      $(document).on('new:bullet', function(event) {
+        return _this.add(event.data.asset);
+      });
+    }
+
+    BulletRenderer.prototype.draw = function(context) {
+      return $.each(this.assets, function(index, asset) {
+        var _this = this;
+        return context.fillPath(function(context) {
+          context.color('#ff7600');
+          return context.arc(asset.x, asset.y, asset.radius, 0, Math.PI * 2, true);
+        });
+      });
+    };
+
+    return BulletRenderer;
+
+  })(nv.ObjectListRenderer);
+
+  ShipRenderer = (function(_super) {
+
+    __extends(ShipRenderer, _super);
+
+    function ShipRenderer(glcanvas, ship) {
+      ShipRenderer.__super__.constructor.apply(this, arguments);
+      this.color = '#FFF';
+      this.strokeWidth = 2;
+    }
+
+    ShipRenderer.prototype.draw = function(context) {
+      var _this = this;
+      context.strokeColor(this.color);
+      context.strokeWidth(this.strokeWidth);
+      return context.rotateAround(this.asset.x + (this.asset.width / 2), this.asset.y + (this.asset.height / 2), this.asset.rotation, function() {
+        return context.line(_this.asset.x, _this.asset.y + _this.asset.height, _this.asset.x + (_this.asset.width / 2), _this.asset.y, _this.asset.x + _this.asset.width, _this.asset.y + _this.asset.height, _this.asset.x, _this.asset.y + _this.asset.height);
+      });
+    };
+
+    return ShipRenderer;
+
+  })(nv.ObjectRenderer);
+
+  AsteroidRenderer = (function(_super) {
+
+    __extends(AsteroidRenderer, _super);
+
+    function AsteroidRenderer(glcanvas, assets) {
+      AsteroidRenderer.__super__.constructor.apply(this, arguments);
+      this.color = '#FFF';
+      this.strokeWidth = 2;
+    }
+
+    AsteroidRenderer.prototype.draw = function(context) {
+      var _this = this;
+      return $.each(this.assets, function(index, asset) {
+        return context.fillPath(function(context) {
+          context.color('rgba(0, 0, 0, 0)');
+          context.strokeColor(_this.color);
+          context.strokeWidth(2);
+          return context.line(asset.x, asset.y, asset.x + 30, asset.y + 20, asset.x + 35, asset.y + 50, asset.x + 23, asset.y + 60, asset.x - 10, asset.y + 50, asset.x - 20, asset.y + 15, asset.x, asset.y);
+        });
+      });
+    };
+
+    return AsteroidRenderer;
+
+  })(nv.ObjectListRenderer);
+
+  HudRenderer = (function(_super) {
+
+    __extends(HudRenderer, _super);
+
+    function HudRenderer(glcanvas, hud) {
+      this.glcanvas = glcanvas;
+      HudRenderer.__super__.constructor.apply(this, arguments);
+    }
+
+    HudRenderer.prototype.draw = function(context) {
+      context.strokeColor(this.color);
+      context.strokeRect(this.asset.x, this.asset.y, this.asset.width, this.asset.height);
+      context.fillStyle = '#F00';
+      context.font = 'italic bold 30px sans-serif';
+      context.textBaseline = 'bottom';
+      return context.fillText("Asteroids", this.asset.x + 10, this.asset.y);
+    };
+
+    return HudRenderer;
+
+  })(nv.ObjectRenderer);
+
+  $(function() {
+    return nv.renderers = {
+      ShipRenderer: ShipRenderer,
+      BulletRenderer: BulletRenderer,
+      BackgroundRenderer: BackgroundRenderer,
+      AsteroidRenderer: AsteroidRenderer,
+      HudRenderer: HudRenderer
+    };
+  });
 
 }).call(this);
 
 (function() {
 
   $(function() {
-    var asteroid, asteroidController, bg, bg2, controllers, gamepad, glcanvas, hud, ship, shipController, update;
+    var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg, bg2, bg2Renderer, bgRenderer, bulletController, bulletRenderer, controllers, gamepad, glcanvas, hud, hudRenderer, renderers, ship, shipController, shipRenderer, shootDelay, speed, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
     glcanvas.fullscreen();
+    bg = new nv.assets.Background;
+    bg2 = new nv.assets.Background;
     ship = new nv.assets.Ship;
-    bg = new nv.assets.Bg(glcanvas);
-    bg2 = new nv.assets.Bg(glcanvas);
-    asteroid = new nv.assets.Asteroid;
+    asteroid = new nv.assets.Asteroid(500, 500);
+    asteroid2 = new nv.assets.Asteroid(500, 500);
+    asteroid3 = new nv.assets.Asteroid(500, 500);
     hud = new nv.assets.Hud(glcanvas);
+    asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3]);
+    shipController = new nv.controllers.ShipController(ship, glcanvas);
+    bulletController = new nv.controllers.BulletController(ship);
+    controllers = [bulletController, asteroidController, shipController];
+    bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg);
+    bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2);
+    shipRenderer = new nv.renderers.ShipRenderer(glcanvas, ship);
+    asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3]);
+    hudRenderer = new nv.renderers.HudRenderer(glcanvas, hud);
+    bulletRenderer = new nv.renderers.BulletRenderer(glcanvas, []);
+    renderers = [bgRenderer, bg2Renderer, shipRenderer, asteroidRenderer, hudRenderer, bulletRenderer];
     gamepad = nv.gamepad();
     gamepad.aliasKey('left', nv.Key.A);
     gamepad.aliasKey('right', nv.Key.D);
     gamepad.aliasKey('up', nv.Key.W);
     gamepad.aliasKey('down', nv.Key.S);
     gamepad.aliasKey('shoot', nv.Key.Spacebar);
-    asteroidController = new nv.controllers.AsteroidController(asteroid);
-    shipController = new nv.controllers.ShipController(ship, gamepad, glcanvas);
-    controllers = [asteroidController, shipController];
-    glcanvas.addDrawable(ship);
-    glcanvas.addDrawable(bg);
-    glcanvas.addDrawable(bg2);
-    glcanvas.addDrawable(asteroid);
-    glcanvas.addDrawable(hud);
+    speed = 5;
+    shootDelay = 10;
     update = function(dt) {
-      var controller, dimensions, object, _i, _j, _len, _len1, _ref;
+      var controller, dimensions, _i, _len;
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
         controller = controllers[_i];
-        controller.update(dt);
-      }
-      _ref = glcanvas.objects;
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        object = _ref[_j];
-        if (object instanceof nv.assets.Bullet) {
-          object.update(dt);
-          if (object["delete"]) {
-            glcanvas.removeDrawable(object);
-          }
-        }
+        controller.update(dt, gamepad);
       }
       dimensions = glcanvas.size();
-      if (ship.x < 0) {
-        ship.x = dimensions.width;
-      } else if (ship.x > dimensions.width) {
-        ship.x = 0;
-      }
-      if (ship.y < 0) {
-        ship.y = dimensions.height;
-      } else if (ship.y > dimensions.height) {
-        ship.y = 0;
-      }
       bg.x = -ship.x * 0.05;
       bg.y = -ship.y * 0.05;
       bg2.x = -ship.x * 0.01;

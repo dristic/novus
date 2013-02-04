@@ -1,8 +1,10 @@
-class Bg
-  constructor: (@glcanvas) ->
+class Background
+  constructor: () ->
     @canvas = gl().size 700, 700
     @x = 0
     @y = 0
+    @width = @canvas.width
+    @height = @canvas.height
 
     i = 0
     until i > 100
@@ -14,90 +16,33 @@ class Bg
         context.color '#FFFFFF'
         context.arc x, y, radius, 0, Math.PI * 2, true
 
-  draw: (context, canvas) ->
-    camX = -@glcanvas.camera.x
-    camY = -@glcanvas.camera.y
-
-    startX = camX + ((@x - camX) % @canvas.width)
-    startY = camY + ((@y - camY) % @canvas.height)
-
-    if startX > camX then startX -= @canvas.width
-    if startY > camY then startY -= @canvas.height
-
-    curX = startX
-    curY = startY
-
-    while curX < camX + @glcanvas.width
-      while curY < camY + @glcanvas.height
-        context.drawImage @canvas, curX, curY
-        curY += @canvas.height
-
-      curY = startY
-      curX += @canvas.width
-
 class Bullet
   constructor: (@x, @y, @angle) ->
-    @drawable = new gl.drawable
+    @id = null
     @speed = 400
     @radius = 3
-
-  update: (dt) ->
-    @x += @speed * Math.sin(@angle) * dt
-    @y -= @speed * Math.cos(@angle) * dt
-
-    if @x < -100 or @x > 900
-      if @y < -100 or @y > 900
-        @delete = true
-
-  draw: (context) ->
-    context.fillPath (context) =>
-      context.color '#ff7600'
-      context.arc @x, @y, @radius, 0, Math.PI * 2, true
+    @alive = true
 
 class Ship
   constructor: () ->
-    @drawable = new gl.square
-    @color = '#0F0'
+    @id = null
     @x = 0
     @y = 30
     @width = 12
     @height = 18
     @rotation = 0
-    @strokeWidth = 2
-
-  draw: (context) ->
-    context.strokeColor '#FFF'
-    context.strokeWidth @strokeWidth
-
-    context.rotateAround @x + (@width / 2), @y + (@height / 2), @rotation, () =>
-      context.line @x, @y + @height,
-        @x + (@width / 2), @y,
-        @x + @width, @y + @height,
-        @x, @y + @height
+    @speed = 5
 
 class Asteroid
-  constructor: () ->
-    @drawable = new gl.drawable
-    @color = '#FFF'
-    @x = 0
-    @y = 0
+  constructor: (cw,ch) ->
+    @id = null
+    @x = cw * Math.random()
+    @y = ch * Math.random()
     @width = 12
     @height = 12
     @rotation = 0
-    @strokeWidth = 2
-
-  draw: (context) ->
-    context.fillPath (context) =>
-      context.color 'rgba(0, 0, 0, 0)'
-      context.strokeColor @color
-      context.strokeWidth 2
-      context.line @x, @y,
-        @x + 30, @y + 20,
-        @x + 35, @y + 50,
-        @x + 23, @y + 60,
-        @x - 10, @y + 50,
-        @x - 20, @y + 15,
-        @x, @y
+    @speed = Math.random() + 0.3
+    @direction = (Math.random() * Math.PI) - (Math.PI / 2)
 
 class Hud
   constructor: (@glcanvas) ->
@@ -107,20 +52,11 @@ class Hud
     @height = @glcanvas.size().height
     @color = "#FFF"
 
-  draw: (context) ->
-    context.strokeColor @color
-    context.strokeRect @x, @y, @width, @height
-
-    context.fillStyle = '#F00'
-    context.font = 'italic bold 30px sans-serif'
-    context.textBaseline = 'bottom'
-    context.fillText "Asteroids", @x + 10, @y
-
 $(() ->
   nv.assets =
+    Background: Background
     Ship: Ship
     Bullet: Bullet
-    Bg: Bg
     Asteroid: Asteroid
     Hud: Hud
 )
