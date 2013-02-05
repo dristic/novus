@@ -3,7 +3,7 @@
 #= require nub
 #= require gleam
 #= require debug
-#= require assets
+#= require models
 #= require controllers
 #= require renderers
 
@@ -17,7 +17,7 @@ $(() ->
 
   # connection.on 'asdf', (event) ->
   #   if event.userId isnt id
-  #     glcanvas.addDrawable new nv.assets.Ship
+  #     glcanvas.addDrawable new nv.models.Ship
 
   # connection.send 'asdf',
   #   userId: id
@@ -31,14 +31,14 @@ $(() ->
 
   glcanvas.fullscreen()
 
-  bg = new nv.assets.Background
-  bg2 = new nv.assets.Background
-  ship = new nv.assets.Ship
+  bg = new nv.models.Background
+  bg2 = new nv.models.Background
+  ship = new nv.models.Ship
   
-  asteroid = new nv.assets.Asteroid(500,500)
-  asteroid2 = new nv.assets.Asteroid(500, 500)
-  asteroid3 = new nv.assets.Asteroid(500, 500)
-  hud = new nv.assets.Hud glcanvas
+  asteroid = new nv.models.Asteroid(500,500)
+  asteroid2 = new nv.models.Asteroid(500, 500)
+  asteroid3 = new nv.models.Asteroid(500, 500)
+  hud = new nv.models.Hud glcanvas
 
   asteroidController = new nv.controllers.AsteroidController [asteroid, asteroid2, asteroid3]
   shipController = new nv.controllers.ShipController ship, glcanvas

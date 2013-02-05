@@ -8,7 +8,7 @@ class BulletController extends nv.Controller
   update: (dt, gamepad) ->
     state = gamepad.getState()
     if state.shoot and @shotDelay is 0
-      bullet = new nv.assets.Bullet @ship.x, @ship.y, @ship.rotation
+      bullet = new nv.models.Bullet @ship.x, @ship.y, @ship.rotation
       @assets.push bullet
       $(document).trigger 'new:bullet',
         asset: bullet
@@ -57,7 +57,7 @@ class ShipController extends nv.Controller
 
     # Shooting
     # if state.shoot and @shootDelay is 0
-    #   @canvas.addDrawable new nv.assets.Bullet @asset.x, @asset.y, @asset.rotation
+    #   @canvas.addDrawable new nv.models.Bullet @asset.x, @asset.y, @asset.rotation
     #   @shootDelay = 10
 
     # if @shootDelay then @shootDelay--

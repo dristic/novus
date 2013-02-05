@@ -795,7 +795,7 @@
   })();
 
   $(function() {
-    return nv.assets = {
+    return nv.models = {
       Background: Background,
       Ship: Ship,
       Bullet: Bullet,
@@ -826,7 +826,7 @@
       var bullet, state;
       state = gamepad.getState();
       if (state.shoot && this.shotDelay === 0) {
-        bullet = new nv.assets.Bullet(this.ship.x, this.ship.y, this.ship.rotation);
+        bullet = new nv.models.Bullet(this.ship.x, this.ship.y, this.ship.rotation);
         this.assets.push(bullet);
         $(document).trigger('new:bullet', {
           asset: bullet
@@ -1079,13 +1079,13 @@
     glcanvas.size(500, 500);
     glcanvas.background('#000');
     glcanvas.fullscreen();
-    bg = new nv.assets.Background;
-    bg2 = new nv.assets.Background;
-    ship = new nv.assets.Ship;
-    asteroid = new nv.assets.Asteroid(500, 500);
-    asteroid2 = new nv.assets.Asteroid(500, 500);
-    asteroid3 = new nv.assets.Asteroid(500, 500);
-    hud = new nv.assets.Hud(glcanvas);
+    bg = new nv.models.Background;
+    bg2 = new nv.models.Background;
+    ship = new nv.models.Ship;
+    asteroid = new nv.models.Asteroid(500, 500);
+    asteroid2 = new nv.models.Asteroid(500, 500);
+    asteroid3 = new nv.models.Asteroid(500, 500);
+    hud = new nv.models.Hud(glcanvas);
     asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3]);
     shipController = new nv.controllers.ShipController(ship, glcanvas);
     bulletController = new nv.controllers.BulletController(ship);

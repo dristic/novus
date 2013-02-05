@@ -53,7 +53,7 @@ class Hud
     @color = "#FFF"
 
 $(() ->
-  nv.assets =
+  nv.models =
     Background: Background
     Ship: Ship
     Bullet: Bullet
