@@ -1133,8 +1133,8 @@
       context.strokeColor("#929");
       context.strokeWidth(10);
       context.moveTo(points[0].x, points[0].y);
-      $.each(points, function(pt) {
-        return context.lineTo(pt.x, pt.y);
+      $.each(points, function() {
+        return context.lineTo(this.x, this.y);
       });
       context.lineTo(points[0].x, points[0].y);
       context.stroke();

@@ -62,8 +62,8 @@ class ShipRenderer extends nv.ObjectRenderer
     context.strokeWidth 10
     context.moveTo points[0].x, points[0].y
 
-    $.each points, (pt) ->
-      context.lineTo pt.x, pt.y
+    $.each points, () ->
+      context.lineTo this.x, this.y
 
     context.lineTo points[0].x, points[0].y
 
