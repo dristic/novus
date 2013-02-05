@@ -40,14 +40,14 @@ $(() ->
   asteroid3 = new nv.models.Asteroid(500, 500)
   hud = new nv.models.Hud glcanvas
 
-  asteroidController = new nv.controllers.AsteroidController [asteroid, asteroid2, asteroid3]
+  asteroidController = new nv.controllers.AsteroidController [asteroid, asteroid2, asteroid3], glcanvas
   shipController = new nv.controllers.ShipController ship, glcanvas
   bulletController = new nv.controllers.BulletController ship
 
   controllers = [bulletController, asteroidController, shipController]
 
-  bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg)
-  bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2)
+  bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg, ship)
+  bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2, ship)
   shipRenderer = new nv.renderers.ShipRenderer(glcanvas, ship)
   asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3])
   hudRenderer = new nv.renderers.HudRenderer glcanvas, hud
@@ -67,9 +67,6 @@ $(() ->
 
   update = (dt) ->
     controller.update(dt, gamepad) for controller in controllers
-
-    # Boundary Wrapping
-    dimensions = glcanvas.size()
 
     bg.x = -ship.x * 0.05
     bg.y = -ship.y * 0.05

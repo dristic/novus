@@ -808,7 +808,7 @@
 }).call(this);
 
 (function() {
-  var AsteroidController, BulletController, ShipController,
+  var AsteroidController, BulletController, ShipController, wrap,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -855,19 +855,37 @@
 
   })(nv.Controller);
 
+  wrap = function(asset, glcanvas) {
+    var dimensions;
+    dimensions = glcanvas.size();
+    if (asset.x < 0) {
+      asset.x = dimensions.width;
+    } else if (asset.x > dimensions.width) {
+      asset.x = 0;
+    }
+    if (asset.y < 0) {
+      return asset.y = dimensions.height;
+    } else if (asset.y > dimensions.height) {
+      return asset.y = 0;
+    }
+  };
+
   AsteroidController = (function(_super) {
 
     __extends(AsteroidController, _super);
 
-    function AsteroidController(assets) {
+    function AsteroidController(assets, glcanvas) {
       this.assets = assets;
+      this.glcanvas = glcanvas;
       AsteroidController.__super__.constructor.apply(this, arguments);
     }
 
     AsteroidController.prototype.update = function(dt) {
+      var _this = this;
       return $.each(this.assets, function(index, asset) {
         asset.x += Math.sin(asset.direction) * asset.speed;
-        return asset.y += Math.cos(asset.direction) * asset.speed;
+        asset.y += Math.cos(asset.direction) * asset.speed;
+        return wrap(asset, _this.glcanvas);
       });
     };
 
@@ -879,8 +897,8 @@
 
     __extends(ShipController, _super);
 
-    function ShipController(asset, canvas) {
-      this.canvas = canvas;
+    function ShipController(asset, glcanvas) {
+      this.glcanvas = glcanvas;
       ShipController.__super__.constructor.apply(this, arguments);
       this.speed = 5;
       this.shootDelay = 10;
@@ -901,8 +919,9 @@
       }
       if (state.down) {
         this.asset.y += this.speed / 2 * Math.cos(this.asset.rotation);
-        return this.asset.x -= this.speed / 2 * Math.sin(this.asset.rotation);
+        this.asset.x -= this.speed / 2 * Math.sin(this.asset.rotation);
       }
+      return wrap(this.asset, this.glcanvas);
     };
 
     return ShipController;
@@ -1097,12 +1116,12 @@
     asteroid2 = new nv.models.Asteroid(500, 500);
     asteroid3 = new nv.models.Asteroid(500, 500);
     hud = new nv.models.Hud(glcanvas);
-    asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3]);
+    asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3], glcanvas);
     shipController = new nv.controllers.ShipController(ship, glcanvas);
     bulletController = new nv.controllers.BulletController(ship);
     controllers = [bulletController, asteroidController, shipController];
-    bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg);
-    bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2);
+    bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg, ship);
+    bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2, ship);
     shipRenderer = new nv.renderers.ShipRenderer(glcanvas, ship);
     asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3]);
     hudRenderer = new nv.renderers.HudRenderer(glcanvas, hud);
@@ -1117,12 +1136,11 @@
     speed = 5;
     shootDelay = 10;
     update = function(dt) {
-      var controller, dimensions, _i, _len;
+      var controller, _i, _len;
       for (_i = 0, _len = controllers.length; _i < _len; _i++) {
         controller = controllers[_i];
         controller.update(dt, gamepad);
       }
-      dimensions = glcanvas.size();
       bg.x = -ship.x * 0.05;
       bg.y = -ship.y * 0.05;
       bg2.x = -ship.x * 0.01;

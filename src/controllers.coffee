@@ -28,17 +28,29 @@ class BulletController extends nv.Controller
     @assets = @assets.filter (asset) ->
       asset.alive
 
+wrap = (asset, glcanvas) ->
+  # Boundary Wrapping
+  dimensions = glcanvas.size()
+
+  if asset.x < 0 then asset.x = dimensions.width
+  else if asset.x > dimensions.width then asset.x = 0
+
+  if asset.y < 0 then asset.y = dimensions.height
+  else if asset.y > dimensions.height then asset.y = 0
+
 class AsteroidController extends nv.Controller
-  constructor: (@assets) ->
+  constructor: (@assets, @glcanvas) ->
     super arguments...
 
   update: (dt) ->
-    $.each @assets, (index, asset) ->
+    $.each @assets, (index, asset) =>
       asset.x += Math.sin(asset.direction) * asset.speed
       asset.y += Math.cos(asset.direction) * asset.speed
 
+      wrap asset, @glcanvas
+
 class ShipController extends nv.Controller
-  constructor: (asset, @canvas) ->
+  constructor: (asset, @glcanvas) ->
     super arguments...
 
     @speed = 5
@@ -54,6 +66,8 @@ class ShipController extends nv.Controller
     if state.down
       @asset.y += @speed / 2 * Math.cos(@asset.rotation)
       @asset.x -= @speed / 2 * Math.sin(@asset.rotation)
+
+    wrap @asset, @glcanvas
 
     # Shooting
     # if state.shoot and @shootDelay is 0
