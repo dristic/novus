@@ -1052,7 +1052,7 @@
       context.fillStyle = '#F00';
       context.font = 'italic bold 30px sans-serif';
       context.textBaseline = 'bottom';
-      return context.fillText("Asteroids", this.asset.x + 10, this.asset.y);
+      return context.fillText("Asteroids", -this.glcanvas.camera.x + 20, -this.glcanvas.camera.y + 50);
     };
 
     return HudRenderer;

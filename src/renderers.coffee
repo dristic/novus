@@ -86,7 +86,7 @@ class HudRenderer extends nv.ObjectRenderer
     context.fillStyle = '#F00'
     context.font = 'italic bold 30px sans-serif'
     context.textBaseline = 'bottom'
-    context.fillText "Asteroids", @asset.x + 10, @asset.y
+    context.fillText "Asteroids", -@glcanvas.camera.x + 20, -@glcanvas.camera.y + 50
 
 $(() ->
   nv.renderers =
