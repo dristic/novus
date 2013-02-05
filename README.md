@@ -14,25 +14,25 @@ After that install dependencies using `npm install`
 
 Run the server and look in the public/index.html for the game.
 
- ## Project Layout
+## Project Layout
 
  * dist : Current build of the js library
  * lib : Current .js files built from src
  * public : Public HTML and CSS files
  * src : Coffeescript source that builds to lib/
 
- ## Grunt Tasks
+## Grunt Tasks
 
- Grunt is used to build and serve up the project files. To build the project navigate to the root folder and use `$ grunt build`. This will compile coffeescript, run qunit tests, concat lib/ files, and finally min lib/ files into dist/.
+Grunt is used to build and serve up the project files. To build the project navigate to the root folder and use `$ grunt build`. This will compile coffeescript, run qunit tests, concat lib/ files, and finally min lib/ files into dist/.
 
- To serve up files run `$ grunt server`. Then open up `http://localhost:8000/index.html` to view the project.
+To serve up files run `$ grunt server`. Then open up `http://localhost:8000/index.html` to view the project.
 
- ## FAQ
+## FAQ
 
- If you get an error with coffeePath you probably have to update your version of connect-coffee-script. Go to node_modules/connect-coffee-script/lib/middleware.js and change line 91 from:
+If you get an error with coffeePath you probably have to update your version of connect-coffee-script. Go to node_modules/connect-coffee-script/lib/middleware.js and change line 91 from:
 
- `js = options.compile(str, options);`
+`js = options.compile(str, options);`
 
- to
+to
 
- `js = options.compile(str, options, coffeePath);`
+`js = options.compile(str, options, coffeePath);`
