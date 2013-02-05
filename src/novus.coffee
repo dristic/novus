@@ -42,7 +42,7 @@ $(() ->
 
   asteroidController = new nv.controllers.AsteroidController [asteroid, asteroid2, asteroid3], glcanvas
   shipController = new nv.controllers.ShipController ship, glcanvas
-  bulletController = new nv.controllers.BulletController ship
+  bulletController = new nv.controllers.BulletController ship, glcanvas
 
   controllers = [bulletController, asteroidController, shipController]
 

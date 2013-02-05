@@ -36,6 +36,8 @@ class BulletRenderer extends nv.ObjectListRenderer
         context.color '#ff7600'
         context.arc asset.x, asset.y, asset.radius, 0, Math.PI * 2, true
 
+    @assets = @assets.filter (asset) ->
+      asset.alive
 
 class ShipRenderer extends nv.ObjectRenderer
   constructor: (glcanvas, ship) ->

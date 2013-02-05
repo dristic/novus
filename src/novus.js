@@ -791,6 +791,7 @@
       this.speed = 400;
       this.radius = 3;
       this.alive = true;
+      this.life = 100;
     }
 
     return Bullet;
@@ -908,15 +909,17 @@
 
     __extends(BulletController, _super);
 
-    function BulletController(ship) {
+    function BulletController(ship, glcanvas) {
       this.ship = ship;
+      this.glcanvas = glcanvas;
       BulletController.__super__.constructor.apply(this, arguments);
       this.assets = [];
       this.shotDelay = 10;
     }
 
     BulletController.prototype.update = function(dt, gamepad) {
-      var bullet, state;
+      var bullet, state,
+        _this = this;
       state = gamepad.getState();
       if (state.shoot && this.shotDelay === 0) {
         console.log(this.ship.nose(), this.ship.rotation);
@@ -935,9 +938,14 @@
         asset.y -= asset.speed * Math.cos(asset.angle) * dt;
         if (asset.x < -100 || asset.x > 900) {
           if (asset.y < -100 || asset.y > 900) {
-            return asset.alive = false;
+            asset.alive = false;
           }
         }
+        asset.life--;
+        if (!(asset.life > 0)) {
+          asset.alive = false;
+        }
+        return wrap(asset, _this.glcanvas);
       });
       return this.assets = this.assets.filter(function(asset) {
         return asset.alive;
@@ -1086,12 +1094,15 @@
     }
 
     BulletRenderer.prototype.draw = function(context) {
-      return $.each(this.assets, function(index, asset) {
+      $.each(this.assets, function(index, asset) {
         var _this = this;
         return context.fillPath(function(context) {
           context.color('#ff7600');
           return context.arc(asset.x, asset.y, asset.radius, 0, Math.PI * 2, true);
         });
+      });
+      return this.assets = this.assets.filter(function(asset) {
+        return asset.alive;
       });
     };
 
@@ -1226,7 +1237,7 @@
     hud = new nv.models.Hud(glcanvas);
     asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3], glcanvas);
     shipController = new nv.controllers.ShipController(ship, glcanvas);
-    bulletController = new nv.controllers.BulletController(ship);
+    bulletController = new nv.controllers.BulletController(ship, glcanvas);
     controllers = [bulletController, asteroidController, shipController];
     bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg, ship);
     bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2, ship);

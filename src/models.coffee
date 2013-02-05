@@ -24,6 +24,7 @@ class Bullet
     @speed = 400
     @radius = 3
     @alive = true
+    @life = 100
 
 class Ship
   constructor: () ->

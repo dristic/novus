@@ -1,5 +1,5 @@
 class BulletController extends nv.Controller
-  constructor: (@ship) ->
+  constructor: (@ship, @glcanvas) ->
     super arguments...
 
     @assets = []
@@ -17,7 +17,7 @@ class BulletController extends nv.Controller
 
     @shotDelay-- if @shotDelay
 
-    $.each @assets, (index, asset) ->
+    $.each @assets, (index, asset) =>
       asset.x += asset.speed * Math.sin(asset.angle) * dt
       asset.y -= asset.speed * Math.cos(asset.angle) * dt
 
@@ -25,6 +25,12 @@ class BulletController extends nv.Controller
         if asset.y < -100 or asset.y > 900
           #// fire delete bullet model event unless asset.alive
           asset.alive = false
+
+      asset.life--
+
+      asset.alive = false unless asset.life > 0
+
+      wrap asset, @glcanvas
 
     @assets = @assets.filter (asset) ->
       asset.alive
