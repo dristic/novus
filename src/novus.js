@@ -788,6 +788,7 @@
       this.width = this.glcanvas.size().width;
       this.height = this.glcanvas.size().height;
       this.color = "#FFF";
+      this.lives = 3;
     }
 
     return Hud;
@@ -1044,15 +1045,25 @@
     function HudRenderer(glcanvas, hud) {
       this.glcanvas = glcanvas;
       HudRenderer.__super__.constructor.apply(this, arguments);
+      this.ship = new nv.models.Ship;
+      this.shipRenderer = new nv.renderers.ShipRenderer(this.glcanvas, this.ship);
     }
 
     HudRenderer.prototype.draw = function(context) {
+      var num;
       context.strokeColor(this.color);
       context.strokeRect(this.asset.x, this.asset.y, this.asset.width, this.asset.height);
       context.fillStyle = '#F00';
       context.font = 'italic bold 30px sans-serif';
       context.textBaseline = 'bottom';
-      return context.fillText("Asteroids", -this.glcanvas.camera.x + 20, -this.glcanvas.camera.y + 50);
+      context.fillText("Asteroids", -this.glcanvas.camera.x + 20, -this.glcanvas.camera.y + 50);
+      num = this.asset.lives;
+      while (num--) {
+        this.ship.x = -this.glcanvas.camera.x + 180 + (num * 30);
+        this.ship.y = -this.glcanvas.camera.y + 25;
+        this.shipRenderer.draw(context);
+      }
+      return this;
     };
 
     return HudRenderer;

@@ -79,6 +79,9 @@ class HudRenderer extends nv.ObjectRenderer
   constructor: (@glcanvas, hud) ->
     super arguments...
 
+    @ship = new nv.models.Ship
+    @shipRenderer = new nv.renderers.ShipRenderer @glcanvas, @ship
+
   draw: (context) ->
     context.strokeColor @color
     context.strokeRect @asset.x, @asset.y, @asset.width, @asset.height
@@ -87,6 +90,15 @@ class HudRenderer extends nv.ObjectRenderer
     context.font = 'italic bold 30px sans-serif'
     context.textBaseline = 'bottom'
     context.fillText "Asteroids", -@glcanvas.camera.x + 20, -@glcanvas.camera.y + 50
+
+    # Draw ships for the number of lives.
+    num = @asset.lives
+    while num--
+      @ship.x = -@glcanvas.camera.x + 180 + (num * 30)
+      @ship.y = -@glcanvas.camera.y + 25
+      @shipRenderer.draw context
+
+    this
 
 $(() ->
   nv.renderers =

@@ -51,6 +51,7 @@ class Hud
     @width = @glcanvas.size().width
     @height = @glcanvas.size().height
     @color = "#FFF"
+    @lives = 3
 
 $(() ->
   nv.models =
