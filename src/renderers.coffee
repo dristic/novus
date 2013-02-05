@@ -91,6 +91,14 @@ class HudRenderer extends nv.ObjectRenderer
     context.textBaseline = 'bottom'
     context.fillText "Asteroids", -@glcanvas.camera.x + 20, -@glcanvas.camera.y + 50
 
+    context.fillStyle = '#FFF'
+    context.font = 'bold 30px sans-serif'
+    context.textBaseline = 'bottom'
+    dimensions = @glcanvas.size()
+    context.fillText @asset.score, 
+      -@glcanvas.camera.x + dimensions.width - 120, 
+      -@glcanvas.camera.y + dimensions.height - 10
+
     # Draw ships for the number of lives.
     num = @asset.lives
     while num--
