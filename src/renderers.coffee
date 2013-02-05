@@ -54,6 +54,19 @@ class ShipRenderer extends nv.ObjectRenderer
         @asset.x + @asset.width, @asset.y + @asset.height,
         @asset.x, @asset.y + @asset.height
 
+    points = @asset.path()
+    context.beginPath()
+    context.strokeColor "#929"
+    context.strokeWidth 10
+    context.moveTo points[0].x, points[0].y
+
+    $.each points, (pt) ->
+      context.lineTo pt.x, pt.y
+
+    context.lineTo points[0].x, points[0].y
+
+    context.stroke()
+    context.closePath()
 
 class AsteroidRenderer extends nv.ObjectListRenderer
   constructor: (glcanvas, assets) ->

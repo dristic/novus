@@ -88,6 +88,57 @@
 }).call(this);
 
 (function() {
+
+  nv.Point = (function() {
+
+    function Point(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+
+    Point.prototype.clone = function() {
+      return new nv.Point(this.x, this.y);
+    };
+
+    Point.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+      return this;
+    };
+
+    return Point;
+
+  })();
+
+  nv.Rect = (function() {
+
+    function Rect(x, y, width, height) {
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+    }
+
+    Rect.prototype.clone = function() {
+      return new nv.Rect(this.x, this.y, this.width, this.height);
+    };
+
+    Rect.prototype.contains = function(pt) {
+      return (pt.x >= this.x && pt.x <= this.x + this.width) && (pt.y >= this.y && pt.y <= this.y + this.height);
+    };
+
+    Rect.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    return Rect;
+
+  })();
+
+}).call(this);
+
+(function() {
   var _ref;
 
   window.nv = (_ref = window.nv) != null ? _ref : {};
@@ -732,10 +783,10 @@
 
   Bullet = (function() {
 
-    function Bullet(x, y, angle) {
-      this.x = x;
-      this.y = y;
+    function Bullet(pt, angle) {
       this.angle = angle;
+      this.x = pt.x;
+      this.y = pt.y;
       this.id = null;
       this.speed = 400;
       this.radius = 3;
@@ -756,7 +807,47 @@
       this.height = 18;
       this.rotation = 0;
       this.speed = 5;
+      this._path = [];
+      this._wireframe = [];
+      this.initPath();
     }
+
+    Ship.prototype.initPath = function() {
+      this._wireframe = [new nv.Point(0, -this.height / 2), new nv.Point(this.width / 2, this.height / 2), new nv.Point(-this.width / 2, this.height / 2)];
+      return this._updatePath();
+    };
+
+    Ship.prototype._updatePath = function() {
+      var cosine, newPath, ship, sine;
+      cosine = Math.cos(this.rotation);
+      sine = Math.sin(this.rotation);
+      newPath = [];
+      ship = this;
+      $.each(this._wireframe, function() {
+        return newPath.push(new nv.Point(this.x * cosine - this.y * sine + ship.x, this.x * sine + this.y * cosine + ship.y));
+      });
+      console.log(newPath[0].x, newPath[0].y, newPath[1].x, newPath[1].y, newPath[2].x, newPath[2].y);
+      return this._path = newPath;
+    };
+
+    Ship.prototype.nose = function() {
+      return this._path[0];
+    };
+
+    Ship.prototype.path = function() {
+      return this._path;
+    };
+
+    Ship.prototype.rotate = function(r) {
+      this.rotation += r;
+      return this._updatePath();
+    };
+
+    Ship.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+      return this._updatePath();
+    };
 
     return Ship;
 
@@ -828,7 +919,8 @@
       var bullet, state;
       state = gamepad.getState();
       if (state.shoot && this.shotDelay === 0) {
-        bullet = new nv.models.Bullet(this.ship.x, this.ship.y, this.ship.rotation);
+        console.log(this.ship.nose(), this.ship.rotation);
+        bullet = new nv.models.Bullet(this.ship.nose(), this.ship.rotation);
         this.assets.push(bullet);
         $(document).trigger('new:bullet', {
           asset: bullet
@@ -909,18 +1001,16 @@
       var state;
       state = gamepad.getState();
       if (state.left) {
-        this.asset.rotation -= 0.1;
+        this.asset.rotate(-0.1);
       }
       if (state.right) {
-        this.asset.rotation += 0.1;
+        this.asset.rotate(0.1);
       }
       if (state.up) {
-        this.asset.y -= this.speed * Math.cos(this.asset.rotation);
-        this.asset.x += this.speed * Math.sin(this.asset.rotation);
+        this.asset.translate(this.speed * Math.sin(this.asset.rotation), -this.speed * Math.cos(this.asset.rotation));
       }
       if (state.down) {
-        this.asset.y += this.speed / 2 * Math.cos(this.asset.rotation);
-        this.asset.x -= this.speed / 2 * Math.sin(this.asset.rotation);
+        this.asset.translate(-this.speed / 2 * Math.sin(this.asset.rotation), this.speed / 2 * Math.cos(this.asset.rotation));
       }
       return wrap(this.asset, this.glcanvas);
     };
@@ -1020,12 +1110,24 @@
     }
 
     ShipRenderer.prototype.draw = function(context) {
-      var _this = this;
+      var points,
+        _this = this;
       context.strokeColor(this.color);
       context.strokeWidth(this.strokeWidth);
-      return context.rotateAround(this.asset.x + (this.asset.width / 2), this.asset.y + (this.asset.height / 2), this.asset.rotation, function() {
+      context.rotateAround(this.asset.x + (this.asset.width / 2), this.asset.y + (this.asset.height / 2), this.asset.rotation, function() {
         return context.line(_this.asset.x, _this.asset.y + _this.asset.height, _this.asset.x + (_this.asset.width / 2), _this.asset.y, _this.asset.x + _this.asset.width, _this.asset.y + _this.asset.height, _this.asset.x, _this.asset.y + _this.asset.height);
       });
+      points = this.asset.path();
+      context.beginPath();
+      context.strokeColor("#929");
+      context.strokeWidth(10);
+      context.moveTo(points[0].x, points[0].y);
+      $.each(points, function(pt) {
+        return context.lineTo(pt.x, pt.y);
+      });
+      context.lineTo(points[0].x, points[0].y);
+      context.stroke();
+      return context.closePath();
     };
 
     return ShipRenderer;

@@ -8,7 +8,8 @@ class BulletController extends nv.Controller
   update: (dt, gamepad) ->
     state = gamepad.getState()
     if state.shoot and @shotDelay is 0
-      bullet = new nv.models.Bullet @ship.x, @ship.y, @ship.rotation
+      console.log @ship.nose(), @ship.rotation
+      bullet = new nv.models.Bullet @ship.nose(), @ship.rotation
       @assets.push bullet
       $(document).trigger 'new:bullet',
         asset: bullet
@@ -58,14 +59,16 @@ class ShipController extends nv.Controller
 
   update: (dt, gamepad) ->
     state = gamepad.getState()
-    if state.left then @asset.rotation -= 0.1
-    if state.right then @asset.rotation += 0.1
+    if state.left then @asset.rotate -0.1
+    if state.right then @asset.rotate 0.1
     if state.up
-      @asset.y -= @speed * Math.cos(@asset.rotation)
-      @asset.x += @speed * Math.sin(@asset.rotation)
+      #// @asset.y -= @speed * Math.cos(@asset.rotation)
+      #// @asset.x += @speed * Math.sin(@asset.rotation)
+      @asset.translate @speed * Math.sin(@asset.rotation), -@speed * Math.cos(@asset.rotation)
     if state.down
-      @asset.y += @speed / 2 * Math.cos(@asset.rotation)
-      @asset.x -= @speed / 2 * Math.sin(@asset.rotation)
+      #// @asset.y += @speed / 2 * Math.cos(@asset.rotation)
+      #// @asset.x -= @speed / 2 * Math.sin(@asset.rotation)
+      @asset.translate -@speed/2 * Math.sin(@asset.rotation), @speed/2 * Math.cos(@asset.rotation)
 
     wrap @asset, @glcanvas
 

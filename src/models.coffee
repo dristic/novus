@@ -17,7 +17,9 @@ class Background
         context.arc x, y, radius, 0, Math.PI * 2, true
 
 class Bullet
-  constructor: (@x, @y, @angle) ->
+  constructor: (pt, @angle) ->
+    @x = pt.x
+    @y = pt.y
     @id = null
     @speed = 400
     @radius = 3
@@ -32,6 +34,39 @@ class Ship
     @height = 18
     @rotation = 0
     @speed = 5
+    @_path = []
+    @_wireframe = []
+    @initPath()
+
+  initPath: () ->
+    @_wireframe = [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(-@width/2, @height/2) ]
+    @_updatePath()
+
+  _updatePath: () ->
+    cosine = Math.cos(@rotation)
+    sine = Math.sin(@rotation)
+    newPath = []
+    ship = this
+    $.each @_wireframe, () ->
+      newPath.push new nv.Point(this.x * cosine - this.y * sine + ship.x, this.x * sine + this.y * cosine + ship.y)
+    console.log newPath[0].x,newPath[0].y, newPath[1].x, newPath[1].y, newPath[2].x, newPath[2].y
+    @_path = newPath
+
+  nose: () ->
+    @_path[0]
+
+  path: () ->
+    @_path
+
+  rotate: (r) ->
+    @rotation += r
+    @_updatePath()
+
+  translate: (dx,dy) ->
+    @x += dx
+    @y += dy
+    @_updatePath()
+
 
 class Asteroid
   constructor: (cw,ch) ->
