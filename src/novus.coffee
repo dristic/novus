@@ -8,23 +8,10 @@
 #= require renderers
 
 $(() ->
-  # Setup network connection
-  # connection = nub()
+  canvasEl = document.querySelector('canvas')
+  glcanvas = gl canvasEl
 
-  # id = Math.random()
-  # id = "Dan#{id}"
-  # connection.auth id
-
-  # connection.on 'asdf', (event) ->
-  #   if event.userId isnt id
-  #     glcanvas.addDrawable new nv.models.Ship
-
-  # connection.send 'asdf',
-  #   userId: id
-  #   something: 'herro'
-
-  # Setup gl canvas
-  glcanvas = gl 'canvas'
+  document.body.appendChild glcanvas.canvas unless canvasEl isnt undefined
 
   glcanvas.size 500, 500
   glcanvas.background '#000'

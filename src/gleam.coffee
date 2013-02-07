@@ -11,8 +11,7 @@ gl.prototype =
   init: (canvas) ->
     if typeof canvas is 'string'
       canvas = document.querySelector canvas
-    else
-      canvas = document.createElement 'canvas'
+    canvas = canvas ? document.createElement 'canvas'
     gl.prototype.extend.call canvas, gl.prototype
     canvas.context = gl.context canvas.getContext('2d')
     canvas.objects = []

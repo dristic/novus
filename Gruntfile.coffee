@@ -6,6 +6,7 @@ compiler = require 'connect-compiler'
 coffeescript = require 'connect-coffee-script'
 
 module.exports = (grunt) ->
+  # Configure grunt tasks.
   grunt.initConfig
     meta:
       version: '0.1.0'
@@ -19,7 +20,7 @@ module.exports = (grunt) ->
 
     jasmine:
       dist:
-        src: 'dist/built.js'
+        src: 'dist/build.js'
         options:
           specs: 'test/spec/*Spec.js'
           helpers: 'test/spec/*Helper.js'
@@ -78,19 +79,24 @@ module.exports = (grunt) ->
         src: 'src/novus.coffee'
         output: 'dist/novus.js'
 
+  # Load up grunt libraries
   grunt.loadNpmTasks 'grunt-contrib-jasmine'
   grunt.loadNpmTasks 'grunt-contrib-concat'
 
+  # Default task lints, tests, and builds everything.
   grunt.registerTask 'default', 'lint jasmine coffee concat min'
 
-  grunt.registerTask 'build', 'coffee jasmine'
+  # Build task builds and tests.
+  grunt.registerTask 'build', 'coffee concat jasmine'
 
+  # Coffee task builds the main novus engine and game.
   grunt.registerTask 'coffee', 'Compiles coffeescript into js files', () ->
     options = this.options({})
 
     js = new snockets().getConcatenation(options.src, { minify: true, async: false })
     fs.writeFileSync options.output, js
 
+  # Spins up a server the builds out coffee files and serves static html.
   grunt.registerTask 'server', 'Start a static web server', () ->
     done = this.async()
     options = this.options

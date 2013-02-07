@@ -552,9 +552,8 @@
     init: function(canvas) {
       if (typeof canvas === 'string') {
         canvas = document.querySelector(canvas);
-      } else {
-        canvas = document.createElement('canvas');
       }
+      canvas = canvas != null ? canvas : document.createElement('canvas');
       gl.prototype.extend.call(canvas, gl.prototype);
       canvas.context = gl.context(canvas.getContext('2d'));
       canvas.objects = [];
@@ -1223,8 +1222,12 @@
 (function() {
 
   $(function() {
-    var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg, bg2, bg2Renderer, bgRenderer, bulletController, bulletRenderer, controllers, gamepad, glcanvas, hud, hudRenderer, renderers, ship, shipController, shipRenderer, shootDelay, speed, update;
-    glcanvas = gl('canvas');
+    var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg, bg2, bg2Renderer, bgRenderer, bulletController, bulletRenderer, canvasEl, controllers, gamepad, glcanvas, hud, hudRenderer, renderers, ship, shipController, shipRenderer, shootDelay, speed, update;
+    canvasEl = document.querySelector('canvas');
+    glcanvas = gl(canvasEl);
+    if (canvasEl === void 0) {
+      document.body.appendChild(glcanvas.canvas);
+    }
     glcanvas.size(500, 500);
     glcanvas.background('#000');
     glcanvas.fullscreen();
