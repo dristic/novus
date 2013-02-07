@@ -4,3 +4,5 @@ Gemfile.lock
 build/**/*
 build
 node_modules/
+dist/**/*
+dist-debug/**/*

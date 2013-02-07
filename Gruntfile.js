@@ -14,13 +14,22 @@ module.exports = function(grunt) {
     lint: {
       files: ['lib/**/*.js', 'test/**/*.js']
     },
-    qunit: {
-      files: ['test/**/*.html']
+    jasmine: {
+      novus: {
+        src: 'dist/built.js',
+        options: {
+          specs: 'test/spec/*Spec.js',
+          helpers: 'test/spec/*Helper.js'
+        }
+      }
     },
     concat: {
+      options: {
+        separator: ';'
+      },
       dist: {
-        src: ['<banner:meta.banner>', 'lib/**/*.js'],
-        dest: 'dist/novus.js'
+        src: ['lib/vendor/zepto.js', 'dist/novus.js'],
+        dest: 'dist/built.js'
       }
     },
     min: {
@@ -54,8 +63,17 @@ module.exports = function(grunt) {
     uglify: {},
     server: {
       base: '.'
+    },
+    coffee: {
+      options: {
+        src: 'src/novus.coffee',
+        output: 'dist/novus.js'
+      }
     }
   });
+
+  grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-contrib-concat');
 
   // Default task.
   grunt.registerTask('default', 'lint qunit concat min');
@@ -63,19 +81,13 @@ module.exports = function(grunt) {
   grunt.registerTask('build', 'coffee qunit');
 
   grunt.registerTask('coffee', 'Compiles coffeescript into js files.', function () {
-    var exec = require('child_process').exec,
-        done = this.async();
-    exec('toaster -c', function () {
-      done();
-    });
-  });
+    var snockets = require('snockets'),
+        fs = require('fs'),
+        options = this.options({
 
-  grunt.registerTask('deploy', 'Deploys the project to dotcloud.', function () {
-    var exec = require('child_process').exec,
-        done = this.async();
-    exec('dotcloud push novus', function () {
-      done();
-    });
+        });
+    var js = new snockets().getConcatenation(options.src, { minify: false, async: false });
+    fs.writeFileSync(options.output, js);
   });
 
   // Nodejs libs.
