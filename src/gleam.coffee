@@ -111,6 +111,9 @@ gl.prototype.extend.call gl.context.prototype,
   strokeWidth: (width) ->
     @lineWidth = width
 
+  font: (font) ->
+    @font = font
+
   # Wraps function in begin/close path and fill
   fillPath: (func) ->
     @beginPath()
@@ -166,3 +169,25 @@ gl.prototype.extend.call gl.square.prototype,
   draw: (context) ->
     context.color @color
     context.fillRect @x, @y, @width, @height
+
+# Gleam.text
+gl.implement
+  text: (options) ->
+    defaults =
+      color: '#CCC'
+      x: 10
+      y: 10
+      font: 'bold 20px sans-serif'
+      textBaseline: 'bottom'
+      text: 'Lorem Ipsum'
+    gl.prototype.extend.call defaults, options
+    gl.drawable.call this, defaults
+    this
+
+gl.prototype.extend.call gl.text.prototype
+  draw: (context) ->
+    context.color @color
+    context.font @font
+    context.textBaseline = @textBaseline
+
+    context.fillText @text, @x, @y
