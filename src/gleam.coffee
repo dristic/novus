@@ -184,7 +184,7 @@ gl.implement
     gl.drawable.call this, defaults
     this
 
-gl.prototype.extend.call gl.text.prototype
+gl.prototype.extend.call gl.text.prototype,
   draw: (context) ->
     context.color @color
     context.font @font

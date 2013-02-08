@@ -664,6 +664,9 @@
     strokeWidth: function(width) {
       return this.lineWidth = width;
     },
+    font: function(font) {
+      return this.font = font;
+    },
     fillPath: function(func) {
       this.beginPath();
       func(this);
@@ -720,6 +723,32 @@
     draw: function(context) {
       context.color(this.color);
       return context.fillRect(this.x, this.y, this.width, this.height);
+    }
+  });
+
+  gl.implement({
+    text: function(options) {
+      var defaults;
+      defaults = {
+        color: '#CCC',
+        x: 10,
+        y: 10,
+        font: 'bold 20px sans-serif',
+        textBaseline: 'bottom',
+        text: 'Lorem Ipsum'
+      };
+      gl.prototype.extend.call(defaults, options);
+      gl.drawable.call(this, defaults);
+      return this;
+    }
+  });
+
+  gl.prototype.extend.call(gl.text.prototype, {
+    draw: function(context) {
+      context.color(this.color);
+      context.font(this.font);
+      context.textBaseline = this.textBaseline;
+      return context.fillText(this.text, this.x, this.y);
     }
   });
 
