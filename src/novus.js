@@ -123,6 +123,61 @@
 
 (function() {
 
+  nv.Scene = (function() {
+
+    function Scene() {
+      this.controllers = [];
+      this.models = {};
+      this.renderers = [];
+    }
+
+    Scene.prototype.addController = function(controller) {
+      return this.controllers.push(controller);
+    };
+
+    Scene.prototype.removeController = function(controller) {
+      return this.controllers.splice(this.controllers.indexOf(controller), 1);
+    };
+
+    Scene.prototype.addModel = function(name, model) {
+      return this.models[name] = model;
+    };
+
+    Scene.prototype.getModel = function(name) {
+      return this.models[name];
+    };
+
+    Scene.prototype.removeModel = function(name) {
+      return delete this.models[name];
+    };
+
+    Scene.prototype.addRenderer = function(renderer) {
+      return this.renderers.push(renderer);
+    };
+
+    Scene.prototype.removeRenderer = function(renderer) {
+      return this.renderers.splice(this.renderers.indexOf(renderer), 1);
+    };
+
+    Scene.prototype.update = function(dt) {
+      var controller, _i, _len, _ref, _results;
+      _ref = this.controllers;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        controller = _ref[_i];
+        _results.push(controller.update(dt));
+      }
+      return _results;
+    };
+
+    return Scene;
+
+  })();
+
+}).call(this);
+
+(function() {
+
   nv.Point = (function() {
 
     function Point(x, y) {
@@ -281,7 +336,8 @@
 }).call(this);
 
 (function() {
-  var Camera, Gamepad;
+  var Camera, Gamepad,
+    __slice = [].slice;
 
   nv.extend = function(other) {
     var key, _results;
@@ -301,6 +357,11 @@
         _results.push(console.log(message));
       }
       return _results;
+    },
+    bind: function(context, func) {
+      return function() {
+        return func.call.apply(func, [context].concat(__slice.call(arguments)));
+      };
     },
     keydown: function(key, callback) {
       return $(document).on('keydown', function(event) {
@@ -1342,27 +1403,28 @@
 }).call(this);
 
 (function() {
-  var Game, Main;
+  var Game, Main,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Main = (function() {
+  Main = (function(_super) {
+
+    __extends(Main, _super);
 
     function Main(glcanvas, gamepad, callback) {
-      var bg2Renderer, bgRenderer, global, mainRenderer, _ref,
-        _this = this;
+      var _ref;
       this.glcanvas = glcanvas;
       this.gamepad = gamepad;
       this.callback = callback;
-      global = (_ref = window.global) != null ? _ref : new nv.models.Global;
-      this.bg = new nv.models.Background;
-      this.bg2 = new nv.models.Background;
-      mainRenderer = new nv.renderers.MainRenderer(this.glcanvas, global);
-      bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, this.bg, this.ship);
-      bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, this.bg2, this.ship);
-      this.renderers = [mainRenderer, bgRenderer, bg2Renderer];
+      Main.__super__.constructor.apply(this, arguments);
+      this.addModel('Global', (_ref = window.global) != null ? _ref : new nv.models.Global);
+      this.addModel('Bg', new nv.models.Background);
+      this.addModel('Bg2', new nv.models.Background);
+      this.addRenderer(new nv.renderers.MainRenderer(this.glcanvas, this.getModel('Global')));
+      this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg')));
+      this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg2')));
       this.glcanvas.camera = nv.camera();
-      this.glcanvas.startDrawUpdate(10, function(dt) {
-        return _this.update.call(_this, dt);
-      });
+      this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
     }
 
     Main.prototype.update = function(dt) {
@@ -1388,7 +1450,7 @@
 
     return Main;
 
-  })();
+  })(nv.Scene);
 
   Game = (function() {
 

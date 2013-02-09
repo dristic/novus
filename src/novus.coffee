@@ -7,23 +7,21 @@
 #= require controllers
 #= require renderers
 
-class Main
+class Main extends nv.Scene
   constructor: (@glcanvas, @gamepad, @callback) ->
-    global = window.global ? new nv.models.Global
+    super
 
-    @bg = new nv.models.Background
-    @bg2 = new nv.models.Background
+    @addModel 'Global', window.global ? new nv.models.Global
+    @addModel 'Bg', new nv.models.Background
+    @addModel 'Bg2', new nv.models.Background
 
-    mainRenderer = new nv.renderers.MainRenderer @glcanvas, global
-    bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, @bg, @ship)
-    bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, @bg2, @ship)
-
-    @renderers = [mainRenderer, bgRenderer, bg2Renderer]
+    @addRenderer new nv.renderers.MainRenderer @glcanvas, @getModel('Global')
+    @addRenderer new nv.renderers.BackgroundRenderer @glcanvas, @getModel('Bg')
+    @addRenderer new nv.renderers.BackgroundRenderer @glcanvas, @getModel('Bg2')
 
     @glcanvas.camera = nv.camera()
 
-    @glcanvas.startDrawUpdate 10, (dt) =>
-      @update.call this, dt
+    @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
 
   update: (dt) ->
     state = @gamepad.getState()
@@ -36,7 +34,7 @@ class Main
     @glcanvas.stopDrawUpdate()
     @callback() unless not @callback
 
-class Game
+class Game extends nv.Scene
   constructor: (glcanvas, @gamepad) ->
     @bg = new nv.models.Background
     @bg2 = new nv.models.Background

@@ -7,6 +7,10 @@ nv.extend
   log: () ->
     console.log message for message in arguments
 
+  bind: (context, func) ->
+    () ->
+      func.call context, arguments...
+
   keydown: (key, callback) ->
     $(document).on 'keydown', (event) ->
       if event.keyCode is key then callback()
