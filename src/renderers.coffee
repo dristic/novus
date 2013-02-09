@@ -2,7 +2,29 @@ class BackgroundRenderer extends nv.ObjectRenderer
   constructor: (@glcanvas, asset) ->
     super arguments...
 
+    @canvas = gl().size 700, 700
+
+    @asset.width = @canvas.width
+    @asset.height = @canvas.height
+
+    i = 0
+    until i > 100
+      i++
+      x = Math.random() * 700
+      y = Math.random() * 700
+      radius = (Math.random() * 2) + 1
+      @canvas.context.fillPath (context) ->
+        gradient = context.createRadialGradient x, y, 0, x, y, radius
+        gradient.addColorStop 0, "white"
+        gradient.addColorStop 0.4, "white"
+        gradient.addColorStop 0.4, "white"
+        gradient.addColorStop 1, "black"
+        context.color gradient
+        context.arc x, y, radius, 0, Math.PI * 2, true
+
   draw: (context, canvas) ->
+    context.globalCompositeOperation = "lighter"
+
     camX = -@glcanvas.camera.x
     camY = -@glcanvas.camera.y
 
@@ -17,11 +39,13 @@ class BackgroundRenderer extends nv.ObjectRenderer
 
     while curX < camX + @glcanvas.width
       while curY < camY + @glcanvas.height
-        context.drawImage @asset.canvas, curX, curY
+        context.drawImage @canvas, curX, curY
         curY += @asset.height
 
       curY = startY
       curX += @asset.width
+
+    context.globalCompositeOperation = "source-over"
 
 class BulletRenderer extends nv.ObjectListRenderer
   constructor: (glcanvas, bullets) ->

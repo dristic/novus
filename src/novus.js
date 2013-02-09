@@ -961,23 +961,8 @@
   Background = (function() {
 
     function Background() {
-      var i, radius, x, y;
-      this.canvas = gl().size(700, 700);
       this.x = 0;
       this.y = 0;
-      this.width = this.canvas.width;
-      this.height = this.canvas.height;
-      i = 0;
-      while (!(i > 100)) {
-        i++;
-        x = Math.random() * 700;
-        y = Math.random() * 700;
-        radius = (Math.random() * 2) + 0.5;
-        this.canvas.context.fillPath(function(context) {
-          context.color('#FFFFFF');
-          return context.arc(x, y, radius, 0, Math.PI * 2, true);
-        });
-      }
     }
 
     return Background;
@@ -1269,12 +1254,34 @@
     __extends(BackgroundRenderer, _super);
 
     function BackgroundRenderer(glcanvas, asset) {
+      var i, radius, x, y;
       this.glcanvas = glcanvas;
       BackgroundRenderer.__super__.constructor.apply(this, arguments);
+      this.canvas = gl().size(700, 700);
+      this.asset.width = this.canvas.width;
+      this.asset.height = this.canvas.height;
+      i = 0;
+      while (!(i > 100)) {
+        i++;
+        x = Math.random() * 700;
+        y = Math.random() * 700;
+        radius = (Math.random() * 2) + 1;
+        this.canvas.context.fillPath(function(context) {
+          var gradient;
+          gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+          gradient.addColorStop(0, "white");
+          gradient.addColorStop(0.4, "white");
+          gradient.addColorStop(0.4, "white");
+          gradient.addColorStop(1, "black");
+          context.color(gradient);
+          return context.arc(x, y, radius, 0, Math.PI * 2, true);
+        });
+      }
     }
 
     BackgroundRenderer.prototype.draw = function(context, canvas) {
-      var camX, camY, curX, curY, startX, startY, _results;
+      var camX, camY, curX, curY, startX, startY;
+      context.globalCompositeOperation = "lighter";
       camX = -this.glcanvas.camera.x;
       camY = -this.glcanvas.camera.y;
       startX = camX + ((this.asset.x - camX) % this.asset.width);
@@ -1287,16 +1294,15 @@
       }
       curX = startX;
       curY = startY;
-      _results = [];
       while (curX < camX + this.glcanvas.width) {
         while (curY < camY + this.glcanvas.height) {
-          context.drawImage(this.asset.canvas, curX, curY);
+          context.drawImage(this.canvas, curX, curY);
           curY += this.asset.height;
         }
         curY = startY;
-        _results.push(curX += this.asset.width);
+        curX += this.asset.width;
       }
-      return _results;
+      return context.globalCompositeOperation = "source-over";
     };
 
     return BackgroundRenderer;

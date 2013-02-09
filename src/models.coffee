@@ -1,20 +1,7 @@
 class Background
   constructor: () ->
-    @canvas = gl().size 700, 700
     @x = 0
     @y = 0
-    @width = @canvas.width
-    @height = @canvas.height
-
-    i = 0
-    until i > 100
-      i++
-      x = Math.random() * 700
-      y = Math.random() * 700
-      radius = (Math.random() * 2) + 0.5
-      @canvas.context.fillPath (context) ->
-        context.color '#FFFFFF'
-        context.arc x, y, radius, 0, Math.PI * 2, true
 
 class Bullet
   constructor: (pt, @angle) ->
