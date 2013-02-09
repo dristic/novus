@@ -11,9 +11,14 @@ class Main
   constructor: (@glcanvas, @gamepad, @callback) ->
     global = window.global ? new nv.models.Global
 
-    mainRenderer = new nv.renderers.MainRenderer @glcanvas, global
+    @bg = new nv.models.Background
+    @bg2 = new nv.models.Background
 
-    @renderers = [mainRenderer]
+    mainRenderer = new nv.renderers.MainRenderer @glcanvas, global
+    bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, @bg, @ship)
+    bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, @bg2, @ship)
+
+    @renderers = [mainRenderer, bgRenderer, bg2Renderer]
 
     @glcanvas.camera = nv.camera()
 

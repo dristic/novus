@@ -1347,17 +1347,20 @@
   Main = (function() {
 
     function Main(glcanvas, gamepad, callback) {
-      var global, mainRenderer, _ref,
+      var bg2Renderer, bgRenderer, global, mainRenderer, _ref,
         _this = this;
       this.glcanvas = glcanvas;
       this.gamepad = gamepad;
       this.callback = callback;
       global = (_ref = window.global) != null ? _ref : new nv.models.Global;
+      this.bg = new nv.models.Background;
+      this.bg2 = new nv.models.Background;
       mainRenderer = new nv.renderers.MainRenderer(this.glcanvas, global);
-      this.renderers = [mainRenderer];
+      bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, this.bg, this.ship);
+      bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, this.bg2, this.ship);
+      this.renderers = [mainRenderer, bgRenderer, bg2Renderer];
       this.glcanvas.camera = nv.camera();
       this.glcanvas.startDrawUpdate(10, function(dt) {
-        console.log("Working");
         return _this.update.call(_this, dt);
       });
     }

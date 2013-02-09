@@ -1,31 +1,32 @@
 Novus
 ===========
-Novus is a multiplayer asteroids style game written in javascript and HTML 5. It is targeted to be seamless across phones, tablets, and desktops.
+Novus is a game engine written in javascript and HTML 5 on top of canvas. The main goal of Novus is to provide an easy way to create HTML 5 games that work on any platform.
 
 # Getting Started
 
-## Dependencies
+## Quick Start
 
 This project is built on top of Node.js technologies. Before you start you should have the latest `node` and `npm` installed on your system.
 
-This is built on the grunt npm package so install by running `npm install -g grunt`
+The engine is built on top of a great CLI tool called grunt. We have updated to version 0.4 so please follow the new [getting started guide](https://github.com/gruntjs/grunt/wiki/Getting-started)
 
 After that install dependencies using `npm install`
 
-Run the server and look in the public/index.html for the game.
+Run the server using `grunt server` and navigate your browser to http://localhost:8080/public
 
 ## Project Layout
 
- * dist : Current build of the js library
- * lib : Current .js files built from src
+ * dist : Current build of the js library (can be created using `grunt build`)
+ * lib : Holds the vendor libraries used.
  * public : Public HTML and CSS files
- * src : Coffeescript source that builds to lib/
+ * src : Coffeescript source of the engine and sample game.
+ * test: Jasmine test framework specs are here.
 
 ## Grunt Tasks
 
-Grunt is used to build and serve up the project files. To build the project navigate to the root folder and use `$ grunt build`. This will compile coffeescript, run qunit tests, concat lib/ files, and finally min lib/ files into dist/.
+Grunt is used to build and serve up the project files. To build the project navigate to the root folder and use `$ grunt build`. This will compile coffeescript, run jasmine tests, concat files, and finally create a build.
 
-To serve up files run `$ grunt server`. Then open up `http://localhost:8000/index.html` to view the project.
+To serve up files run `$ grunt server`. Then open up `http://localhost:8080/public` to view the project.
 
 ## FAQ
 
