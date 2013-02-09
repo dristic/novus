@@ -8,8 +8,9 @@ nv.extend
     console.log message for message in arguments
 
   bind: (context, func) ->
-    () ->
+    f = () ->
       func.call context, arguments...
+    f
 
   keydown: (key, callback) ->
     $(document).on 'keydown', (event) ->

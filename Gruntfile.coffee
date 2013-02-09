@@ -20,7 +20,7 @@ module.exports = (grunt) ->
 
     jasmine:
       dist:
-        src: 'dist/build.js'
+        src: 'dist/novus-<%= meta.version %>-min.js'
         options:
           specs: 'test/spec/*Spec.js'
           helpers: 'test/spec/*Helper.js'
