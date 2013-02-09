@@ -1460,9 +1460,6 @@
       this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg2')));
       this.glcanvas.camera = nv.camera();
       this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
-      this.glcanvas.addDrawable(new gl.sprite({
-        src: 'http://localhost:8000/public/images/enemyRed.png'
-      }));
     }
 
     Main.prototype.update = function(dt) {

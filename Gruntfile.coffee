@@ -30,7 +30,7 @@ module.exports = (grunt) ->
         separator: ';'
       dist:
         src: ['lib/vendor/zepto.js', 'dist/novus.js']
-        dest: 'dist/build.js'
+        dest: 'dist/novus-<%= meta.version %>-min.js'
 
     min:
       dist:
@@ -84,10 +84,10 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-concat'
 
   # Default task lints, tests, and builds everything.
-  grunt.registerTask 'default', 'lint jasmine coffee concat min'
+  grunt.registerTask 'default', ['lint', 'jasmine', 'coffee', 'concat', 'min']
 
   # Build task builds and tests.
-  grunt.registerTask 'build', 'coffee concat jasmine'
+  grunt.registerTask 'build', ['coffee', 'concat', 'jasmine']
 
   # Coffee task builds the main novus engine and game.
   grunt.registerTask 'coffee', 'Compiles coffeescript into js files', () ->
