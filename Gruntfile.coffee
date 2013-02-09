@@ -10,17 +10,13 @@ module.exports = (grunt) ->
   grunt.initConfig
     meta:
       version: '0.1.0'
-      banner: '/*! Novus - v<%= meta.version %> - ' +
-        '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-        '* http://danristic.com/\n' +
-        '* Copyright (c) <%= grunt.template.today("yyyy") %> ' +
-        'Dan Ristic; Licensed MIT */'
+
     lint:
-      files: ['lib/**/*.js', 'test/**/*.js']
+      files: ['src/**/*.js', 'test/**/*.js']
 
     jasmine:
       dist:
-        src: 'dist/novus-<%= meta.version %>-min.js'
+        src: 'dist/novus-<%= meta.version %>.min.js'
         options:
           specs: 'test/spec/*Spec.js'
           helpers: 'test/spec/*Helper.js'
@@ -28,14 +24,14 @@ module.exports = (grunt) ->
     concat:
       options:
         separator: ';'
+        banner: '/*! Novus - v<%= meta.version %> - ' +
+          '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
+          '* http://danristic.com/\n' +
+          '* Copyright (c) <%= grunt.template.today("yyyy") %> ' +
+          'Dan Ristic; Licensed MIT */'
       dist:
-        src: ['lib/vendor/zepto.js', 'dist/novus.js']
-        dest: 'dist/novus-<%= meta.version %>-min.js'
-
-    min:
-      dist:
-        src: ['<banner:meta.banner>', '<config:concat.dist.dest>']
-        dest: 'dist/novus.min.js'
+        src: ['lib/vendor/zepto.min.js', 'dist/novus.js']
+        dest: 'dist/novus-<%= meta.version %>.min.js'
 
     watch:
       files: '<config:lint.files>'
@@ -56,8 +52,6 @@ module.exports = (grunt) ->
         browser: true
       globals:
         console: true
-
-    uglify: {}
 
     server:
       options:
@@ -84,7 +78,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-concat'
 
   # Default task lints, tests, and builds everything.
-  grunt.registerTask 'default', ['lint', 'jasmine', 'coffee', 'concat', 'min']
+  grunt.registerTask 'default', ['build']
 
   # Build task builds and tests.
   grunt.registerTask 'build', ['coffee', 'concat', 'jasmine']

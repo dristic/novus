@@ -359,9 +359,11 @@
       return _results;
     },
     bind: function(context, func) {
-      return function() {
+      var f;
+      f = function() {
         return func.call.apply(func, [context].concat(__slice.call(arguments)));
       };
+      return f;
     },
     keydown: function(key, callback) {
       return $(document).on('keydown', function(event) {
