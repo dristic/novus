@@ -853,6 +853,41 @@
     }
   });
 
+  gl.implement({
+    sprite: function(options) {
+      var defaults,
+        _this = this;
+      defaults = {
+        src: '',
+        x: 10,
+        y: 10,
+        width: null,
+        height: null
+      };
+      gl.prototype.extend.call(defaults, options);
+      gl.drawable.call(this, defaults);
+      this.loaded = false;
+      this.image = new Image;
+      this.image.onload = function() {
+        if (!_this.width) {
+          _this.width = _this.image.width;
+        }
+        if (!_this.height) {
+          _this.height = _this.image.height;
+        }
+        return _this.loaded = true;
+      };
+      this.image.src = this.src;
+      return this;
+    }
+  });
+
+  gl.prototype.extend.call(gl.sprite.prototype, {
+    draw: function(context) {
+      return context.drawImage(this.image, this.x, this.y, this.width, this.height);
+    }
+  });
+
 }).call(this);
 
 (function() {
@@ -1425,6 +1460,9 @@
       this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg2')));
       this.glcanvas.camera = nv.camera();
       this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
+      this.glcanvas.addDrawable(new gl.sprite({
+        src: 'http://localhost:8000/public/images/enemyRed.png'
+      }));
     }
 
     Main.prototype.update = function(dt) {
@@ -1452,7 +1490,9 @@
 
   })(nv.Scene);
 
-  Game = (function() {
+  Game = (function(_super) {
+
+    __extends(Game, _super);
 
     function Game(glcanvas, gamepad) {
       var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg2Renderer, bgRenderer, bulletController, bulletRenderer, hud, hudRenderer, shipController, shipRenderer,
@@ -1500,7 +1540,7 @@
 
     return Game;
 
-  })();
+  })(nv.Scene);
 
   $(function() {
     var canvasEl, gamepad, glcanvas;

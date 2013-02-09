@@ -12,7 +12,7 @@ The engine is built on top of a great CLI tool called grunt. We have updated to 
 
 After that install dependencies using `$ npm install`
 
-Run the server using `$ grunt server` and navigate your browser to http://localhost:8080/public
+Run the server using `$ grunt server` and navigate your browser to http://localhost:8000/public
 
 ## Project Layout
 
@@ -26,7 +26,7 @@ Run the server using `$ grunt server` and navigate your browser to http://localh
 
 Grunt is used to build and serve up the project files. To build the project navigate to the root folder and use `$ grunt build`. This will compile coffeescript, run jasmine tests, concat files, and finally create a build.
 
-To serve up files run `$ grunt server`. Then open up `http://localhost:8080/public` to view the project.
+To serve up files run `$ grunt server`. Then open up `http://localhost:8000/public` to view the project.
 
 ## FAQ
 

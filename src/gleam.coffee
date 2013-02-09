@@ -194,3 +194,29 @@ gl.prototype.extend.call gl.text.prototype,
     context.textBaseline = @textBaseline
 
     context.fillText @text, @x, @y
+
+# Gleam.sprite
+gl.implement
+  sprite: (options) ->
+    defaults =
+      src: ''
+      x: 10
+      y: 10
+      width: null
+      height: null
+    gl.prototype.extend.call defaults, options
+    gl.drawable.call this, defaults
+
+    @loaded = false
+    @image = new Image
+    @image.onload = () =>
+      @width = @image.width unless @width
+      @height = @image.height unless @height
+      @loaded = true
+    @image.src = @src
+
+    this
+
+gl.prototype.extend.call gl.sprite.prototype,
+  draw: (context) ->
+    context.drawImage @image, @x, @y, @width, @height
