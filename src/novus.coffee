@@ -18,7 +18,6 @@ class Main
     @glcanvas.camera = nv.camera()
 
     @glcanvas.startDrawUpdate 10, (dt) =>
-      console.log "Working"
       @update.call this, dt
 
   update: (dt) ->
