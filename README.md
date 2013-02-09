@@ -10,9 +10,9 @@ This project is built on top of Node.js technologies. Before you start you shoul
 
 The engine is built on top of a great CLI tool called grunt. We have updated to version 0.4 so please follow the new [getting started guide](https://github.com/gruntjs/grunt/wiki/Getting-started)
 
-After that install dependencies using `npm install`
+After that install dependencies using `$ npm install`
 
-Run the server using `grunt server` and navigate your browser to http://localhost:8080/public
+Run the server using `$ grunt server` and navigate your browser to http://localhost:8080/public
 
 ## Project Layout
 
