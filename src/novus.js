@@ -378,6 +378,18 @@
           return callback();
         }
       });
+    },
+    mousedown: function(callback) {
+      $(document).on('mousedown', callback);
+      return $(document).on('touchstart', callback);
+    },
+    mouseup: function(callback) {
+      $(document).on('mouseup', callback);
+      return $(document).on('touchend', callback);
+    },
+    mousemove: function(callback) {
+      $(document).on('mousemove', callback);
+      return $(document).on('touchmove', callback);
     }
   });
 
@@ -388,6 +400,29 @@
       this.state = {};
       this.listeners = {};
     }
+
+    Gamepad.prototype.trackMouse = function() {
+      var _this = this;
+      this.state.mouse = {
+        x: -1,
+        y: -1,
+        down: false
+      };
+      nv.mousedown(function(event) {
+        _this.state.mouse.x = event.clientX;
+        _this.state.mouse.y = event.clientY;
+        return _this.state.mouse.down = true;
+      });
+      nv.mouseup(function(event) {
+        _this.state.mouse.x = event.clientX;
+        _this.state.mouse.y = event.clientY;
+        return _this.state.mouse.down = false;
+      });
+      return nv.mousemove(function(event) {
+        _this.state.mouse.x = event.clientX;
+        return _this.state.mouse.y = event.clientY;
+      });
+    };
 
     Gamepad.prototype.aliasKey = function(button, key) {
       var _this = this;
@@ -1039,7 +1074,9 @@
 
   })();
 
-  Hud = (function() {
+  Hud = (function(_super) {
+
+    __extends(Hud, _super);
 
     function Hud(glcanvas) {
       this.glcanvas = glcanvas;
@@ -1054,7 +1091,7 @@
 
     return Hud;
 
-  })();
+  })(nv.Model);
 
   Global = (function(_super) {
 
@@ -1460,6 +1497,8 @@
       this.addRenderer(new nv.renderers.MainRenderer(this.glcanvas, this.getModel('Global')));
       this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg')));
       this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg2')));
+      this.square = new gl.square;
+      this.glcanvas.addDrawable(this.square);
       this.glcanvas.camera = nv.camera();
       this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
     }
@@ -1467,6 +1506,8 @@
     Main.prototype.update = function(dt) {
       var state;
       state = this.gamepad.getState();
+      this.square.x = state.mouse.x;
+      this.square.y = state.mouse.y;
       if (state.shoot) {
         return this.destroy();
       }
@@ -1557,6 +1598,7 @@
     gamepad.aliasKey('up', nv.Key.W);
     gamepad.aliasKey('down', nv.Key.S);
     gamepad.aliasKey('shoot', nv.Key.Spacebar);
+    gamepad.trackMouse();
     return new Main(glcanvas, gamepad, function() {
       return new Game(glcanvas, gamepad);
     });

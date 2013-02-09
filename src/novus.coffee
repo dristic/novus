@@ -19,12 +19,18 @@ class Main extends nv.Scene
     @addRenderer new nv.renderers.BackgroundRenderer @glcanvas, @getModel('Bg')
     @addRenderer new nv.renderers.BackgroundRenderer @glcanvas, @getModel('Bg2')
 
+    @square = new gl.square
+    @glcanvas.addDrawable @square
+
     @glcanvas.camera = nv.camera()
 
     @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
 
   update: (dt) ->
     state = @gamepad.getState()
+
+    @square.x = state.mouse.x
+    @square.y = state.mouse.y
 
     if state.shoot
       @destroy()
@@ -94,6 +100,8 @@ $(() ->
   gamepad.aliasKey 'up', nv.Key.W
   gamepad.aliasKey 'down', nv.Key.S
   gamepad.aliasKey 'shoot', nv.Key.Spacebar
+
+  gamepad.trackMouse()
 
   new Main glcanvas, gamepad, () ->
     new Game glcanvas, gamepad

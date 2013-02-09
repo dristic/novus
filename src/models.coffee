@@ -80,7 +80,7 @@ class Asteroid
     @speed = Math.random() + 0.3
     @direction = (Math.random() * Math.PI) - (Math.PI / 2)
 
-class Hud
+class Hud extends nv.Model
   constructor: (@glcanvas) ->
     @x = 0
     @y = 0
