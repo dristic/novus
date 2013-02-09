@@ -123,6 +123,28 @@ class HudRenderer extends nv.ObjectRenderer
 
     this
 
+class MainRenderer extends nv.ObjectRenderer
+  constructor: (@glcanvas, @model) ->
+    super arguments...
+
+    @title = new gl.text
+      color: "#F00"
+      x: 200
+      y: 200
+      font: "bold 20px sans-serif"
+      text: @model.title
+
+    @actionText = new gl.text
+      color: "#F00"
+      x: 200
+      y: 300
+      font: "bold 20px sans-serif"
+      text: @model.actionText
+
+  draw: (context) ->
+    @title.draw context
+    @actionText.draw context
+
 $(() ->
   nv.renderers =
     ShipRenderer: ShipRenderer
@@ -130,4 +152,5 @@ $(() ->
     BackgroundRenderer: BackgroundRenderer
     AsteroidRenderer: AsteroidRenderer
     HudRenderer: HudRenderer
+    MainRenderer: MainRenderer
 )

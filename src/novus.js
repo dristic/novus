@@ -37,14 +37,48 @@
 
 (function() {
 
+  nv.Model = (function() {
+
+    function Model(name, options, data) {}
+
+    Model.prototype.setMany = function(object) {
+      var key, _results;
+      _results = [];
+      for (key in object) {
+        _results.push(this[key] = object[key]);
+      }
+      return _results;
+    };
+
+    Model.prototype.persist = function() {
+      return window.localStorage[this.name] = this;
+    };
+
+    Model.prototype.load = function() {
+      return this.setMany(window.localStorage[this.name]);
+    };
+
+    return Model;
+
+  })();
+
+}).call(this);
+
+(function() {
+
   nv.ObjectRenderer = (function() {
 
     function ObjectRenderer(glcanvas, asset) {
+      this.glcanvas = glcanvas;
       this.asset = asset;
-      glcanvas.addDrawable(this);
+      this.glcanvas.addDrawable(this);
     }
 
     ObjectRenderer.prototype.draw = function(dt) {};
+
+    ObjectRenderer.prototype.destroy = function() {
+      return this.glcanvas.removeDrawable(this);
+    };
 
     return ObjectRenderer;
 
@@ -591,7 +625,7 @@
       return this.objects.push(object);
     },
     removeDrawable: function(object) {
-      return this.objects.slice(this.objects.indexOf(object), 1);
+      return this.objects.splice(this.objects.indexOf(object), 1);
     },
     drawObjects: function() {
       var object, _i, _len, _ref11, _results;
@@ -609,11 +643,11 @@
       this.updating = true;
       lastTime = Date.now();
       update = function() {
-        var coords, delta, now;
+        var delta, now, stop;
         now = Date.now();
         delta = now - lastTime;
         delta /= 1000;
-        coords = func(delta);
+        stop = func(delta);
         _this.context.save();
         _this.context.clear();
         if (_this.camera) {
@@ -622,14 +656,20 @@
         _this.drawObjects();
         _this.context.restore();
         lastTime = now;
-        return _this.requestFrameKey = requestFrame(update);
+        if (_this.cancel) {
+          return _this.cancel = false;
+        } else {
+          if (!!_this.updating) {
+            return _this.requestFrameKey = requestFrame(update);
+          }
+        }
       };
       return this.requestFrameKey = requestFrame(update);
     },
     stopDrawUpdate: function() {
       this.updating = false;
-      cancelFrame(this.requestFrameKey);
-      return this.requestFrameKey = null;
+      this.cancel = true;
+      return cancelFrame(this.requestFrameKey);
     },
     extend: function(object) {
       var key;
@@ -664,7 +704,7 @@
     strokeWidth: function(width) {
       return this.lineWidth = width;
     },
-    font: function(font) {
+    setFont: function(font) {
       return this.font = font;
     },
     fillPath: function(func) {
@@ -746,7 +786,7 @@
   gl.prototype.extend.call(gl.text.prototype, {
     draw: function(context) {
       context.color(this.color);
-      context.font(this.font);
+      context.setFont(this.font);
       context.textBaseline = this.textBaseline;
       return context.fillText(this.text, this.x, this.y);
     }
@@ -781,7 +821,9 @@
 }).call(this);
 
 (function() {
-  var Asteroid, Background, Bullet, Hud, Ship;
+  var Asteroid, Background, Bullet, Global, Hud, Ship,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Background = (function() {
 
@@ -916,13 +958,30 @@
 
   })();
 
+  Global = (function(_super) {
+
+    __extends(Global, _super);
+
+    function Global() {
+      this.title = "Asteroids";
+      this.actionText = "Press <Space> to Start.";
+      this.options = {
+        difficulty: "easy"
+      };
+    }
+
+    return Global;
+
+  })(nv.Model);
+
   $(function() {
     return nv.models = {
       Background: Background,
       Ship: Ship,
       Bullet: Bullet,
       Asteroid: Asteroid,
-      Hud: Hud
+      Hud: Hud,
+      Global: Global
     };
   });
 
@@ -1066,7 +1125,7 @@
 }).call(this);
 
 (function() {
-  var AsteroidRenderer, BackgroundRenderer, BulletRenderer, HudRenderer, ShipRenderer,
+  var AsteroidRenderer, BackgroundRenderer, BulletRenderer, HudRenderer, MainRenderer, ShipRenderer,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1236,22 +1295,150 @@
 
   })(nv.ObjectRenderer);
 
+  MainRenderer = (function(_super) {
+
+    __extends(MainRenderer, _super);
+
+    function MainRenderer(glcanvas, model) {
+      this.glcanvas = glcanvas;
+      this.model = model;
+      MainRenderer.__super__.constructor.apply(this, arguments);
+      this.title = new gl.text({
+        color: "#F00",
+        x: 200,
+        y: 200,
+        font: "bold 20px sans-serif",
+        text: this.model.title
+      });
+      this.actionText = new gl.text({
+        color: "#F00",
+        x: 200,
+        y: 300,
+        font: "bold 20px sans-serif",
+        text: this.model.actionText
+      });
+    }
+
+    MainRenderer.prototype.draw = function(context) {
+      this.title.draw(context);
+      return this.actionText.draw(context);
+    };
+
+    return MainRenderer;
+
+  })(nv.ObjectRenderer);
+
   $(function() {
     return nv.renderers = {
       ShipRenderer: ShipRenderer,
       BulletRenderer: BulletRenderer,
       BackgroundRenderer: BackgroundRenderer,
       AsteroidRenderer: AsteroidRenderer,
-      HudRenderer: HudRenderer
+      HudRenderer: HudRenderer,
+      MainRenderer: MainRenderer
     };
   });
 
 }).call(this);
 
 (function() {
+  var Game, Main;
+
+  Main = (function() {
+
+    function Main(glcanvas, gamepad, callback) {
+      var global, mainRenderer, _ref,
+        _this = this;
+      this.glcanvas = glcanvas;
+      this.gamepad = gamepad;
+      this.callback = callback;
+      global = (_ref = window.global) != null ? _ref : new nv.models.Global;
+      mainRenderer = new nv.renderers.MainRenderer(this.glcanvas, global);
+      this.renderers = [mainRenderer];
+      this.glcanvas.camera = nv.camera();
+      this.glcanvas.startDrawUpdate(10, function(dt) {
+        console.log("Working");
+        return _this.update.call(_this, dt);
+      });
+    }
+
+    Main.prototype.update = function(dt) {
+      var state;
+      state = this.gamepad.getState();
+      if (state.shoot) {
+        return this.destroy();
+      }
+    };
+
+    Main.prototype.destroy = function() {
+      var renderer, _i, _len, _ref;
+      _ref = this.renderers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        renderer = _ref[_i];
+        renderer.destroy();
+      }
+      this.glcanvas.stopDrawUpdate();
+      if (!!this.callback) {
+        return this.callback();
+      }
+    };
+
+    return Main;
+
+  })();
+
+  Game = (function() {
+
+    function Game(glcanvas, gamepad) {
+      var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg2Renderer, bgRenderer, bulletController, bulletRenderer, hud, hudRenderer, shipController, shipRenderer,
+        _this = this;
+      this.gamepad = gamepad;
+      this.bg = new nv.models.Background;
+      this.bg2 = new nv.models.Background;
+      this.ship = new nv.models.Ship;
+      asteroid = new nv.models.Asteroid(500, 500);
+      asteroid2 = new nv.models.Asteroid(500, 500);
+      asteroid3 = new nv.models.Asteroid(500, 500);
+      hud = new nv.models.Hud(glcanvas);
+      asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3], glcanvas);
+      shipController = new nv.controllers.ShipController(this.ship, glcanvas);
+      bulletController = new nv.controllers.BulletController(this.ship, glcanvas);
+      this.controllers = [bulletController, asteroidController, shipController];
+      bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, this.bg, this.ship);
+      bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, this.bg2, this.ship);
+      shipRenderer = new nv.renderers.ShipRenderer(glcanvas, this.ship);
+      asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3]);
+      hudRenderer = new nv.renderers.HudRenderer(glcanvas, hud);
+      bulletRenderer = new nv.renderers.BulletRenderer(glcanvas, []);
+      this.renderers = [bgRenderer, bg2Renderer, shipRenderer, asteroidRenderer, hudRenderer, bulletRenderer];
+      glcanvas.camera = nv.camera();
+      glcanvas.camera.follow(this.ship, 250, 250);
+      glcanvas.camera.zoom(0.5);
+      glcanvas.camera.zoom(1, 2000);
+      glcanvas.startDrawUpdate(60, function(dt) {
+        return _this.update.call(_this, dt);
+      });
+    }
+
+    Game.prototype.update = function(dt) {
+      var controller, _i, _len, _ref;
+      _ref = this.controllers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        controller = _ref[_i];
+        controller.update(dt, this.gamepad);
+      }
+      this.bg.x = -this.ship.x * 0.05;
+      this.bg.y = -this.ship.y * 0.05;
+      this.bg2.x = -this.ship.x * 0.01;
+      return this.bg2.y = -this.ship.y * 0.01;
+    };
+
+    return Game;
+
+  })();
 
   $(function() {
-    var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg, bg2, bg2Renderer, bgRenderer, bulletController, bulletRenderer, canvasEl, controllers, gamepad, glcanvas, hud, hudRenderer, renderers, ship, shipController, shipRenderer, shootDelay, speed, update;
+    var canvasEl, gamepad, glcanvas;
     canvasEl = document.querySelector('canvas');
     glcanvas = gl(canvasEl);
     if (canvasEl === void 0) {
@@ -1260,48 +1447,15 @@
     glcanvas.size(500, 500);
     glcanvas.background('#000');
     glcanvas.fullscreen();
-    bg = new nv.models.Background;
-    bg2 = new nv.models.Background;
-    ship = new nv.models.Ship;
-    asteroid = new nv.models.Asteroid(500, 500);
-    asteroid2 = new nv.models.Asteroid(500, 500);
-    asteroid3 = new nv.models.Asteroid(500, 500);
-    hud = new nv.models.Hud(glcanvas);
-    asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3], glcanvas);
-    shipController = new nv.controllers.ShipController(ship, glcanvas);
-    bulletController = new nv.controllers.BulletController(ship, glcanvas);
-    controllers = [bulletController, asteroidController, shipController];
-    bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg, ship);
-    bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2, ship);
-    shipRenderer = new nv.renderers.ShipRenderer(glcanvas, ship);
-    asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3]);
-    hudRenderer = new nv.renderers.HudRenderer(glcanvas, hud);
-    bulletRenderer = new nv.renderers.BulletRenderer(glcanvas, []);
-    renderers = [bgRenderer, bg2Renderer, shipRenderer, asteroidRenderer, hudRenderer, bulletRenderer];
     gamepad = nv.gamepad();
     gamepad.aliasKey('left', nv.Key.A);
     gamepad.aliasKey('right', nv.Key.D);
     gamepad.aliasKey('up', nv.Key.W);
     gamepad.aliasKey('down', nv.Key.S);
     gamepad.aliasKey('shoot', nv.Key.Spacebar);
-    speed = 5;
-    shootDelay = 10;
-    update = function(dt) {
-      var controller, _i, _len;
-      for (_i = 0, _len = controllers.length; _i < _len; _i++) {
-        controller = controllers[_i];
-        controller.update(dt, gamepad);
-      }
-      bg.x = -ship.x * 0.05;
-      bg.y = -ship.y * 0.05;
-      bg2.x = -ship.x * 0.01;
-      return bg2.y = -ship.y * 0.01;
-    };
-    glcanvas.camera = nv.camera();
-    glcanvas.camera.follow(ship, 250, 250);
-    glcanvas.camera.zoom(0.5);
-    glcanvas.camera.zoom(1, 2000);
-    return glcanvas.startDrawUpdate(60, update);
+    return new Main(glcanvas, gamepad, function() {
+      return new Game(glcanvas, gamepad);
+    });
   });
 
 }).call(this);

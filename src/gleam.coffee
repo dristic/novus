@@ -45,7 +45,7 @@ gl.prototype =
     @objects.push object
 
   removeDrawable: (object) ->
-    @objects.slice @objects.indexOf(object), 1
+    @objects.splice @objects.indexOf(object), 1
 
   drawObjects: () ->
     @draw object for object in @objects
@@ -59,7 +59,7 @@ gl.prototype =
       delta = now - lastTime
       delta /= 1000
 
-      coords = func delta
+      stop = func delta
 
       @context.save()
       @context.clear()
@@ -72,14 +72,17 @@ gl.prototype =
 
       lastTime = now
 
-      @requestFrameKey = requestFrame update
+      if @cancel
+        @cancel = false
+      else
+        @requestFrameKey = requestFrame update unless not @updating
 
     @requestFrameKey = requestFrame update
 
   stopDrawUpdate: () ->
     @updating = false
+    @cancel = true
     cancelFrame @requestFrameKey
-    @requestFrameKey = null
 
   extend: (object) ->
     this[key] = object[key] for key of object
@@ -111,7 +114,7 @@ gl.prototype.extend.call gl.context.prototype,
   strokeWidth: (width) ->
     @lineWidth = width
 
-  font: (font) ->
+  setFont: (font) ->
     @font = font
 
   # Wraps function in begin/close path and fill
@@ -187,7 +190,7 @@ gl.implement
 gl.prototype.extend.call gl.text.prototype,
   draw: (context) ->
     context.color @color
-    context.font @font
+    context.setFont @font
     context.textBaseline = @textBaseline
 
     context.fillText @text, @x, @y

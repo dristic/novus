@@ -90,6 +90,13 @@ class Hud
     @lives = 3
     @score = 100000
 
+class Global extends nv.Model
+  constructor: () ->
+    @title = "Asteroids"
+    @actionText = "Press <Space> to Start."
+    @options =
+      difficulty: "easy"
+
 $(() ->
   nv.models =
     Background: Background
@@ -97,4 +104,5 @@ $(() ->
     Bullet: Bullet
     Asteroid: Asteroid
     Hud: Hud
+    Global: Global
 )

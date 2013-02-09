@@ -1,9 +1,11 @@
 class nv.ObjectRenderer
-  constructor: (glcanvas, @asset) ->
-    glcanvas.addDrawable this
+  constructor: (@glcanvas, @asset) ->
+    @glcanvas.addDrawable this
 
   draw: (dt) ->
 
+  destroy: () ->
+    @glcanvas.removeDrawable this
 
 class nv.ObjectListRenderer
   constructor: (glcanvas, @assets) ->
