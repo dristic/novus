@@ -74,19 +74,13 @@ class ShipRenderer extends nv.ObjectRenderer
     context.strokeColor @color
     context.strokeWidth @strokeWidth
 
-    context.rotateAround @asset.x + (@asset.width / 2), @asset.y + (@asset.height / 2), @asset.rotation, () =>
-      context.line @asset.x, @asset.y + @asset.height,
-        @asset.x + (@asset.width / 2), @asset.y,
-        @asset.x + @asset.width, @asset.y + @asset.height,
-        @asset.x, @asset.y + @asset.height
-
     points = @asset.path()
     context.beginPath()
-    context.strokeColor "#929"
-    context.strokeWidth 10
+    context.strokeColor @color
+    context.strokeWidth 2
     context.moveTo points[0].x, points[0].y
 
-    $.each points, () ->
+    $.each points.slice(1), () ->
       context.lineTo this.x, this.y
 
     context.lineTo points[0].x, points[0].y
@@ -102,17 +96,25 @@ class AsteroidRenderer extends nv.ObjectListRenderer
 
   draw: (context) ->
     $.each @assets, (index, asset) =>
-      context.fillPath (context) =>
-        context.color 'rgba(0, 0, 0, 0)'
-        context.strokeColor @color
-        context.strokeWidth 2
-        context.line asset.x, asset.y,
-          asset.x + 30, asset.y + 20,
-          asset.x + 35, asset.y + 50,
-          asset.x + 23, asset.y + 60,
-          asset.x - 10, asset.y + 50,
-          asset.x - 20, asset.y + 15,
-          asset.x, asset.y
+      context.strokeColor @color
+      context.strokeWidth @strokeWidth
+
+      points = asset.path()
+      context.beginPath()
+      context.strokeColor @color
+      context.strokeWidth 2
+      context.moveTo points[0].x, points[0].y
+
+      $.each points.slice(1), () ->
+        context.lineTo this.x, this.y
+
+      context.lineTo points[0].x, points[0].y
+
+      context.stroke()
+      context.closePath()
+
+      context.strokeRect asset.x, asset.y, 2, 2
+
 
 class HudRenderer extends nv.ObjectRenderer
   constructor: (@glcanvas, hud) ->
