@@ -4,6 +4,9 @@ cancelFrame = window.cancelRequestAnimationFrame ? window.webkitCancelAnimationF
 gl = (canvas) ->
   return new gl.prototype.init(canvas)
 
+# Global options
+gl.zOrderProperty = 'zIndex'
+
 # Gleam.CanvasDecorator
 # This decorates a canvas object and gives more options.
 gl.prototype =
@@ -48,6 +51,15 @@ gl.prototype =
     @objects.splice @objects.indexOf(object), 1
 
   drawObjects: () ->
+    @objects.sort (a, b) ->
+      a = a[gl.zOrderProperty]
+      b = b[gl.zOrderProperty]
+      if a and not b then 1
+      else if b and not a then -1
+      else if a < b then -1
+      else if a is b then 0
+      else if a > b then 1
+
     @draw object for object in @objects
 
   startDrawUpdate: (fps, func) ->
@@ -154,6 +166,10 @@ gl.implement
     gl.prototype.extend.call this, options
     gl.prototype.extend.call @prototype, options
     this
+
+gl.prototype.extend.call gl.drawable.prototype,
+  draw: (context) ->
+    # Do nothing
 
 # Gleam.Square
 gl.implement

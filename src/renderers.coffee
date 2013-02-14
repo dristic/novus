@@ -2,6 +2,8 @@ class BackgroundRenderer extends nv.ObjectRenderer
   constructor: (@glcanvas, asset) ->
     super arguments...
 
+    @zIndex = @nextZIndex()
+
     @canvas = gl().size 700, 700
 
     @asset.width = @canvas.width
