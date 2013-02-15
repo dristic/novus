@@ -10,3 +10,7 @@ class nv.Model
 
   load: () ->
     @setMany window.localStorage[@name]
+
+class nv.Collection extends nv.Model
+  constructor: (name, options, arr) ->
+    @items = arr ? []

@@ -42,46 +42,45 @@ class Main extends nv.Scene
 
 class Game extends nv.Scene
   constructor: (glcanvas, @gamepad) ->
-    @bg = new nv.models.Background
-    @bg2 = new nv.models.Background
-    @ship = new nv.models.Ship
-    
-    asteroid = new nv.models.Asteroid(500,500)
-    asteroid2 = new nv.models.Asteroid(500, 500)
-    asteroid3 = new nv.models.Asteroid(500, 500)
-    hud = new nv.models.Hud glcanvas
+    super
 
-    asteroidController = new nv.controllers.AsteroidController [asteroid, asteroid2, asteroid3], glcanvas
-    shipController = new nv.controllers.ShipController @ship, glcanvas
-    bulletController = new nv.controllers.BulletController @ship, glcanvas
+    @addModel 'bg', new nv.models.Background
+    @addModel 'bg2', new nv.models.Background
+    @addModel 'ship', new nv.models.Ship
+    @addModel 'asteroids', new nv.models.Asteroids 3
+    @addModel 'hud', new nv.models.Hud glcanvas
 
-    @controllers = [bulletController, asteroidController, shipController]
+    @addController new nv.controllers.AsteroidController @getModel('asteroids').items, glcanvas
+    @addController new nv.controllers.ShipController @getModel('ship'), glcanvas, @gamepad
+    @addController new nv.controllers.BulletController @getModel('ship'), glcanvas, @gamepad
 
-    bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, @bg, @ship)
-    bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, @bg2, @ship)
-    shipRenderer = new nv.renderers.ShipRenderer(glcanvas, @ship)
-    asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3])
-    hudRenderer = new nv.renderers.HudRenderer glcanvas, hud
-    bulletRenderer = new nv.renderers.BulletRenderer glcanvas, []
-
-    @renderers = [bgRenderer, bg2Renderer, shipRenderer, asteroidRenderer, hudRenderer, bulletRenderer]
+    @addRenderer new nv.renderers.BackgroundRenderer(glcanvas, @getModel('bg'), @getModel('ship'))
+    @addRenderer new nv.renderers.BackgroundRenderer(glcanvas, @getModel('bg2'), @getModel('ship'))
+    @addRenderer new nv.renderers.ShipRenderer(glcanvas, @getModel('ship'))
+    @addRenderer new nv.renderers.AsteroidRenderer(glcanvas, @getModel('asteroids').items)
+    @addRenderer new nv.renderers.HudRenderer glcanvas, @getModel('hud')
+    @addRenderer new nv.renderers.BulletRenderer glcanvas, []
 
     glcanvas.camera = nv.camera()
-    glcanvas.camera.follow @ship, 250, 250
+    glcanvas.camera.follow @getModel('ship'), 250, 250
     glcanvas.camera.zoom 0.5
-    glcanvas.camera.zoom 1, 2000  
+    glcanvas.camera.zoom 1, 2000
 
     glcanvas.startDrawUpdate 60, (dt) =>
       @update.call this, dt
 
   update: (dt) ->
-    controller.update(dt, @gamepad) for controller in @controllers
+    super dt
 
-    @bg.x = -@ship.x * 0.05
-    @bg.y = -@ship.y * 0.05
+    bg = @getModel('bg')
+    bg2 = @getModel('bg2')
+    ship = @getModel('ship')
 
-    @bg2.x = -@ship.x * 0.01
-    @bg2.y = -@ship.y * 0.01
+    bg.x = -ship.x * 0.05
+    bg.y = -ship.y * 0.05
+
+    bg2.x = -ship.x * 0.01
+    bg2.y = -ship.y * 0.01
 
 $(() ->
   canvasEl = document.querySelector('canvas')

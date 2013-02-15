@@ -36,6 +36,8 @@
 }).call(this);
 
 (function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.Model = (function() {
 
@@ -61,6 +63,18 @@
     return Model;
 
   })();
+
+  nv.Collection = (function(_super) {
+
+    __extends(Collection, _super);
+
+    function Collection(name, options, arr) {
+      this.items = arr != null ? arr : [];
+    }
+
+    return Collection;
+
+  })(nv.Model);
 
 }).call(this);
 
@@ -986,7 +1000,7 @@
 }).call(this);
 
 (function() {
-  var Asteroid, Background, Bullet, GameObject, Global, Hud, Ship,
+  var Asteroid, Asteroids, Background, Bullet, GameObject, Global, Hud, Ship,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1101,6 +1115,23 @@
 
   })(GameObject);
 
+  Asteroids = (function(_super) {
+
+    __extends(Asteroids, _super);
+
+    function Asteroids(initialSpawnCount) {
+      var i, _i, _ref;
+      this.initialSpawnCount = initialSpawnCount;
+      Asteroids.__super__.constructor.apply(this, arguments);
+      for (i = _i = 1, _ref = this.initialSpawnCount; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
+        this.items.push(new nv.models.Asteroid(500, 500));
+      }
+    }
+
+    return Asteroids;
+
+  })(nv.Collection);
+
   Asteroid = (function(_super) {
 
     __extends(Asteroid, _super);
@@ -1179,6 +1210,7 @@
       Ship: Ship,
       Bullet: Bullet,
       Asteroid: Asteroid,
+      Asteroids: Asteroids,
       Hud: Hud,
       Global: Global
     };
@@ -1195,18 +1227,19 @@
 
     __extends(BulletController, _super);
 
-    function BulletController(ship, glcanvas) {
+    function BulletController(ship, glcanvas, gamepad) {
       this.ship = ship;
       this.glcanvas = glcanvas;
+      this.gamepad = gamepad;
       BulletController.__super__.constructor.apply(this, arguments);
       this.assets = [];
       this.shotDelay = 10;
     }
 
-    BulletController.prototype.update = function(dt, gamepad) {
+    BulletController.prototype.update = function(dt) {
       var bullet, state,
         _this = this;
-      state = gamepad.getState();
+      state = this.gamepad.getState();
       if (state.shoot && this.shotDelay === 0) {
         console.log(this.ship.nose(), this.ship.rotation);
         bullet = new nv.models.Bullet(this.ship.nose(), this.ship.rotation);
@@ -1284,16 +1317,17 @@
 
     __extends(ShipController, _super);
 
-    function ShipController(asset, glcanvas) {
+    function ShipController(asset, glcanvas, gamepad) {
       this.glcanvas = glcanvas;
+      this.gamepad = gamepad;
       ShipController.__super__.constructor.apply(this, arguments);
       this.speed = 5;
       this.shootDelay = 10;
     }
 
-    ShipController.prototype.update = function(dt, gamepad) {
+    ShipController.prototype.update = function(dt) {
       var state;
-      state = gamepad.getState();
+      state = this.gamepad.getState();
       if (state.left) {
         this.asset.rotate(-0.1);
       }
@@ -1627,29 +1661,25 @@
     __extends(Game, _super);
 
     function Game(glcanvas, gamepad) {
-      var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg2Renderer, bgRenderer, bulletController, bulletRenderer, hud, hudRenderer, shipController, shipRenderer,
-        _this = this;
+      var _this = this;
       this.gamepad = gamepad;
-      this.bg = new nv.models.Background;
-      this.bg2 = new nv.models.Background;
-      this.ship = new nv.models.Ship;
-      asteroid = new nv.models.Asteroid(500, 500);
-      asteroid2 = new nv.models.Asteroid(500, 500);
-      asteroid3 = new nv.models.Asteroid(500, 500);
-      hud = new nv.models.Hud(glcanvas);
-      asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3], glcanvas);
-      shipController = new nv.controllers.ShipController(this.ship, glcanvas);
-      bulletController = new nv.controllers.BulletController(this.ship, glcanvas);
-      this.controllers = [bulletController, asteroidController, shipController];
-      bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, this.bg, this.ship);
-      bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, this.bg2, this.ship);
-      shipRenderer = new nv.renderers.ShipRenderer(glcanvas, this.ship);
-      asteroidRenderer = new nv.renderers.AsteroidRenderer(glcanvas, [asteroid, asteroid2, asteroid3]);
-      hudRenderer = new nv.renderers.HudRenderer(glcanvas, hud);
-      bulletRenderer = new nv.renderers.BulletRenderer(glcanvas, []);
-      this.renderers = [bgRenderer, bg2Renderer, shipRenderer, asteroidRenderer, hudRenderer, bulletRenderer];
+      Game.__super__.constructor.apply(this, arguments);
+      this.addModel('bg', new nv.models.Background);
+      this.addModel('bg2', new nv.models.Background);
+      this.addModel('ship', new nv.models.Ship);
+      this.addModel('asteroids', new nv.models.Asteroids(3));
+      this.addModel('hud', new nv.models.Hud(glcanvas));
+      this.addController(new nv.controllers.AsteroidController(this.getModel('asteroids').items, glcanvas));
+      this.addController(new nv.controllers.ShipController(this.getModel('ship'), glcanvas, this.gamepad));
+      this.addController(new nv.controllers.BulletController(this.getModel('ship'), glcanvas, this.gamepad));
+      this.addRenderer(new nv.renderers.BackgroundRenderer(glcanvas, this.getModel('bg'), this.getModel('ship')));
+      this.addRenderer(new nv.renderers.BackgroundRenderer(glcanvas, this.getModel('bg2'), this.getModel('ship')));
+      this.addRenderer(new nv.renderers.ShipRenderer(glcanvas, this.getModel('ship')));
+      this.addRenderer(new nv.renderers.AsteroidRenderer(glcanvas, this.getModel('asteroids').items));
+      this.addRenderer(new nv.renderers.HudRenderer(glcanvas, this.getModel('hud')));
+      this.addRenderer(new nv.renderers.BulletRenderer(glcanvas, []));
       glcanvas.camera = nv.camera();
-      glcanvas.camera.follow(this.ship, 250, 250);
+      glcanvas.camera.follow(this.getModel('ship'), 250, 250);
       glcanvas.camera.zoom(0.5);
       glcanvas.camera.zoom(1, 2000);
       glcanvas.startDrawUpdate(60, function(dt) {
@@ -1658,16 +1688,15 @@
     }
 
     Game.prototype.update = function(dt) {
-      var controller, _i, _len, _ref;
-      _ref = this.controllers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        controller = _ref[_i];
-        controller.update(dt, this.gamepad);
-      }
-      this.bg.x = -this.ship.x * 0.05;
-      this.bg.y = -this.ship.y * 0.05;
-      this.bg2.x = -this.ship.x * 0.01;
-      return this.bg2.y = -this.ship.y * 0.01;
+      var bg, bg2, ship;
+      Game.__super__.update.call(this, dt);
+      bg = this.getModel('bg');
+      bg2 = this.getModel('bg2');
+      ship = this.getModel('ship');
+      bg.x = -ship.x * 0.05;
+      bg.y = -ship.y * 0.05;
+      bg2.x = -ship.x * 0.01;
+      return bg2.y = -ship.y * 0.01;
     };
 
     return Game;

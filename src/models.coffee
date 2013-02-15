@@ -75,6 +75,12 @@ class Ship extends GameObject
   nose: () ->
     @_path[0]
 
+class Asteroids extends nv.Collection
+  constructor: (@initialSpawnCount) ->
+    super
+
+    for i in [1..@initialSpawnCount]
+      @items.push new nv.models.Asteroid 500, 500
 
 class Asteroid extends GameObject
   constructor: (cw,ch,scale = 1) ->
@@ -124,6 +130,7 @@ $(() ->
     Ship: Ship
     Bullet: Bullet
     Asteroid: Asteroid
+    Asteroids: Asteroids
     Hud: Hud
     Global: Global
 )

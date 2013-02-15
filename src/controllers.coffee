@@ -1,12 +1,12 @@
 class BulletController extends nv.Controller
-  constructor: (@ship, @glcanvas) ->
+  constructor: (@ship, @glcanvas, @gamepad) ->
     super arguments...
 
     @assets = []
     @shotDelay = 10
 
-  update: (dt, gamepad) ->
-    state = gamepad.getState()
+  update: (dt) ->
+    state = @gamepad.getState()
     if state.shoot and @shotDelay is 0
       console.log @ship.nose(), @ship.rotation
       bullet = new nv.models.Bullet @ship.nose(), @ship.rotation
@@ -57,14 +57,14 @@ class AsteroidController extends nv.Controller
       wrap asset, @glcanvas
 
 class ShipController extends nv.Controller
-  constructor: (asset, @glcanvas) ->
+  constructor: (asset, @glcanvas, @gamepad) ->
     super arguments...
 
     @speed = 5
     @shootDelay = 10
 
-  update: (dt, gamepad) ->
-    state = gamepad.getState()
+  update: (dt) ->
+    state = @gamepad.getState()
     if state.left then @asset.rotate -0.1
     if state.right then @asset.rotate 0.1
     if state.up
