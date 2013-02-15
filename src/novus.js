@@ -112,19 +112,34 @@
 
   nv.Rect = (function() {
 
-    function Rect(x, y, width, height) {
+    function Rect(x, y, x2, y2) {
       this.x = x;
       this.y = y;
-      this.width = width;
-      this.height = height;
+      this.x2 = x2;
+      this.y2 = y2;
     }
 
     Rect.prototype.clone = function() {
-      return new nv.Rect(this.x, this.y, this.width, this.height);
+      return new nv.Rect(this.x, this.y, this.x2, this.y2);
+    };
+
+    Rect.prototype.reset = function(x, y, x2, y2) {
+      this.x = x;
+      this.y = y;
+      this.x2 = x2;
+      this.y2 = y2;
+    };
+
+    Rect.prototype._checkPt = function(tx, ty) {
+      return (tx >= this.x && tx <= this.x2) && (ty >= this.y && ty <= this.y2);
     };
 
     Rect.prototype.contains = function(pt) {
-      return (pt.x >= this.x && pt.x <= this.x + this.width) && (pt.y >= this.y && pt.y <= this.y + this.height);
+      return this._checkPt(pt.x, pt.y);
+    };
+
+    Rect.prototype.intersects = function(rect) {
+      return this._checkPt(rect.x, rect.y) || this._checkPt(rect.x, rect.y2) || this._checkPt(rect.x2, rect.y2) || this._checkPt(rect.x2, rect.y);
     };
 
     Rect.prototype.translate = function(dx, dy) {
@@ -753,7 +768,9 @@
 }).call(this);
 
 (function() {
-  var Asteroid, Background, Bullet, Hud, Ship;
+  var Asteroid, Background, Bullet, GameObject, Hud, Ship, __gameObjectCounter,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   Background = (function() {
 
@@ -781,6 +798,90 @@
 
   })();
 
+  __gameObjectCounter = 0;
+
+  GameObject = (function() {
+
+    function GameObject(options) {
+      var key, value;
+      this.id = "" + this.constructor.name + (__gameObjectCounter++);
+      this.x = 0;
+      this.y = 0;
+      this.width = 0;
+      this.height = 0;
+      this.rotation = 0;
+      this.type = 'passive';
+      for (key in options) {
+        value = options[key];
+        this[key] = value;
+      }
+      this._path = [];
+      this._wireframe = [];
+      this._bounds = new nv.Rect(0, 0, 0, 0);
+      this.initPath();
+    }
+
+    GameObject.prototype.initPath = function() {
+      this._wireframe = this.buildWireframe();
+      return this._updatePath();
+    };
+
+    GameObject.prototype._updatePath = function() {
+      var cosine, gameObject, newPath, sine;
+      cosine = Math.cos(this.rotation);
+      sine = Math.sin(this.rotation);
+      newPath = [];
+      gameObject = this;
+      $.each(this._wireframe, function() {
+        return newPath.push(new nv.Point(this.x * cosine - this.y * sine + gameObject.x, this.x * sine + this.y * cosine + gameObject.y));
+      });
+      this._path = newPath;
+      return this._updateBounds();
+    };
+
+    GameObject.prototype._updateBounds = function() {
+      var x1, x2, y1, y2;
+      x1 = x2 = y1 = y2 = null;
+      $.each(this._path, function() {
+        if (x1 === null || this.x < x1) {
+          x1 = this.x;
+        }
+        if (x2 === null || this.x > x2) {
+          x2 = this.x;
+        }
+        if (y1 === null || this.y < y1) {
+          y1 = this.y;
+        }
+        if (y2 === null || this.y > y2) {
+          return y2 = this.y;
+        }
+      });
+      return this._bounds.reset(x1, y1, x2, y2);
+    };
+
+    GameObject.prototype.path = function() {
+      return this._path;
+    };
+
+    GameObject.prototype.bounds = function() {
+      return this._bounds;
+    };
+
+    GameObject.prototype.rotate = function(r) {
+      this.rotation += r;
+      return this._updatePath();
+    };
+
+    GameObject.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+      return this._updatePath();
+    };
+
+    return GameObject;
+
+  })();
+
   Bullet = (function() {
 
     function Bullet(pt, angle) {
@@ -798,78 +899,72 @@
 
   })();
 
-  Ship = (function() {
+  Ship = (function(_super) {
+
+    __extends(Ship, _super);
 
     function Ship() {
-      this.id = null;
-      this.x = 0;
-      this.y = 30;
-      this.width = 12;
-      this.height = 18;
-      this.rotation = 0;
-      this.speed = 5;
-      this._path = [];
-      this._wireframe = [];
-      this.initPath();
+      Ship.__super__.constructor.call(this, {
+        x: 0,
+        y: 30,
+        width: 16,
+        height: 24,
+        speed: 5,
+        rotation: 0,
+        thrusters: false,
+        type: 'both'
+      });
     }
 
-    Ship.prototype.initPath = function() {
-      this._wireframe = [new nv.Point(0, -this.height / 2), new nv.Point(this.width / 2, this.height / 2), new nv.Point(-this.width / 2, this.height / 2)];
-      return this._updatePath();
-    };
-
-    Ship.prototype._updatePath = function() {
-      var cosine, newPath, ship, sine;
-      cosine = Math.cos(this.rotation);
-      sine = Math.sin(this.rotation);
-      newPath = [];
-      ship = this;
-      $.each(this._wireframe, function() {
-        return newPath.push(new nv.Point(this.x * cosine - this.y * sine + ship.x, this.x * sine + this.y * cosine + ship.y));
-      });
-      console.log(newPath[0].x, newPath[0].y, newPath[1].x, newPath[1].y, newPath[2].x, newPath[2].y);
-      return this._path = newPath;
+    Ship.prototype.buildWireframe = function() {
+      return [new nv.Point(0, -this.height / 2), new nv.Point(this.width / 2, this.height / 2), new nv.Point(0, this.height * 0.4), new nv.Point(-this.width / 2, this.height / 2)];
     };
 
     Ship.prototype.nose = function() {
       return this._path[0];
     };
 
-    Ship.prototype.path = function() {
-      return this._path;
-    };
-
-    Ship.prototype.rotate = function(r) {
-      this.rotation += r;
-      return this._updatePath();
-    };
-
-    Ship.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      this.y += dy;
-      return this._updatePath();
-    };
-
     return Ship;
 
-  })();
+  })(GameObject);
 
-  Asteroid = (function() {
+  Asteroid = (function(_super) {
 
-    function Asteroid(cw, ch) {
-      this.id = null;
-      this.x = cw * Math.random();
-      this.y = ch * Math.random();
-      this.width = 12;
-      this.height = 12;
-      this.rotation = 0;
-      this.speed = Math.random() + 0.3;
-      this.direction = (Math.random() * Math.PI) - (Math.PI / 2);
+    __extends(Asteroid, _super);
+
+    function Asteroid(cw, ch, scale) {
+      if (scale == null) {
+        scale = 1;
+      }
+      Asteroid.__super__.constructor.call(this, {
+        x: cw * Math.random(),
+        y: ch * Math.random(),
+        width: 24 * scale,
+        height: 24 * scale,
+        speed: Math.random() + 0.3,
+        rotation: 0,
+        rotationSpeed: 0.01,
+        direction: (Math.random() * Math.PI) - (Math.PI / 2),
+        type: 'passive'
+      });
     }
+
+    Asteroid.prototype.buildWireframe = function() {
+      var points, pt;
+      pt = new nv.Point(0, -this.height);
+      points = [];
+      points.push(pt.clone());
+      points.push(pt.translate(30, 20).clone());
+      points.push(pt.translate(5, 30).clone());
+      points.push(pt.translate(-12, 10).clone());
+      points.push(pt.translate(-33, -10).clone());
+      points.push(pt.translate(-10, -35).clone());
+      return points;
+    };
 
     return Asteroid;
 
-  })();
+  })(GameObject);
 
   Hud = (function() {
 
@@ -901,7 +996,7 @@
 }).call(this);
 
 (function() {
-  var AsteroidController, BulletController, ShipController, wrap,
+  var AsteroidController, BulletController, GamePhysicsController, ShipController, wrap,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -922,7 +1017,6 @@
         _this = this;
       state = gamepad.getState();
       if (state.shoot && this.shotDelay === 0) {
-        console.log(this.ship.nose(), this.ship.rotation);
         bullet = new nv.models.Bullet(this.ship.nose(), this.ship.rotation);
         this.assets.push(bullet);
         $(document).trigger('new:bullet', {
@@ -984,8 +1078,8 @@
     AsteroidController.prototype.update = function(dt) {
       var _this = this;
       return $.each(this.assets, function(index, asset) {
-        asset.x += Math.sin(asset.direction) * asset.speed;
-        asset.y += Math.cos(asset.direction) * asset.speed;
+        asset.rotation += asset.rotationSpeed;
+        asset.translate(Math.sin(asset.direction) * asset.speed, Math.cos(asset.direction) * asset.speed);
         return wrap(asset, _this.glcanvas);
       });
     };
@@ -1020,6 +1114,7 @@
       if (state.down) {
         this.asset.translate(-this.speed / 2 * Math.sin(this.asset.rotation), this.speed / 2 * Math.cos(this.asset.rotation));
       }
+      this.asset.thrusters = state.up;
       return wrap(this.asset, this.glcanvas);
     };
 
@@ -1027,11 +1122,75 @@
 
   })(nv.Controller);
 
+  GamePhysicsController = (function(_super) {
+
+    __extends(GamePhysicsController, _super);
+
+    function GamePhysicsController(glcanvas) {
+      this.glcanvas = glcanvas;
+      GamePhysicsController.__super__.constructor.apply(this, arguments);
+      this.passiveObjects = {};
+      this.activeObjects = {};
+    }
+
+    GamePhysicsController.prototype.trackObjects = function(array) {
+      var self;
+      self = this;
+      return $.each(array, function() {
+        return self.trackObject(this);
+      });
+    };
+
+    GamePhysicsController.prototype.trackObject = function(obj) {
+      switch (obj.type) {
+        case 'passive':
+          return this.passiveObjects[obj.id] = obj;
+        case 'active':
+          return this.activeObjects[obj.id] = obj;
+        case 'both':
+          this.passiveObjects[obj.id] = obj;
+          return this.activeObjects[obj.id] = obj;
+      }
+    };
+
+    GamePhysicsController.prototype.update = function(dt) {
+      var ida, idp, obja, objaBounds, objp, _ref, _results;
+      _ref = this.activeObjects;
+      _results = [];
+      for (ida in _ref) {
+        obja = _ref[ida];
+        objaBounds = obja.bounds();
+        _results.push((function() {
+          var _ref1, _results1;
+          _ref1 = this.passiveObjects;
+          _results1 = [];
+          for (idp in _ref1) {
+            objp = _ref1[idp];
+            if (ida === idp) {
+              continue;
+            }
+            if (objp.bounds().intersects(objaBounds)) {
+              _results1.push(console.log("hit"));
+            } else {
+              _results1.push(void 0);
+            }
+          }
+          return _results1;
+        }).call(this));
+      }
+      return _results;
+    };
+
+    return GamePhysicsController;
+
+  })(nv.Controller);
+
   $(function() {
     return nv.controllers = {
       ShipController: ShipController,
       BulletController: BulletController,
-      AsteroidController: AsteroidController
+      AsteroidController: AsteroidController,
+      GamePhysicsController: GamePhysicsController
     };
   });
 
@@ -1121,19 +1280,15 @@
     }
 
     ShipRenderer.prototype.draw = function(context) {
-      var points,
-        _this = this;
+      var points;
       context.strokeColor(this.color);
       context.strokeWidth(this.strokeWidth);
-      context.rotateAround(this.asset.x + (this.asset.width / 2), this.asset.y + (this.asset.height / 2), this.asset.rotation, function() {
-        return context.line(_this.asset.x, _this.asset.y + _this.asset.height, _this.asset.x + (_this.asset.width / 2), _this.asset.y, _this.asset.x + _this.asset.width, _this.asset.y + _this.asset.height, _this.asset.x, _this.asset.y + _this.asset.height);
-      });
       points = this.asset.path();
       context.beginPath();
-      context.strokeColor("#929");
-      context.strokeWidth(10);
+      context.strokeColor(this.color);
+      context.strokeWidth(2);
       context.moveTo(points[0].x, points[0].y);
-      $.each(points, function() {
+      $.each(points.slice(1), function() {
         return context.lineTo(this.x, this.y);
       });
       context.lineTo(points[0].x, points[0].y);
@@ -1158,12 +1313,32 @@
     AsteroidRenderer.prototype.draw = function(context) {
       var _this = this;
       return $.each(this.assets, function(index, asset) {
-        return context.fillPath(function(context) {
-          context.color('rgba(0, 0, 0, 0)');
-          context.strokeColor(_this.color);
-          context.strokeWidth(2);
-          return context.line(asset.x, asset.y, asset.x + 30, asset.y + 20, asset.x + 35, asset.y + 50, asset.x + 23, asset.y + 60, asset.x - 10, asset.y + 50, asset.x - 20, asset.y + 15, asset.x, asset.y);
+        var bounds, points;
+        context.strokeColor(_this.color);
+        context.strokeWidth(_this.strokeWidth);
+        points = asset.path();
+        context.beginPath();
+        context.strokeColor(_this.color);
+        context.strokeWidth(2);
+        context.moveTo(points[0].x, points[0].y);
+        $.each(points.slice(1), function() {
+          return context.lineTo(this.x, this.y);
         });
+        context.lineTo(points[0].x, points[0].y);
+        context.stroke();
+        context.closePath();
+        context.strokeRect(asset.x, asset.y, 2, 2);
+        bounds = asset.bounds();
+        context.beginPath();
+        context.strokeColor("yellow");
+        context.strokeWidth(1);
+        context.moveTo(bounds.x, bounds.y);
+        context.lineTo(bounds.x, bounds.y2);
+        context.lineTo(bounds.x2, bounds.y2);
+        context.lineTo(bounds.x2, bounds.y);
+        context.lineTo(bounds.x, bounds.y);
+        context.stroke();
+        return context.closePath();
       });
     };
 
@@ -1223,7 +1398,7 @@
 (function() {
 
   $(function() {
-    var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg, bg2, bg2Renderer, bgRenderer, bulletController, bulletRenderer, controllers, gamepad, glcanvas, hud, hudRenderer, renderers, ship, shipController, shipRenderer, shootDelay, speed, update;
+    var asteroid, asteroid2, asteroid3, asteroidController, asteroidRenderer, bg, bg2, bg2Renderer, bgRenderer, bulletController, bulletRenderer, controllers, gamepad, glcanvas, hud, hudRenderer, physicsController, renderers, ship, shipController, shipRenderer, shootDelay, speed, update;
     glcanvas = gl('canvas');
     glcanvas.size(500, 500);
     glcanvas.background('#000');
@@ -1238,7 +1413,9 @@
     asteroidController = new nv.controllers.AsteroidController([asteroid, asteroid2, asteroid3], glcanvas);
     shipController = new nv.controllers.ShipController(ship, glcanvas);
     bulletController = new nv.controllers.BulletController(ship, glcanvas);
-    controllers = [bulletController, asteroidController, shipController];
+    physicsController = new nv.controllers.GamePhysicsController(glcanvas);
+    physicsController.trackObjects([ship, asteroid, asteroid2, asteroid3]);
+    controllers = [physicsController, bulletController, asteroidController, shipController];
     bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg, ship);
     bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2, ship);
     shipRenderer = new nv.renderers.ShipRenderer(glcanvas, ship);

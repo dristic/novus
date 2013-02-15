@@ -43,8 +43,10 @@ $(() ->
   asteroidController = new nv.controllers.AsteroidController [asteroid, asteroid2, asteroid3], glcanvas
   shipController = new nv.controllers.ShipController ship, glcanvas
   bulletController = new nv.controllers.BulletController ship, glcanvas
+  physicsController = new nv.controllers.GamePhysicsController glcanvas
+  physicsController.trackObjects [ ship, asteroid, asteroid2, asteroid3 ]
 
-  controllers = [bulletController, asteroidController, shipController]
+  controllers = [physicsController, bulletController, asteroidController, shipController]
 
   bgRenderer = new nv.renderers.BackgroundRenderer(glcanvas, bg, ship)
   bg2Renderer = new nv.renderers.BackgroundRenderer(glcanvas, bg2, ship)

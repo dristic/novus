@@ -91,6 +91,18 @@ class AsteroidRenderer extends nv.ObjectListRenderer
 
       context.strokeRect asset.x, asset.y, 2, 2
 
+      bounds = asset.bounds()
+      context.beginPath()
+      context.strokeColor "yellow"
+      context.strokeWidth 1
+      context.moveTo bounds.x, bounds.y
+      context.lineTo bounds.x, bounds.y2
+      context.lineTo bounds.x2, bounds.y2
+      context.lineTo bounds.x2, bounds.y
+      context.lineTo bounds.x, bounds.y
+      context.stroke()
+      context.closePath()
+
 
 class HudRenderer extends nv.ObjectRenderer
   constructor: (@glcanvas, hud) ->

@@ -8,7 +8,7 @@ class BulletController extends nv.Controller
   update: (dt, gamepad) ->
     state = gamepad.getState()
     if state.shoot and @shotDelay is 0
-      console.log @ship.nose(), @ship.rotation
+      #//console.log @ship.nose(), @ship.rotation
       bullet = new nv.models.Bullet @ship.nose(), @ship.rotation
       @assets.push bullet
       $(document).trigger 'new:bullet',
@@ -82,9 +82,38 @@ class ShipController extends nv.Controller
 
     # if @shootDelay then @shootDelay--
 
+
+class GamePhysicsController extends nv.Controller
+  constructor: (@glcanvas) ->
+    super arguments...
+    @passiveObjects = {}
+    @activeObjects = {}
+
+  trackObjects: (array) ->
+    self = this
+    $.each array, () ->
+      self.trackObject this
+
+  trackObject: (obj) ->
+    switch obj.type
+      when 'passive' then @passiveObjects[obj.id] = obj
+      when 'active' then @activeObjects[obj.id] = obj
+      when 'both'
+        @passiveObjects[obj.id] = obj
+        @activeObjects[obj.id] = obj
+
+  update: (dt) ->
+    for ida, obja of @activeObjects
+      objaBounds = obja.bounds()
+      for idp, objp of @passiveObjects
+        continue if ida is idp
+        console.log "hit" if objp.bounds().intersects(objaBounds)
+
+
 $(() ->
   nv.controllers =
     ShipController: ShipController
     BulletController: BulletController
     AsteroidController: AsteroidController
+    GamePhysicsController: GamePhysicsController
 )

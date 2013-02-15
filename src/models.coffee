@@ -16,21 +16,24 @@ class Background
         context.color '#FFFFFF'
         context.arc x, y, radius, 0, Math.PI * 2, true
 
+__gameObjectCounter = 0
 
 class GameObject
   constructor: (options) ->
-    @id = null
+    @id = "#{this.constructor.name}#{__gameObjectCounter++}"
     @x = 0
     @y = 0
     @width = 0
     @height = 0
     @rotation = 0
+    @type = 'passive'
 
     for key,value of options
       this[key] = value
 
     @_path = []
     @_wireframe = []
+    @_bounds = new nv.Rect 0,0,0,0
     @initPath()
 
   initPath: () ->
@@ -46,9 +49,22 @@ class GameObject
       newPath.push new nv.Point(this.x * cosine - this.y * sine + gameObject.x, this.x * sine + this.y * cosine + gameObject.y)
     #console.log newPath[0].x,newPath[0].y, newPath[1].x, newPath[1].y, newPath[2].x, newPath[2].y
     @_path = newPath
+    @_updateBounds()
+
+  _updateBounds: () ->
+    x1 = x2 = y1 = y2 = null
+    $.each @_path, () ->
+      x1 = this.x if x1 == null || this.x < x1
+      x2 = this.x if x2 == null || this.x > x2
+      y1 = this.y if y1 == null || this.y < y1
+      y2 = this.y if y2 == null || this.y > y2
+    @_bounds.reset x1, y1, x2, y2
 
   path: () ->
     @_path
+
+  bounds: () ->
+    @_bounds
 
   rotate: (r) ->
     @rotation += r
@@ -73,7 +89,7 @@ class Bullet
 
 class Ship extends GameObject
   constructor: () ->
-    super 
+    super
       x: 0
       y: 30
       width: 16
@@ -81,6 +97,7 @@ class Ship extends GameObject
       speed: 5
       rotation: 0
       thrusters: false
+      type: 'both'
 
   buildWireframe: () ->
     [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
@@ -100,6 +117,7 @@ class Asteroid extends GameObject
       rotation: 0
       rotationSpeed: 0.01
       direction: (Math.random() * Math.PI) - (Math.PI / 2)
+      type: 'passive'
 
   buildWireframe: () ->
     pt = new nv.Point(0, -@height)
