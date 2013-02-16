@@ -4,6 +4,9 @@ cancelFrame = window.cancelRequestAnimationFrame ? window.webkitCancelAnimationF
 gl = (canvas) ->
   return new gl.prototype.init(canvas)
 
+# Global options
+gl.zOrderProperty = 'zIndex'
+
 # Gleam.CanvasDecorator
 # This decorates a canvas object and gives more options.
 gl.prototype =
@@ -11,8 +14,7 @@ gl.prototype =
   init: (canvas) ->
     if typeof canvas is 'string'
       canvas = document.querySelector canvas
-    else
-      canvas = document.createElement 'canvas'
+    canvas = canvas ? document.createElement 'canvas'
     gl.prototype.extend.call canvas, gl.prototype
     canvas.context = gl.context canvas.getContext('2d')
     canvas.objects = []
@@ -46,9 +48,18 @@ gl.prototype =
     @objects.push object
 
   removeDrawable: (object) ->
-    @objects.slice @objects.indexOf(object), 1
+    @objects.splice @objects.indexOf(object), 1
 
   drawObjects: () ->
+    @objects.sort (a, b) ->
+      a = a[gl.zOrderProperty]
+      b = b[gl.zOrderProperty]
+      if a and not b then 1
+      else if b and not a then -1
+      else if a < b then -1
+      else if a is b then 0
+      else if a > b then 1
+
     @draw object for object in @objects
 
   startDrawUpdate: (fps, func) ->
@@ -60,7 +71,7 @@ gl.prototype =
       delta = now - lastTime
       delta /= 1000
 
-      coords = func delta
+      stop = func delta
 
       @context.save()
       @context.clear()
@@ -73,14 +84,17 @@ gl.prototype =
 
       lastTime = now
 
-      @requestFrameKey = requestFrame update
+      if @cancel
+        @cancel = false
+      else
+        @requestFrameKey = requestFrame update unless not @updating
 
     @requestFrameKey = requestFrame update
 
   stopDrawUpdate: () ->
     @updating = false
+    @cancel = true
     cancelFrame @requestFrameKey
-    @requestFrameKey = null
 
   extend: (object) ->
     this[key] = object[key] for key of object
@@ -111,6 +125,9 @@ gl.prototype.extend.call gl.context.prototype,
 
   strokeWidth: (width) ->
     @lineWidth = width
+
+  setFont: (font) ->
+    @font = font
 
   # Wraps function in begin/close path and fill
   fillPath: (func) ->
@@ -150,6 +167,10 @@ gl.implement
     gl.prototype.extend.call @prototype, options
     this
 
+gl.prototype.extend.call gl.drawable.prototype,
+  draw: (context) ->
+    # Do nothing
+
 # Gleam.Square
 gl.implement
   square: (options) ->
@@ -167,3 +188,51 @@ gl.prototype.extend.call gl.square.prototype,
   draw: (context) ->
     context.color @color
     context.fillRect @x, @y, @width, @height
+
+# Gleam.text
+gl.implement
+  text: (options) ->
+    defaults =
+      color: '#CCC'
+      x: 10
+      y: 10
+      font: 'bold 20px sans-serif'
+      textBaseline: 'bottom'
+      text: 'Lorem Ipsum'
+    gl.prototype.extend.call defaults, options
+    gl.drawable.call this, defaults
+    this
+
+gl.prototype.extend.call gl.text.prototype,
+  draw: (context) ->
+    context.color @color
+    context.setFont @font
+    context.textBaseline = @textBaseline
+
+    context.fillText @text, @x, @y
+
+# Gleam.sprite
+gl.implement
+  sprite: (options) ->
+    defaults =
+      src: ''
+      x: 10
+      y: 10
+      width: null
+      height: null
+    gl.prototype.extend.call defaults, options
+    gl.drawable.call this, defaults
+
+    @loaded = false
+    @image = new Image
+    @image.onload = () =>
+      @width = @image.width unless @width
+      @height = @image.height unless @height
+      @loaded = true
+    @image.src = @src
+
+    this
+
+gl.prototype.extend.call gl.sprite.prototype,
+  draw: (context) ->
+    context.drawImage @image, @x, @y, @width, @height

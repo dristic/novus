@@ -12,5 +12,12 @@
     "nib": "*",
     "stylus": "*",
     "connect": "*"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.0rc7",
+    "grunt-contrib-jshint": "0.1.1rc6",
+    "grunt-contrib-nodeunit": "0.1.2rc6",
+    "grunt-contrib-jasmine": "*",
+    "grunt-contrib-concat": "~0.1.1"
   }
 }

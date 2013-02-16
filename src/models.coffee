@@ -1,20 +1,7 @@
 class Background
   constructor: () ->
-    @canvas = gl().size 700, 700
     @x = 0
     @y = 0
-    @width = @canvas.width
-    @height = @canvas.height
-
-    i = 0
-    until i > 100
-      i++
-      x = Math.random() * 700
-      y = Math.random() * 700
-      radius = (Math.random() * 2) + 0.5
-      @canvas.context.fillPath (context) ->
-        context.color '#FFFFFF'
-        context.arc x, y, radius, 0, Math.PI * 2, true
 
 __gameObjectCounter = 0
 
@@ -105,6 +92,12 @@ class Ship extends GameObject
   nose: () ->
     @_path[0]
 
+class Asteroids extends nv.Collection
+  constructor: (@initialSpawnCount) ->
+    super
+
+    for i in [1..@initialSpawnCount]
+      @items.push new nv.models.Asteroid 500, 500
 
 class Asteroid extends GameObject
   constructor: (cw,ch,scale = 1) ->
@@ -132,7 +125,7 @@ class Asteroid extends GameObject
     points
 
 
-class Hud
+class Hud extends nv.Model
   constructor: (@glcanvas) ->
     @x = 0
     @y = 0
@@ -142,11 +135,20 @@ class Hud
     @lives = 3
     @score = 100000
 
+class Global extends nv.Model
+  constructor: () ->
+    @title = "Asteroids"
+    @actionText = "Press <Space> to Start."
+    @options =
+      difficulty: "easy"
+
 $(() ->
   nv.models =
     Background: Background
     Ship: Ship
     Bullet: Bullet
     Asteroid: Asteroid
+    Asteroids: Asteroids
     Hud: Hud
+    Global: Global
 )

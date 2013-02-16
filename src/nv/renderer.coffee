@@ -1,9 +1,16 @@
+zIndex = 0
+
 class nv.ObjectRenderer
-  constructor: (glcanvas, @asset) ->
-    glcanvas.addDrawable this
+  constructor: (@glcanvas, @asset) ->
+    @glcanvas.addDrawable this
 
   draw: (dt) ->
 
+  destroy: () ->
+    @glcanvas.removeDrawable this
+
+  nextZIndex: () ->
+    zIndex++
 
 class nv.ObjectListRenderer
   constructor: (glcanvas, @assets) ->
@@ -28,3 +35,6 @@ class nv.ObjectListRenderer
       asset.id isnt target.id
 
   draw: (dt) ->
+
+  nextZIndex: () ->
+    zIndex++

@@ -7,6 +7,11 @@ nv.extend
   log: () ->
     console.log message for message in arguments
 
+  bind: (context, func) ->
+    f = () ->
+      func.call context, arguments...
+    f
+
   keydown: (key, callback) ->
     $(document).on 'keydown', (event) ->
       if event.keyCode is key then callback()
@@ -15,11 +20,43 @@ nv.extend
     $(document).on 'keyup', (event) ->
       if event.keyCode is key then callback()
 
+  mousedown: (callback) ->
+    $(document).on 'mousedown', callback
+    $(document).on 'touchstart', callback
+
+  mouseup: (callback) ->
+    $(document).on 'mouseup', callback
+    $(document).on 'touchend', callback
+
+  mousemove: (callback) ->
+    $(document).on 'mousemove', callback
+    $(document).on 'touchmove', callback
+
 class Gamepad
   constructor: () ->
     @gamepad = navigator.webkitGamepad
     @state = {}
     @listeners = {}
+
+  trackMouse: () ->
+    @state.mouse =
+      x: -1
+      y: -1
+      down: false
+
+    nv.mousedown (event) =>
+      @state.mouse.x = event.clientX
+      @state.mouse.y = event.clientY
+      @state.mouse.down = true
+
+    nv.mouseup (event) =>
+      @state.mouse.x = event.clientX
+      @state.mouse.y = event.clientY
+      @state.mouse.down = false
+
+    nv.mousemove (event) =>
+      @state.mouse.x = event.clientX
+      @state.mouse.y = event.clientY
 
   aliasKey: (button, key) ->
     nv.keydown key, () =>

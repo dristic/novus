@@ -2,7 +2,31 @@ class BackgroundRenderer extends nv.ObjectRenderer
   constructor: (@glcanvas, asset) ->
     super arguments...
 
+    @zIndex = @nextZIndex()
+
+    @canvas = gl().size 700, 700
+
+    @asset.width = @canvas.width
+    @asset.height = @canvas.height
+
+    i = 0
+    until i > 100
+      i++
+      x = Math.random() * 700
+      y = Math.random() * 700
+      radius = (Math.random() * 2) + 1
+      @canvas.context.fillPath (context) ->
+        gradient = context.createRadialGradient x, y, 0, x, y, radius
+        gradient.addColorStop 0, "white"
+        gradient.addColorStop 0.4, "white"
+        gradient.addColorStop 0.4, "white"
+        gradient.addColorStop 1, "black"
+        context.color gradient
+        context.arc x, y, radius, 0, Math.PI * 2, true
+
   draw: (context, canvas) ->
+    context.globalCompositeOperation = "lighter"
+
     camX = -@glcanvas.camera.x
     camY = -@glcanvas.camera.y
 
@@ -17,11 +41,13 @@ class BackgroundRenderer extends nv.ObjectRenderer
 
     while curX < camX + @glcanvas.width
       while curY < camY + @glcanvas.height
-        context.drawImage @asset.canvas, curX, curY
+        context.drawImage @canvas, curX, curY
         curY += @asset.height
 
       curY = startY
       curX += @asset.width
+
+    context.globalCompositeOperation = "source-over"
 
 class BulletRenderer extends nv.ObjectListRenderer
   constructor: (glcanvas, bullets) ->
@@ -137,6 +163,28 @@ class HudRenderer extends nv.ObjectRenderer
 
     this
 
+class MainRenderer extends nv.ObjectRenderer
+  constructor: (@glcanvas, @model) ->
+    super arguments...
+
+    @title = new gl.text
+      color: "#F00"
+      x: 200
+      y: 200
+      font: "bold 20px sans-serif"
+      text: @model.title
+
+    @actionText = new gl.text
+      color: "#F00"
+      x: 200
+      y: 300
+      font: "bold 20px sans-serif"
+      text: @model.actionText
+
+  draw: (context) ->
+    @title.draw context
+    @actionText.draw context
+
 $(() ->
   nv.renderers =
     ShipRenderer: ShipRenderer
@@ -144,4 +192,5 @@ $(() ->
     BackgroundRenderer: BackgroundRenderer
     AsteroidRenderer: AsteroidRenderer
     HudRenderer: HudRenderer
+    MainRenderer: MainRenderer
 )
