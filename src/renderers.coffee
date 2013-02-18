@@ -50,11 +50,14 @@ class BackgroundRenderer extends nv.ObjectRenderer
     context.globalCompositeOperation = "source-over"
 
 class BulletRenderer extends nv.ObjectListRenderer
-  constructor: (glcanvas, bullets) ->
-    super arguments...
+  constructor: (@scene, @glcanvas) ->
+    super @glcanvas, []
 
-    $(document).on 'new:bullet', (event) =>
-      @add event.data.asset
+    @scene.dispatcher.on 'new:Bullet', (event) =>
+      @add event.asset
+
+    @scene.dispatcher.on 'delete:Bullet', (event) =>
+      @remove event.asset
 
   draw: (context) ->
     $.each @assets, (index, asset) ->
@@ -91,10 +94,13 @@ class ShipRenderer extends nv.ObjectRenderer
     context.closePath()
 
 class AsteroidRenderer extends nv.ObjectListRenderer
-  constructor: (glcanvas, assets) ->
-    super arguments...
+  constructor: (@scene, @glcanvas) ->
+    super @glcanvas, @scene.getModel('asteroids').items
     @color = '#FFF'
     @strokeWidth = 2
+
+    @scene.dispatcher.on 'delete:Asteroid', (data) =>
+      @remove data.asset
 
   draw: (context) ->
     $.each @assets, (index, asset) =>

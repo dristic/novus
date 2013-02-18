@@ -63,15 +63,23 @@ class GameObject
     @_updatePath()
 
 
-class Bullet
-  constructor: (pt, @angle) ->
-    @x = pt.x
-    @y = pt.y
-    @id = null
-    @speed = 400
-    @radius = 3
-    @alive = true
-    @life = 100
+class Bullet extends GameObject
+  constructor: (pt, angle) ->
+    super
+      x: pt.x
+      y: pt.y
+      speed: 400
+      radius: 3
+      alive: true
+      life: 100
+      angle: angle
+      type: 'active'
+
+  buildWireframe: () ->
+    [ new nv.Point(0, 0) ]
+
+  _updateBounds: () ->
+    @_bounds.reset @_path[0].x - @radius, @_path[0].y - @radius, @_path[0].x + @radius, @_path[0].y + @radius
 
 
 class Ship extends GameObject

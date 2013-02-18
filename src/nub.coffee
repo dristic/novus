@@ -1,6 +1,6 @@
 #= require grounds
 
-class Connection extends EventDispatcher
+class Connection extends nv.EventDispatcher
   constructor: () ->
     @listeners = {}
 

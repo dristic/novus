@@ -1,5 +1,7 @@
 class nv.Scene
   constructor: () ->
+    @dispatcher = new nv.EventDispatcher()
+    @gamepad = nv.gamepad()
     @controllers = []
     @models = {}
     @renderers = []
