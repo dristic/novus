@@ -6,321 +6,6 @@
 }).call(this);
 
 (function() {
-
-  nv.Controller = (function() {
-
-    function Controller(asset) {
-      this.asset = asset;
-    }
-
-    Controller.prototype.update = function(dt) {};
-
-    return Controller;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.Entity = (function() {
-
-    function Entity(plugins) {
-      this.plugins = plugins;
-    }
-
-    return Entity;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.EventDispatcher = (function() {
-
-    function EventDispatcher() {
-      this.listeners = [];
-    }
-
-    EventDispatcher.prototype.on = function(event, func) {
-      var listeners;
-      listeners = this.listeners[event];
-      if (!(listeners instanceof Array)) {
-        listeners = [];
-      }
-      listeners.push(func);
-      this.listeners[event] = listeners;
-      return this;
-    };
-
-    EventDispatcher.prototype.fire = function(event, data) {
-      var listener, listeners, _i, _len, _results;
-      data = data != null ? data : {};
-      data.type = event;
-      listeners = this.listeners[event];
-      if (listeners instanceof Array) {
-        _results = [];
-        for (_i = 0, _len = listeners.length; _i < _len; _i++) {
-          listener = listeners[_i];
-          _results.push(listener(data));
-        }
-        return _results;
-      }
-    };
-
-    EventDispatcher.prototype.off = function(event, func) {
-      if (!this.listeners[event] instanceof Array) {
-
-      } else {
-        if (this.listeners[event].indexOf(func(!0))) {
-          this.listeners[event].splice(this.listeners[event].indexOf(func), 1);
-        }
-      }
-      return this;
-    };
-
-    return EventDispatcher;
-
-  })();
-
-}).call(this);
-
-(function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  nv.Model = (function() {
-
-    function Model(name, options, data) {}
-
-    Model.prototype.setMany = function(object) {
-      var key, _results;
-      _results = [];
-      for (key in object) {
-        _results.push(this[key] = object[key]);
-      }
-      return _results;
-    };
-
-    Model.prototype.persist = function() {
-      return window.localStorage[this.name] = this;
-    };
-
-    Model.prototype.load = function() {
-      return this.setMany(window.localStorage[this.name]);
-    };
-
-    return Model;
-
-  })();
-
-  nv.Collection = (function(_super) {
-
-    __extends(Collection, _super);
-
-    function Collection(name, options, arr) {
-      this.items = arr != null ? arr : [];
-    }
-
-    return Collection;
-
-  })(nv.Model);
-
-}).call(this);
-
-(function() {
-  var zIndex;
-
-  zIndex = 0;
-
-  nv.ObjectRenderer = (function() {
-
-    function ObjectRenderer(glcanvas, asset) {
-      this.glcanvas = glcanvas;
-      this.asset = asset;
-      this.glcanvas.addDrawable(this);
-    }
-
-    ObjectRenderer.prototype.draw = function(dt) {};
-
-    ObjectRenderer.prototype.destroy = function() {
-      return this.glcanvas.removeDrawable(this);
-    };
-
-    ObjectRenderer.prototype.nextZIndex = function() {
-      return zIndex++;
-    };
-
-    return ObjectRenderer;
-
-  })();
-
-  nv.ObjectListRenderer = (function() {
-
-    function ObjectListRenderer(glcanvas, assets) {
-      var _this = this;
-      this.assets = assets;
-      this.classname = this.constructor.toString();
-      this.assetCounter = 0;
-      glcanvas.addDrawable(this);
-      $.each(this.assets, function(asset) {
-        return _this.acquireAsset(asset);
-      });
-    }
-
-    ObjectListRenderer.prototype.acquireAsset = function(asset) {
-      asset.id = this.classname + this.assetCounter++;
-      return asset;
-    };
-
-    ObjectListRenderer.prototype.add = function(asset) {
-      this.assets.push(this.acquireAsset(asset));
-      return asset;
-    };
-
-    ObjectListRenderer.prototype.remove = function(target) {
-      return this.assets = this.assets.filter(function(asset) {
-        return asset.id !== target.id;
-      });
-    };
-
-    ObjectListRenderer.prototype.draw = function(dt) {};
-
-    ObjectListRenderer.prototype.nextZIndex = function() {
-      return zIndex++;
-    };
-
-    return ObjectListRenderer;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.Scene = (function() {
-
-    function Scene() {
-      this.dispatcher = new nv.EventDispatcher();
-      this.gamepad = nv.gamepad();
-      this.controllers = [];
-      this.models = {};
-      this.renderers = [];
-    }
-
-    Scene.prototype.addController = function(controller) {
-      return this.controllers.push(controller);
-    };
-
-    Scene.prototype.removeController = function(controller) {
-      return this.controllers.splice(this.controllers.indexOf(controller), 1);
-    };
-
-    Scene.prototype.addModel = function(name, model) {
-      return this.models[name] = model;
-    };
-
-    Scene.prototype.getModel = function(name) {
-      return this.models[name];
-    };
-
-    Scene.prototype.removeModel = function(name) {
-      return delete this.models[name];
-    };
-
-    Scene.prototype.addRenderer = function(renderer) {
-      return this.renderers.push(renderer);
-    };
-
-    Scene.prototype.removeRenderer = function(renderer) {
-      return this.renderers.splice(this.renderers.indexOf(renderer), 1);
-    };
-
-    Scene.prototype.update = function(dt) {
-      var controller, _i, _len, _ref, _results;
-      _ref = this.controllers;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        controller = _ref[_i];
-        _results.push(controller.update(dt));
-      }
-      return _results;
-    };
-
-    return Scene;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.Point = (function() {
-
-    function Point(x, y) {
-      this.x = x;
-      this.y = y;
-    }
-
-    Point.prototype.clone = function() {
-      return new nv.Point(this.x, this.y);
-    };
-
-    Point.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      this.y += dy;
-      return this;
-    };
-
-    return Point;
-
-  })();
-
-  nv.Rect = (function() {
-
-    function Rect(x, y, x2, y2) {
-      this.x = x;
-      this.y = y;
-      this.x2 = x2;
-      this.y2 = y2;
-    }
-
-    Rect.prototype.clone = function() {
-      return new nv.Rect(this.x, this.y, this.x2, this.y2);
-    };
-
-    Rect.prototype.reset = function(x, y, x2, y2) {
-      this.x = x;
-      this.y = y;
-      this.x2 = x2;
-      this.y2 = y2;
-    };
-
-    Rect.prototype._checkPt = function(tx, ty) {
-      return (tx >= this.x && tx <= this.x2) && (ty >= this.y && ty <= this.y2);
-    };
-
-    Rect.prototype.contains = function(pt) {
-      return this._checkPt(pt.x, pt.y);
-    };
-
-    Rect.prototype.intersects = function(rect) {
-      return this._checkPt(rect.x, rect.y) || this._checkPt(rect.x, rect.y2) || this._checkPt(rect.x2, rect.y2) || this._checkPt(rect.x2, rect.y);
-    };
-
-    Rect.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      return this.y += dy;
-    };
-
-    return Rect;
-
-  })();
-
-}).call(this);
-
-(function() {
   var _ref;
 
   window.nv = (_ref = window.nv) != null ? _ref : {};
@@ -639,9 +324,38 @@
 }).call(this);
 
 (function() {
-  var EventDispatcher;
 
-  EventDispatcher = (function() {
+  nv.Controller = (function() {
+
+    function Controller(asset) {
+      this.asset = asset;
+    }
+
+    Controller.prototype.update = function(dt) {};
+
+    return Controller;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+  nv.Entity = (function() {
+
+    function Entity(plugins) {
+      this.plugins = plugins;
+    }
+
+    return Entity;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+  nv.EventDispatcher = (function() {
 
     function EventDispatcher() {
       this.listeners = [];
@@ -661,7 +375,6 @@
     EventDispatcher.prototype.fire = function(event, data) {
       var listener, listeners, _i, _len, _results;
       data = data != null ? data : {};
-      data.data = data;
       data.type = event;
       listeners = this.listeners[event];
       if (listeners instanceof Array) {
@@ -689,74 +402,271 @@
 
   })();
 
-  window.EventDispatcher = EventDispatcher;
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.Model = (function() {
+
+    function Model(name, options, data) {}
+
+    Model.prototype.setMany = function(object) {
+      var key, _results;
+      _results = [];
+      for (key in object) {
+        _results.push(this[key] = object[key]);
+      }
+      return _results;
+    };
+
+    Model.prototype.persist = function() {
+      return window.localStorage[this.name] = this;
+    };
+
+    Model.prototype.load = function() {
+      return this.setMany(window.localStorage[this.name]);
+    };
+
+    return Model;
+
+  })();
+
+  nv.Collection = (function(_super) {
+
+    __extends(Collection, _super);
+
+    function Collection(name, options, arr) {
+      this.items = arr != null ? arr : [];
+    }
+
+    return Collection;
+
+  })(nv.Model);
 
 }).call(this);
 
 (function() {
-  var Connection,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var zIndex;
 
-  Connection = (function(_super) {
+  zIndex = 0;
 
-    __extends(Connection, _super);
+  nv.ObjectRenderer = (function() {
 
-    function Connection() {
+    function ObjectRenderer(glcanvas, asset) {
+      this.glcanvas = glcanvas;
+      this.asset = asset;
+      this.glcanvas.addDrawable(this);
+    }
+
+    ObjectRenderer.prototype.draw = function(dt) {};
+
+    ObjectRenderer.prototype.destroy = function() {
+      return this.glcanvas.removeDrawable(this);
+    };
+
+    ObjectRenderer.prototype.nextZIndex = function() {
+      return zIndex++;
+    };
+
+    return ObjectRenderer;
+
+  })();
+
+  nv.ObjectListRenderer = (function() {
+
+    function ObjectListRenderer(glcanvas, assets) {
       var _this = this;
-      this.listeners = {};
-      this.connection = this.connectToChannel('novus');
-      this.connection.on('connect', function() {
-        return console.log('Connected!');
-      });
-      this.connection.on('join', function(user) {
-        return console.log(user);
-      });
-      this.connection.on('message', function(message) {
-        return _this.handleMessage(message);
+      this.assets = assets;
+      this.classname = this.constructor.toString();
+      this.assetCounter = 0;
+      glcanvas.addDrawable(this);
+      $.each(this.assets, function(asset) {
+        return _this.acquireAsset(asset);
       });
     }
 
-    Connection.prototype.handleMessage = function(message) {
-      console.log(message);
-      if (message.id) {
-        return this.fire(message.id, message);
+    ObjectListRenderer.prototype.acquireAsset = function(asset) {
+      asset.id = this.classname + this.assetCounter++;
+      return asset;
+    };
+
+    ObjectListRenderer.prototype.add = function(asset) {
+      this.assets.push(this.acquireAsset(asset));
+      return asset;
+    };
+
+    ObjectListRenderer.prototype.remove = function(target) {
+      return this.assets = this.assets.filter(function(asset) {
+        return asset.id !== target.id;
+      });
+    };
+
+    ObjectListRenderer.prototype.draw = function(dt) {};
+
+    ObjectListRenderer.prototype.nextZIndex = function() {
+      return zIndex++;
+    };
+
+    return ObjectListRenderer;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+  nv.Scene = (function() {
+
+    function Scene() {
+      this.dispatcher = new nv.EventDispatcher();
+      this.gamepad = nv.gamepad();
+      this.controllers = [];
+      this.models = {};
+      this.renderers = [];
+    }
+
+    Scene.prototype.addController = function(controller) {
+      return this.controllers.push(controller);
+    };
+
+    Scene.prototype.removeController = function(controller) {
+      return this.controllers.splice(this.controllers.indexOf(controller), 1);
+    };
+
+    Scene.prototype.addModel = function(name, model) {
+      return this.models[name] = model;
+    };
+
+    Scene.prototype.getModel = function(name) {
+      return this.models[name];
+    };
+
+    Scene.prototype.removeModel = function(name) {
+      return delete this.models[name];
+    };
+
+    Scene.prototype.addRenderer = function(renderer) {
+      return this.renderers.push(renderer);
+    };
+
+    Scene.prototype.removeRenderer = function(renderer) {
+      return this.renderers.splice(this.renderers.indexOf(renderer), 1);
+    };
+
+    Scene.prototype.update = function(dt) {
+      var controller, _i, _len, _ref, _results;
+      _ref = this.controllers;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        controller = _ref[_i];
+        _results.push(controller.update(dt));
       }
+      return _results;
     };
 
-    Connection.prototype.send = function(id, data) {
-      data.id = id;
-      return this.connection.emit('message', data);
+    return Scene;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+  nv.Point = (function() {
+
+    function Point(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+
+    Point.prototype.clone = function() {
+      return new nv.Point(this.x, this.y);
     };
 
-    Connection.prototype.connectToChannel = function(channel) {
-      return io.connect('http://pubsub.pubnub.com', {
-        channel: channel,
-        publish_key: 'pub-c54880a5-ba99-4836-a084-08f57b4b5333',
-        subscribe_key: 'sub-3129de73-8f26-11e1-94c8-1543525cae6d',
-        ssl: false
-      });
+    Point.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+      return this;
     };
 
-    Connection.prototype.auth = function(user) {
-      var _this = this;
-      return $.post('http://localhost:3000', {
-        user: user
-      }, function(response) {
-        var token;
-        token = JSON.parse(response).token;
-        _this.connection = _this.connectToChannel(token);
-        return _this.connection.send('Hello server!');
-      });
+    return Point;
+
+  })();
+
+  nv.Rect = (function() {
+
+    function Rect(x, y, x2, y2) {
+      this.x = x;
+      this.y = y;
+      this.x2 = x2;
+      this.y2 = y2;
+    }
+
+    Rect.prototype.clone = function() {
+      return new nv.Rect(this.x, this.y, this.x2, this.y2);
     };
 
-    return Connection;
+    Rect.prototype.reset = function(x, y, x2, y2) {
+      this.x = x;
+      this.y = y;
+      this.x2 = x2;
+      this.y2 = y2;
+    };
 
-  })(nv.EventDispatcher);
+    Rect.prototype._checkPt = function(tx, ty) {
+      return (tx >= this.x && tx <= this.x2) && (ty >= this.y && ty <= this.y2);
+    };
 
-  window.nub = function() {
-    return new Connection();
-  };
+    Rect.prototype.contains = function(pt) {
+      return this._checkPt(pt.x, pt.y);
+    };
+
+    Rect.prototype.intersects = function(rect) {
+      return this._checkPt(rect.x, rect.y) || this._checkPt(rect.x, rect.y2) || this._checkPt(rect.x2, rect.y2) || this._checkPt(rect.x2, rect.y);
+    };
+
+    Rect.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    return Rect;
+
+  })();
+
+}).call(this);
+
+(function() {
+  var Debug;
+
+  Debug = (function() {
+
+    Debug.prototype.html = "<div id=\"debug\"></div>";
+
+    function Debug() {}
+
+    Debug.prototype.log = function() {
+      var messages;
+      messages = arguments;
+      return console.log(arguments);
+    };
+
+    return Debug;
+
+  })();
+
+  $(function() {
+    nv.Debug = new Debug;
+    return nv.log = nv.Debug.log;
+  });
+
+}).call(this);
+
+(function() {
+
+
 
 }).call(this);
 
@@ -1042,28 +952,8 @@
 }).call(this);
 
 (function() {
-  var Debug;
 
-  Debug = (function() {
 
-    Debug.prototype.html = "<div id=\"debug\"></div>";
-
-    function Debug() {}
-
-    Debug.prototype.log = function() {
-      var messages;
-      messages = arguments;
-      return console.log(arguments);
-    };
-
-    return Debug;
-
-  })();
-
-  $(function() {
-    nv.Debug = new Debug;
-    return nv.log = nv.Debug.log;
-  });
 
 }).call(this);
 
@@ -1681,6 +1571,9 @@
       this.scene.dispatcher.on('new:Bullet', function(event) {
         return _this.add(event.asset);
       });
+      this.scene.dispatcher.on('delete:Bullet', function(event) {
+        return _this.remove(event.asset);
+      });
     }
 
     BulletRenderer.prototype.draw = function(context) {
@@ -1743,9 +1636,7 @@
       this.color = '#FFF';
       this.strokeWidth = 2;
       this.scene.dispatcher.on('delete:Asteroid', function(data) {
-        return _this.assets = _this.assets.filter(function(asset) {
-          return asset.id !== data.asset.id;
-        });
+        return _this.remove(data.asset);
       });
     }
 

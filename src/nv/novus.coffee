@@ -1,0 +1,10 @@
+#= require base
+#= require common
+#= require controller
+#= require entity
+#= require event_dispatcher
+#= require model
+#= require renderer
+#= require scene
+#= require shape
+#= require debug

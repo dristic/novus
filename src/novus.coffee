@@ -1,8 +1,7 @@
-#= require_tree nv
-#= require common
-#= require nub
+#= require nv/novus
 #= require gleam
-#= require debug
+
+#= require entities
 #= require models
 #= require controllers
 #= require renderers
