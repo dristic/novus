@@ -14,7 +14,7 @@ class nv.EventDispatcher
   fire: (event, data) ->
     data = data ? {}
     #data.data = data
-    data.type = event
+    #data.type = event
 
     listeners = @listeners[event]
 

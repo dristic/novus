@@ -1,6 +1,6 @@
 window.renderers = renderers = {}
 
-class renderers.Background extends nv.Plugin
+class renderers.Background extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
 
@@ -22,8 +22,6 @@ class renderers.Background extends nv.Plugin
         gradient.addColorStop 1, "black"
         context.color gradient
         context.arc x, y, radius, 0, Math.PI * 2, true
-
-    @entity.glcanvas.addDrawable this
 
   draw: (context, canvas) ->
     context.globalCompositeOperation = "lighter"

@@ -18,26 +18,32 @@ class Asteroids extends nv.Game
 
     document.body.appendChild glcanvas.canvas unless canvasEl isnt undefined
 
+    @registerEngine nv.RenderingEngine
+    @registerEngine nv.GamepadEngine
+
     @registerScene 'Main', Main
     @registerScene 'Game', Game
 
     @openScene 'Main', glcanvas
 
 class Main extends nv.Scene
-  constructor: (game, @glcanvas, @callback) ->
-    super game
-
-    # @addModel 'Global', window.global ? new nv.models.Global
+  constructor: (game, @glcanvas) ->
+    super game,
+      canvas: glcanvas
+      keys:
+        start: nv.Key.Spacebar
+      trackMouse: true
 
     @addEntity new entities.Background(this, @glcanvas)
+    @addEntity new entities.Title(this)
+    @addEntity new entities.ActionText(this)
+    @addEntity new entities.Cursor(this)
 
-    # @square = new gl.square
-    # @glcanvas.addDrawable @square
     @glcanvas.camera = nv.camera()
     @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
-    # @gamepad.trackMouse()
 
-    @gamepad.aliasKey 'start', nv.Key.Spacebar
+    @on "engine:gamepad:start", () =>
+      @game.openScene 'Game', @glcanvas
 
   fire: (event, data) ->
     console.log "[EVENT] - #{event}"
@@ -45,18 +51,10 @@ class Main extends nv.Scene
     super event, data
 
   update: (dt) ->
-    state = @gamepad.getState()
-
-    # @square.x = state.mouse.x
-    # @square.y = state.mouse.y
-
-    if state.start
-      @destroy()
+    super dt
 
   destroy: () ->
-    renderer.destroy() for renderer in @renderers
     @glcanvas.stopDrawUpdate()
-    @callback() unless not @callback
 
 class Game extends nv.Scene
   constructor: (@glcanvas) ->

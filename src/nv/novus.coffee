@@ -5,8 +5,10 @@
 #= require entity
 #= require event_dispatcher
 #= require model
-#= require renderer
 #= require scene
 #= require shape
 #= require debug
 #= require game
+#= require engine
+#= require renderer
+#= require gamepad

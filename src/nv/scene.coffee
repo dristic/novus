@@ -1,11 +1,14 @@
 class nv.Scene extends nv.EventDispatcher
-  constructor: (@game) ->
+  constructor: (@game, @options) ->
     super
     @gamepad = nv.gamepad()
     @controllers = []
     @models = {}
     @renderers = []
     @entities = []
+
+    @engines = []
+    @engines.push new klass this for klass in @game.engines
 
   addEntity: (entity) ->
     @entities.push entity
@@ -36,3 +39,5 @@ class nv.Scene extends nv.EventDispatcher
 
   update: (dt) ->
     controller.update dt for controller in @controllers
+    engine.update dt for engine in @engines
+    entity.update dt for entity in @entities

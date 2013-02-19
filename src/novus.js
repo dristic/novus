@@ -330,7 +330,6 @@
     function Plugin(scene, entity) {
       this.scene = scene;
       this.entity = entity;
-      this.scene.fire("plugin:create:" + this.constructor.name);
     }
 
     return Plugin;
@@ -402,7 +401,6 @@
     EventDispatcher.prototype.fire = function(event, data) {
       var listener, listeners, _i, _len, _results;
       data = data != null ? data : {};
-      data.type = event;
       listeners = this.listeners[event];
       if (listeners instanceof Array) {
         _results = [];
@@ -477,74 +475,6 @@
 }).call(this);
 
 (function() {
-  var zIndex;
-
-  zIndex = 0;
-
-  nv.ObjectRenderer = (function() {
-
-    function ObjectRenderer(glcanvas, asset) {
-      this.glcanvas = glcanvas;
-      this.asset = asset;
-      this.glcanvas.addDrawable(this);
-    }
-
-    ObjectRenderer.prototype.draw = function(dt) {};
-
-    ObjectRenderer.prototype.destroy = function() {
-      return this.glcanvas.removeDrawable(this);
-    };
-
-    ObjectRenderer.prototype.nextZIndex = function() {
-      return zIndex++;
-    };
-
-    return ObjectRenderer;
-
-  })();
-
-  nv.ObjectListRenderer = (function() {
-
-    function ObjectListRenderer(glcanvas, assets) {
-      var _this = this;
-      this.assets = assets;
-      this.classname = this.constructor.toString();
-      this.assetCounter = 0;
-      glcanvas.addDrawable(this);
-      $.each(this.assets, function(asset) {
-        return _this.acquireAsset(asset);
-      });
-    }
-
-    ObjectListRenderer.prototype.acquireAsset = function(asset) {
-      asset.id = this.classname + this.assetCounter++;
-      return asset;
-    };
-
-    ObjectListRenderer.prototype.add = function(asset) {
-      this.assets.push(this.acquireAsset(asset));
-      return asset;
-    };
-
-    ObjectListRenderer.prototype.remove = function(target) {
-      return this.assets = this.assets.filter(function(asset) {
-        return asset.id !== target.id;
-      });
-    };
-
-    ObjectListRenderer.prototype.draw = function(dt) {};
-
-    ObjectListRenderer.prototype.nextZIndex = function() {
-      return zIndex++;
-    };
-
-    return ObjectListRenderer;
-
-  })();
-
-}).call(this);
-
-(function() {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -552,14 +482,22 @@
 
     __extends(Scene, _super);
 
-    function Scene(game) {
+    function Scene(game, options) {
+      var klass, _i, _len, _ref;
       this.game = game;
+      this.options = options;
       Scene.__super__.constructor.apply(this, arguments);
       this.gamepad = nv.gamepad();
       this.controllers = [];
       this.models = {};
       this.renderers = [];
       this.entities = [];
+      this.engines = [];
+      _ref = this.game.engines;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        klass = _ref[_i];
+        this.engines.push(new klass(this));
+      }
     }
 
     Scene.prototype.addEntity = function(entity) {
@@ -599,12 +537,22 @@
     };
 
     Scene.prototype.update = function(dt) {
-      var controller, _i, _len, _ref, _results;
+      var controller, engine, entity, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
       _ref = this.controllers;
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         controller = _ref[_i];
-        _results.push(controller.update(dt));
+        controller.update(dt);
+      }
+      _ref1 = this.engines;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        engine = _ref1[_j];
+        engine.update(dt);
+      }
+      _ref2 = this.entities;
+      _results = [];
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        entity = _ref2[_k];
+        _results.push(entity.update(dt));
       }
       return _results;
     };
@@ -715,7 +663,12 @@
     function Game() {
       this.currentScene = null;
       this.sceneClasses = {};
+      this.engines = [];
     }
+
+    Game.prototype.registerEngine = function(klass) {
+      return this.engines.push(klass);
+    };
 
     Game.prototype.registerScene = function(name, klass) {
       return this.sceneClasses[name] = klass;
@@ -724,6 +677,7 @@
     Game.prototype.openScene = function() {
       var args, name;
       name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      this.closeScene();
       return this.currentScene = (function(func, args, ctor) {
         ctor.prototype = func.prototype;
         var child = new ctor, result = func.apply(child, args);
@@ -731,9 +685,205 @@
       })(this.sceneClasses[name], [this].concat(__slice.call(args)), function(){});
     };
 
+    Game.prototype.closeScene = function() {
+      if (!!this.currentScene) {
+        return this.currentScene.destroy();
+      }
+    };
+
     return Game;
 
   })();
+
+}).call(this);
+
+(function() {
+
+  nv.Engine = (function() {
+
+    function Engine(scene) {
+      this.scene = scene;
+    }
+
+    Engine.prototype.update = function(dt) {};
+
+    return Engine;
+
+  })();
+
+}).call(this);
+
+(function() {
+  var zIndex,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.RenderingEngine = (function(_super) {
+
+    __extends(RenderingEngine, _super);
+
+    function RenderingEngine(scene) {
+      var _this = this;
+      RenderingEngine.__super__.constructor.call(this, scene);
+      this.canvas = scene.options.canvas;
+      this.context = this.canvas.context;
+      this.drawables = [];
+      scene.on("engine:rendering:create", function(drawable) {
+        _this.drawables.push(drawable);
+        return _this.canvas.addDrawable(drawable);
+      });
+      scene.on("engine:rendering:delete", function(drawable) {
+        _this.drawables.splice(_this.drawables.indexOf(drawable), 1);
+        return _this.canvas.removeDrawable(drawable);
+      });
+    }
+
+    return RenderingEngine;
+
+  })(nv.Engine);
+
+  nv.RenderingPlugin = (function(_super) {
+
+    __extends(RenderingPlugin, _super);
+
+    function RenderingPlugin(scene, entity) {
+      RenderingPlugin.__super__.constructor.call(this, scene, entity);
+      this.scene.fire("engine:rendering:create", this);
+    }
+
+    RenderingPlugin.prototype.draw = function(context, canvas) {};
+
+    return RenderingPlugin;
+
+  })(nv.Plugin);
+
+  nv.DrawableRenderingPlugin = (function(_super) {
+
+    __extends(DrawableRenderingPlugin, _super);
+
+    function DrawableRenderingPlugin(scene, entity) {
+      DrawableRenderingPlugin.__super__.constructor.call(this, scene, entity);
+      this.drawable = entity.model.drawable;
+    }
+
+    DrawableRenderingPlugin.prototype.draw = function(context, canvas) {
+      return this.drawable.draw(context, canvas);
+    };
+
+    return DrawableRenderingPlugin;
+
+  })(nv.RenderingPlugin);
+
+  nv.TextRenderingPlugin = (function(_super) {
+
+    __extends(TextRenderingPlugin, _super);
+
+    function TextRenderingPlugin(scene, entity) {
+      TextRenderingPlugin.__super__.constructor.call(this, scene, entity);
+      this.text = new gl.text(entity.model);
+    }
+
+    TextRenderingPlugin.prototype.draw = function(context, canvas) {
+      return this.text.draw(context, canvas);
+    };
+
+    return TextRenderingPlugin;
+
+  })(nv.RenderingPlugin);
+
+  zIndex = 0;
+
+  nv.ObjectRenderer = (function() {
+
+    function ObjectRenderer(glcanvas, asset) {
+      this.glcanvas = glcanvas;
+      this.asset = asset;
+      this.glcanvas.addDrawable(this);
+    }
+
+    ObjectRenderer.prototype.draw = function(dt) {};
+
+    ObjectRenderer.prototype.destroy = function() {
+      return this.glcanvas.removeDrawable(this);
+    };
+
+    ObjectRenderer.prototype.nextZIndex = function() {
+      return zIndex++;
+    };
+
+    return ObjectRenderer;
+
+  })();
+
+  nv.ObjectListRenderer = (function() {
+
+    function ObjectListRenderer(glcanvas, assets) {
+      var _this = this;
+      this.assets = assets;
+      this.classname = this.constructor.toString();
+      this.assetCounter = 0;
+      glcanvas.addDrawable(this);
+      $.each(this.assets, function(asset) {
+        return _this.acquireAsset(asset);
+      });
+    }
+
+    ObjectListRenderer.prototype.acquireAsset = function(asset) {
+      asset.id = this.classname + this.assetCounter++;
+      return asset;
+    };
+
+    ObjectListRenderer.prototype.add = function(asset) {
+      this.assets.push(this.acquireAsset(asset));
+      return asset;
+    };
+
+    ObjectListRenderer.prototype.remove = function(target) {
+      return this.assets = this.assets.filter(function(asset) {
+        return asset.id !== target.id;
+      });
+    };
+
+    ObjectListRenderer.prototype.draw = function(dt) {};
+
+    ObjectListRenderer.prototype.nextZIndex = function() {
+      return zIndex++;
+    };
+
+    return ObjectListRenderer;
+
+  })();
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.GamepadEngine = (function(_super) {
+
+    __extends(GamepadEngine, _super);
+
+    function GamepadEngine(scene) {
+      var key,
+        _this = this;
+      GamepadEngine.__super__.constructor.call(this, scene);
+      this.gamepad = scene.gamepad;
+      this.options = scene.options;
+      if (!!this.options.trackMouse) {
+        this.gamepad.trackMouse();
+      }
+      for (key in this.options.keys) {
+        this.gamepad.aliasKey(key, this.options.keys[key]);
+        this.gamepad.onButtonPress(key, function(button) {
+          return _this.scene.fire("engine:gamepad:" + button);
+        });
+      }
+    }
+
+    return GamepadEngine;
+
+  })(nv.Engine);
 
 }).call(this);
 
@@ -1040,9 +1190,65 @@
       Background.__super__.constructor.call(this, scene, [renderers.Background], new models.Background);
     }
 
-    Background.prototype.update = function(dt) {};
-
     return Background;
+
+  })(nv.Entity);
+
+  entities.Title = (function(_super) {
+
+    __extends(Title, _super);
+
+    function Title(scene) {
+      Title.__super__.constructor.call(this, scene, [nv.TextRenderingPlugin], {
+        color: "#0F0",
+        x: 200,
+        y: 200,
+        font: "bold 20px sans-serif",
+        text: "Asteroids"
+      });
+    }
+
+    return Title;
+
+  })(nv.Entity);
+
+  entities.ActionText = (function(_super) {
+
+    __extends(ActionText, _super);
+
+    function ActionText(scene) {
+      ActionText.__super__.constructor.call(this, scene, [nv.TextRenderingPlugin], {
+        color: "#0F0",
+        x: 200,
+        y: 400,
+        font: "bold 20px sans-serif",
+        text: "Press <Space> to Start"
+      });
+    }
+
+    return ActionText;
+
+  })(nv.Entity);
+
+  entities.Cursor = (function(_super) {
+
+    __extends(Cursor, _super);
+
+    function Cursor(scene) {
+      Cursor.__super__.constructor.call(this, scene, [nv.DrawableRenderingPlugin], {
+        drawable: new gl.square
+      });
+      this.gamepad = this.scene.gamepad;
+    }
+
+    Cursor.prototype.update = function(dt) {
+      var state;
+      state = this.gamepad.getState();
+      this.model.drawable.x = state.mouse.x;
+      return this.model.drawable.y = state.mouse.y;
+    };
+
+    return Cursor;
 
   })(nv.Entity);
 
@@ -1667,7 +1873,6 @@
           return context.arc(x, y, radius, 0, Math.PI * 2, true);
         });
       }
-      this.entity.glcanvas.addDrawable(this);
     }
 
     Background.prototype.draw = function(context, canvas) {
@@ -1698,7 +1903,7 @@
 
     return Background;
 
-  })(nv.Plugin);
+  })(nv.RenderingPlugin);
 
   BackgroundRenderer = (function(_super) {
 
@@ -1981,6 +2186,8 @@
       if (canvasEl === void 0) {
         document.body.appendChild(glcanvas.canvas);
       }
+      this.registerEngine(nv.RenderingEngine);
+      this.registerEngine(nv.GamepadEngine);
       this.registerScene('Main', Main);
       this.registerScene('Game', Game);
       this.openScene('Main', glcanvas);
@@ -1994,14 +2201,25 @@
 
     __extends(Main, _super);
 
-    function Main(game, glcanvas, callback) {
+    function Main(game, glcanvas) {
+      var _this = this;
       this.glcanvas = glcanvas;
-      this.callback = callback;
-      Main.__super__.constructor.call(this, game);
+      Main.__super__.constructor.call(this, game, {
+        canvas: glcanvas,
+        keys: {
+          start: nv.Key.Spacebar
+        },
+        trackMouse: true
+      });
       this.addEntity(new entities.Background(this, this.glcanvas));
+      this.addEntity(new entities.Title(this));
+      this.addEntity(new entities.ActionText(this));
+      this.addEntity(new entities.Cursor(this));
       this.glcanvas.camera = nv.camera();
       this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
-      this.gamepad.aliasKey('start', nv.Key.Spacebar);
+      this.on("engine:gamepad:start", function() {
+        return _this.game.openScene('Game', _this.glcanvas);
+      });
     }
 
     Main.prototype.fire = function(event, data) {
@@ -2010,24 +2228,11 @@
     };
 
     Main.prototype.update = function(dt) {
-      var state;
-      state = this.gamepad.getState();
-      if (state.start) {
-        return this.destroy();
-      }
+      return Main.__super__.update.call(this, dt);
     };
 
     Main.prototype.destroy = function() {
-      var renderer, _i, _len, _ref;
-      _ref = this.renderers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        renderer = _ref[_i];
-        renderer.destroy();
-      }
-      this.glcanvas.stopDrawUpdate();
-      if (!!this.callback) {
-        return this.callback();
-      }
+      return this.glcanvas.stopDrawUpdate();
     };
 
     return Main;

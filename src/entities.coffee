@@ -4,8 +4,36 @@ class entities.Background extends nv.Entity
   constructor: (scene, @glcanvas) ->
     super scene, [renderers.Background], new models.Background
 
+class entities.Title extends nv.Entity
+  constructor: (scene) ->
+    super scene, [nv.TextRenderingPlugin],
+      color: "#0F0"
+      x: 200
+      y: 200
+      font: "bold 20px sans-serif"
+      text: "Asteroids"
+
+class entities.ActionText extends nv.Entity
+  constructor: (scene) ->
+    super scene, [nv.TextRenderingPlugin],
+      color: "#0F0"
+      x: 200
+      y: 400
+      font: "bold 20px sans-serif"
+      text: "Press <Space> to Start"
+
+class entities.Cursor extends nv.Entity
+  constructor: (scene) ->
+    super scene, [nv.DrawableRenderingPlugin],
+      drawable: new gl.square
+
+    @gamepad = @scene.gamepad
+
   update: (dt) ->
-    
+    state = @gamepad.getState()
+
+    @model.drawable.x = state.mouse.x
+    @model.drawable.y = state.mouse.y
 
 class ShipModel extends nv.Model
   constructor: () ->
