@@ -8,6 +8,8 @@ class renderers.Background extends nv.RenderingPlugin
     @canvas.width = entity.model.width
     @canvas.height = entity.model.height
 
+    @glcanvas = scene.get 'canvas'
+
     i = 0
     until i > 100
       i++
@@ -26,8 +28,8 @@ class renderers.Background extends nv.RenderingPlugin
   draw: (context, canvas) ->
     context.globalCompositeOperation = "lighter"
 
-    camX = -@entity.glcanvas.camera.x
-    camY = -@entity.glcanvas.camera.y
+    camX = -@glcanvas.camera.x
+    camY = -@glcanvas.camera.y
 
     startX = camX + ((@entity.model.x - camX) % @entity.model.width)
     startY = camY + ((@entity.model.y - camY) % @entity.model.height)
@@ -38,8 +40,8 @@ class renderers.Background extends nv.RenderingPlugin
     curX = startX
     curY = startY
 
-    while curX < camX + @entity.glcanvas.width
-      while curY < camY + @entity.glcanvas.height
+    while curX < camX + @glcanvas.width
+      while curY < camY + @glcanvas.height
         context.drawImage @canvas, curX, curY
         curY += @entity.model.height
 

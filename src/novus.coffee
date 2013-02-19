@@ -32,13 +32,15 @@ class Main extends nv.Scene
       canvas: glcanvas
       keys:
         start: nv.Key.Spacebar
+        left: nv.Key.A
+        right: nv.Key.D
       trackMouse: true
 
-    @addEntity new entities.Background(this, @glcanvas)
-    @addEntity new entities.Title(this)
-    @addEntity new entities.ActionText(this)
-    @addEntity new entities.Cursor(this)
-
+    @addEntities entities.Background,
+      entities.Title,
+      entities.ActionText,
+      entities.Cursor
+      
     @glcanvas.camera = nv.camera()
     @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
 

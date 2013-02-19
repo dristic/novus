@@ -6,11 +6,22 @@ class nv.Scene extends nv.EventDispatcher
     @models = {}
     @renderers = []
     @entities = []
+    @options = @options ? {}
 
     @engines = []
     @engines.push new klass this for klass in @game.engines
 
-  addEntity: (entity) ->
+  get: (key) ->
+    @options[key]
+
+  set: (key, value) ->
+    @options[key] = value
+
+  addEntities: (entities...) ->
+    @addEntity entity for entity in entities
+
+  addEntity: (entity, args...) ->
+    entity = new entity this, args...
     @entities.push entity
 
   removeEntity: (entity) ->

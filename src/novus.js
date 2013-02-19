@@ -476,14 +476,15 @@
 
 (function() {
   var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __slice = [].slice;
 
   nv.Scene = (function(_super) {
 
     __extends(Scene, _super);
 
     function Scene(game, options) {
-      var klass, _i, _len, _ref;
+      var klass, _i, _len, _ref, _ref1;
       this.game = game;
       this.options = options;
       Scene.__super__.constructor.apply(this, arguments);
@@ -492,15 +493,42 @@
       this.models = {};
       this.renderers = [];
       this.entities = [];
+      this.options = (_ref = this.options) != null ? _ref : {};
       this.engines = [];
-      _ref = this.game.engines;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        klass = _ref[_i];
+      _ref1 = this.game.engines;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        klass = _ref1[_i];
         this.engines.push(new klass(this));
       }
     }
 
-    Scene.prototype.addEntity = function(entity) {
+    Scene.prototype.get = function(key) {
+      return this.options[key];
+    };
+
+    Scene.prototype.set = function(key, value) {
+      return this.options[key] = value;
+    };
+
+    Scene.prototype.addEntities = function() {
+      var entities, entity, _i, _len, _results;
+      entities = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      _results = [];
+      for (_i = 0, _len = entities.length; _i < _len; _i++) {
+        entity = entities[_i];
+        _results.push(this.addEntity(entity));
+      }
+      return _results;
+    };
+
+    Scene.prototype.addEntity = function() {
+      var args, entity;
+      entity = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      entity = (function(func, args, ctor) {
+        ctor.prototype = func.prototype;
+        var child = new ctor, result = func.apply(child, args);
+        return Object(result) === result ? result : child;
+      })(entity, [this].concat(__slice.call(args)), function(){});
       return this.entities.push(entity);
     };
 
@@ -1185,8 +1213,7 @@
 
     __extends(Background, _super);
 
-    function Background(scene, glcanvas) {
-      this.glcanvas = glcanvas;
+    function Background(scene) {
       Background.__super__.constructor.call(this, scene, [renderers.Background], new models.Background);
     }
 
@@ -1856,6 +1883,7 @@
       this.canvas = gl().size(700, 700);
       this.canvas.width = entity.model.width;
       this.canvas.height = entity.model.height;
+      this.glcanvas = scene.get('canvas');
       i = 0;
       while (!(i > 100)) {
         i++;
@@ -1878,8 +1906,8 @@
     Background.prototype.draw = function(context, canvas) {
       var camX, camY, curX, curY, startX, startY;
       context.globalCompositeOperation = "lighter";
-      camX = -this.entity.glcanvas.camera.x;
-      camY = -this.entity.glcanvas.camera.y;
+      camX = -this.glcanvas.camera.x;
+      camY = -this.glcanvas.camera.y;
       startX = camX + ((this.entity.model.x - camX) % this.entity.model.width);
       startY = camY + ((this.entity.model.y - camY) % this.entity.model.height);
       if (startX > camX) {
@@ -1890,8 +1918,8 @@
       }
       curX = startX;
       curY = startY;
-      while (curX < camX + this.entity.glcanvas.width) {
-        while (curY < camY + this.entity.glcanvas.height) {
+      while (curX < camX + this.glcanvas.width) {
+        while (curY < camY + this.glcanvas.height) {
           context.drawImage(this.canvas, curX, curY);
           curY += this.entity.model.height;
         }
@@ -2207,14 +2235,13 @@
       Main.__super__.constructor.call(this, game, {
         canvas: glcanvas,
         keys: {
-          start: nv.Key.Spacebar
+          start: nv.Key.Spacebar,
+          left: nv.Key.A,
+          right: nv.Key.D
         },
         trackMouse: true
       });
-      this.addEntity(new entities.Background(this, this.glcanvas));
-      this.addEntity(new entities.Title(this));
-      this.addEntity(new entities.ActionText(this));
-      this.addEntity(new entities.Cursor(this));
+      this.addEntities(entities.Background, entities.Title, entities.ActionText, entities.Cursor);
       this.glcanvas.camera = nv.camera();
       this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
       this.on("engine:gamepad:start", function() {

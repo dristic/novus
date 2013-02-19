@@ -1,7 +1,7 @@
 window.entities = entities = {}
 
 class entities.Background extends nv.Entity
-  constructor: (scene, @glcanvas) ->
+  constructor: (scene) ->
     super scene, [renderers.Background], new models.Background
 
 class entities.Title extends nv.Entity
