@@ -1,10 +1,17 @@
-class nv.Scene
-  constructor: () ->
-    @dispatcher = new nv.EventDispatcher()
+class nv.Scene extends nv.EventDispatcher
+  constructor: (@game) ->
+    super
     @gamepad = nv.gamepad()
     @controllers = []
     @models = {}
     @renderers = []
+    @entities = []
+
+  addEntity: (entity) ->
+    @entities.push entity
+
+  removeEntity: (entity) ->
+    @entities.splice @entities.indexOf(entity), 1
 
   addController: (controller) ->
     @controllers.push controller

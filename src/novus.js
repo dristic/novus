@@ -325,6 +325,22 @@
 
 (function() {
 
+  nv.Plugin = (function() {
+
+    function Plugin(scene, entity) {
+      this.scene = scene;
+      this.entity = entity;
+      this.scene.fire("plugin:create:" + this.constructor.name);
+    }
+
+    return Plugin;
+
+  })();
+
+}).call(this);
+
+(function() {
+
   nv.Controller = (function() {
 
     function Controller(asset) {
@@ -343,9 +359,20 @@
 
   nv.Entity = (function() {
 
-    function Entity(plugins) {
-      this.plugins = plugins;
+    function Entity(scene, pluginClasses, model) {
+      var klass, _i, _len, _ref;
+      this.scene = scene;
+      this.model = model;
+      this.plugins = [];
+      this.model = (_ref = this.model) != null ? _ref : new nv.Model;
+      for (_i = 0, _len = pluginClasses.length; _i < _len; _i++) {
+        klass = pluginClasses[_i];
+        this.plugins.push(new klass(this.scene, this));
+      }
+      this.scene.fire("entity:create:" + this.constructor.name);
     }
+
+    Entity.prototype.update = function(dt) {};
 
     return Entity;
 
@@ -410,7 +437,9 @@
 
   nv.Model = (function() {
 
-    function Model(name, options, data) {}
+    function Model(data) {
+      this.setMany(data);
+    }
 
     Model.prototype.setMany = function(object) {
       var key, _results;
@@ -437,7 +466,7 @@
 
     __extends(Collection, _super);
 
-    function Collection(name, options, arr) {
+    function Collection(arr) {
       this.items = arr != null ? arr : [];
     }
 
@@ -516,16 +545,30 @@
 }).call(this);
 
 (function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  nv.Scene = (function() {
+  nv.Scene = (function(_super) {
 
-    function Scene() {
-      this.dispatcher = new nv.EventDispatcher();
+    __extends(Scene, _super);
+
+    function Scene(game) {
+      this.game = game;
+      Scene.__super__.constructor.apply(this, arguments);
       this.gamepad = nv.gamepad();
       this.controllers = [];
       this.models = {};
       this.renderers = [];
+      this.entities = [];
     }
+
+    Scene.prototype.addEntity = function(entity) {
+      return this.entities.push(entity);
+    };
+
+    Scene.prototype.removeEntity = function(entity) {
+      return this.entities.splice(this.entities.indexOf(entity), 1);
+    };
 
     Scene.prototype.addController = function(controller) {
       return this.controllers.push(controller);
@@ -568,7 +611,7 @@
 
     return Scene;
 
-  })();
+  })(nv.EventDispatcher);
 
 }).call(this);
 
@@ -661,6 +704,36 @@
     nv.Debug = new Debug;
     return nv.log = nv.Debug.log;
   });
+
+}).call(this);
+
+(function() {
+  var __slice = [].slice;
+
+  nv.Game = (function() {
+
+    function Game() {
+      this.currentScene = null;
+      this.sceneClasses = {};
+    }
+
+    Game.prototype.registerScene = function(name, klass) {
+      return this.sceneClasses[name] = klass;
+    };
+
+    Game.prototype.openScene = function() {
+      var args, name;
+      name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      return this.currentScene = (function(func, args, ctor) {
+        ctor.prototype = func.prototype;
+        var child = new ctor, result = func.apply(child, args);
+        return Object(result) === result ? result : child;
+      })(this.sceneClasses[name], [this].concat(__slice.call(args)), function(){});
+    };
+
+    return Game;
+
+  })();
 
 }).call(this);
 
@@ -952,26 +1025,105 @@
 }).call(this);
 
 (function() {
+  var Ship, ShipModel, entities,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  window.entities = entities = {};
 
+  entities.Background = (function(_super) {
+
+    __extends(Background, _super);
+
+    function Background(scene, glcanvas) {
+      this.glcanvas = glcanvas;
+      Background.__super__.constructor.call(this, scene, [renderers.Background], new models.Background);
+    }
+
+    Background.prototype.update = function(dt) {};
+
+    return Background;
+
+  })(nv.Entity);
+
+  ShipModel = (function(_super) {
+
+    __extends(ShipModel, _super);
+
+    function ShipModel() {
+      ShipModel.__super__.constructor.call(this, {
+        speed: 5,
+        health: 100,
+        shootDelay: 10,
+        x: 0,
+        y: 30,
+        width: 16,
+        height: 24,
+        rotation: 0,
+        thrusters: false,
+        type: 'both',
+        color: '#FFF',
+        strokeWidth: 2,
+        points: this.buildWireFrame()
+      });
+    }
+
+    ShipModel.prototype.buildWireFrame = function() {
+      return [new nv.Point(0, -this.height / 2), new nv.Point(this.width / 2, this.height / 2), new nv.Point(0, this.height * 0.4), new nv.Point(-this.width / 2, this.height / 2)];
+    };
+
+    return ShipModel;
+
+  })(nv.Model);
+
+  Ship = (function(_super) {
+
+    __extends(Ship, _super);
+
+    function Ship(scene) {
+      this.scene = scene;
+      Ship.__super__.constructor.call(this, this.scene, [new RectanglePhysicsPlugin, new PathRenderPlugin], new ShipModel);
+      this.scene.on('physics:collision:Ship:Asteroid', function(data) {
+        return console.log('ship hit asteroid');
+      });
+      this.scene.on('gamepad:left', function() {
+        return console.log('gamepad left');
+      });
+    }
+
+    Ship.prototype.update = function(dt) {
+      return wrap(this.model, this.scene.model);
+    };
+
+    return Ship;
+
+  })(nv.Entity);
 
 }).call(this);
 
 (function() {
-  var Asteroid, Asteroids, Background, Bullet, GameObject, Global, Hud, Ship, __gameObjectCounter,
+  var Asteroid, Asteroids, Bullet, GameObject, Global, Hud, Ship, models, __gameObjectCounter,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  Background = (function() {
+  window.models = models = {};
+
+  models.Background = (function(_super) {
+
+    __extends(Background, _super);
 
     function Background() {
-      this.x = 0;
-      this.y = 0;
+      Background.__super__.constructor.call(this, {
+        x: 0,
+        y: 0,
+        width: 500,
+        height: 500
+      });
     }
 
     return Background;
 
-  })();
+  })(nv.Model);
 
   __gameObjectCounter = 0;
 
@@ -1204,18 +1356,6 @@
     return Global;
 
   })(nv.Model);
-
-  $(function() {
-    return nv.models = {
-      Background: Background,
-      Ship: Ship,
-      Bullet: Bullet,
-      Asteroid: Asteroid,
-      Asteroids: Asteroids,
-      Hud: Hud,
-      Global: Global
-    };
-  });
 
 }).call(this);
 
@@ -1494,9 +1634,71 @@
 }).call(this);
 
 (function() {
-  var AsteroidRenderer, BackgroundRenderer, BulletRenderer, HudRenderer, MainRenderer, ShipRenderer,
+  var AsteroidRenderer, BackgroundRenderer, BulletRenderer, HudRenderer, MainRenderer, ShipRenderer, renderers,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  window.renderers = renderers = {};
+
+  renderers.Background = (function(_super) {
+
+    __extends(Background, _super);
+
+    function Background(scene, entity) {
+      var i, radius, x, y;
+      Background.__super__.constructor.call(this, scene, entity);
+      this.canvas = gl().size(700, 700);
+      this.canvas.width = entity.model.width;
+      this.canvas.height = entity.model.height;
+      i = 0;
+      while (!(i > 100)) {
+        i++;
+        x = Math.random() * 700;
+        y = Math.random() * 700;
+        radius = (Math.random() * 2) + 1;
+        this.canvas.context.fillPath(function(context) {
+          var gradient;
+          gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+          gradient.addColorStop(0, "white");
+          gradient.addColorStop(0.4, "white");
+          gradient.addColorStop(0.4, "white");
+          gradient.addColorStop(1, "black");
+          context.color(gradient);
+          return context.arc(x, y, radius, 0, Math.PI * 2, true);
+        });
+      }
+      this.entity.glcanvas.addDrawable(this);
+    }
+
+    Background.prototype.draw = function(context, canvas) {
+      var camX, camY, curX, curY, startX, startY;
+      context.globalCompositeOperation = "lighter";
+      camX = -this.entity.glcanvas.camera.x;
+      camY = -this.entity.glcanvas.camera.y;
+      startX = camX + ((this.entity.model.x - camX) % this.entity.model.width);
+      startY = camY + ((this.entity.model.y - camY) % this.entity.model.height);
+      if (startX > camX) {
+        startX -= this.entity.model.width;
+      }
+      if (startY > camY) {
+        startY -= this.entity.model.height;
+      }
+      curX = startX;
+      curY = startY;
+      while (curX < camX + this.entity.glcanvas.width) {
+        while (curY < camY + this.entity.glcanvas.height) {
+          context.drawImage(this.canvas, curX, curY);
+          curY += this.entity.model.height;
+        }
+        curY = startY;
+        curX += this.entity.model.width;
+      }
+      return context.globalCompositeOperation = "source-over";
+    };
+
+    return Background;
+
+  })(nv.Plugin);
 
   BackgroundRenderer = (function(_super) {
 
@@ -1760,38 +1962,56 @@
 }).call(this);
 
 (function() {
-  var Game, Main,
+  var Asteroids, Game, Main,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Asteroids = (function(_super) {
+
+    __extends(Asteroids, _super);
+
+    function Asteroids() {
+      var canvasEl, glcanvas;
+      Asteroids.__super__.constructor.apply(this, arguments);
+      canvasEl = document.querySelector('canvas');
+      glcanvas = gl(canvasEl);
+      glcanvas.size(500, 500);
+      glcanvas.background('#000');
+      glcanvas.fullscreen();
+      if (canvasEl === void 0) {
+        document.body.appendChild(glcanvas.canvas);
+      }
+      this.registerScene('Main', Main);
+      this.registerScene('Game', Game);
+      this.openScene('Main', glcanvas);
+    }
+
+    return Asteroids;
+
+  })(nv.Game);
 
   Main = (function(_super) {
 
     __extends(Main, _super);
 
-    function Main(glcanvas, callback) {
-      var _ref;
+    function Main(game, glcanvas, callback) {
       this.glcanvas = glcanvas;
       this.callback = callback;
-      Main.__super__.constructor.apply(this, arguments);
-      this.addModel('Global', (_ref = window.global) != null ? _ref : new nv.models.Global);
-      this.addModel('Bg', new nv.models.Background);
-      this.addModel('Bg2', new nv.models.Background);
-      this.addRenderer(new nv.renderers.MainRenderer(this.glcanvas, this.getModel('Global')));
-      this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg')));
-      this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg2')));
-      this.square = new gl.square;
-      this.glcanvas.addDrawable(this.square);
+      Main.__super__.constructor.call(this, game);
+      this.addEntity(new entities.Background(this, this.glcanvas));
       this.glcanvas.camera = nv.camera();
       this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
       this.gamepad.aliasKey('start', nv.Key.Spacebar);
-      this.gamepad.trackMouse();
     }
+
+    Main.prototype.fire = function(event, data) {
+      console.log("[EVENT] - " + event);
+      return Main.__super__.fire.call(this, event, data);
+    };
 
     Main.prototype.update = function(dt) {
       var state;
       state = this.gamepad.getState();
-      this.square.x = state.mouse.x;
-      this.square.y = state.mouse.y;
       if (state.start) {
         return this.destroy();
       }
@@ -1872,18 +2092,7 @@
   })(nv.Scene);
 
   $(function() {
-    var canvasEl, glcanvas;
-    canvasEl = document.querySelector('canvas');
-    glcanvas = gl(canvasEl);
-    if (canvasEl === void 0) {
-      document.body.appendChild(glcanvas.canvas);
-    }
-    glcanvas.size(500, 500);
-    glcanvas.background('#000');
-    glcanvas.fullscreen();
-    return new Main(glcanvas, function() {
-      return new Game(glcanvas);
-    });
+    return new Asteroids;
   });
 
 }).call(this);

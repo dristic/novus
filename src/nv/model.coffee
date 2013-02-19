@@ -1,5 +1,6 @@
 class nv.Model
-  constructor: (name, options, data) ->
+  constructor: (data) ->
+    @setMany data
 
   setMany: (object) ->
     for key of object
@@ -12,5 +13,5 @@ class nv.Model
     @setMany window.localStorage[@name]
 
 class nv.Collection extends nv.Model
-  constructor: (name, options, arr) ->
+  constructor: (arr) ->
     @items = arr ? []

@@ -1,3 +1,55 @@
+window.renderers = renderers = {}
+
+class renderers.Background extends nv.Plugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+    @canvas = gl().size 700, 700
+    @canvas.width = entity.model.width
+    @canvas.height = entity.model.height
+
+    i = 0
+    until i > 100
+      i++
+      x = Math.random() * 700
+      y = Math.random() * 700
+      radius = (Math.random() * 2) + 1
+      @canvas.context.fillPath (context) ->
+        gradient = context.createRadialGradient x, y, 0, x, y, radius
+        gradient.addColorStop 0, "white"
+        gradient.addColorStop 0.4, "white"
+        gradient.addColorStop 0.4, "white"
+        gradient.addColorStop 1, "black"
+        context.color gradient
+        context.arc x, y, radius, 0, Math.PI * 2, true
+
+    @entity.glcanvas.addDrawable this
+
+  draw: (context, canvas) ->
+    context.globalCompositeOperation = "lighter"
+
+    camX = -@entity.glcanvas.camera.x
+    camY = -@entity.glcanvas.camera.y
+
+    startX = camX + ((@entity.model.x - camX) % @entity.model.width)
+    startY = camY + ((@entity.model.y - camY) % @entity.model.height)
+
+    if startX > camX then startX -= @entity.model.width
+    if startY > camY then startY -= @entity.model.height
+
+    curX = startX
+    curY = startY
+
+    while curX < camX + @entity.glcanvas.width
+      while curY < camY + @entity.glcanvas.height
+        context.drawImage @canvas, curX, curY
+        curY += @entity.model.height
+
+      curY = startY
+      curX += @entity.model.width
+
+    context.globalCompositeOperation = "source-over"
+
 class BackgroundRenderer extends nv.ObjectRenderer
   constructor: (@glcanvas, asset) ->
     super arguments...

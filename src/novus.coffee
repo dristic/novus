@@ -6,31 +6,49 @@
 #= require controllers
 #= require renderers
 
-class Main extends nv.Scene
-  constructor: (@glcanvas, @callback) ->
+class Asteroids extends nv.Game
+  constructor: () ->
     super
 
-    @addModel 'Global', window.global ? new nv.models.Global
-    @addModel 'Bg', new nv.models.Background
-    @addModel 'Bg2', new nv.models.Background
+    canvasEl = document.querySelector('canvas')
+    glcanvas = gl canvasEl
+    glcanvas.size 500, 500
+    glcanvas.background '#000'
+    glcanvas.fullscreen()
 
-    @addRenderer new nv.renderers.MainRenderer @glcanvas, @getModel('Global')
-    @addRenderer new nv.renderers.BackgroundRenderer @glcanvas, @getModel('Bg')
-    @addRenderer new nv.renderers.BackgroundRenderer @glcanvas, @getModel('Bg2')
+    document.body.appendChild glcanvas.canvas unless canvasEl isnt undefined
 
-    @square = new gl.square
-    @glcanvas.addDrawable @square
+    @registerScene 'Main', Main
+    @registerScene 'Game', Game
+
+    @openScene 'Main', glcanvas
+
+class Main extends nv.Scene
+  constructor: (game, @glcanvas, @callback) ->
+    super game
+
+    # @addModel 'Global', window.global ? new nv.models.Global
+
+    @addEntity new entities.Background(this, @glcanvas)
+
+    # @square = new gl.square
+    # @glcanvas.addDrawable @square
     @glcanvas.camera = nv.camera()
     @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
+    # @gamepad.trackMouse()
 
     @gamepad.aliasKey 'start', nv.Key.Spacebar
-    @gamepad.trackMouse()
+
+  fire: (event, data) ->
+    console.log "[EVENT] - #{event}"
+
+    super event, data
 
   update: (dt) ->
     state = @gamepad.getState()
 
-    @square.x = state.mouse.x
-    @square.y = state.mouse.y
+    # @square.x = state.mouse.x
+    # @square.y = state.mouse.y
 
     if state.start
       @destroy()
@@ -94,16 +112,5 @@ class Game extends nv.Scene
     bg2.y = -ship.y * 0.01
 
 $(() ->
-  canvasEl = document.querySelector('canvas')
-  glcanvas = gl canvasEl
-
-  document.body.appendChild glcanvas.canvas unless canvasEl isnt undefined
-
-  glcanvas.size 500, 500
-  glcanvas.background '#000'
-
-  glcanvas.fullscreen()
-
-  new Main glcanvas, () ->
-    new Game glcanvas
+  new Asteroids
 )

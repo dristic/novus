@@ -1,7 +1,12 @@
-class Background
+window.models = models = {}
+
+class models.Background extends nv.Model
   constructor: () ->
-    @x = 0
-    @y = 0
+    super 
+      x: 0
+      y: 0
+      width: 500
+      height: 500
 
 __gameObjectCounter = 0
 
@@ -150,13 +155,13 @@ class Global extends nv.Model
     @options =
       difficulty: "easy"
 
-$(() ->
-  nv.models =
-    Background: Background
-    Ship: Ship
-    Bullet: Bullet
-    Asteroid: Asteroid
-    Asteroids: Asteroids
-    Hud: Hud
-    Global: Global
-)
+# $(() ->
+#   nv.models =
+#     Background: Background
+#     Ship: Ship
+#     Bullet: Bullet
+#     Asteroid: Asteroid
+#     Asteroids: Asteroids
+#     Hud: Hud
+#     Global: Global
+# )
