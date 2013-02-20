@@ -20,6 +20,7 @@ class Asteroids extends nv.Game
 
     @registerEngine nv.RenderingEngine
     @registerEngine nv.GamepadEngine
+    @registerEngine nv.PhysicsEngine
 
     @registerScene 'Main', Main
     @registerScene 'Game', Game
@@ -70,17 +71,16 @@ class Game extends nv.Scene
         down: nv.Key.S
         shoot: nv.Key.Spacebar
 
-    @addEntities entities.Background,
-      entities.Background
-
     ship = @addEntity entities.Ship
+    @addEntity entities.Background, ship, 0.05
+    @addEntity entities.Background, ship, 0.01
 
-    # @addModel 'ship', new nv.models.Ship
+    @addEntities entities.Hud
+
     # @addModel 'asteroids', new nv.models.Asteroids 30
     # @addModel 'hud', new nv.models.Hud @glcanvas
 
     # @addController new nv.controllers.AsteroidController this
-    # @addController new nv.controllers.ShipController this
     # @addController new nv.controllers.BulletController this
 
     # physicsController = new nv.controllers.GamePhysicsController this
@@ -88,9 +88,6 @@ class Game extends nv.Scene
     # physicsController.trackObject @getModel('ship')
     # @addController physicsController
 
-    # @addRenderer new nv.renderers.BackgroundRenderer(@glcanvas, @getModel('bg'), @getModel('ship'))
-    # @addRenderer new nv.renderers.BackgroundRenderer(@glcanvas, @getModel('bg2'), @getModel('ship'))
-    # @addRenderer new nv.renderers.ShipRenderer(@glcanvas, @getModel('ship'))
     # @addRenderer new nv.renderers.AsteroidRenderer(this, @glcanvas)
     # @addRenderer new nv.renderers.HudRenderer @glcanvas, @getModel('hud')
     # @addRenderer new nv.renderers.BulletRenderer this, @glcanvas
@@ -105,16 +102,6 @@ class Game extends nv.Scene
 
   update: (dt) ->
     super dt
-
-    # bg = @getModel('bg')
-    # bg2 = @getModel('bg2')
-    # ship = @getModel('ship')
-
-    # bg.x = -ship.x * 0.05
-    # bg.y = -ship.y * 0.05
-
-    # bg2.x = -ship.x * 0.01
-    # bg2.y = -ship.y * 0.01
 
 $(() ->
   new Asteroids

@@ -12,3 +12,4 @@
 #= require engine
 #= require renderer
 #= require gamepad
+#= require physics

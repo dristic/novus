@@ -1,5 +1,13 @@
 window.renderers = renderers = {}
 
+class renderers.Hud extends nv.RenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+  draw: (context, canvas) ->
+    context.strokeColor @entity.model.color
+    context.strokeRect @entity.model.x, @entity.model.y, @entity.model.width, @entity.model.height
+
 class renderers.Background extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
@@ -120,30 +128,30 @@ class BulletRenderer extends nv.ObjectListRenderer
     @assets = @assets.filter (asset) ->
       asset.alive
 
-class ShipRenderer extends nv.ObjectRenderer
-  constructor: (glcanvas, ship) ->
-    super arguments...
+# class ShipRenderer extends nv.ObjectRenderer
+#   constructor: (glcanvas, ship) ->
+#     super arguments...
 
-    @color = '#FFF'
-    @strokeWidth = 2
+#     @color = '#FFF'
+#     @strokeWidth = 2
 
-  draw: (context) ->
-    context.strokeColor @color
-    context.strokeWidth @strokeWidth
+#   draw: (context) ->
+#     context.strokeColor @color
+#     context.strokeWidth @strokeWidth
 
-    points = @asset.path()
-    context.beginPath()
-    context.strokeColor @color
-    context.strokeWidth 2
-    context.moveTo points[0].x, points[0].y
+#     points = @asset.path()
+#     context.beginPath()
+#     context.strokeColor @color
+#     context.strokeWidth 2
+#     context.moveTo points[0].x, points[0].y
 
-    $.each points.slice(1), () ->
-      context.lineTo this.x, this.y
+#     $.each points.slice(1), () ->
+#       context.lineTo this.x, this.y
 
-    context.lineTo points[0].x, points[0].y
+#     context.lineTo points[0].x, points[0].y
 
-    context.stroke()
-    context.closePath()
+#     context.stroke()
+#     context.closePath()
 
 class AsteroidRenderer extends nv.ObjectListRenderer
   constructor: (@scene, @glcanvas) ->
@@ -221,27 +229,27 @@ class HudRenderer extends nv.ObjectRenderer
 
     this
 
-class MainRenderer extends nv.ObjectRenderer
-  constructor: (@glcanvas, @model) ->
-    super arguments...
+# class MainRenderer extends nv.ObjectRenderer
+#   constructor: (@glcanvas, @model) ->
+#     super arguments...
 
-    @title = new gl.text
-      color: "#F00"
-      x: 200
-      y: 200
-      font: "bold 20px sans-serif"
-      text: @model.title
+#     @title = new gl.text
+#       color: "#F00"
+#       x: 200
+#       y: 200
+#       font: "bold 20px sans-serif"
+#       text: @model.title
 
-    @actionText = new gl.text
-      color: "#F00"
-      x: 200
-      y: 300
-      font: "bold 20px sans-serif"
-      text: @model.actionText
+#     @actionText = new gl.text
+#       color: "#F00"
+#       x: 200
+#       y: 300
+#       font: "bold 20px sans-serif"
+#       text: @model.actionText
 
-  draw: (context) ->
-    @title.draw context
-    @actionText.draw context
+#   draw: (context) ->
+#     @title.draw context
+#     @actionText.draw context
 
 # $(() ->
 #   nv.renderers =

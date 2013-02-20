@@ -14,7 +14,7 @@ class models.Ship extends nv.Model
       speed: 5
       health: 100
       shootDelay: 10
-      x: 0
+      x: 30
       y: 30
       width: 16
       height: 24

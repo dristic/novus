@@ -1,8 +1,13 @@
 window.entities = entities = {}
 
 class entities.Background extends nv.Entity
-  constructor: (scene) ->
+  constructor: (scene, @follow, @variance) ->
     super scene, [renderers.Background], new models.Background
+
+  update: (dt) ->
+    unless not @follow
+      @model.x = @follow.model.x * @variance
+      @model.y = @follow.model.y * @variance
 
 class entities.Title extends nv.Entity
   constructor: (scene) ->
@@ -71,20 +76,20 @@ class entities.Ship extends WrappingEntity
     if state.left then @model.rotate -0.1
     if state.right then @model.rotate 0.1
     if state.up
-      @model.translate @speed * Math.sin(@model.rotation), -@speed * Math.cos(@model.rotation)
+      @model.translate @model.speed * Math.sin(@model.rotation), -@model.speed * Math.cos(@model.rotation)
     if state.down
-      @model.translate -@speed/2 * Math.sin(@model.rotation), @speed/2 * Math.cos(@model.rotation)
+      @model.translate -@model.speed/2 * Math.sin(@model.rotation), @model.speed/2 * Math.cos(@model.rotation)
     @model.thrusters = state.up
 
     @wrap()
 
-    # state = @scene.gamepad.getState()
-    # if state.left then @asset.rotate -0.1
-    # if state.right then @asset.rotate 0.1
-    # if state.up
-    #   @asset.translate @speed * Math.sin(@asset.rotation), -@speed * Math.cos(@asset.rotation)
-    # if state.down
-    #   @asset.translate -@speed/2 * Math.sin(@asset.rotation), @speed/2 * Math.cos(@asset.rotation)
-    # @asset.thrusters = state.up
+class entities.Hud extends nv.Entity
+  constructor: (scene) ->
+    canvas = scene.get('canvas')
 
-    # wrap @asset, @scene.glcanvas
+    super scene, [renderers.Hud],
+      color: '#FFF'
+      x: 0
+      y: 0
+      width: canvas.width
+      height: canvas.height
