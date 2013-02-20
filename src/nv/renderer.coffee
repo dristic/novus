@@ -25,6 +25,11 @@ class nv.RenderingPlugin extends nv.Plugin
   draw: (context, canvas) ->
     # Do nothing
 
+  destroy: () ->
+    @scene.fire "engine:rendering:delete", this
+    delete @scene
+    delete @entity
+
 class nv.DrawableRenderingPlugin extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity

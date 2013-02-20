@@ -118,7 +118,8 @@ class entities.Bullet extends WrappingEntity
     @model.life--
     if @model.life is 0
       @model.alive = false
-      # @depleted@models.push @model unless @model.alive
+
+      @scene.fire "entity:remove", this
     else
       @wrap()
 

@@ -8,3 +8,9 @@ class nv.Entity
     @scene.fire "entity:create:#{@constructor.name}"
 
   update: (dt) ->
+
+  destroy: () ->
+    plugin.destroy() for plugin in @plugins
+    delete @model
+    delete @plugins
+    delete @scene

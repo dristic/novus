@@ -6,10 +6,14 @@ class nv.Scene extends nv.EventDispatcher
     @models = {}
     @renderers = []
     @entities = []
+    @deletedEntities = []
     @options = @options ? {}
 
     @engines = []
     @engines.push new klass this for klass in @game.engines
+
+    @on "entity:remove", () =>
+      @onRemoveEntity.call this, arguments...
 
   get: (key) ->
     @options[key]
@@ -26,7 +30,12 @@ class nv.Scene extends nv.EventDispatcher
     entity
 
   removeEntity: (entity) ->
-    @entities.splice @entities.indexOf(entity), 1
+    unless @entities.indexOf(entity) is -1
+      entity.destroy() unless not entity.destroy
+      @entities.splice @entities.indexOf(entity), 1
+
+  onRemoveEntity: (entity) ->
+    @deletedEntities.push entity
 
   addController: (controller) ->
     @controllers.push controller
@@ -53,3 +62,6 @@ class nv.Scene extends nv.EventDispatcher
     controller.update dt for controller in @controllers
     engine.update dt for engine in @engines
     entity.update dt for entity in @entities
+
+    @removeEntity entity for entity in @deletedEntities
+    @deletedEntities = []

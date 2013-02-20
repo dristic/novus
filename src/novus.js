@@ -332,6 +332,8 @@
       this.entity = entity;
     }
 
+    Plugin.prototype.destroy = function() {};
+
     return Plugin;
 
   })();
@@ -372,6 +374,18 @@
     }
 
     Entity.prototype.update = function(dt) {};
+
+    Entity.prototype.destroy = function() {
+      var plugin, _i, _len, _ref;
+      _ref = this.plugins;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        plugin = _ref[_i];
+        plugin.destroy();
+      }
+      delete this.model;
+      delete this.plugins;
+      return delete this.scene;
+    };
 
     return Entity;
 
@@ -484,7 +498,8 @@
     __extends(Scene, _super);
 
     function Scene(game, options) {
-      var klass, _i, _len, _ref, _ref1;
+      var klass, _i, _len, _ref, _ref1,
+        _this = this;
       this.game = game;
       this.options = options;
       Scene.__super__.constructor.apply(this, arguments);
@@ -493,6 +508,7 @@
       this.models = {};
       this.renderers = [];
       this.entities = [];
+      this.deletedEntities = [];
       this.options = (_ref = this.options) != null ? _ref : {};
       this.engines = [];
       _ref1 = this.game.engines;
@@ -500,6 +516,10 @@
         klass = _ref1[_i];
         this.engines.push(new klass(this));
       }
+      this.on("entity:remove", function() {
+        var _ref2;
+        return (_ref2 = _this.onRemoveEntity).call.apply(_ref2, [_this].concat(__slice.call(arguments)));
+      });
     }
 
     Scene.prototype.get = function(key) {
@@ -534,7 +554,16 @@
     };
 
     Scene.prototype.removeEntity = function(entity) {
-      return this.entities.splice(this.entities.indexOf(entity), 1);
+      if (this.entities.indexOf(entity) !== -1) {
+        if (!!entity.destroy) {
+          entity.destroy();
+        }
+        return this.entities.splice(this.entities.indexOf(entity), 1);
+      }
+    };
+
+    Scene.prototype.onRemoveEntity = function(entity) {
+      return this.deletedEntities.push(entity);
     };
 
     Scene.prototype.addController = function(controller) {
@@ -566,7 +595,7 @@
     };
 
     Scene.prototype.update = function(dt) {
-      var controller, engine, entity, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
+      var controller, engine, entity, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
       _ref = this.controllers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         controller = _ref[_i];
@@ -578,12 +607,16 @@
         engine.update(dt);
       }
       _ref2 = this.entities;
-      _results = [];
       for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
         entity = _ref2[_k];
-        _results.push(entity.update(dt));
+        entity.update(dt);
       }
-      return _results;
+      _ref3 = this.deletedEntities;
+      for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+        entity = _ref3[_l];
+        this.removeEntity(entity);
+      }
+      return this.deletedEntities = [];
     };
 
     return Scene;
@@ -781,6 +814,12 @@
     }
 
     RenderingPlugin.prototype.draw = function(context, canvas) {};
+
+    RenderingPlugin.prototype.destroy = function() {
+      this.scene.fire("engine:rendering:delete", this);
+      delete this.scene;
+      return delete this.entity;
+    };
 
     return RenderingPlugin;
 
@@ -1541,7 +1580,8 @@
       }
       this.model.life--;
       if (this.model.life === 0) {
-        return this.model.alive = false;
+        this.model.alive = false;
+        return this.scene.fire("entity:remove", this);
       } else {
         return this.wrap();
       }

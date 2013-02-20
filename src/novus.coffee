@@ -81,20 +81,10 @@ class Game extends nv.Scene
       entities.Asteroid,
       entities.Asteroid
 
-    # @addModel 'asteroids', new nv.models.Asteroids 30
-    # @addModel 'hud', new nv.models.Hud @glcanvas
-
-    # @addController new nv.controllers.AsteroidController this
-    # @addController new nv.controllers.BulletController this
-
     # physicsController = new nv.controllers.GamePhysicsController this
     # physicsController.trackObjects @getModel('asteroids').items
     # physicsController.trackObject @getModel('ship')
     # @addController physicsController
-
-    # @addRenderer new nv.renderers.AsteroidRenderer(this, @glcanvas)
-    # @addRenderer new nv.renderers.HudRenderer @glcanvas, @getModel('hud')
-    # @addRenderer new nv.renderers.BulletRenderer this, @glcanvas
 
     @glcanvas.camera = nv.camera()
     @glcanvas.camera.follow ship.model, 250, 250
