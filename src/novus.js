@@ -1458,12 +1458,6 @@
           asset: data.actor
         });
       });
-      this.scene.on('physics:collision:Ship:Asteroid', function(data) {
-        return console.log('ship hit asteroid');
-      });
-      this.scene.on('gamepad:left', function() {
-        return console.log('gamepad left');
-      });
     }
 
     Ship.prototype.update = function(dt) {
@@ -1486,6 +1480,33 @@
     };
 
     return Ship;
+
+  })(WrappingEntity);
+
+  entities.Asteroid = (function(_super) {
+
+    __extends(Asteroid, _super);
+
+    function Asteroid(scene) {
+      var _this = this;
+      Asteroid.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin], new models.Asteroid(500, 500));
+      this.scene.on('collision:Ship:Asteroid', function(data) {
+        console.log("asteroid hit by ship");
+        return _this.destoryAsteroid(data.target);
+      });
+      this.scene.on('collision:Bullet:Asteroid', function(data) {
+        console.log("asteroid hit by bullet");
+        return _this.destoryAsteroid(data.target);
+      });
+    }
+
+    Asteroid.prototype.update = function(dt) {
+      this.model.rotation += this.model.rotationSpeed;
+      this.model.translate(Math.sin(this.model.direction) * this.model.speed, Math.cos(this.model.direction) * this.model.speed);
+      return this.wrap();
+    };
+
+    return Asteroid;
 
   })(WrappingEntity);
 
@@ -1512,7 +1533,7 @@
 }).call(this);
 
 (function() {
-  var Asteroid, Asteroids, Bullet, GameObject, Hud, models, __gameObjectCounter,
+  var Bullet, GameObject, models, __gameObjectCounter,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1584,6 +1605,66 @@
     };
 
     return Ship;
+
+  })(nv.Model);
+
+  models.Asteroid = (function(_super) {
+
+    __extends(Asteroid, _super);
+
+    function Asteroid(cw, ch, scale) {
+      if (scale == null) {
+        scale = 1;
+      }
+      Asteroid.__super__.constructor.call(this, {
+        x: cw * Math.random(),
+        y: ch * Math.random(),
+        width: 24 * scale,
+        height: 24 * scale,
+        speed: Math.random() + 0.3,
+        rotation: 0,
+        rotationSpeed: 0.01,
+        direction: (Math.random() * Math.PI) - (Math.PI / 2),
+        type: 'passive'
+      });
+      this.points = this.buildWireframe();
+    }
+
+    Asteroid.prototype.buildWireframe = function() {
+      var points, pt;
+      pt = new nv.Point(0, -this.height);
+      points = [];
+      points.push(pt.clone());
+      points.push(pt.translate(30, 20).clone());
+      points.push(pt.translate(5, 30).clone());
+      points.push(pt.translate(-12, 10).clone());
+      points.push(pt.translate(-33, -10).clone());
+      points.push(pt.translate(-10, -35).clone());
+      return points;
+    };
+
+    Asteroid.prototype.path = function() {
+      var cosine, model, path, sine;
+      cosine = Math.cos(this.rotation);
+      sine = Math.sin(this.rotation);
+      path = [];
+      model = this;
+      $.each(this.points, function() {
+        return path.push(new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y));
+      });
+      return path;
+    };
+
+    Asteroid.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    Asteroid.prototype.rotate = function(r) {
+      return this.rotation += r;
+    };
+
+    return Asteroid;
 
   })(nv.Model);
 
@@ -1699,80 +1780,6 @@
     return Bullet;
 
   })(GameObject);
-
-  Asteroids = (function(_super) {
-
-    __extends(Asteroids, _super);
-
-    function Asteroids(initialSpawnCount) {
-      var i, _i, _ref;
-      this.initialSpawnCount = initialSpawnCount;
-      Asteroids.__super__.constructor.apply(this, arguments);
-      for (i = _i = 1, _ref = this.initialSpawnCount; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
-        this.items.push(new nv.models.Asteroid(500, 500));
-      }
-    }
-
-    return Asteroids;
-
-  })(nv.Collection);
-
-  Asteroid = (function(_super) {
-
-    __extends(Asteroid, _super);
-
-    function Asteroid(cw, ch, scale) {
-      if (scale == null) {
-        scale = 1;
-      }
-      Asteroid.__super__.constructor.call(this, {
-        x: cw * Math.random(),
-        y: ch * Math.random(),
-        width: 24 * scale,
-        height: 24 * scale,
-        speed: Math.random() + 0.3,
-        rotation: 0,
-        rotationSpeed: 0.01,
-        direction: (Math.random() * Math.PI) - (Math.PI / 2),
-        type: 'passive'
-      });
-    }
-
-    Asteroid.prototype.buildWireframe = function() {
-      var points, pt;
-      pt = new nv.Point(0, -this.height);
-      points = [];
-      points.push(pt.clone());
-      points.push(pt.translate(30, 20).clone());
-      points.push(pt.translate(5, 30).clone());
-      points.push(pt.translate(-12, 10).clone());
-      points.push(pt.translate(-33, -10).clone());
-      points.push(pt.translate(-10, -35).clone());
-      return points;
-    };
-
-    return Asteroid;
-
-  })(GameObject);
-
-  Hud = (function(_super) {
-
-    __extends(Hud, _super);
-
-    function Hud(glcanvas) {
-      this.glcanvas = glcanvas;
-      this.x = 0;
-      this.y = 0;
-      this.width = this.glcanvas.size().width;
-      this.height = this.glcanvas.size().height;
-      this.color = "#FFF";
-      this.lives = 3;
-      this.score = 100000;
-    }
-
-    return Hud;
-
-  })(nv.Model);
 
 }).call(this);
 
@@ -1892,7 +1899,7 @@
 }).call(this);
 
 (function() {
-  var AsteroidRenderer, BulletRenderer, HudRenderer, renderers,
+  var AsteroidRenderer, BulletRenderer, renderers,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2061,43 +2068,6 @@
 
   })(nv.ObjectListRenderer);
 
-  HudRenderer = (function(_super) {
-
-    __extends(HudRenderer, _super);
-
-    function HudRenderer(glcanvas, hud) {
-      this.glcanvas = glcanvas;
-      HudRenderer.__super__.constructor.apply(this, arguments);
-      this.ship = new nv.models.Ship;
-      this.shipRenderer = new nv.renderers.ShipRenderer(this.glcanvas, this.ship);
-    }
-
-    HudRenderer.prototype.draw = function(context) {
-      var dimensions, num;
-      context.strokeColor(this.color);
-      context.strokeRect(this.asset.x, this.asset.y, this.asset.width, this.asset.height);
-      context.fillStyle = '#F00';
-      context.font = 'italic bold 30px sans-serif';
-      context.textBaseline = 'bottom';
-      context.fillText("Asteroids", -this.glcanvas.camera.x + 20, -this.glcanvas.camera.y + 50);
-      context.fillStyle = '#FFF';
-      context.font = 'bold 30px sans-serif';
-      context.textBaseline = 'bottom';
-      dimensions = this.glcanvas.size();
-      context.fillText(this.asset.score, -this.glcanvas.camera.x + dimensions.width - 120, -this.glcanvas.camera.y + dimensions.height - 10);
-      num = this.asset.lives;
-      while (num--) {
-        this.ship.x = -this.glcanvas.camera.x + 180 + (num * 30);
-        this.ship.y = -this.glcanvas.camera.y + 25;
-        this.shipRenderer.draw(context);
-      }
-      return this;
-    };
-
-    return HudRenderer;
-
-  })(nv.ObjectRenderer);
-
 }).call(this);
 
 (function() {
@@ -2194,7 +2164,7 @@
       ship = this.addEntity(entities.Ship);
       this.addEntity(entities.Background, ship, 0.05);
       this.addEntity(entities.Background, ship, 0.01);
-      this.addEntities(entities.Hud);
+      this.addEntities(entities.Hud, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid);
       this.glcanvas.camera = nv.camera();
       this.glcanvas.camera.follow(ship.model, 250, 250);
       this.glcanvas.camera.zoom(0.5);

@@ -75,7 +75,11 @@ class Game extends nv.Scene
     @addEntity entities.Background, ship, 0.05
     @addEntity entities.Background, ship, 0.01
 
-    @addEntities entities.Hud
+    @addEntities entities.Hud,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid
 
     # @addModel 'asteroids', new nv.models.Asteroids 30
     # @addModel 'hud', new nv.models.Hud @glcanvas

@@ -196,38 +196,38 @@ class AsteroidRenderer extends nv.ObjectListRenderer
       context.closePath()
 
 
-class HudRenderer extends nv.ObjectRenderer
-  constructor: (@glcanvas, hud) ->
-    super arguments...
+# class HudRenderer extends nv.ObjectRenderer
+#   constructor: (@glcanvas, hud) ->
+#     super arguments...
 
-    @ship = new nv.models.Ship
-    @shipRenderer = new nv.renderers.ShipRenderer @glcanvas, @ship
+#     @ship = new nv.models.Ship
+#     @shipRenderer = new nv.renderers.ShipRenderer @glcanvas, @ship
 
-  draw: (context) ->
-    context.strokeColor @color
-    context.strokeRect @asset.x, @asset.y, @asset.width, @asset.height
+#   draw: (context) ->
+#     context.strokeColor @color
+#     context.strokeRect @asset.x, @asset.y, @asset.width, @asset.height
 
-    context.fillStyle = '#F00'
-    context.font = 'italic bold 30px sans-serif'
-    context.textBaseline = 'bottom'
-    context.fillText "Asteroids", -@glcanvas.camera.x + 20, -@glcanvas.camera.y + 50
+#     context.fillStyle = '#F00'
+#     context.font = 'italic bold 30px sans-serif'
+#     context.textBaseline = 'bottom'
+#     context.fillText "Asteroids", -@glcanvas.camera.x + 20, -@glcanvas.camera.y + 50
 
-    context.fillStyle = '#FFF'
-    context.font = 'bold 30px sans-serif'
-    context.textBaseline = 'bottom'
-    dimensions = @glcanvas.size()
-    context.fillText @asset.score, 
-      -@glcanvas.camera.x + dimensions.width - 120, 
-      -@glcanvas.camera.y + dimensions.height - 10
+#     context.fillStyle = '#FFF'
+#     context.font = 'bold 30px sans-serif'
+#     context.textBaseline = 'bottom'
+#     dimensions = @glcanvas.size()
+#     context.fillText @asset.score, 
+#       -@glcanvas.camera.x + dimensions.width - 120, 
+#       -@glcanvas.camera.y + dimensions.height - 10
 
-    # Draw ships for the number of lives.
-    num = @asset.lives
-    while num--
-      @ship.x = -@glcanvas.camera.x + 180 + (num * 30)
-      @ship.y = -@glcanvas.camera.y + 25
-      @shipRenderer.draw context
+#     # Draw ships for the number of lives.
+#     num = @asset.lives
+#     while num--
+#       @ship.x = -@glcanvas.camera.x + 180 + (num * 30)
+#       @ship.y = -@glcanvas.camera.y + 25
+#       @shipRenderer.draw context
 
-    this
+#     this
 
 # class MainRenderer extends nv.ObjectRenderer
 #   constructor: (@glcanvas, @model) ->

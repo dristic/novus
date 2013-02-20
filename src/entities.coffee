@@ -63,14 +63,6 @@ class entities.Ship extends WrappingEntity
       @scene.dispatcher.fire 'delete:Ship',
         asset: data.actor
 
-    @scene.on 'physics:collision:Ship:Asteroid', (data) ->
-      console.log 'ship hit asteroid'
-
-    @scene.on 'gamepad:left', () ->
-      console.log 'gamepad left'
-
-    # Rest of gamepad hooks....
-
   update: (dt) ->
     state = @scene.gamepad.getState()
     if state.left then @model.rotate -0.1
@@ -80,6 +72,24 @@ class entities.Ship extends WrappingEntity
     if state.down
       @model.translate -@model.speed/2 * Math.sin(@model.rotation), @model.speed/2 * Math.cos(@model.rotation)
     @model.thrusters = state.up
+
+    @wrap()
+
+class entities.Asteroid extends WrappingEntity
+  constructor: (scene) ->
+    super scene, [nv.PathRenderingPlugin], new models.Asteroid 500, 500
+
+    @scene.on 'collision:Ship:Asteroid', (data) =>
+      console.log "asteroid hit by ship"
+      @destoryAsteroid data.target
+
+    @scene.on 'collision:Bullet:Asteroid', (data) =>
+      console.log "asteroid hit by bullet"
+      @destoryAsteroid data.target
+
+  update: (dt) ->
+    @model.rotation += @model.rotationSpeed
+    @model.translate Math.sin(@model.direction) * @model.speed, Math.cos(@model.direction) * @model.speed
 
     @wrap()
 

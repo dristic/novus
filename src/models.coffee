@@ -49,6 +49,49 @@ class models.Ship extends nv.Model
   rotate: (r) ->
     @rotation += r
 
+class models.Asteroid extends nv.Model
+  constructor: (cw, ch, scale = 1) ->
+    super 
+      x: cw * Math.random()
+      y: ch * Math.random()
+      width: 24 * scale
+      height: 24 * scale
+      speed: Math.random() + 0.3
+      rotation: 0
+      rotationSpeed: 0.01
+      direction: (Math.random() * Math.PI) - (Math.PI / 2)
+      type: 'passive'
+
+    @points = @buildWireframe()
+
+  buildWireframe: () ->
+    pt = new nv.Point(0, -@height)
+    points = []
+
+    points.push pt.clone()
+    points.push pt.translate(30,20).clone()
+    points.push pt.translate(5,30).clone()
+    points.push pt.translate(-12, 10).clone()
+    points.push pt.translate(-33, -10).clone()
+    points.push pt.translate(-10, -35).clone()
+    points
+
+  path: () ->
+    cosine = Math.cos(@rotation)
+    sine = Math.sin(@rotation)
+    path = []
+    model = this
+    $.each @points, () ->
+      path.push new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y)
+    path
+
+  translate: (dx,dy) ->
+    @x += dx
+    @y += dy
+
+  rotate: (r) ->
+    @rotation += r
+
 __gameObjectCounter = 0
 
 class GameObject
@@ -146,48 +189,48 @@ class Bullet extends GameObject
 #   nose: () ->
 #     @_path[0]
 
-class Asteroids extends nv.Collection
-  constructor: (@initialSpawnCount) ->
-    super
+# class Asteroids extends nv.Collection
+#   constructor: (@initialSpawnCount) ->
+#     super
 
-    for i in [1..@initialSpawnCount]
-      @items.push new nv.models.Asteroid 500, 500
+#     for i in [1..@initialSpawnCount]
+#       @items.push new nv.models.Asteroid 500, 500
 
-class Asteroid extends GameObject
-  constructor: (cw,ch,scale = 1) ->
-    super 
-      x: cw * Math.random()
-      y: ch * Math.random()
-      width: 24 * scale
-      height: 24 * scale
-      speed: Math.random() + 0.3
-      rotation: 0
-      rotationSpeed: 0.01
-      direction: (Math.random() * Math.PI) - (Math.PI / 2)
-      type: 'passive'
+# class Asteroid extends GameObject
+#   constructor: (cw,ch,scale = 1) ->
+#     super 
+#       x: cw * Math.random()
+#       y: ch * Math.random()
+#       width: 24 * scale
+#       height: 24 * scale
+#       speed: Math.random() + 0.3
+#       rotation: 0
+#       rotationSpeed: 0.01
+#       direction: (Math.random() * Math.PI) - (Math.PI / 2)
+#       type: 'passive'
 
-  buildWireframe: () ->
-    pt = new nv.Point(0, -@height)
-    points = []
+#   buildWireframe: () ->
+#     pt = new nv.Point(0, -@height)
+#     points = []
 
-    points.push pt.clone()
-    points.push pt.translate(30,20).clone()
-    points.push pt.translate(5,30).clone()
-    points.push pt.translate(-12, 10).clone()
-    points.push pt.translate(-33, -10).clone()
-    points.push pt.translate(-10, -35).clone()
-    points
+#     points.push pt.clone()
+#     points.push pt.translate(30,20).clone()
+#     points.push pt.translate(5,30).clone()
+#     points.push pt.translate(-12, 10).clone()
+#     points.push pt.translate(-33, -10).clone()
+#     points.push pt.translate(-10, -35).clone()
+#     points
 
 
-class Hud extends nv.Model
-  constructor: (@glcanvas) ->
-    @x = 0
-    @y = 0
-    @width = @glcanvas.size().width
-    @height = @glcanvas.size().height
-    @color = "#FFF"
-    @lives = 3
-    @score = 100000
+# class Hud extends nv.Model
+#   constructor: (@glcanvas) ->
+#     @x = 0
+#     @y = 0
+#     @width = @glcanvas.size().width
+#     @height = @glcanvas.size().height
+#     @color = "#FFF"
+#     @lives = 3
+#     @score = 100000
 
 # class Global extends nv.Model
 #   constructor: () ->
