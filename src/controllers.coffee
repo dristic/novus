@@ -10,54 +10,54 @@
 #   else if asset.y > dimensions.height then asset.y = 0
 
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-class BulletController extends nv.Controller
-  constructor: (@scene) ->
-    super null
+# class BulletController extends nv.Controller
+#   constructor: (@scene) ->
+#     super null
 
-    @ship = @scene.getModel('ship')
-    @assets = []
-    @depletedAssets= []
-    @shotDelay = 10
+#     @ship = @scene.getModel('ship')
+#     @assets = []
+#     @depletedAssets= []
+#     @shotDelay = 10
 
-    @scene.dispatcher.on 'collision:Bullet:Asteroid', (data) =>
-      console.log "bullet hit asteroid"
-      @scene.dispatcher.fire 'delete:Bullet',
-        asset: data.actor
+#     @scene.dispatcher.on 'collision:Bullet:Asteroid', (data) =>
+#       console.log "bullet hit asteroid"
+#       @scene.dispatcher.fire 'delete:Bullet',
+#         asset: data.actor
 
-  update: (dt) ->
-    state = @scene.gamepad.getState()
-    if state.shoot and @shotDelay is 0
-      bullet = new nv.models.Bullet @ship.nose(), @ship.rotation
-      @assets.push bullet
-      @scene.dispatcher.fire 'new:Bullet',
-        asset: bullet
-      @shotDelay = 10
+#   update: (dt) ->
+#     state = @scene.gamepad.getState()
+#     if state.shoot and @shotDelay is 0
+#       bullet = new nv.models.Bullet @ship.nose(), @ship.rotation
+#       @assets.push bullet
+#       @scene.dispatcher.fire 'new:Bullet',
+#         asset: bullet
+#       @shotDelay = 10
 
-    @shotDelay-- if @shotDelay
+#     @shotDelay-- if @shotDelay
 
-    $.each @assets, (index, asset) =>
-      asset.translate asset.speed * Math.sin(asset.angle) * dt, -1 * asset.speed * Math.cos(asset.angle) * dt
-      #asset.x += asset.speed * Math.sin(asset.angle) * dt
-      #asset.y -= asset.speed * Math.cos(asset.angle) * dt
+#     $.each @assets, (index, asset) =>
+#       asset.translate asset.speed * Math.sin(asset.angle) * dt, -1 * asset.speed * Math.cos(asset.angle) * dt
+#       #asset.x += asset.speed * Math.sin(asset.angle) * dt
+#       #asset.y -= asset.speed * Math.cos(asset.angle) * dt
 
-      if asset.x < -100 or asset.x > 900
-        if asset.y < -100 or asset.y > 900
-          asset.alive = false
+#       if asset.x < -100 or asset.x > 900
+#         if asset.y < -100 or asset.y > 900
+#           asset.alive = false
 
-      asset.life--
-      if asset.life is 0
-        asset.alive = false
-        @depletedAssets.push asset unless asset.alive
-      else
-        wrap asset, @scene.glcanvas
+#       asset.life--
+#       if asset.life is 0
+#         asset.alive = false
+#         @depletedAssets.push asset unless asset.alive
+#       else
+#         wrap asset, @scene.glcanvas
 
-    @assets = @assets.filter (asset) ->
-      asset.alive
+#     @assets = @assets.filter (asset) ->
+#       asset.alive
 
-    $.each @depletedAssets, (index, asset) =>
-      @scene.dispatcher.fire 'delete:Bullet',
-        asset: asset
-    @depletedAssets = []
+#     $.each @depletedAssets, (index, asset) =>
+#       @scene.dispatcher.fire 'delete:Bullet',
+#         asset: asset
+#     @depletedAssets = []
 
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # class AsteroidController extends nv.Controller

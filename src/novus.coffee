@@ -79,12 +79,22 @@ class Game extends nv.Scene
       entities.Asteroid,
       entities.Asteroid,
       entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
       entities.Asteroid
-
-    # physicsController = new nv.controllers.GamePhysicsController this
-    # physicsController.trackObjects @getModel('asteroids').items
-    # physicsController.trackObject @getModel('ship')
-    # @addController physicsController
 
     @glcanvas.camera = nv.camera()
     @glcanvas.camera.follow ship.model, 250, 250

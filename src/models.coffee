@@ -105,11 +105,17 @@ class models.Bullet extends nv.Model
       angle: angle
       type: 'active'
 
+    @points = @buildWireframe()
+
+  path: () ->
+    path = []
+    model = this
+    $.each @points, () ->
+      path.push new nv.Point(model.x, model.y)
+    path
+
   buildWireframe: () ->
     [ new nv.Point(0, 0) ]
-
-  _updateBounds: () ->
-    @_bounds.reset @_path[0].x - @radius, @_path[0].y - @radius, @_path[0].x + @radius, @_path[0].y + @radius
 
   translate: (dx,dy) ->
     @x += dx

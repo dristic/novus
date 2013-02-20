@@ -56,12 +56,10 @@ class WrappingEntity extends nv.Entity
 
 class entities.Ship extends WrappingEntity
   constructor: (scene) ->
-    super scene, [nv.PathRenderingPlugin], new models.Ship
+    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Ship
 
-    @scene.on 'collision:Ship:Asteroid', (data) =>
-      console.log "ship hit asteroid"
-      @scene.dispatcher.fire 'delete:Ship',
-        asset: data.actor
+    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
+      #@scene.fire "entity:remove", this
 
     @scene.on 'engine:gamepad:shoot', () =>
       @fireBullet.call this
@@ -83,15 +81,13 @@ class entities.Ship extends WrappingEntity
 
 class entities.Asteroid extends WrappingEntity
   constructor: (scene) ->
-    super scene, [nv.PathRenderingPlugin], new models.Asteroid 500, 500
+    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid 500, 500
 
-    @scene.on 'collision:Ship:Asteroid', (data) =>
-      console.log "asteroid hit by ship"
-      @destoryAsteroid data.target
+    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
+      @scene.fire "entity:remove", this unless data.target isnt this
 
-    @scene.on 'collision:Bullet:Asteroid', (data) =>
-      console.log "asteroid hit by bullet"
-      @destoryAsteroid data.target
+    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
+      @scene.fire "entity:remove", this unless data.target isnt this
 
   update: (dt) ->
     @model.rotation += @model.rotationSpeed
@@ -101,12 +97,10 @@ class entities.Asteroid extends WrappingEntity
 
 class entities.Bullet extends WrappingEntity
   constructor: (scene, point, rotation) ->
-    super scene, [renderers.Bullet], new models.Bullet point, rotation
+    super scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet point, rotation
 
-    @scene.on 'collision:Bullet:Asteroid', (data) =>
-      console.log "bullet hit asteroid"
-      @scene.dispatcher.fire 'delete:Bullet',
-        asset: data.actor
+    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
+      @scene.fire "entity:remove", this unless data.actor isnt this
 
   update: (dt) ->
     @model.translate @model.speed * Math.sin(@model.angle) * dt, -1 * @model.speed * Math.cos(@model.angle) * dt

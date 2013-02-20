@@ -3,4 +3,5 @@ class nv.Plugin
     # Do nothing
 
   destroy: () ->
-    # Do nothing
+    delete @scene
+    delete @entity

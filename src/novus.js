@@ -332,7 +332,10 @@
       this.entity = entity;
     }
 
-    Plugin.prototype.destroy = function() {};
+    Plugin.prototype.destroy = function() {
+      delete this.scene;
+      return delete this.entity;
+    };
 
     return Plugin;
 
@@ -817,8 +820,7 @@
 
     RenderingPlugin.prototype.destroy = function() {
       this.scene.fire("engine:rendering:delete", this);
-      delete this.scene;
-      return delete this.entity;
+      return RenderingPlugin.__super__.destroy.apply(this, arguments);
     };
 
     return RenderingPlugin;
@@ -983,7 +985,8 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var __objectId,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.PhysicsEngine = (function(_super) {
@@ -995,20 +998,11 @@
       PhysicsEngine.__super__.constructor.call(this, scene);
       this.passiveObjects = {};
       this.activeObjects = {};
-      this.scene.on('delete:Bullet', function(data) {
-        console.log("[GPC] delete bullet");
-        return _this.removeObject(data.asset);
+      this.scene.on("engine:physics:create", function(collidable) {
+        return _this.trackObject(collidable);
       });
-      this.scene.on('delete:Ship', function(data) {
-        return console.log("[GPC] delete ship");
-      });
-      this.scene.on('delete:Asteroid', function(data) {
-        console.log("[GPC] delete Asteroid");
-        return _this.removeObject(data.asset);
-      });
-      this.scene.on('new:Bullet', function(data) {
-        console.log('[GPC] track new bullet');
-        return _this.trackObject(data.asset);
+      this.scene.on("engine:physics:delete", function(collidable) {
+        return _this.removeObject(collidable);
       });
     }
 
@@ -1061,9 +1055,9 @@
               continue;
             }
             if (objp.bounds().intersects(objaBounds)) {
-              _results1.push(this.scene.dispatcher.fire("collision:" + obja.constructor.name + ":" + objp.constructor.name, {
-                actor: obja,
-                target: objp
+              _results1.push(this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
+                actor: obja.entity,
+                target: objp.entity
               }));
             } else {
               _results1.push(void 0);
@@ -1078,6 +1072,67 @@
     return PhysicsEngine;
 
   })(nv.Engine);
+
+  nv.PhysicsPlugin = (function(_super) {
+
+    __extends(PhysicsPlugin, _super);
+
+    function PhysicsPlugin(scene, entity) {
+      PhysicsPlugin.__super__.constructor.call(this, scene, entity);
+      this.scene.fire("engine:physics:create", this);
+    }
+
+    PhysicsPlugin.prototype.destroy = function() {
+      this.scene.fire("engine:physics:delete", this);
+      return PhysicsPlugin.__super__.destroy.apply(this, arguments);
+    };
+
+    return PhysicsPlugin;
+
+  })(nv.Plugin);
+
+  __objectId = 0;
+
+  nv.PathPhysicsPlugin = (function(_super) {
+
+    __extends(PathPhysicsPlugin, _super);
+
+    function PathPhysicsPlugin(scene, entity) {
+      this.id = __objectId++;
+      this.type = entity.model.type;
+      this.boundingRect = new nv.Rect(0, 0, 0, 0);
+      PathPhysicsPlugin.__super__.constructor.call(this, scene, entity);
+      this.updateBounds();
+    }
+
+    PathPhysicsPlugin.prototype.bounds = function() {
+      this.updateBounds();
+      return this.boundingRect;
+    };
+
+    PathPhysicsPlugin.prototype.updateBounds = function() {
+      var x1, x2, y1, y2;
+      x1 = x2 = y1 = y2 = null;
+      $.each(this.entity.model.path(), function() {
+        if (x1 === null || this.x < x1) {
+          x1 = this.x;
+        }
+        if (x2 === null || this.x > x2) {
+          x2 = this.x;
+        }
+        if (y1 === null || this.y < y1) {
+          y1 = this.y;
+        }
+        if (y2 === null || this.y > y2) {
+          return y2 = this.y;
+        }
+      });
+      return this.boundingRect.reset(x1, y1, x2, y2);
+    };
+
+    return PathPhysicsPlugin;
+
+  })(nv.PhysicsPlugin);
 
 }).call(this);
 
@@ -1490,13 +1545,8 @@
 
     function Ship(scene) {
       var _this = this;
-      Ship.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin], new models.Ship);
-      this.scene.on('collision:Ship:Asteroid', function(data) {
-        console.log("ship hit asteroid");
-        return _this.scene.dispatcher.fire('delete:Ship', {
-          asset: data.actor
-        });
-      });
+      Ship.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Ship);
+      this.scene.on('engine:collision:Ship:Asteroid', function(data) {});
       this.scene.on('engine:gamepad:shoot', function() {
         return _this.fireBullet.call(_this);
       });
@@ -1535,14 +1585,16 @@
 
     function Asteroid(scene) {
       var _this = this;
-      Asteroid.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin], new models.Asteroid(500, 500));
-      this.scene.on('collision:Ship:Asteroid', function(data) {
-        console.log("asteroid hit by ship");
-        return _this.destoryAsteroid(data.target);
+      Asteroid.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid(500, 500));
+      this.scene.on('engine:collision:Ship:Asteroid', function(data) {
+        if (data.target === _this) {
+          return _this.scene.fire("entity:remove", _this);
+        }
       });
-      this.scene.on('collision:Bullet:Asteroid', function(data) {
-        console.log("asteroid hit by bullet");
-        return _this.destoryAsteroid(data.target);
+      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
+        if (data.target === _this) {
+          return _this.scene.fire("entity:remove", _this);
+        }
       });
     }
 
@@ -1562,12 +1614,11 @@
 
     function Bullet(scene, point, rotation) {
       var _this = this;
-      Bullet.__super__.constructor.call(this, scene, [renderers.Bullet], new models.Bullet(point, rotation));
-      this.scene.on('collision:Bullet:Asteroid', function(data) {
-        console.log("bullet hit asteroid");
-        return _this.scene.dispatcher.fire('delete:Bullet', {
-          asset: data.actor
-        });
+      Bullet.__super__.constructor.call(this, scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet(point, rotation));
+      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
+        if (data.actor === _this) {
+          return _this.scene.fire("entity:remove", _this);
+        }
       });
     }
 
@@ -1765,14 +1816,21 @@
         angle: angle,
         type: 'active'
       });
+      this.points = this.buildWireframe();
     }
+
+    Bullet.prototype.path = function() {
+      var model, path;
+      path = [];
+      model = this;
+      $.each(this.points, function() {
+        return path.push(new nv.Point(model.x, model.y));
+      });
+      return path;
+    };
 
     Bullet.prototype.buildWireframe = function() {
       return [new nv.Point(0, 0)];
-    };
-
-    Bullet.prototype._updateBounds = function() {
-      return this._bounds.reset(this._path[0].x - this.radius, this._path[0].y - this.radius, this._path[0].x + this.radius, this._path[0].y + this.radius);
     };
 
     Bullet.prototype.translate = function(dx, dy) {
@@ -1871,76 +1929,8 @@
 }).call(this);
 
 (function() {
-  var BulletController,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  BulletController = (function(_super) {
 
-    __extends(BulletController, _super);
-
-    function BulletController(scene) {
-      var _this = this;
-      this.scene = scene;
-      BulletController.__super__.constructor.call(this, null);
-      this.ship = this.scene.getModel('ship');
-      this.assets = [];
-      this.depletedAssets = [];
-      this.shotDelay = 10;
-      this.scene.dispatcher.on('collision:Bullet:Asteroid', function(data) {
-        console.log("bullet hit asteroid");
-        return _this.scene.dispatcher.fire('delete:Bullet', {
-          asset: data.actor
-        });
-      });
-    }
-
-    BulletController.prototype.update = function(dt) {
-      var bullet, state,
-        _this = this;
-      state = this.scene.gamepad.getState();
-      if (state.shoot && this.shotDelay === 0) {
-        bullet = new nv.models.Bullet(this.ship.nose(), this.ship.rotation);
-        this.assets.push(bullet);
-        this.scene.dispatcher.fire('new:Bullet', {
-          asset: bullet
-        });
-        this.shotDelay = 10;
-      }
-      if (this.shotDelay) {
-        this.shotDelay--;
-      }
-      $.each(this.assets, function(index, asset) {
-        asset.translate(asset.speed * Math.sin(asset.angle) * dt, -1 * asset.speed * Math.cos(asset.angle) * dt);
-        if (asset.x < -100 || asset.x > 900) {
-          if (asset.y < -100 || asset.y > 900) {
-            asset.alive = false;
-          }
-        }
-        asset.life--;
-        if (asset.life === 0) {
-          asset.alive = false;
-          if (!asset.alive) {
-            return _this.depletedAssets.push(asset);
-          }
-        } else {
-          return wrap(asset, _this.scene.glcanvas);
-        }
-      });
-      this.assets = this.assets.filter(function(asset) {
-        return asset.alive;
-      });
-      $.each(this.depletedAssets, function(index, asset) {
-        return _this.scene.dispatcher.fire('delete:Bullet', {
-          asset: asset
-        });
-      });
-      return this.depletedAssets = [];
-    };
-
-    return BulletController;
-
-  })(nv.Controller);
 
 }).call(this);
 
@@ -2075,7 +2065,7 @@
       this.registerEngine(nv.PhysicsEngine);
       this.registerScene('Main', Main);
       this.registerScene('Game', Game);
-      this.openScene('Game', glcanvas);
+      this.openScene('Main', glcanvas);
     }
 
     return Asteroids;
@@ -2144,7 +2134,7 @@
       ship = this.addEntity(entities.Ship);
       this.addEntity(entities.Background, ship, 0.05);
       this.addEntity(entities.Background, ship, 0.01);
-      this.addEntities(entities.Hud, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid);
+      this.addEntities(entities.Hud, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid);
       this.glcanvas.camera = nv.camera();
       this.glcanvas.camera.follow(ship.model, 250, 250);
       this.glcanvas.camera.zoom(0.5);
