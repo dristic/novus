@@ -63,6 +63,12 @@ class entities.Ship extends WrappingEntity
       @scene.dispatcher.fire 'delete:Ship',
         asset: data.actor
 
+    @scene.on 'engine:gamepad:shoot', () =>
+      @fireBullet.call this
+
+  fireBullet: () ->
+    @scene.addEntity entities.Bullet, @model.path()[0], @model.rotation
+
   update: (dt) ->
     state = @scene.gamepad.getState()
     if state.left then @model.rotate -0.1
@@ -92,6 +98,29 @@ class entities.Asteroid extends WrappingEntity
     @model.translate Math.sin(@model.direction) * @model.speed, Math.cos(@model.direction) * @model.speed
 
     @wrap()
+
+class entities.Bullet extends WrappingEntity
+  constructor: (scene, point, rotation) ->
+    super scene, [renderers.Bullet], new models.Bullet point, rotation
+
+    @scene.on 'collision:Bullet:Asteroid', (data) =>
+      console.log "bullet hit asteroid"
+      @scene.dispatcher.fire 'delete:Bullet',
+        asset: data.actor
+
+  update: (dt) ->
+    @model.translate @model.speed * Math.sin(@model.angle) * dt, -1 * @model.speed * Math.cos(@model.angle) * dt
+
+    if @model.x < -100 or @model.x > 900
+      if @model.y < -100 or @model.y > 900
+        @model.alive = false
+
+    @model.life--
+    if @model.life is 0
+      @model.alive = false
+      # @depleted@models.push @model unless @model.alive
+    else
+      @wrap()
 
 class entities.Hud extends nv.Entity
   constructor: (scene) ->

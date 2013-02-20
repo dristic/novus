@@ -104,6 +104,11 @@ class Game extends nv.Scene
     @glcanvas.startDrawUpdate 60, (dt) =>
       @update.call this, dt
 
+  fire: (event, data) ->
+    console.log "[EVENT] - #{event}"
+
+    super event, data
+
   update: (dt) ->
     super dt
 

@@ -60,33 +60,33 @@ class BulletController extends nv.Controller
     @depletedAssets = []
 
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-class AsteroidController extends nv.Controller
-  constructor: (@scene) ->
-    super null
+# class AsteroidController extends nv.Controller
+#   constructor: (@scene) ->
+#     super null
 
-    @assets = @scene.getModel('asteroids').items
+#     @assets = @scene.getModel('asteroids').items
 
-    @scene.dispatcher.on 'collision:Ship:Asteroid', (data) =>
-      console.log "asteroid hit by ship"
-      @destoryAsteroid data.target
+#     @scene.dispatcher.on 'collision:Ship:Asteroid', (data) =>
+#       console.log "asteroid hit by ship"
+#       @destoryAsteroid data.target
 
-    @scene.dispatcher.on 'collision:Bullet:Asteroid', (data) =>
-      console.log "asteroid hit by bullet"
-      @destoryAsteroid data.target
+#     @scene.dispatcher.on 'collision:Bullet:Asteroid', (data) =>
+#       console.log "asteroid hit by bullet"
+#       @destoryAsteroid data.target
 
-  destoryAsteroid: (obj) ->
-    @scene.dispatcher.fire 'delete:Asteroid',
-      asset: obj
-    @assets = @assets.filter (asset) ->
-      asset.id isnt obj.id
+#   destoryAsteroid: (obj) ->
+#     @scene.dispatcher.fire 'delete:Asteroid',
+#       asset: obj
+#     @assets = @assets.filter (asset) ->
+#       asset.id isnt obj.id
 
 
-  update: (dt) ->
-    $.each @assets, (index, asset) =>
-      asset.rotation += asset.rotationSpeed
-      asset.translate Math.sin(asset.direction) * asset.speed, Math.cos(asset.direction) * asset.speed
+#   update: (dt) ->
+#     $.each @assets, (index, asset) =>
+#       asset.rotation += asset.rotationSpeed
+#       asset.translate Math.sin(asset.direction) * asset.speed, Math.cos(asset.direction) * asset.speed
 
-      wrap asset, @scene.glcanvas
+#       wrap asset, @scene.glcanvas
 
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # class ShipController extends nv.Controller

@@ -8,6 +8,15 @@ class renderers.Hud extends nv.RenderingPlugin
     context.strokeColor @entity.model.color
     context.strokeRect @entity.model.x, @entity.model.y, @entity.model.width, @entity.model.height
 
+class renderers.Bullet extends nv.RenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+  draw: (context, canvas) ->
+    context.fillPath (context) =>
+      context.color @entity.model.color
+      context.arc @entity.model.x, @entity.model.y, @entity.model.radius, 0, Math.PI * 2, true
+
 class renderers.Background extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
@@ -109,24 +118,24 @@ class renderers.Background extends nv.RenderingPlugin
 
 #     context.globalCompositeOperation = "source-over"
 
-class BulletRenderer extends nv.ObjectListRenderer
-  constructor: (@scene, @glcanvas) ->
-    super @glcanvas, []
+# class BulletRenderer extends nv.ObjectListRenderer
+#   constructor: (@scene, @glcanvas) ->
+#     super @glcanvas, []
 
-    @scene.dispatcher.on 'new:Bullet', (event) =>
-      @add event.asset
+#     @scene.dispatcher.on 'new:Bullet', (event) =>
+#       @add event.asset
 
-    @scene.dispatcher.on 'delete:Bullet', (event) =>
-      @remove event.asset
+#     @scene.dispatcher.on 'delete:Bullet', (event) =>
+#       @remove event.asset
 
-  draw: (context) ->
-    $.each @assets, (index, asset) ->
-      context.fillPath (context) =>
-        context.color '#ff7600'
-        context.arc asset.x, asset.y, asset.radius, 0, Math.PI * 2, true
+#   draw: (context) ->
+#     $.each @assets, (index, asset) ->
+#       context.fillPath (context) =>
+#         context.color '#ff7600'
+#         context.arc asset.x, asset.y, asset.radius, 0, Math.PI * 2, true
 
-    @assets = @assets.filter (asset) ->
-      asset.alive
+#     @assets = @assets.filter (asset) ->
+#       asset.alive
 
 # class ShipRenderer extends nv.ObjectRenderer
 #   constructor: (glcanvas, ship) ->
@@ -153,47 +162,47 @@ class BulletRenderer extends nv.ObjectListRenderer
 #     context.stroke()
 #     context.closePath()
 
-class AsteroidRenderer extends nv.ObjectListRenderer
-  constructor: (@scene, @glcanvas) ->
-    super @glcanvas, @scene.getModel('asteroids').items
-    @color = '#FFF'
-    @strokeWidth = 2
+# class AsteroidRenderer extends nv.ObjectListRenderer
+#   constructor: (@scene, @glcanvas) ->
+#     super @glcanvas, @scene.getModel('asteroids').items
+#     @color = '#FFF'
+#     @strokeWidth = 2
 
-    @scene.dispatcher.on 'delete:Asteroid', (data) =>
-      @remove data.asset
+#     @scene.dispatcher.on 'delete:Asteroid', (data) =>
+#       @remove data.asset
 
-  draw: (context) ->
-    $.each @assets, (index, asset) =>
-      context.strokeColor @color
-      context.strokeWidth @strokeWidth
+#   draw: (context) ->
+#     $.each @assets, (index, asset) =>
+#       context.strokeColor @color
+#       context.strokeWidth @strokeWidth
 
-      points = asset.path()
-      context.beginPath()
-      context.strokeColor @color
-      context.strokeWidth 2
-      context.moveTo points[0].x, points[0].y
+#       points = asset.path()
+#       context.beginPath()
+#       context.strokeColor @color
+#       context.strokeWidth 2
+#       context.moveTo points[0].x, points[0].y
 
-      $.each points.slice(1), () ->
-        context.lineTo this.x, this.y
+#       $.each points.slice(1), () ->
+#         context.lineTo this.x, this.y
 
-      context.lineTo points[0].x, points[0].y
+#       context.lineTo points[0].x, points[0].y
 
-      context.stroke()
-      context.closePath()
+#       context.stroke()
+#       context.closePath()
 
-      context.strokeRect asset.x, asset.y, 2, 2
+#       context.strokeRect asset.x, asset.y, 2, 2
 
-      bounds = asset.bounds()
-      context.beginPath()
-      context.strokeColor "yellow"
-      context.strokeWidth 1
-      context.moveTo bounds.x, bounds.y
-      context.lineTo bounds.x, bounds.y2
-      context.lineTo bounds.x2, bounds.y2
-      context.lineTo bounds.x2, bounds.y
-      context.lineTo bounds.x, bounds.y
-      context.stroke()
-      context.closePath()
+#       bounds = asset.bounds()
+#       context.beginPath()
+#       context.strokeColor "yellow"
+#       context.strokeWidth 1
+#       context.moveTo bounds.x, bounds.y
+#       context.lineTo bounds.x, bounds.y2
+#       context.lineTo bounds.x2, bounds.y2
+#       context.lineTo bounds.x2, bounds.y
+#       context.lineTo bounds.x, bounds.y
+#       context.stroke()
+#       context.closePath()
 
 
 # class HudRenderer extends nv.ObjectRenderer

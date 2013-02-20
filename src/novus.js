@@ -1458,7 +1458,14 @@
           asset: data.actor
         });
       });
+      this.scene.on('engine:gamepad:shoot', function() {
+        return _this.fireBullet.call(_this);
+      });
     }
+
+    Ship.prototype.fireBullet = function() {
+      return this.scene.addEntity(entities.Bullet, this.model.path()[0], this.model.rotation);
+    };
 
     Ship.prototype.update = function(dt) {
       var state;
@@ -1510,6 +1517,40 @@
 
   })(WrappingEntity);
 
+  entities.Bullet = (function(_super) {
+
+    __extends(Bullet, _super);
+
+    function Bullet(scene, point, rotation) {
+      var _this = this;
+      Bullet.__super__.constructor.call(this, scene, [renderers.Bullet], new models.Bullet(point, rotation));
+      this.scene.on('collision:Bullet:Asteroid', function(data) {
+        console.log("bullet hit asteroid");
+        return _this.scene.dispatcher.fire('delete:Bullet', {
+          asset: data.actor
+        });
+      });
+    }
+
+    Bullet.prototype.update = function(dt) {
+      this.model.translate(this.model.speed * Math.sin(this.model.angle) * dt, -1 * this.model.speed * Math.cos(this.model.angle) * dt);
+      if (this.model.x < -100 || this.model.x > 900) {
+        if (this.model.y < -100 || this.model.y > 900) {
+          this.model.alive = false;
+        }
+      }
+      this.model.life--;
+      if (this.model.life === 0) {
+        return this.model.alive = false;
+      } else {
+        return this.wrap();
+      }
+    };
+
+    return Bullet;
+
+  })(WrappingEntity);
+
   entities.Hud = (function(_super) {
 
     __extends(Hud, _super);
@@ -1533,7 +1574,7 @@
 }).call(this);
 
 (function() {
-  var Bullet, GameObject, models, __gameObjectCounter,
+  var GameObject, models, __gameObjectCounter,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1668,6 +1709,41 @@
 
   })(nv.Model);
 
+  models.Bullet = (function(_super) {
+
+    __extends(Bullet, _super);
+
+    function Bullet(pt, angle) {
+      Bullet.__super__.constructor.call(this, {
+        x: pt.x,
+        y: pt.y,
+        color: "#ff7600",
+        speed: 400,
+        radius: 3,
+        alive: true,
+        life: 100,
+        angle: angle,
+        type: 'active'
+      });
+    }
+
+    Bullet.prototype.buildWireframe = function() {
+      return [new nv.Point(0, 0)];
+    };
+
+    Bullet.prototype._updateBounds = function() {
+      return this._bounds.reset(this._path[0].x - this.radius, this._path[0].y - this.radius, this._path[0].x + this.radius, this._path[0].y + this.radius);
+    };
+
+    Bullet.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    return Bullet;
+
+  })(nv.Model);
+
   __gameObjectCounter = 0;
 
   GameObject = (function() {
@@ -1752,39 +1828,10 @@
 
   })();
 
-  Bullet = (function(_super) {
-
-    __extends(Bullet, _super);
-
-    function Bullet(pt, angle) {
-      Bullet.__super__.constructor.call(this, {
-        x: pt.x,
-        y: pt.y,
-        speed: 400,
-        radius: 3,
-        alive: true,
-        life: 100,
-        angle: angle,
-        type: 'active'
-      });
-    }
-
-    Bullet.prototype.buildWireframe = function() {
-      return [new nv.Point(0, 0)];
-    };
-
-    Bullet.prototype._updateBounds = function() {
-      return this._bounds.reset(this._path[0].x - this.radius, this._path[0].y - this.radius, this._path[0].x + this.radius, this._path[0].y + this.radius);
-    };
-
-    return Bullet;
-
-  })(GameObject);
-
 }).call(this);
 
 (function() {
-  var AsteroidController, BulletController,
+  var BulletController,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1855,51 +1902,10 @@
 
   })(nv.Controller);
 
-  AsteroidController = (function(_super) {
-
-    __extends(AsteroidController, _super);
-
-    function AsteroidController(scene) {
-      var _this = this;
-      this.scene = scene;
-      AsteroidController.__super__.constructor.call(this, null);
-      this.assets = this.scene.getModel('asteroids').items;
-      this.scene.dispatcher.on('collision:Ship:Asteroid', function(data) {
-        console.log("asteroid hit by ship");
-        return _this.destoryAsteroid(data.target);
-      });
-      this.scene.dispatcher.on('collision:Bullet:Asteroid', function(data) {
-        console.log("asteroid hit by bullet");
-        return _this.destoryAsteroid(data.target);
-      });
-    }
-
-    AsteroidController.prototype.destoryAsteroid = function(obj) {
-      this.scene.dispatcher.fire('delete:Asteroid', {
-        asset: obj
-      });
-      return this.assets = this.assets.filter(function(asset) {
-        return asset.id !== obj.id;
-      });
-    };
-
-    AsteroidController.prototype.update = function(dt) {
-      var _this = this;
-      return $.each(this.assets, function(index, asset) {
-        asset.rotation += asset.rotationSpeed;
-        asset.translate(Math.sin(asset.direction) * asset.speed, Math.cos(asset.direction) * asset.speed);
-        return wrap(asset, _this.scene.glcanvas);
-      });
-    };
-
-    return AsteroidController;
-
-  })(nv.Controller);
-
 }).call(this);
 
 (function() {
-  var AsteroidRenderer, BulletRenderer, renderers,
+  var renderers,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1919,6 +1925,26 @@
     };
 
     return Hud;
+
+  })(nv.RenderingPlugin);
+
+  renderers.Bullet = (function(_super) {
+
+    __extends(Bullet, _super);
+
+    function Bullet(scene, entity) {
+      Bullet.__super__.constructor.call(this, scene, entity);
+    }
+
+    Bullet.prototype.draw = function(context, canvas) {
+      var _this = this;
+      return context.fillPath(function(context) {
+        context.color(_this.entity.model.color);
+        return context.arc(_this.entity.model.x, _this.entity.model.y, _this.entity.model.radius, 0, Math.PI * 2, true);
+      });
+    };
+
+    return Bullet;
 
   })(nv.RenderingPlugin);
 
@@ -1981,92 +2007,6 @@
     return Background;
 
   })(nv.RenderingPlugin);
-
-  BulletRenderer = (function(_super) {
-
-    __extends(BulletRenderer, _super);
-
-    function BulletRenderer(scene, glcanvas) {
-      var _this = this;
-      this.scene = scene;
-      this.glcanvas = glcanvas;
-      BulletRenderer.__super__.constructor.call(this, this.glcanvas, []);
-      this.scene.dispatcher.on('new:Bullet', function(event) {
-        return _this.add(event.asset);
-      });
-      this.scene.dispatcher.on('delete:Bullet', function(event) {
-        return _this.remove(event.asset);
-      });
-    }
-
-    BulletRenderer.prototype.draw = function(context) {
-      $.each(this.assets, function(index, asset) {
-        var _this = this;
-        return context.fillPath(function(context) {
-          context.color('#ff7600');
-          return context.arc(asset.x, asset.y, asset.radius, 0, Math.PI * 2, true);
-        });
-      });
-      return this.assets = this.assets.filter(function(asset) {
-        return asset.alive;
-      });
-    };
-
-    return BulletRenderer;
-
-  })(nv.ObjectListRenderer);
-
-  AsteroidRenderer = (function(_super) {
-
-    __extends(AsteroidRenderer, _super);
-
-    function AsteroidRenderer(scene, glcanvas) {
-      var _this = this;
-      this.scene = scene;
-      this.glcanvas = glcanvas;
-      AsteroidRenderer.__super__.constructor.call(this, this.glcanvas, this.scene.getModel('asteroids').items);
-      this.color = '#FFF';
-      this.strokeWidth = 2;
-      this.scene.dispatcher.on('delete:Asteroid', function(data) {
-        return _this.remove(data.asset);
-      });
-    }
-
-    AsteroidRenderer.prototype.draw = function(context) {
-      var _this = this;
-      return $.each(this.assets, function(index, asset) {
-        var bounds, points;
-        context.strokeColor(_this.color);
-        context.strokeWidth(_this.strokeWidth);
-        points = asset.path();
-        context.beginPath();
-        context.strokeColor(_this.color);
-        context.strokeWidth(2);
-        context.moveTo(points[0].x, points[0].y);
-        $.each(points.slice(1), function() {
-          return context.lineTo(this.x, this.y);
-        });
-        context.lineTo(points[0].x, points[0].y);
-        context.stroke();
-        context.closePath();
-        context.strokeRect(asset.x, asset.y, 2, 2);
-        bounds = asset.bounds();
-        context.beginPath();
-        context.strokeColor("yellow");
-        context.strokeWidth(1);
-        context.moveTo(bounds.x, bounds.y);
-        context.lineTo(bounds.x, bounds.y2);
-        context.lineTo(bounds.x2, bounds.y2);
-        context.lineTo(bounds.x2, bounds.y);
-        context.lineTo(bounds.x, bounds.y);
-        context.stroke();
-        return context.closePath();
-      });
-    };
-
-    return AsteroidRenderer;
-
-  })(nv.ObjectListRenderer);
 
 }).call(this);
 
@@ -2173,6 +2113,11 @@
         return _this.update.call(_this, dt);
       });
     }
+
+    Game.prototype.fire = function(event, data) {
+      console.log("[EVENT] - " + event);
+      return Game.__super__.fire.call(this, event, data);
+    };
 
     Game.prototype.update = function(dt) {
       return Game.__super__.update.call(this, dt);

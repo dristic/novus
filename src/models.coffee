@@ -92,6 +92,29 @@ class models.Asteroid extends nv.Model
   rotate: (r) ->
     @rotation += r
 
+class models.Bullet extends nv.Model
+  constructor: (pt, angle) ->
+    super
+      x: pt.x
+      y: pt.y
+      color: "#ff7600"
+      speed: 400
+      radius: 3
+      alive: true
+      life: 100
+      angle: angle
+      type: 'active'
+
+  buildWireframe: () ->
+    [ new nv.Point(0, 0) ]
+
+  _updateBounds: () ->
+    @_bounds.reset @_path[0].x - @radius, @_path[0].y - @radius, @_path[0].x + @radius, @_path[0].y + @radius
+
+  translate: (dx,dy) ->
+    @x += dx
+    @y += dy
+
 __gameObjectCounter = 0
 
 class GameObject
@@ -152,23 +175,23 @@ class GameObject
     @_updatePath()
 
 
-class Bullet extends GameObject
-  constructor: (pt, angle) ->
-    super
-      x: pt.x
-      y: pt.y
-      speed: 400
-      radius: 3
-      alive: true
-      life: 100
-      angle: angle
-      type: 'active'
+# class Bullet extends GameObject
+#   constructor: (pt, angle) ->
+#     super
+#       x: pt.x
+#       y: pt.y
+#       speed: 400
+#       radius: 3
+#       alive: true
+#       life: 100
+#       angle: angle
+#       type: 'active'
 
-  buildWireframe: () ->
-    [ new nv.Point(0, 0) ]
+#   buildWireframe: () ->
+#     [ new nv.Point(0, 0) ]
 
-  _updateBounds: () ->
-    @_bounds.reset @_path[0].x - @radius, @_path[0].y - @radius, @_path[0].x + @radius, @_path[0].y + @radius
+#   _updateBounds: () ->
+#     @_bounds.reset @_path[0].x - @radius, @_path[0].y - @radius, @_path[0].x + @radius, @_path[0].y + @radius
 
 
 # class Ship extends GameObject
