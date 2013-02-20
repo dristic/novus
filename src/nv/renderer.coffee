@@ -43,6 +43,26 @@ class nv.TextRenderingPlugin extends nv.RenderingPlugin
   draw: (context, canvas) ->
     @text.draw context, canvas
 
+class nv.PathRenderingPlugin extends nv.RenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+  draw: (context, canvas) ->
+    context.strokeColor @entity.model.strokeColor
+    context.strokeWidth @entity.model.strokeWidth
+
+    points = @entity.model.path()
+    context.beginPath()
+    context.moveTo points[0].x, points[0].y
+
+    $.each points.slice(1), () ->
+      context.lineTo this.x, this.y
+
+    context.lineTo points[0].x, points[0].y
+
+    context.stroke()
+    context.closePath()
+
 zIndex = 0
 
 class nv.ObjectRenderer

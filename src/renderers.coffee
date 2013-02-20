@@ -50,56 +50,56 @@ class renderers.Background extends nv.RenderingPlugin
 
     context.globalCompositeOperation = "source-over"
 
-class BackgroundRenderer extends nv.ObjectRenderer
-  constructor: (@glcanvas, asset) ->
-    super arguments...
+# class BackgroundRenderer extends nv.ObjectRenderer
+#   constructor: (@glcanvas, asset) ->
+#     super arguments...
 
-    @zIndex = @nextZIndex()
+#     @zIndex = @nextZIndex()
 
-    @canvas = gl().size 700, 700
+#     @canvas = gl().size 700, 700
 
-    @asset.width = @canvas.width
-    @asset.height = @canvas.height
+#     @asset.width = @canvas.width
+#     @asset.height = @canvas.height
 
-    i = 0
-    until i > 100
-      i++
-      x = Math.random() * 700
-      y = Math.random() * 700
-      radius = (Math.random() * 2) + 1
-      @canvas.context.fillPath (context) ->
-        gradient = context.createRadialGradient x, y, 0, x, y, radius
-        gradient.addColorStop 0, "white"
-        gradient.addColorStop 0.4, "white"
-        gradient.addColorStop 0.4, "white"
-        gradient.addColorStop 1, "black"
-        context.color gradient
-        context.arc x, y, radius, 0, Math.PI * 2, true
+#     i = 0
+#     until i > 100
+#       i++
+#       x = Math.random() * 700
+#       y = Math.random() * 700
+#       radius = (Math.random() * 2) + 1
+#       @canvas.context.fillPath (context) ->
+#         gradient = context.createRadialGradient x, y, 0, x, y, radius
+#         gradient.addColorStop 0, "white"
+#         gradient.addColorStop 0.4, "white"
+#         gradient.addColorStop 0.4, "white"
+#         gradient.addColorStop 1, "black"
+#         context.color gradient
+#         context.arc x, y, radius, 0, Math.PI * 2, true
 
-  draw: (context, canvas) ->
-    context.globalCompositeOperation = "lighter"
+#   draw: (context, canvas) ->
+#     context.globalCompositeOperation = "lighter"
 
-    camX = -@glcanvas.camera.x
-    camY = -@glcanvas.camera.y
+#     camX = -@glcanvas.camera.x
+#     camY = -@glcanvas.camera.y
 
-    startX = camX + ((@asset.x - camX) % @asset.width)
-    startY = camY + ((@asset.y - camY) % @asset.height)
+#     startX = camX + ((@asset.x - camX) % @asset.width)
+#     startY = camY + ((@asset.y - camY) % @asset.height)
 
-    if startX > camX then startX -= @asset.width
-    if startY > camY then startY -= @asset.height
+#     if startX > camX then startX -= @asset.width
+#     if startY > camY then startY -= @asset.height
 
-    curX = startX
-    curY = startY
+#     curX = startX
+#     curY = startY
 
-    while curX < camX + @glcanvas.width
-      while curY < camY + @glcanvas.height
-        context.drawImage @canvas, curX, curY
-        curY += @asset.height
+#     while curX < camX + @glcanvas.width
+#       while curY < camY + @glcanvas.height
+#         context.drawImage @canvas, curX, curY
+#         curY += @asset.height
 
-      curY = startY
-      curX += @asset.width
+#       curY = startY
+#       curX += @asset.width
 
-    context.globalCompositeOperation = "source-over"
+#     context.globalCompositeOperation = "source-over"
 
 class BulletRenderer extends nv.ObjectListRenderer
   constructor: (@scene, @glcanvas) ->
@@ -243,12 +243,12 @@ class MainRenderer extends nv.ObjectRenderer
     @title.draw context
     @actionText.draw context
 
-$(() ->
-  nv.renderers =
-    ShipRenderer: ShipRenderer
-    BulletRenderer: BulletRenderer
-    BackgroundRenderer: BackgroundRenderer
-    AsteroidRenderer: AsteroidRenderer
-    HudRenderer: HudRenderer
-    MainRenderer: MainRenderer
-)
+# $(() ->
+#   nv.renderers =
+#     ShipRenderer: ShipRenderer
+#     BulletRenderer: BulletRenderer
+#     BackgroundRenderer: BackgroundRenderer
+#     AsteroidRenderer: AsteroidRenderer
+#     HudRenderer: HudRenderer
+#     MainRenderer: MainRenderer
+# )

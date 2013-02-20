@@ -8,6 +8,47 @@ class models.Background extends nv.Model
       width: 500
       height: 500
 
+class models.Ship extends nv.Model
+  constructor: () ->
+    super
+      speed: 5
+      health: 100
+      shootDelay: 10
+      x: 0
+      y: 30
+      width: 16
+      height: 24
+      rotation: 0
+      thrusters: false
+      type: 'both'
+      color: '#FFF'
+      strokeColor: '#FFF'
+      strokeWidth: 2
+
+    @points = @buildWireframe()
+
+  buildWireframe: () ->
+    [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
+
+  path: () ->
+    cosine = Math.cos(@rotation)
+    sine = Math.sin(@rotation)
+    path = []
+    model = this
+    $.each @points, () ->
+      path.push new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y)
+    path
+
+  # nose: () ->
+  #   @_path[0]
+
+  translate: (dx,dy) ->
+    @x += dx
+    @y += dy
+
+  rotate: (r) ->
+    @rotation += r
+
 __gameObjectCounter = 0
 
 class GameObject
@@ -87,23 +128,23 @@ class Bullet extends GameObject
     @_bounds.reset @_path[0].x - @radius, @_path[0].y - @radius, @_path[0].x + @radius, @_path[0].y + @radius
 
 
-class Ship extends GameObject
-  constructor: () ->
-    super
-      x: 0
-      y: 30
-      width: 16
-      height: 24
-      speed: 5
-      rotation: 0
-      thrusters: false
-      type: 'both'
+# class Ship extends GameObject
+#   constructor: () ->
+#     super
+#       x: 0
+#       y: 30
+#       width: 16
+#       height: 24
+#       speed: 5
+#       rotation: 0
+#       thrusters: false
+#       type: 'both'
 
-  buildWireframe: () ->
-    [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
+#   buildWireframe: () ->
+#     [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
 
-  nose: () ->
-    @_path[0]
+#   nose: () ->
+#     @_path[0]
 
 class Asteroids extends nv.Collection
   constructor: (@initialSpawnCount) ->
@@ -148,12 +189,12 @@ class Hud extends nv.Model
     @lives = 3
     @score = 100000
 
-class Global extends nv.Model
-  constructor: () ->
-    @title = "Asteroids"
-    @actionText = "Press <Space> to Start."
-    @options =
-      difficulty: "easy"
+# class Global extends nv.Model
+#   constructor: () ->
+#     @title = "Asteroids"
+#     @actionText = "Press <Space> to Start."
+#     @options =
+#       difficulty: "easy"
 
 # $(() ->
 #   nv.models =

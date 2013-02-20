@@ -1,13 +1,13 @@
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-wrap = (asset, glcanvas) ->
-  # Boundary Wrapping
-  dimensions = glcanvas.size()
+# wrap = (asset, glcanvas) ->
+#   # Boundary Wrapping
+#   dimensions = glcanvas.size()
 
-  if asset.x < 0 then asset.x = dimensions.width
-  else if asset.x > dimensions.width then asset.x = 0
+#   if asset.x < 0 then asset.x = dimensions.width
+#   else if asset.x > dimensions.width then asset.x = 0
 
-  if asset.y < 0 then asset.y = dimensions.height
-  else if asset.y > dimensions.height then asset.y = 0
+#   if asset.y < 0 then asset.y = dimensions.height
+#   else if asset.y > dimensions.height then asset.y = 0
 
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 class BulletController extends nv.Controller
@@ -89,29 +89,29 @@ class AsteroidController extends nv.Controller
       wrap asset, @scene.glcanvas
 
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-class ShipController extends nv.Controller
-  constructor: (@scene) ->
-    super @scene.getModel('ship')
+# class ShipController extends nv.Controller
+#   constructor: (@scene) ->
+#     super @scene.getModel('ship')
 
-    @speed = 5
-    @shootDelay = 10
+#     @speed = 5
+#     @shootDelay = 10
 
-    @scene.dispatcher.on 'collision:Ship:Asteroid', (data) =>
-      console.log "ship hit asteroid"
-      @scene.dispatcher.fire 'delete:Ship',
-        asset: data.actor
+#     @scene.dispatcher.on 'collision:Ship:Asteroid', (data) =>
+#       console.log "ship hit asteroid"
+#       @scene.dispatcher.fire 'delete:Ship',
+#         asset: data.actor
 
-  update: (dt) ->
-    state = @scene.gamepad.getState()
-    if state.left then @asset.rotate -0.1
-    if state.right then @asset.rotate 0.1
-    if state.up
-      @asset.translate @speed * Math.sin(@asset.rotation), -@speed * Math.cos(@asset.rotation)
-    if state.down
-      @asset.translate -@speed/2 * Math.sin(@asset.rotation), @speed/2 * Math.cos(@asset.rotation)
-    @asset.thrusters = state.up
+#   update: (dt) ->
+#     state = @scene.gamepad.getState()
+#     if state.left then @asset.rotate -0.1
+#     if state.right then @asset.rotate 0.1
+#     if state.up
+#       @asset.translate @speed * Math.sin(@asset.rotation), -@speed * Math.cos(@asset.rotation)
+#     if state.down
+#       @asset.translate -@speed/2 * Math.sin(@asset.rotation), @speed/2 * Math.cos(@asset.rotation)
+#     @asset.thrusters = state.up
 
-    wrap @asset, @scene.glcanvas
+#     wrap @asset, @scene.glcanvas
 
     # Shooting
     # if state.shoot and @shootDelay is 0
@@ -175,10 +175,10 @@ class GamePhysicsController extends nv.Controller
             target: objp
 
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-$(() ->
-  nv.controllers =
-    ShipController: ShipController
-    BulletController: BulletController
-    AsteroidController: AsteroidController
-    GamePhysicsController: GamePhysicsController
-)
+# $(() ->
+#   nv.controllers =
+#     ShipController: ShipController
+#     BulletController: BulletController
+#     AsteroidController: AsteroidController
+#     GamePhysicsController: GamePhysicsController
+# )

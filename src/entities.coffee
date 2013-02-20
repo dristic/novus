@@ -35,29 +35,28 @@ class entities.Cursor extends nv.Entity
     @model.drawable.x = state.mouse.x
     @model.drawable.y = state.mouse.y
 
-class ShipModel extends nv.Model
-  constructor: () ->
-    super
-      speed: 5
-      health: 100
-      shootDelay: 10
-      x: 0
-      y: 30
-      width: 16
-      height: 24
-      rotation: 0
-      thrusters: false
-      type: 'both'
-      color: '#FFF'
-      strokeWidth: 2
-      points: @buildWireFrame()
+class WrappingEntity extends nv.Entity
+  constructor: (args...) ->
+    super args...
 
-  buildWireFrame: () ->
-    [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
+  wrap: () ->
+    # Boundary Wrapping
+    dimensions = @scene.get('canvas').size()
 
-class Ship extends nv.Entity
-  constructor: (@scene) ->
-    super @scene, [new RectanglePhysicsPlugin, new PathRenderPlugin], new ShipModel
+    if @model.x < 0 then @model.x = dimensions.width
+    else if @model.x > dimensions.width then @model.x = 0
+
+    if @model.y < 0 then @model.y = dimensions.height
+    else if @model.y > dimensions.height then @model.y = 0
+
+class entities.Ship extends WrappingEntity
+  constructor: (scene) ->
+    super scene, [nv.PathRenderingPlugin], new models.Ship
+
+    @scene.on 'collision:Ship:Asteroid', (data) =>
+      console.log "ship hit asteroid"
+      @scene.dispatcher.fire 'delete:Ship',
+        asset: data.actor
 
     @scene.on 'physics:collision:Ship:Asteroid', (data) ->
       console.log 'ship hit asteroid'
@@ -68,7 +67,16 @@ class Ship extends nv.Entity
     # Rest of gamepad hooks....
 
   update: (dt) ->
-    wrap @model, @scene.model
+    state = @scene.gamepad.getState()
+    if state.left then @model.rotate -0.1
+    if state.right then @model.rotate 0.1
+    if state.up
+      @model.translate @speed * Math.sin(@model.rotation), -@speed * Math.cos(@model.rotation)
+    if state.down
+      @model.translate -@speed/2 * Math.sin(@model.rotation), @speed/2 * Math.cos(@model.rotation)
+    @model.thrusters = state.up
+
+    @wrap()
 
     # state = @scene.gamepad.getState()
     # if state.left then @asset.rotate -0.1

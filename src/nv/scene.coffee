@@ -23,6 +23,7 @@ class nv.Scene extends nv.EventDispatcher
   addEntity: (entity, args...) ->
     entity = new entity this, args...
     @entities.push entity
+    entity
 
   removeEntity: (entity) ->
     @entities.splice @entities.indexOf(entity), 1

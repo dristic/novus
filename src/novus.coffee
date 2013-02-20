@@ -24,7 +24,7 @@ class Asteroids extends nv.Game
     @registerScene 'Main', Main
     @registerScene 'Game', Game
 
-    @openScene 'Main', glcanvas
+    @openScene 'Game', glcanvas
 
 class Main extends nv.Scene
   constructor: (game, @glcanvas) ->
@@ -37,10 +37,11 @@ class Main extends nv.Scene
       trackMouse: true
 
     @addEntities entities.Background,
+      entities.Background,
       entities.Title,
       entities.ActionText,
       entities.Cursor
-      
+
     @glcanvas.camera = nv.camera()
     @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
 
@@ -59,39 +60,43 @@ class Main extends nv.Scene
     @glcanvas.stopDrawUpdate()
 
 class Game extends nv.Scene
-  constructor: (@glcanvas) ->
-    super
+  constructor: (game, @glcanvas) ->
+    super game,
+      canvas: @glcanvas
+      keys:
+        left: nv.Key.A
+        right: nv.Key.D
+        up: nv.Key.W
+        down: nv.Key.S
+        shoot: nv.Key.Spacebar
 
-    @gamepad.aliasKey 'left', nv.Key.A
-    @gamepad.aliasKey 'right', nv.Key.D
-    @gamepad.aliasKey 'up', nv.Key.W
-    @gamepad.aliasKey 'down', nv.Key.S
-    @gamepad.aliasKey 'shoot', nv.Key.Spacebar
+    @addEntities entities.Background,
+      entities.Background
 
-    @addModel 'bg', new nv.models.Background
-    @addModel 'bg2', new nv.models.Background
-    @addModel 'ship', new nv.models.Ship
-    @addModel 'asteroids', new nv.models.Asteroids 30
-    @addModel 'hud', new nv.models.Hud @glcanvas
+    ship = @addEntity entities.Ship
 
-    @addController new nv.controllers.AsteroidController this
-    @addController new nv.controllers.ShipController this
-    @addController new nv.controllers.BulletController this
+    # @addModel 'ship', new nv.models.Ship
+    # @addModel 'asteroids', new nv.models.Asteroids 30
+    # @addModel 'hud', new nv.models.Hud @glcanvas
 
-    physicsController = new nv.controllers.GamePhysicsController this
-    physicsController.trackObjects @getModel('asteroids').items
-    physicsController.trackObject @getModel('ship')
-    @addController physicsController
+    # @addController new nv.controllers.AsteroidController this
+    # @addController new nv.controllers.ShipController this
+    # @addController new nv.controllers.BulletController this
 
-    @addRenderer new nv.renderers.BackgroundRenderer(@glcanvas, @getModel('bg'), @getModel('ship'))
-    @addRenderer new nv.renderers.BackgroundRenderer(@glcanvas, @getModel('bg2'), @getModel('ship'))
-    @addRenderer new nv.renderers.ShipRenderer(@glcanvas, @getModel('ship'))
-    @addRenderer new nv.renderers.AsteroidRenderer(this, @glcanvas)
-    @addRenderer new nv.renderers.HudRenderer @glcanvas, @getModel('hud')
-    @addRenderer new nv.renderers.BulletRenderer this, @glcanvas
+    # physicsController = new nv.controllers.GamePhysicsController this
+    # physicsController.trackObjects @getModel('asteroids').items
+    # physicsController.trackObject @getModel('ship')
+    # @addController physicsController
+
+    # @addRenderer new nv.renderers.BackgroundRenderer(@glcanvas, @getModel('bg'), @getModel('ship'))
+    # @addRenderer new nv.renderers.BackgroundRenderer(@glcanvas, @getModel('bg2'), @getModel('ship'))
+    # @addRenderer new nv.renderers.ShipRenderer(@glcanvas, @getModel('ship'))
+    # @addRenderer new nv.renderers.AsteroidRenderer(this, @glcanvas)
+    # @addRenderer new nv.renderers.HudRenderer @glcanvas, @getModel('hud')
+    # @addRenderer new nv.renderers.BulletRenderer this, @glcanvas
 
     @glcanvas.camera = nv.camera()
-    @glcanvas.camera.follow @getModel('ship'), 250, 250
+    @glcanvas.camera.follow ship.model, 250, 250
     @glcanvas.camera.zoom 0.5
     @glcanvas.camera.zoom 1, 2000
 
@@ -101,15 +106,15 @@ class Game extends nv.Scene
   update: (dt) ->
     super dt
 
-    bg = @getModel('bg')
-    bg2 = @getModel('bg2')
-    ship = @getModel('ship')
+    # bg = @getModel('bg')
+    # bg2 = @getModel('bg2')
+    # ship = @getModel('ship')
 
-    bg.x = -ship.x * 0.05
-    bg.y = -ship.y * 0.05
+    # bg.x = -ship.x * 0.05
+    # bg.y = -ship.y * 0.05
 
-    bg2.x = -ship.x * 0.01
-    bg2.y = -ship.y * 0.01
+    # bg2.x = -ship.x * 0.01
+    # bg2.y = -ship.y * 0.01
 
 $(() ->
   new Asteroids
