@@ -59,9 +59,12 @@ class nv.Scene extends nv.EventDispatcher
     @renderers.splice @renderers.indexOf(renderer), 1
 
   update: (dt) ->
-    controller.update dt for controller in @controllers
     engine.update dt for engine in @engines
     entity.update dt for entity in @entities
 
     @removeEntity entity for entity in @deletedEntities
     @deletedEntities = []
+
+  destroy: () ->
+    @removeEntity entity for entity in @entities
+    engine.destroy for engine in @engines

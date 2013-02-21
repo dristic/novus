@@ -598,28 +598,39 @@
     };
 
     Scene.prototype.update = function(dt) {
-      var controller, engine, entity, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
-      _ref = this.controllers;
+      var engine, entity, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+      _ref = this.engines;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        controller = _ref[_i];
-        controller.update(dt);
-      }
-      _ref1 = this.engines;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        engine = _ref1[_j];
+        engine = _ref[_i];
         engine.update(dt);
       }
-      _ref2 = this.entities;
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        entity = _ref2[_k];
+      _ref1 = this.entities;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        entity = _ref1[_j];
         entity.update(dt);
       }
-      _ref3 = this.deletedEntities;
-      for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
-        entity = _ref3[_l];
+      _ref2 = this.deletedEntities;
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        entity = _ref2[_k];
         this.removeEntity(entity);
       }
       return this.deletedEntities = [];
+    };
+
+    Scene.prototype.destroy = function() {
+      var engine, entity, _i, _j, _len, _len1, _ref, _ref1, _results;
+      _ref = this.entities;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        entity = _ref[_i];
+        this.removeEntity(entity);
+      }
+      _ref1 = this.engines;
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        engine = _ref1[_j];
+        _results.push(engine.destroy);
+      }
+      return _results;
     };
 
     return Scene;
@@ -740,20 +751,23 @@
     };
 
     Game.prototype.openScene = function() {
-      var args, name;
+      var args, name,
+        _this = this;
       name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      this.closeScene();
-      return this.currentScene = (function(func, args, ctor) {
-        ctor.prototype = func.prototype;
-        var child = new ctor, result = func.apply(child, args);
-        return Object(result) === result ? result : child;
-      })(this.sceneClasses[name], [this].concat(__slice.call(args)), function(){});
+      return this.closeScene(function() {
+        return _this.currentScene = (function(func, args, ctor) {
+          ctor.prototype = func.prototype;
+          var child = new ctor, result = func.apply(child, args);
+          return Object(result) === result ? result : child;
+        })(_this.sceneClasses[name], [_this].concat(__slice.call(args)), function(){});
+      });
     };
 
-    Game.prototype.closeScene = function() {
+    Game.prototype.closeScene = function(callback) {
       if (!!this.currentScene) {
-        return this.currentScene.destroy();
+        this.currentScene.destroy();
       }
+      return callback();
     };
 
     return Game;
@@ -802,6 +816,17 @@
         return _this.canvas.removeDrawable(drawable);
       });
     }
+
+    RenderingEngine.prototype.destroy = function() {
+      var drawable, _i, _len, _ref, _results;
+      _ref = this.drawables;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        drawable = _ref[_i];
+        _results.push(drawable.destroy());
+      }
+      return _results;
+    };
 
     return RenderingEngine;
 
@@ -2106,6 +2131,7 @@
     };
 
     Main.prototype.destroy = function() {
+      Main.__super__.destroy.apply(this, arguments);
       return this.glcanvas.stopDrawUpdate();
     };
 

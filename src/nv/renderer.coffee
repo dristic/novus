@@ -16,6 +16,9 @@ class nv.RenderingEngine extends nv.Engine
 
       @canvas.removeDrawable drawable
 
+  destroy: () ->
+    drawable.destroy() for drawable in @drawables
+
 class nv.RenderingPlugin extends nv.Plugin
   constructor: (scene, entity) ->
     super scene, entity

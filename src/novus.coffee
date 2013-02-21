@@ -25,7 +25,7 @@ class Asteroids extends nv.Game
     @registerScene 'Main', Main
     @registerScene 'Game', Game
 
-    @openScene 'Game', glcanvas
+    @openScene 'Main', glcanvas
 
 class Main extends nv.Scene
   constructor: (game, @glcanvas) ->
@@ -58,6 +58,8 @@ class Main extends nv.Scene
     super dt
 
   destroy: () ->
+    super
+
     @glcanvas.stopDrawUpdate()
 
 class Game extends nv.Scene
