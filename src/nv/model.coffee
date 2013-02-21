@@ -6,11 +6,20 @@ class nv.Model
     for key of object
       this[key] = object[key]
 
+  get: (key) ->
+    this[key]
+
+  set: (key, value) ->
+    this[key] = value
+
   persist: () ->
-    window.localStorage[@name] = this
+    data = {}
+    for key of this
+      data[key] = this[key]
+    window.localStorage[@constructor.name] = data
 
   load: () ->
-    @setMany window.localStorage[@name]
+    @setMany window.localStorage[@constructor.name]
 
 class nv.Collection extends nv.Model
   constructor: (arr) ->

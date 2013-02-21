@@ -3,7 +3,6 @@
 
 #= require entities
 #= require models
-#= require controllers
 #= require renderers
 
 class Asteroids extends nv.Game

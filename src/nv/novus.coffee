@@ -1,7 +1,6 @@
 #= require base
 #= require common
 #= require plugin
-#= require controller
 #= require entity
 #= require event_dispatcher
 #= require model

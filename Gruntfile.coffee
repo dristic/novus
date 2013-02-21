@@ -78,10 +78,13 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-concat'
 
   # Default task lints, tests, and builds everything.
-  grunt.registerTask 'default', ['build']
+  grunt.registerTask 'default', ['test']
 
   # Build task builds and tests.
-  grunt.registerTask 'build', ['coffee', 'concat', 'jasmine']
+  grunt.registerTask 'build', ['coffee', 'concat']
+
+  # Builds and tests the engine.
+  grunt.registerTask 'test', ['build', 'jasmine']
 
   # Coffee task builds the main novus engine and game.
   grunt.registerTask 'coffee', 'Compiles coffeescript into js files', () ->

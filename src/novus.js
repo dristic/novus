@@ -144,18 +144,24 @@
       return f;
     },
     keydown: function(key, callback) {
-      return $(document).on('keydown', function(event) {
+      var func;
+      func = function(event) {
         if (event.keyCode === key) {
           return callback();
         }
-      });
+      };
+      $(document).on('keydown', func);
+      return func;
     },
     keyup: function(key, callback) {
-      return $(document).on('keyup', function(event) {
+      var func;
+      func = function(event) {
         if (event.keyCode === key) {
           return callback();
         }
-      });
+      };
+      $(document).on('keyup', func);
+      return func;
     },
     mousedown: function(callback) {
       $(document).on('mousedown', callback);
@@ -177,6 +183,7 @@
       this.gamepad = navigator.webkitGamepad;
       this.state = {};
       this.listeners = {};
+      this.trackers = {};
     }
 
     Gamepad.prototype.trackMouse = function() {
@@ -204,12 +211,15 @@
 
     Gamepad.prototype.aliasKey = function(button, key) {
       var _this = this;
-      nv.keydown(key, function() {
+      if (!this.trackers[button]) {
+        this.trackers[button] = [];
+      }
+      this.trackers[button].push(nv.keydown(key, function() {
         return _this.fireButton(button);
-      });
-      return nv.keyup(key, function() {
+      }));
+      return this.trackers[button].push(nv.keyup(key, function() {
         return _this.state[button] = false;
-      });
+      }));
     };
 
     Gamepad.prototype.fireButton = function(button) {
@@ -240,7 +250,7 @@
     Gamepad.prototype.offButtonPress = function(button, func) {
       var listeners;
       listeners = this.listeners[button];
-      if (listeners.indexOf(func(!0))) {
+      if (listeners.indexOf(func !== 0)) {
         listeners.splice(listeners.indexOf(func), 1);
       }
       this.listeners[button] = listeners;
@@ -338,22 +348,6 @@
     };
 
     return Plugin;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.Controller = (function() {
-
-    function Controller(asset) {
-      this.asset = asset;
-    }
-
-    Controller.prototype.update = function(dt) {};
-
-    return Controller;
 
   })();
 
@@ -465,12 +459,25 @@
       return _results;
     };
 
+    Model.prototype.get = function(key) {
+      return this[key];
+    };
+
+    Model.prototype.set = function(key, value) {
+      return this[key] = value;
+    };
+
     Model.prototype.persist = function() {
-      return window.localStorage[this.name] = this;
+      var data, key;
+      data = {};
+      for (key in this) {
+        data[key] = this[key];
+      }
+      return window.localStorage[this.constructor.name] = data;
     };
 
     Model.prototype.load = function() {
-      return this.setMany(window.localStorage[this.name]);
+      return this.setMany(window.localStorage[this.constructor.name]);
     };
 
     return Model;
@@ -794,8 +801,7 @@
 }).call(this);
 
 (function() {
-  var zIndex,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.RenderingEngine = (function(_super) {
@@ -912,69 +918,6 @@
     return PathRenderingPlugin;
 
   })(nv.RenderingPlugin);
-
-  zIndex = 0;
-
-  nv.ObjectRenderer = (function() {
-
-    function ObjectRenderer(glcanvas, asset) {
-      this.glcanvas = glcanvas;
-      this.asset = asset;
-      this.glcanvas.addDrawable(this);
-    }
-
-    ObjectRenderer.prototype.draw = function(dt) {};
-
-    ObjectRenderer.prototype.destroy = function() {
-      return this.glcanvas.removeDrawable(this);
-    };
-
-    ObjectRenderer.prototype.nextZIndex = function() {
-      return zIndex++;
-    };
-
-    return ObjectRenderer;
-
-  })();
-
-  nv.ObjectListRenderer = (function() {
-
-    function ObjectListRenderer(glcanvas, assets) {
-      var _this = this;
-      this.assets = assets;
-      this.classname = this.constructor.toString();
-      this.assetCounter = 0;
-      glcanvas.addDrawable(this);
-      $.each(this.assets, function(asset) {
-        return _this.acquireAsset(asset);
-      });
-    }
-
-    ObjectListRenderer.prototype.acquireAsset = function(asset) {
-      asset.id = this.classname + this.assetCounter++;
-      return asset;
-    };
-
-    ObjectListRenderer.prototype.add = function(asset) {
-      this.assets.push(this.acquireAsset(asset));
-      return asset;
-    };
-
-    ObjectListRenderer.prototype.remove = function(target) {
-      return this.assets = this.assets.filter(function(asset) {
-        return asset.id !== target.id;
-      });
-    };
-
-    ObjectListRenderer.prototype.draw = function(dt) {};
-
-    ObjectListRenderer.prototype.nextZIndex = function() {
-      return zIndex++;
-    };
-
-    return ObjectListRenderer;
-
-  })();
 
 }).call(this);
 
@@ -1890,12 +1833,6 @@
     return Bullet;
 
   })(nv.Model);
-
-}).call(this);
-
-(function() {
-
-
 
 }).call(this);
 
