@@ -16,3 +16,4 @@ class nv.Game
 
   closeScene: () ->
     @currentScene.destroy() unless not @currentScene
+    

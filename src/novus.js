@@ -1712,7 +1712,7 @@
 }).call(this);
 
 (function() {
-  var GameObject, models, __gameObjectCounter,
+  var models,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1804,7 +1804,9 @@
         rotation: 0,
         rotationSpeed: 0.01,
         direction: (Math.random() * Math.PI) - (Math.PI / 2),
-        type: 'passive'
+        type: 'passive',
+        strokeColor: '#FFF',
+        strokeWidth: 2
       });
       this.points = this.buildWireframe();
     }
@@ -1888,90 +1890,6 @@
     return Bullet;
 
   })(nv.Model);
-
-  __gameObjectCounter = 0;
-
-  GameObject = (function() {
-
-    function GameObject(options) {
-      var key, value;
-      this.id = "" + this.constructor.name + (__gameObjectCounter++);
-      this.x = 0;
-      this.y = 0;
-      this.width = 0;
-      this.height = 0;
-      this.rotation = 0;
-      this.type = 'passive';
-      for (key in options) {
-        value = options[key];
-        this[key] = value;
-      }
-      this._path = [];
-      this._wireframe = [];
-      this._bounds = new nv.Rect(0, 0, 0, 0);
-      this.initPath();
-    }
-
-    GameObject.prototype.initPath = function() {
-      this._wireframe = this.buildWireframe();
-      return this._updatePath();
-    };
-
-    GameObject.prototype._updatePath = function() {
-      var cosine, gameObject, newPath, sine;
-      cosine = Math.cos(this.rotation);
-      sine = Math.sin(this.rotation);
-      newPath = [];
-      gameObject = this;
-      $.each(this._wireframe, function() {
-        return newPath.push(new nv.Point(this.x * cosine - this.y * sine + gameObject.x, this.x * sine + this.y * cosine + gameObject.y));
-      });
-      this._path = newPath;
-      return this._updateBounds();
-    };
-
-    GameObject.prototype._updateBounds = function() {
-      var x1, x2, y1, y2;
-      x1 = x2 = y1 = y2 = null;
-      $.each(this._path, function() {
-        if (x1 === null || this.x < x1) {
-          x1 = this.x;
-        }
-        if (x2 === null || this.x > x2) {
-          x2 = this.x;
-        }
-        if (y1 === null || this.y < y1) {
-          y1 = this.y;
-        }
-        if (y2 === null || this.y > y2) {
-          return y2 = this.y;
-        }
-      });
-      return this._bounds.reset(x1, y1, x2, y2);
-    };
-
-    GameObject.prototype.path = function() {
-      return this._path;
-    };
-
-    GameObject.prototype.bounds = function() {
-      return this._bounds;
-    };
-
-    GameObject.prototype.rotate = function(r) {
-      this.rotation += r;
-      return this._updatePath();
-    };
-
-    GameObject.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      this.y += dy;
-      return this._updatePath();
-    };
-
-    return GameObject;
-
-  })();
 
 }).call(this);
 
