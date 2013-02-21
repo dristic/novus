@@ -4,6 +4,10 @@ Novus is a game engine written in javascript and HTML 5 on top of canvas. The ma
 
 # Getting Started
 
+## Prereqs
+
+Install git flow using `brew install git-flow` and run `git flow init`. Check out git flow and how to use it for contributing [here](https://github.com/nvie/gitflow)
+
 ## Quick Start
 
 This project is built on top of Node.js technologies. Before you start you should have the latest `node` and `npm` installed on your system.
