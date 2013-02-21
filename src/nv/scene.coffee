@@ -67,4 +67,4 @@ class nv.Scene extends nv.EventDispatcher
 
   destroy: () ->
     @removeEntity entity for entity in @entities
-    engine.destroy for engine in @engines
+    engine.destroy() for engine in @engines

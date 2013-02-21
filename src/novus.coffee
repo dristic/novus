@@ -44,7 +44,7 @@ class Main extends nv.Scene
       entities.Cursor
 
     @glcanvas.camera = nv.camera()
-    @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
+    @updateId = @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
 
     @on "engine:gamepad:start", () =>
       @game.openScene 'Game', @glcanvas
@@ -60,7 +60,7 @@ class Main extends nv.Scene
   destroy: () ->
     super
 
-    @glcanvas.stopDrawUpdate()
+    @glcanvas.stopDrawUpdate(@updateId)
 
 class Game extends nv.Scene
   constructor: (game, @glcanvas) ->
@@ -103,8 +103,7 @@ class Game extends nv.Scene
     @glcanvas.camera.zoom 0.5
     @glcanvas.camera.zoom 1, 2000
 
-    @glcanvas.startDrawUpdate 60, (dt) =>
-      @update.call this, dt
+    @updateId = @glcanvas.startDrawUpdate 60, nv.bind(this, @update)
 
   fire: (event, data) ->
     console.log "[EVENT] - #{event}"
@@ -113,6 +112,11 @@ class Game extends nv.Scene
 
   update: (dt) ->
     super dt
+
+  destroy: () ->
+    super
+
+    @glcanvas.stopDrawUpdate @updateId
 
 $(() ->
   new Asteroids

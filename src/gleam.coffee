@@ -7,6 +7,8 @@ gl = (canvas) ->
 # Global options
 gl.zOrderProperty = 'zIndex'
 
+_updateId = 0
+
 # Gleam.CanvasDecorator
 # This decorates a canvas object and gives more options.
 gl.prototype =
@@ -65,6 +67,7 @@ gl.prototype =
   startDrawUpdate: (fps, func) ->
     @updating = true
     lastTime = Date.now()
+    updateId = _updateId++
 
     update = () =>
       now = Date.now()
@@ -84,16 +87,19 @@ gl.prototype =
 
       lastTime = now
 
-      if @cancel
-        @cancel = false
+      if @cancel isnt undefined and @cancel.indexOf(updateId) isnt -1
+        @cancel.splice @cancel.indexOf(updateId), 1
+        delete @cancel if @cancel.length is 0
       else
         @requestFrameKey = requestFrame update unless not @updating
 
     @requestFrameKey = requestFrame update
+    updateId
 
-  stopDrawUpdate: () ->
+  stopDrawUpdate: (updateId) ->
     @updating = false
-    @cancel = true
+    @cancel = [] unless @cancel
+    @cancel.push updateId
     cancelFrame @requestFrameKey
 
   extend: (object) ->

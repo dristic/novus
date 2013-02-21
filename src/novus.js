@@ -628,7 +628,7 @@
       _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         engine = _ref1[_j];
-        _results.push(engine.destroy);
+        _results.push(engine.destroy());
       }
       return _results;
     };
@@ -751,23 +751,20 @@
     };
 
     Game.prototype.openScene = function() {
-      var args, name,
-        _this = this;
+      var args, name;
       name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      return this.closeScene(function() {
-        return _this.currentScene = (function(func, args, ctor) {
-          ctor.prototype = func.prototype;
-          var child = new ctor, result = func.apply(child, args);
-          return Object(result) === result ? result : child;
-        })(_this.sceneClasses[name], [_this].concat(__slice.call(args)), function(){});
-      });
+      this.closeScene();
+      return this.currentScene = (function(func, args, ctor) {
+        ctor.prototype = func.prototype;
+        var child = new ctor, result = func.apply(child, args);
+        return Object(result) === result ? result : child;
+      })(this.sceneClasses[name], [this].concat(__slice.call(args)), function(){});
     };
 
-    Game.prototype.closeScene = function(callback) {
+    Game.prototype.closeScene = function() {
       if (!!this.currentScene) {
-        this.currentScene.destroy();
+        return this.currentScene.destroy();
       }
-      return callback();
     };
 
     return Game;
@@ -785,6 +782,10 @@
     }
 
     Engine.prototype.update = function(dt) {};
+
+    Engine.prototype.destroy = function() {
+      return delete this.scene;
+    };
 
     return Engine;
 
@@ -818,12 +819,11 @@
     }
 
     RenderingEngine.prototype.destroy = function() {
-      var drawable, _i, _len, _ref, _results;
-      _ref = this.drawables;
+      var i, _results;
+      i = this.drawables.length;
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        drawable = _ref[_i];
-        _results.push(drawable.destroy());
+      while (i--) {
+        _results.push(this.drawables[i].destroy());
       }
       return _results;
     };
@@ -987,8 +987,7 @@
     __extends(GamepadEngine, _super);
 
     function GamepadEngine(scene) {
-      var key,
-        _this = this;
+      var key;
       GamepadEngine.__super__.constructor.call(this, scene);
       this.gamepad = scene.gamepad;
       this.options = scene.options;
@@ -997,11 +996,24 @@
       }
       for (key in this.options.keys) {
         this.gamepad.aliasKey(key, this.options.keys[key]);
-        this.gamepad.onButtonPress(key, function(button) {
-          return _this.scene.fire("engine:gamepad:" + button);
-        });
+        this.updateFunction = nv.bind(this, this.onButtonPress);
+        this.gamepad.onButtonPress(key, this.updateFunction);
       }
     }
+
+    GamepadEngine.prototype.onButtonPress = function(button) {
+      return this.scene.fire("engine:gamepad:" + button);
+    };
+
+    GamepadEngine.prototype.destroy = function() {
+      var key;
+      for (key in this.options.keys) {
+        this.gamepad.offButtonPress(key, this.updateFunction);
+      }
+      delete this.gamepad;
+      delete this.options;
+      return GamepadEngine.__super__.destroy.apply(this, arguments);
+    };
 
     return GamepadEngine;
 
@@ -1168,7 +1180,7 @@
 }).call(this);
 
 (function() {
-  var cancelFrame, gl, requestFrame, _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+  var cancelFrame, gl, requestFrame, _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _updateId;
 
   requestFrame = (_ref = (_ref1 = (_ref2 = (_ref3 = (_ref4 = window.requestAnimationFrame) != null ? _ref4 : window.webkitRequestAnimationFrame) != null ? _ref3 : window.mozRequestAnimationFrame) != null ? _ref2 : window.oRequestAnimationFrame) != null ? _ref1 : window.msRequestAnimationFrame) != null ? _ref : function(callback) {
     return setTimeout(callback, 17);
@@ -1181,6 +1193,8 @@
   };
 
   gl.zOrderProperty = 'zIndex';
+
+  _updateId = 0;
 
   gl.prototype = {
     init: function(canvas) {
@@ -1253,10 +1267,11 @@
       return _results;
     },
     startDrawUpdate: function(fps, func) {
-      var lastTime, update,
+      var lastTime, update, updateId,
         _this = this;
       this.updating = true;
       lastTime = Date.now();
+      updateId = _updateId++;
       update = function() {
         var delta, now, stop;
         now = Date.now();
@@ -1271,19 +1286,26 @@
         _this.drawObjects();
         _this.context.restore();
         lastTime = now;
-        if (_this.cancel) {
-          return _this.cancel = false;
+        if (_this.cancel !== void 0 && _this.cancel.indexOf(updateId) !== -1) {
+          _this.cancel.splice(_this.cancel.indexOf(updateId), 1);
+          if (_this.cancel.length === 0) {
+            return delete _this.cancel;
+          }
         } else {
           if (!!_this.updating) {
             return _this.requestFrameKey = requestFrame(update);
           }
         }
       };
-      return this.requestFrameKey = requestFrame(update);
+      this.requestFrameKey = requestFrame(update);
+      return updateId;
     },
-    stopDrawUpdate: function() {
+    stopDrawUpdate: function(updateId) {
       this.updating = false;
-      this.cancel = true;
+      if (!this.cancel) {
+        this.cancel = [];
+      }
+      this.cancel.push(updateId);
       return cancelFrame(this.requestFrameKey);
     },
     extend: function(object) {
@@ -2115,7 +2137,7 @@
       });
       this.addEntities(entities.Background, entities.Background, entities.Title, entities.ActionText, entities.Cursor);
       this.glcanvas.camera = nv.camera();
-      this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
+      this.updateId = this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
       this.on("engine:gamepad:start", function() {
         return _this.game.openScene('Game', _this.glcanvas);
       });
@@ -2132,7 +2154,7 @@
 
     Main.prototype.destroy = function() {
       Main.__super__.destroy.apply(this, arguments);
-      return this.glcanvas.stopDrawUpdate();
+      return this.glcanvas.stopDrawUpdate(this.updateId);
     };
 
     return Main;
@@ -2144,8 +2166,7 @@
     __extends(Game, _super);
 
     function Game(game, glcanvas) {
-      var ship,
-        _this = this;
+      var ship;
       this.glcanvas = glcanvas;
       Game.__super__.constructor.call(this, game, {
         canvas: this.glcanvas,
@@ -2165,9 +2186,7 @@
       this.glcanvas.camera.follow(ship.model, 250, 250);
       this.glcanvas.camera.zoom(0.5);
       this.glcanvas.camera.zoom(1, 2000);
-      this.glcanvas.startDrawUpdate(60, function(dt) {
-        return _this.update.call(_this, dt);
-      });
+      this.updateId = this.glcanvas.startDrawUpdate(60, nv.bind(this, this.update));
     }
 
     Game.prototype.fire = function(event, data) {
@@ -2177,6 +2196,11 @@
 
     Game.prototype.update = function(dt) {
       return Game.__super__.update.call(this, dt);
+    };
+
+    Game.prototype.destroy = function() {
+      Game.__super__.destroy.apply(this, arguments);
+      return this.glcanvas.stopDrawUpdate(this.updateId);
     };
 
     return Game;

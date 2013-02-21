@@ -11,10 +11,8 @@ class nv.Game
     @sceneClasses[name] = klass
 
   openScene: (name, args...) ->
-    @closeScene () =>
-      @currentScene = new @sceneClasses[name] this, args...
+    @closeScene()
+    @currentScene = new @sceneClasses[name] this, args...
 
-  closeScene: (callback) ->
+  closeScene: () ->
     @currentScene.destroy() unless not @currentScene
-
-    callback()

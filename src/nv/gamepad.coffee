@@ -9,5 +9,16 @@ class nv.GamepadEngine extends nv.Engine
 
     for key of @options.keys
       @gamepad.aliasKey key, @options.keys[key]
-      @gamepad.onButtonPress key, (button) =>
-        @scene.fire "engine:gamepad:#{button}"
+      @updateFunction = nv.bind(this, @onButtonPress)
+      @gamepad.onButtonPress key, @updateFunction
+
+  onButtonPress: (button) ->
+    @scene.fire "engine:gamepad:#{button}"
+
+  destroy: () ->
+    for key of @options.keys
+      @gamepad.offButtonPress key, @updateFunction
+    delete @gamepad
+    delete @options
+
+    super
