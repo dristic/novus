@@ -50,32 +50,33 @@ class models.Ship extends nv.Model
     @rotation += r
 
 class models.Asteroid extends nv.Model
-  constructor: (cw, ch, scale = 1) ->
+  constructor: (x, y, scale = 1, direction = null) ->
     super 
-      x: cw * Math.random()
-      y: ch * Math.random()
-      width: 24 * scale
-      height: 24 * scale
+      x: x
+      y: y
+      width: 12 * scale
+      height: 12 * scale
       speed: Math.random() + 0.3
       rotation: 0
-      rotationSpeed: 0.01
-      direction: (Math.random() * Math.PI) - (Math.PI / 2)
+      rotationSpeed: ((Math.random() / 10) - 0.05) / 8
+      direction: direction || (Math.random() * Math.PI) - (Math.PI / 2)
       type: 'passive'
       strokeColor: '#FFF'
       strokeWidth: 2
+      size: scale
 
-    @points = @buildWireframe()
+    @points = @buildWireframe(scale * .5)
 
-  buildWireframe: () ->
+  buildWireframe: (scalar) ->
     pt = new nv.Point(0, -@height)
     points = []
 
     points.push pt.clone()
-    points.push pt.translate(30,20).clone()
-    points.push pt.translate(5,30).clone()
-    points.push pt.translate(-12, 10).clone()
-    points.push pt.translate(-33, -10).clone()
-    points.push pt.translate(-10, -35).clone()
+    points.push pt.translate(30 * scalar, 20 * scalar).clone()
+    points.push pt.translate(5 * scalar, 30 * scalar).clone()
+    points.push pt.translate(-12 * scalar, 10 * scalar).clone()
+    points.push pt.translate(-33 * scalar, -10 * scalar).clone()
+    points.push pt.translate(-10 * scalar, -35 * scalar).clone()
     points
 
   path: () ->
@@ -91,8 +92,8 @@ class models.Asteroid extends nv.Model
     @x += dx
     @y += dy
 
-  rotate: (r) ->
-    @rotation += r
+  rotate: (dr) ->
+    @rotation += dr
 
 class models.Bullet extends nv.Model
   constructor: (pt, angle) ->
