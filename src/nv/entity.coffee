@@ -7,6 +7,12 @@ class nv.Entity
 
     @scene.fire "entity:create:#{@constructor.name}"
 
+  getPlugin: (type) ->
+    for plugin in @plugins
+      if plugin instanceof type
+        return plugin
+    null
+
   update: (dt) ->
 
   destroy: () ->

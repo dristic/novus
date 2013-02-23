@@ -370,6 +370,18 @@
       this.scene.fire("entity:create:" + this.constructor.name);
     }
 
+    Entity.prototype.getPlugin = function(type) {
+      var plugin, _i, _len, _ref;
+      _ref = this.plugins;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        plugin = _ref[_i];
+        if (plugin instanceof type) {
+          return plugin;
+        }
+      }
+      return null;
+    };
+
     Entity.prototype.update = function(dt) {};
 
     Entity.prototype.destroy = function() {
@@ -846,6 +858,22 @@
       RenderingPlugin.__super__.constructor.call(this, scene, entity);
       this.scene.fire("engine:rendering:create", this);
     }
+
+    RenderingPlugin.prototype.cache = function(width, height) {
+      var oldX, oldY;
+      oldX = this.entity.model.x;
+      oldY = this.entity.model.y;
+      this.entity.model.x = 0;
+      this.entity.model.y = 0;
+      this.cached = gl().size(width, height);
+      this.draw(this.cached.context, this.cached);
+      this._draw = this.draw;
+      this.entity.model.x = oldX;
+      this.entity.model.y = oldY;
+      return this.draw = function(context, canvas) {
+        return context.drawImage(this.cached, this.entity.model.x, this.entity.model.y);
+      };
+    };
 
     RenderingPlugin.prototype.draw = function(context, canvas) {};
 
@@ -1603,6 +1631,7 @@
           return _this.scene.fire("entity:remove", _this);
         }
       });
+      this.getPlugin(nv.PathRenderingPlugin).cache(35, 35);
     }
 
     Asteroid.prototype.update = function(dt) {

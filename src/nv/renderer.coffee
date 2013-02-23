@@ -27,6 +27,19 @@ class nv.RenderingPlugin extends nv.Plugin
 
     @scene.fire "engine:rendering:create", this
 
+  cache: (width, height) ->
+    oldX = @entity.model.x
+    oldY = @entity.model.y
+    @entity.model.x = 0
+    @entity.model.y = 0
+    @cached = gl().size width, height
+    @draw @cached.context, @cached
+    @_draw = @draw
+    @entity.model.x = oldX
+    @entity.model.y = oldY
+    @draw = (context, canvas) ->
+      context.drawImage @cached, @entity.model.x, @entity.model.y
+
   draw: (context, canvas) ->
     # Do nothing
 
