@@ -1,110 +1,122 @@
-#= require_tree nv
-#= require common
-#= require nub
+#= require nv/novus
 #= require gleam
-#= require debug
+
+#= require entities
 #= require models
-#= require controllers
 #= require renderers
 
+class Asteroids extends nv.Game
+  constructor: () ->
+    super
+
+    canvasEl = document.querySelector('canvas')
+    glcanvas = gl canvasEl
+    glcanvas.size 500, 500
+    glcanvas.background '#000'
+    glcanvas.fullscreen()
+
+    document.body.appendChild glcanvas.canvas unless canvasEl isnt undefined
+
+    @registerEngine nv.RenderingEngine
+    @registerEngine nv.GamepadEngine
+    @registerEngine nv.PhysicsEngine
+
+    @registerScene 'Main', Main
+    @registerScene 'Game', Game
+
+    @openScene 'Main', glcanvas
+
 class Main extends nv.Scene
-  constructor: (@glcanvas, @callback) ->
-    super
+  constructor: (game, @glcanvas) ->
+    super game,
+      canvas: glcanvas
+      keys:
+        start: nv.Key.Spacebar
+        left: nv.Key.A
+        right: nv.Key.D
+      trackMouse: true
 
-    @addModel 'Global', window.global ? new nv.models.Global
-    @addModel 'Bg', new nv.models.Background
-    @addModel 'Bg2', new nv.models.Background
-
-    @addRenderer new nv.renderers.MainRenderer @glcanvas, @getModel('Global')
-    @addRenderer new nv.renderers.BackgroundRenderer @glcanvas, @getModel('Bg')
-    @addRenderer new nv.renderers.BackgroundRenderer @glcanvas, @getModel('Bg2')
-
-    @square = new gl.square
-    @glcanvas.addDrawable @square
-    @glcanvas.camera = nv.camera()
-    @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
-
-    @gamepad.aliasKey 'start', nv.Key.Spacebar
-    @gamepad.trackMouse()
-
-  update: (dt) ->
-    state = @gamepad.getState()
-
-    @square.x = state.mouse.x
-    @square.y = state.mouse.y
-
-    if state.start
-      @destroy()
-
-  destroy: () ->
-    renderer.destroy() for renderer in @renderers
-    @glcanvas.stopDrawUpdate()
-    @callback() unless not @callback
-
-class Game extends nv.Scene
-  constructor: (@glcanvas) ->
-    super
-
-    @gamepad.aliasKey 'left', nv.Key.A
-    @gamepad.aliasKey 'right', nv.Key.D
-    @gamepad.aliasKey 'up', nv.Key.W
-    @gamepad.aliasKey 'down', nv.Key.S
-    @gamepad.aliasKey 'shoot', nv.Key.Spacebar
-
-    @addModel 'bg', new nv.models.Background
-    @addModel 'bg2', new nv.models.Background
-    @addModel 'ship', new nv.models.Ship
-    @addModel 'asteroids', new nv.models.Asteroids 30
-    @addModel 'hud', new nv.models.Hud @glcanvas
-
-    @addController new nv.controllers.AsteroidController this
-    @addController new nv.controllers.ShipController this
-    @addController new nv.controllers.BulletController this
-
-    physicsController = new nv.controllers.GamePhysicsController this
-    physicsController.trackObjects @getModel('asteroids').items
-    physicsController.trackObject @getModel('ship')
-    @addController physicsController
-
-    @addRenderer new nv.renderers.BackgroundRenderer(@glcanvas, @getModel('bg'), @getModel('ship'))
-    @addRenderer new nv.renderers.BackgroundRenderer(@glcanvas, @getModel('bg2'), @getModel('ship'))
-    @addRenderer new nv.renderers.ShipRenderer(@glcanvas, @getModel('ship'))
-    @addRenderer new nv.renderers.AsteroidRenderer(this, @glcanvas)
-    @addRenderer new nv.renderers.HudRenderer @glcanvas, @getModel('hud')
-    @addRenderer new nv.renderers.BulletRenderer this, @glcanvas
+    @addEntities entities.Background,
+      entities.Background,
+      entities.Title,
+      entities.ActionText,
+      entities.Cursor
 
     @glcanvas.camera = nv.camera()
-    @glcanvas.camera.follow @getModel('ship'), 250, 250
-    @glcanvas.camera.zoom 0.5
-    @glcanvas.camera.zoom 1, 2000
+    @updateId = @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
 
-    @glcanvas.startDrawUpdate 60, (dt) =>
-      @update.call this, dt
+    @on "engine:gamepad:start", () =>
+      @game.openScene 'Game', @glcanvas
+
+  fire: (event, data) ->
+    console.log "[EVENT] - #{event}"
+
+    super event, data
 
   update: (dt) ->
     super dt
 
-    bg = @getModel('bg')
-    bg2 = @getModel('bg2')
-    ship = @getModel('ship')
+  destroy: () ->
+    super
 
-    bg.x = -ship.x * 0.05
-    bg.y = -ship.y * 0.05
+    @glcanvas.stopDrawUpdate(@updateId)
 
-    bg2.x = -ship.x * 0.01
-    bg2.y = -ship.y * 0.01
+class Game extends nv.Scene
+  constructor: (game, @glcanvas) ->
+    super game,
+      canvas: @glcanvas
+      keys:
+        left: nv.Key.A
+        right: nv.Key.D
+        up: nv.Key.W
+        down: nv.Key.S
+        shoot: nv.Key.Spacebar
+
+    ship = @addEntity entities.Ship
+    @addEntity entities.Background, ship, 0.05
+    @addEntity entities.Background, ship, 0.01
+
+    @addEntities entities.Hud,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid
+
+    @glcanvas.camera = nv.camera()
+    @glcanvas.camera.follow ship.model, 250, 250
+    @glcanvas.camera.zoom 0.5
+    @glcanvas.camera.zoom 1, 2000
+
+    @updateId = @glcanvas.startDrawUpdate 60, nv.bind(this, @update)
+
+  fire: (event, data) ->
+    console.log "[EVENT] - #{event}"
+
+    super event, data
+
+  update: (dt) ->
+    super dt
+
+  destroy: () ->
+    super
+
+    @glcanvas.stopDrawUpdate @updateId
 
 $(() ->
-  canvasEl = document.querySelector('canvas')
-  glcanvas = gl canvasEl
-
-  document.body.appendChild glcanvas.canvas unless canvasEl isnt undefined
-
-  glcanvas.size 500, 500
-  glcanvas.background '#000'
-
-  glcanvas.fullscreen()
-
-  new Main glcanvas, () ->
-    new Game glcanvas
+  new Asteroids
 )

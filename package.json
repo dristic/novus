@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "connect-coffee-script": "*",
+    "connect-compiler": "*",
     "coffee-script": "*",
     "snockets": "*",
     "nib": "*",

@@ -13,12 +13,16 @@ nv.extend
     f
 
   keydown: (key, callback) ->
-    $(document).on 'keydown', (event) ->
+    func = (event) ->
       if event.keyCode is key then callback()
+    $(document).on 'keydown', func
+    func
 
   keyup: (key, callback) ->
-    $(document).on 'keyup', (event) ->
+    func = (event) ->
       if event.keyCode is key then callback()
+    $(document).on 'keyup', func
+    func
 
   mousedown: (callback) ->
     $(document).on 'mousedown', callback
@@ -37,6 +41,7 @@ class Gamepad
     @gamepad = navigator.webkitGamepad
     @state = {}
     @listeners = {}
+    @trackers = {}
 
   trackMouse: () ->
     @state.mouse =
@@ -59,9 +64,10 @@ class Gamepad
       @state.mouse.y = event.clientY
 
   aliasKey: (button, key) ->
-    nv.keydown key, () =>
+    @trackers[button] = [] unless @trackers[button]
+    @trackers[button].push nv.keydown key, () =>
       @fireButton(button)
-    nv.keyup key, () =>
+    @trackers[button].push nv.keyup key, () =>
       @state[button] = false
 
   fireButton: (button) ->
@@ -83,7 +89,7 @@ class Gamepad
   offButtonPress: (button, func) ->
     listeners = @listeners[button]
 
-    if listeners.indexOf func not 0
+    if listeners.indexOf func isnt 0
       listeners.splice listeners.indexOf(func), 1
 
     @listeners[button] = listeners

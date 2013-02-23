@@ -6,321 +6,6 @@
 }).call(this);
 
 (function() {
-
-  nv.Controller = (function() {
-
-    function Controller(asset) {
-      this.asset = asset;
-    }
-
-    Controller.prototype.update = function(dt) {};
-
-    return Controller;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.Entity = (function() {
-
-    function Entity(plugins) {
-      this.plugins = plugins;
-    }
-
-    return Entity;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.EventDispatcher = (function() {
-
-    function EventDispatcher() {
-      this.listeners = [];
-    }
-
-    EventDispatcher.prototype.on = function(event, func) {
-      var listeners;
-      listeners = this.listeners[event];
-      if (!(listeners instanceof Array)) {
-        listeners = [];
-      }
-      listeners.push(func);
-      this.listeners[event] = listeners;
-      return this;
-    };
-
-    EventDispatcher.prototype.fire = function(event, data) {
-      var listener, listeners, _i, _len, _results;
-      data = data != null ? data : {};
-      data.type = event;
-      listeners = this.listeners[event];
-      if (listeners instanceof Array) {
-        _results = [];
-        for (_i = 0, _len = listeners.length; _i < _len; _i++) {
-          listener = listeners[_i];
-          _results.push(listener(data));
-        }
-        return _results;
-      }
-    };
-
-    EventDispatcher.prototype.off = function(event, func) {
-      if (!this.listeners[event] instanceof Array) {
-
-      } else {
-        if (this.listeners[event].indexOf(func(!0))) {
-          this.listeners[event].splice(this.listeners[event].indexOf(func), 1);
-        }
-      }
-      return this;
-    };
-
-    return EventDispatcher;
-
-  })();
-
-}).call(this);
-
-(function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  nv.Model = (function() {
-
-    function Model(name, options, data) {}
-
-    Model.prototype.setMany = function(object) {
-      var key, _results;
-      _results = [];
-      for (key in object) {
-        _results.push(this[key] = object[key]);
-      }
-      return _results;
-    };
-
-    Model.prototype.persist = function() {
-      return window.localStorage[this.name] = this;
-    };
-
-    Model.prototype.load = function() {
-      return this.setMany(window.localStorage[this.name]);
-    };
-
-    return Model;
-
-  })();
-
-  nv.Collection = (function(_super) {
-
-    __extends(Collection, _super);
-
-    function Collection(name, options, arr) {
-      this.items = arr != null ? arr : [];
-    }
-
-    return Collection;
-
-  })(nv.Model);
-
-}).call(this);
-
-(function() {
-  var zIndex;
-
-  zIndex = 0;
-
-  nv.ObjectRenderer = (function() {
-
-    function ObjectRenderer(glcanvas, asset) {
-      this.glcanvas = glcanvas;
-      this.asset = asset;
-      this.glcanvas.addDrawable(this);
-    }
-
-    ObjectRenderer.prototype.draw = function(dt) {};
-
-    ObjectRenderer.prototype.destroy = function() {
-      return this.glcanvas.removeDrawable(this);
-    };
-
-    ObjectRenderer.prototype.nextZIndex = function() {
-      return zIndex++;
-    };
-
-    return ObjectRenderer;
-
-  })();
-
-  nv.ObjectListRenderer = (function() {
-
-    function ObjectListRenderer(glcanvas, assets) {
-      var _this = this;
-      this.assets = assets;
-      this.classname = this.constructor.toString();
-      this.assetCounter = 0;
-      glcanvas.addDrawable(this);
-      $.each(this.assets, function(asset) {
-        return _this.acquireAsset(asset);
-      });
-    }
-
-    ObjectListRenderer.prototype.acquireAsset = function(asset) {
-      asset.id = this.classname + this.assetCounter++;
-      return asset;
-    };
-
-    ObjectListRenderer.prototype.add = function(asset) {
-      this.assets.push(this.acquireAsset(asset));
-      return asset;
-    };
-
-    ObjectListRenderer.prototype.remove = function(target) {
-      return this.assets = this.assets.filter(function(asset) {
-        return asset.id !== target.id;
-      });
-    };
-
-    ObjectListRenderer.prototype.draw = function(dt) {};
-
-    ObjectListRenderer.prototype.nextZIndex = function() {
-      return zIndex++;
-    };
-
-    return ObjectListRenderer;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.Scene = (function() {
-
-    function Scene() {
-      this.dispatcher = new nv.EventDispatcher();
-      this.gamepad = nv.gamepad();
-      this.controllers = [];
-      this.models = {};
-      this.renderers = [];
-    }
-
-    Scene.prototype.addController = function(controller) {
-      return this.controllers.push(controller);
-    };
-
-    Scene.prototype.removeController = function(controller) {
-      return this.controllers.splice(this.controllers.indexOf(controller), 1);
-    };
-
-    Scene.prototype.addModel = function(name, model) {
-      return this.models[name] = model;
-    };
-
-    Scene.prototype.getModel = function(name) {
-      return this.models[name];
-    };
-
-    Scene.prototype.removeModel = function(name) {
-      return delete this.models[name];
-    };
-
-    Scene.prototype.addRenderer = function(renderer) {
-      return this.renderers.push(renderer);
-    };
-
-    Scene.prototype.removeRenderer = function(renderer) {
-      return this.renderers.splice(this.renderers.indexOf(renderer), 1);
-    };
-
-    Scene.prototype.update = function(dt) {
-      var controller, _i, _len, _ref, _results;
-      _ref = this.controllers;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        controller = _ref[_i];
-        _results.push(controller.update(dt));
-      }
-      return _results;
-    };
-
-    return Scene;
-
-  })();
-
-}).call(this);
-
-(function() {
-
-  nv.Point = (function() {
-
-    function Point(x, y) {
-      this.x = x;
-      this.y = y;
-    }
-
-    Point.prototype.clone = function() {
-      return new nv.Point(this.x, this.y);
-    };
-
-    Point.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      this.y += dy;
-      return this;
-    };
-
-    return Point;
-
-  })();
-
-  nv.Rect = (function() {
-
-    function Rect(x, y, x2, y2) {
-      this.x = x;
-      this.y = y;
-      this.x2 = x2;
-      this.y2 = y2;
-    }
-
-    Rect.prototype.clone = function() {
-      return new nv.Rect(this.x, this.y, this.x2, this.y2);
-    };
-
-    Rect.prototype.reset = function(x, y, x2, y2) {
-      this.x = x;
-      this.y = y;
-      this.x2 = x2;
-      this.y2 = y2;
-    };
-
-    Rect.prototype._checkPt = function(tx, ty) {
-      return (tx >= this.x && tx <= this.x2) && (ty >= this.y && ty <= this.y2);
-    };
-
-    Rect.prototype.contains = function(pt) {
-      return this._checkPt(pt.x, pt.y);
-    };
-
-    Rect.prototype.intersects = function(rect) {
-      return this._checkPt(rect.x, rect.y) || this._checkPt(rect.x, rect.y2) || this._checkPt(rect.x2, rect.y2) || this._checkPt(rect.x2, rect.y);
-    };
-
-    Rect.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      return this.y += dy;
-    };
-
-    return Rect;
-
-  })();
-
-}).call(this);
-
-(function() {
   var _ref;
 
   window.nv = (_ref = window.nv) != null ? _ref : {};
@@ -459,18 +144,24 @@
       return f;
     },
     keydown: function(key, callback) {
-      return $(document).on('keydown', function(event) {
+      var func;
+      func = function(event) {
         if (event.keyCode === key) {
           return callback();
         }
-      });
+      };
+      $(document).on('keydown', func);
+      return func;
     },
     keyup: function(key, callback) {
-      return $(document).on('keyup', function(event) {
+      var func;
+      func = function(event) {
         if (event.keyCode === key) {
           return callback();
         }
-      });
+      };
+      $(document).on('keyup', func);
+      return func;
     },
     mousedown: function(callback) {
       $(document).on('mousedown', callback);
@@ -492,6 +183,7 @@
       this.gamepad = navigator.webkitGamepad;
       this.state = {};
       this.listeners = {};
+      this.trackers = {};
     }
 
     Gamepad.prototype.trackMouse = function() {
@@ -519,12 +211,15 @@
 
     Gamepad.prototype.aliasKey = function(button, key) {
       var _this = this;
-      nv.keydown(key, function() {
+      if (!this.trackers[button]) {
+        this.trackers[button] = [];
+      }
+      this.trackers[button].push(nv.keydown(key, function() {
         return _this.fireButton(button);
-      });
-      return nv.keyup(key, function() {
+      }));
+      return this.trackers[button].push(nv.keyup(key, function() {
         return _this.state[button] = false;
-      });
+      }));
     };
 
     Gamepad.prototype.fireButton = function(button) {
@@ -555,7 +250,7 @@
     Gamepad.prototype.offButtonPress = function(button, func) {
       var listeners;
       listeners = this.listeners[button];
-      if (listeners.indexOf(func(!0))) {
+      if (listeners.indexOf(func !== 0)) {
         listeners.splice(listeners.indexOf(func), 1);
       }
       this.listeners[button] = listeners;
@@ -639,9 +334,65 @@
 }).call(this);
 
 (function() {
-  var EventDispatcher;
 
-  EventDispatcher = (function() {
+  nv.Plugin = (function() {
+
+    function Plugin(scene, entity) {
+      this.scene = scene;
+      this.entity = entity;
+    }
+
+    Plugin.prototype.destroy = function() {
+      delete this.scene;
+      return delete this.entity;
+    };
+
+    return Plugin;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+  nv.Entity = (function() {
+
+    function Entity(scene, pluginClasses, model) {
+      var klass, _i, _len, _ref;
+      this.scene = scene;
+      this.model = model;
+      this.plugins = [];
+      this.model = (_ref = this.model) != null ? _ref : new nv.Model;
+      for (_i = 0, _len = pluginClasses.length; _i < _len; _i++) {
+        klass = pluginClasses[_i];
+        this.plugins.push(new klass(this.scene, this));
+      }
+      this.scene.fire("entity:create:" + this.constructor.name);
+    }
+
+    Entity.prototype.update = function(dt) {};
+
+    Entity.prototype.destroy = function() {
+      var plugin, _i, _len, _ref;
+      _ref = this.plugins;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        plugin = _ref[_i];
+        plugin.destroy();
+      }
+      delete this.model;
+      delete this.plugins;
+      return delete this.scene;
+    };
+
+    return Entity;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+  nv.EventDispatcher = (function() {
 
     function EventDispatcher() {
       this.listeners = [];
@@ -661,8 +412,6 @@
     EventDispatcher.prototype.fire = function(event, data) {
       var listener, listeners, _i, _len, _results;
       data = data != null ? data : {};
-      data.data = data;
-      data.type = event;
       listeners = this.listeners[event];
       if (listeners instanceof Array) {
         _results = [];
@@ -689,79 +438,692 @@
 
   })();
 
-  window.EventDispatcher = EventDispatcher;
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.Model = (function() {
+
+    function Model(data) {
+      this.setMany(data);
+    }
+
+    Model.prototype.setMany = function(object) {
+      var key, _results;
+      _results = [];
+      for (key in object) {
+        _results.push(this[key] = object[key]);
+      }
+      return _results;
+    };
+
+    Model.prototype.get = function(key) {
+      return this[key];
+    };
+
+    Model.prototype.set = function(key, value) {
+      return this[key] = value;
+    };
+
+    Model.prototype.persist = function() {
+      var data, key;
+      data = {};
+      for (key in this) {
+        data[key] = this[key];
+      }
+      return window.localStorage[this.constructor.name] = data;
+    };
+
+    Model.prototype.load = function() {
+      return this.setMany(window.localStorage[this.constructor.name]);
+    };
+
+    return Model;
+
+  })();
+
+  nv.Collection = (function(_super) {
+
+    __extends(Collection, _super);
+
+    function Collection(arr) {
+      this.items = arr != null ? arr : [];
+    }
+
+    return Collection;
+
+  })(nv.Model);
 
 }).call(this);
 
 (function() {
-  var Connection,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __slice = [].slice;
 
-  Connection = (function(_super) {
+  nv.Scene = (function(_super) {
 
-    __extends(Connection, _super);
+    __extends(Scene, _super);
 
-    function Connection() {
-      var _this = this;
-      this.listeners = {};
-      this.connection = this.connectToChannel('novus');
-      this.connection.on('connect', function() {
-        return console.log('Connected!');
-      });
-      this.connection.on('join', function(user) {
-        return console.log(user);
-      });
-      this.connection.on('message', function(message) {
-        return _this.handleMessage(message);
+    function Scene(game, options) {
+      var klass, _i, _len, _ref, _ref1,
+        _this = this;
+      this.game = game;
+      this.options = options;
+      Scene.__super__.constructor.apply(this, arguments);
+      this.gamepad = nv.gamepad();
+      this.controllers = [];
+      this.models = {};
+      this.renderers = [];
+      this.entities = [];
+      this.deletedEntities = [];
+      this.options = (_ref = this.options) != null ? _ref : {};
+      this.engines = [];
+      _ref1 = this.game.engines;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        klass = _ref1[_i];
+        this.engines.push(new klass(this));
+      }
+      this.on("entity:remove", function() {
+        var _ref2;
+        return (_ref2 = _this.onRemoveEntity).call.apply(_ref2, [_this].concat(__slice.call(arguments)));
       });
     }
 
-    Connection.prototype.handleMessage = function(message) {
-      console.log(message);
-      if (message.id) {
-        return this.fire(message.id, message);
+    Scene.prototype.get = function(key) {
+      return this.options[key];
+    };
+
+    Scene.prototype.set = function(key, value) {
+      return this.options[key] = value;
+    };
+
+    Scene.prototype.addEntities = function() {
+      var entities, entity, _i, _len, _results;
+      entities = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      _results = [];
+      for (_i = 0, _len = entities.length; _i < _len; _i++) {
+        entity = entities[_i];
+        _results.push(this.addEntity(entity));
+      }
+      return _results;
+    };
+
+    Scene.prototype.addEntity = function() {
+      var args, entity;
+      entity = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      entity = (function(func, args, ctor) {
+        ctor.prototype = func.prototype;
+        var child = new ctor, result = func.apply(child, args);
+        return Object(result) === result ? result : child;
+      })(entity, [this].concat(__slice.call(args)), function(){});
+      this.entities.push(entity);
+      return entity;
+    };
+
+    Scene.prototype.removeEntity = function(entity) {
+      if (this.entities.indexOf(entity) !== -1) {
+        if (!!entity.destroy) {
+          entity.destroy();
+        }
+        return this.entities.splice(this.entities.indexOf(entity), 1);
       }
     };
 
-    Connection.prototype.send = function(id, data) {
-      data.id = id;
-      return this.connection.emit('message', data);
+    Scene.prototype.onRemoveEntity = function(entity) {
+      return this.deletedEntities.push(entity);
     };
 
-    Connection.prototype.connectToChannel = function(channel) {
-      return io.connect('http://pubsub.pubnub.com', {
-        channel: channel,
-        publish_key: 'pub-c54880a5-ba99-4836-a084-08f57b4b5333',
-        subscribe_key: 'sub-3129de73-8f26-11e1-94c8-1543525cae6d',
-        ssl: false
-      });
+    Scene.prototype.addController = function(controller) {
+      return this.controllers.push(controller);
     };
 
-    Connection.prototype.auth = function(user) {
-      var _this = this;
-      return $.post('http://localhost:3000', {
-        user: user
-      }, function(response) {
-        var token;
-        token = JSON.parse(response).token;
-        _this.connection = _this.connectToChannel(token);
-        return _this.connection.send('Hello server!');
-      });
+    Scene.prototype.removeController = function(controller) {
+      return this.controllers.splice(this.controllers.indexOf(controller), 1);
     };
 
-    return Connection;
+    Scene.prototype.addModel = function(name, model) {
+      return this.models[name] = model;
+    };
+
+    Scene.prototype.getModel = function(name) {
+      return this.models[name];
+    };
+
+    Scene.prototype.removeModel = function(name) {
+      return delete this.models[name];
+    };
+
+    Scene.prototype.addRenderer = function(renderer) {
+      return this.renderers.push(renderer);
+    };
+
+    Scene.prototype.removeRenderer = function(renderer) {
+      return this.renderers.splice(this.renderers.indexOf(renderer), 1);
+    };
+
+    Scene.prototype.update = function(dt) {
+      var engine, entity, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+      _ref = this.engines;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        engine = _ref[_i];
+        engine.update(dt);
+      }
+      _ref1 = this.entities;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        entity = _ref1[_j];
+        entity.update(dt);
+      }
+      _ref2 = this.deletedEntities;
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        entity = _ref2[_k];
+        this.removeEntity(entity);
+      }
+      return this.deletedEntities = [];
+    };
+
+    Scene.prototype.destroy = function() {
+      var engine, entity, _i, _j, _len, _len1, _ref, _ref1, _results;
+      _ref = this.entities;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        entity = _ref[_i];
+        this.removeEntity(entity);
+      }
+      _ref1 = this.engines;
+      _results = [];
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        engine = _ref1[_j];
+        _results.push(engine.destroy());
+      }
+      return _results;
+    };
+
+    return Scene;
 
   })(nv.EventDispatcher);
-
-  window.nub = function() {
-    return new Connection();
-  };
 
 }).call(this);
 
 (function() {
-  var cancelFrame, gl, requestFrame, _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+
+  nv.Point = (function() {
+
+    function Point(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+
+    Point.prototype.clone = function() {
+      return new nv.Point(this.x, this.y);
+    };
+
+    Point.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+      return this;
+    };
+
+    return Point;
+
+  })();
+
+  nv.Rect = (function() {
+
+    function Rect(x, y, x2, y2) {
+      this.x = x;
+      this.y = y;
+      this.x2 = x2;
+      this.y2 = y2;
+    }
+
+    Rect.prototype.clone = function() {
+      return new nv.Rect(this.x, this.y, this.x2, this.y2);
+    };
+
+    Rect.prototype.reset = function(x, y, x2, y2) {
+      this.x = x;
+      this.y = y;
+      this.x2 = x2;
+      this.y2 = y2;
+    };
+
+    Rect.prototype._checkPt = function(tx, ty) {
+      return (tx >= this.x && tx <= this.x2) && (ty >= this.y && ty <= this.y2);
+    };
+
+    Rect.prototype.contains = function(pt) {
+      return this._checkPt(pt.x, pt.y);
+    };
+
+    Rect.prototype.intersects = function(rect) {
+      return this._checkPt(rect.x, rect.y) || this._checkPt(rect.x, rect.y2) || this._checkPt(rect.x2, rect.y2) || this._checkPt(rect.x2, rect.y);
+    };
+
+    Rect.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    return Rect;
+
+  })();
+
+}).call(this);
+
+(function() {
+  var Debug;
+
+  Debug = (function() {
+
+    Debug.prototype.html = "<div id=\"debug\"></div>";
+
+    function Debug() {}
+
+    Debug.prototype.log = function() {
+      var messages;
+      messages = arguments;
+      return console.log(arguments);
+    };
+
+    return Debug;
+
+  })();
+
+  $(function() {
+    nv.Debug = new Debug;
+    return nv.log = nv.Debug.log;
+  });
+
+}).call(this);
+
+(function() {
+  var __slice = [].slice;
+
+  nv.Game = (function() {
+
+    function Game() {
+      this.currentScene = null;
+      this.sceneClasses = {};
+      this.engines = [];
+    }
+
+    Game.prototype.registerEngine = function(klass) {
+      return this.engines.push(klass);
+    };
+
+    Game.prototype.registerScene = function(name, klass) {
+      return this.sceneClasses[name] = klass;
+    };
+
+    Game.prototype.openScene = function() {
+      var args, name;
+      name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      this.closeScene();
+      return this.currentScene = (function(func, args, ctor) {
+        ctor.prototype = func.prototype;
+        var child = new ctor, result = func.apply(child, args);
+        return Object(result) === result ? result : child;
+      })(this.sceneClasses[name], [this].concat(__slice.call(args)), function(){});
+    };
+
+    Game.prototype.closeScene = function() {
+      if (!!this.currentScene) {
+        return this.currentScene.destroy();
+      }
+    };
+
+    return Game;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+  nv.Engine = (function() {
+
+    function Engine(scene) {
+      this.scene = scene;
+    }
+
+    Engine.prototype.update = function(dt) {};
+
+    Engine.prototype.destroy = function() {
+      return delete this.scene;
+    };
+
+    return Engine;
+
+  })();
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.RenderingEngine = (function(_super) {
+
+    __extends(RenderingEngine, _super);
+
+    function RenderingEngine(scene) {
+      var _this = this;
+      RenderingEngine.__super__.constructor.call(this, scene);
+      this.canvas = scene.options.canvas;
+      this.context = this.canvas.context;
+      this.drawables = [];
+      scene.on("engine:rendering:create", function(drawable) {
+        _this.drawables.push(drawable);
+        return _this.canvas.addDrawable(drawable);
+      });
+      scene.on("engine:rendering:delete", function(drawable) {
+        _this.drawables.splice(_this.drawables.indexOf(drawable), 1);
+        return _this.canvas.removeDrawable(drawable);
+      });
+    }
+
+    RenderingEngine.prototype.destroy = function() {
+      var i, _results;
+      i = this.drawables.length;
+      _results = [];
+      while (i--) {
+        _results.push(this.drawables[i].destroy());
+      }
+      return _results;
+    };
+
+    return RenderingEngine;
+
+  })(nv.Engine);
+
+  nv.RenderingPlugin = (function(_super) {
+
+    __extends(RenderingPlugin, _super);
+
+    function RenderingPlugin(scene, entity) {
+      RenderingPlugin.__super__.constructor.call(this, scene, entity);
+      this.scene.fire("engine:rendering:create", this);
+    }
+
+    RenderingPlugin.prototype.draw = function(context, canvas) {};
+
+    RenderingPlugin.prototype.destroy = function() {
+      this.scene.fire("engine:rendering:delete", this);
+      return RenderingPlugin.__super__.destroy.apply(this, arguments);
+    };
+
+    return RenderingPlugin;
+
+  })(nv.Plugin);
+
+  nv.DrawableRenderingPlugin = (function(_super) {
+
+    __extends(DrawableRenderingPlugin, _super);
+
+    function DrawableRenderingPlugin(scene, entity) {
+      DrawableRenderingPlugin.__super__.constructor.call(this, scene, entity);
+      this.drawable = entity.model.drawable;
+    }
+
+    DrawableRenderingPlugin.prototype.draw = function(context, canvas) {
+      return this.drawable.draw(context, canvas);
+    };
+
+    return DrawableRenderingPlugin;
+
+  })(nv.RenderingPlugin);
+
+  nv.TextRenderingPlugin = (function(_super) {
+
+    __extends(TextRenderingPlugin, _super);
+
+    function TextRenderingPlugin(scene, entity) {
+      TextRenderingPlugin.__super__.constructor.call(this, scene, entity);
+      this.text = new gl.text(entity.model);
+    }
+
+    TextRenderingPlugin.prototype.draw = function(context, canvas) {
+      return this.text.draw(context, canvas);
+    };
+
+    return TextRenderingPlugin;
+
+  })(nv.RenderingPlugin);
+
+  nv.PathRenderingPlugin = (function(_super) {
+
+    __extends(PathRenderingPlugin, _super);
+
+    function PathRenderingPlugin(scene, entity) {
+      PathRenderingPlugin.__super__.constructor.call(this, scene, entity);
+    }
+
+    PathRenderingPlugin.prototype.draw = function(context, canvas) {
+      var points;
+      context.strokeColor(this.entity.model.strokeColor);
+      context.strokeWidth(this.entity.model.strokeWidth);
+      points = this.entity.model.path();
+      context.beginPath();
+      context.moveTo(points[0].x, points[0].y);
+      $.each(points.slice(1), function() {
+        return context.lineTo(this.x, this.y);
+      });
+      context.lineTo(points[0].x, points[0].y);
+      context.stroke();
+      return context.closePath();
+    };
+
+    return PathRenderingPlugin;
+
+  })(nv.RenderingPlugin);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.GamepadEngine = (function(_super) {
+
+    __extends(GamepadEngine, _super);
+
+    function GamepadEngine(scene) {
+      var key;
+      GamepadEngine.__super__.constructor.call(this, scene);
+      this.gamepad = scene.gamepad;
+      this.options = scene.options;
+      if (!!this.options.trackMouse) {
+        this.gamepad.trackMouse();
+      }
+      for (key in this.options.keys) {
+        this.gamepad.aliasKey(key, this.options.keys[key]);
+        this.updateFunction = nv.bind(this, this.onButtonPress);
+        this.gamepad.onButtonPress(key, this.updateFunction);
+      }
+    }
+
+    GamepadEngine.prototype.onButtonPress = function(button) {
+      return this.scene.fire("engine:gamepad:" + button);
+    };
+
+    GamepadEngine.prototype.destroy = function() {
+      var key;
+      for (key in this.options.keys) {
+        this.gamepad.offButtonPress(key, this.updateFunction);
+      }
+      delete this.gamepad;
+      delete this.options;
+      return GamepadEngine.__super__.destroy.apply(this, arguments);
+    };
+
+    return GamepadEngine;
+
+  })(nv.Engine);
+
+}).call(this);
+
+(function() {
+  var __objectId,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.PhysicsEngine = (function(_super) {
+
+    __extends(PhysicsEngine, _super);
+
+    function PhysicsEngine(scene) {
+      var _this = this;
+      PhysicsEngine.__super__.constructor.call(this, scene);
+      this.passiveObjects = {};
+      this.activeObjects = {};
+      this.scene.on("engine:physics:create", function(collidable) {
+        return _this.trackObject(collidable);
+      });
+      this.scene.on("engine:physics:delete", function(collidable) {
+        return _this.removeObject(collidable);
+      });
+    }
+
+    PhysicsEngine.prototype.trackObjects = function(array) {
+      var self;
+      self = this;
+      return $.each(array, function() {
+        return self.trackObject(this);
+      });
+    };
+
+    PhysicsEngine.prototype.trackObject = function(obj) {
+      switch (obj.type) {
+        case 'passive':
+          return this.passiveObjects[obj.id] = obj;
+        case 'active':
+          return this.activeObjects[obj.id] = obj;
+        case 'both':
+          this.passiveObjects[obj.id] = obj;
+          return this.activeObjects[obj.id] = obj;
+      }
+    };
+
+    PhysicsEngine.prototype.removeObject = function(obj) {
+      switch (obj.type) {
+        case 'passive':
+          return delete this.passiveObjects[obj.id];
+        case 'active':
+          return delete this.activeObjects[obj.id];
+        case 'both':
+          delete this.passiveObjects[obj.id];
+          return delete this.activeObjects[obj.id];
+      }
+    };
+
+    PhysicsEngine.prototype.update = function(dt) {
+      var ida, idp, obja, objaBounds, objp, _ref, _results;
+      _ref = this.activeObjects;
+      _results = [];
+      for (ida in _ref) {
+        obja = _ref[ida];
+        objaBounds = obja.bounds();
+        _results.push((function() {
+          var _ref1, _results1;
+          _ref1 = this.passiveObjects;
+          _results1 = [];
+          for (idp in _ref1) {
+            objp = _ref1[idp];
+            if (ida === idp) {
+              continue;
+            }
+            if (objp.bounds().intersects(objaBounds)) {
+              _results1.push(this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
+                actor: obja.entity,
+                target: objp.entity
+              }));
+            } else {
+              _results1.push(void 0);
+            }
+          }
+          return _results1;
+        }).call(this));
+      }
+      return _results;
+    };
+
+    return PhysicsEngine;
+
+  })(nv.Engine);
+
+  nv.PhysicsPlugin = (function(_super) {
+
+    __extends(PhysicsPlugin, _super);
+
+    function PhysicsPlugin(scene, entity) {
+      PhysicsPlugin.__super__.constructor.call(this, scene, entity);
+      this.scene.fire("engine:physics:create", this);
+    }
+
+    PhysicsPlugin.prototype.destroy = function() {
+      this.scene.fire("engine:physics:delete", this);
+      return PhysicsPlugin.__super__.destroy.apply(this, arguments);
+    };
+
+    return PhysicsPlugin;
+
+  })(nv.Plugin);
+
+  __objectId = 0;
+
+  nv.PathPhysicsPlugin = (function(_super) {
+
+    __extends(PathPhysicsPlugin, _super);
+
+    function PathPhysicsPlugin(scene, entity) {
+      this.id = __objectId++;
+      this.type = entity.model.type;
+      this.boundingRect = new nv.Rect(0, 0, 0, 0);
+      PathPhysicsPlugin.__super__.constructor.call(this, scene, entity);
+      this.updateBounds();
+    }
+
+    PathPhysicsPlugin.prototype.bounds = function() {
+      this.updateBounds();
+      return this.boundingRect;
+    };
+
+    PathPhysicsPlugin.prototype.updateBounds = function() {
+      var x1, x2, y1, y2;
+      x1 = x2 = y1 = y2 = null;
+      $.each(this.entity.model.path(), function() {
+        if (x1 === null || this.x < x1) {
+          x1 = this.x;
+        }
+        if (x2 === null || this.x > x2) {
+          x2 = this.x;
+        }
+        if (y1 === null || this.y < y1) {
+          y1 = this.y;
+        }
+        if (y2 === null || this.y > y2) {
+          return y2 = this.y;
+        }
+      });
+      return this.boundingRect.reset(x1, y1, x2, y2);
+    };
+
+    return PathPhysicsPlugin;
+
+  })(nv.PhysicsPlugin);
+
+}).call(this);
+
+(function() {
+
+
+
+}).call(this);
+
+(function() {
+  var cancelFrame, gl, requestFrame, _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _updateId;
 
   requestFrame = (_ref = (_ref1 = (_ref2 = (_ref3 = (_ref4 = window.requestAnimationFrame) != null ? _ref4 : window.webkitRequestAnimationFrame) != null ? _ref3 : window.mozRequestAnimationFrame) != null ? _ref2 : window.oRequestAnimationFrame) != null ? _ref1 : window.msRequestAnimationFrame) != null ? _ref : function(callback) {
     return setTimeout(callback, 17);
@@ -774,6 +1136,8 @@
   };
 
   gl.zOrderProperty = 'zIndex';
+
+  _updateId = 0;
 
   gl.prototype = {
     init: function(canvas) {
@@ -846,10 +1210,11 @@
       return _results;
     },
     startDrawUpdate: function(fps, func) {
-      var lastTime, update,
+      var lastTime, update, updateId,
         _this = this;
       this.updating = true;
       lastTime = Date.now();
+      updateId = _updateId++;
       update = function() {
         var delta, now, stop;
         now = Date.now();
@@ -864,19 +1229,26 @@
         _this.drawObjects();
         _this.context.restore();
         lastTime = now;
-        if (_this.cancel) {
-          return _this.cancel = false;
+        if (_this.cancel !== void 0 && _this.cancel.indexOf(updateId) !== -1) {
+          _this.cancel.splice(_this.cancel.indexOf(updateId), 1);
+          if (_this.cancel.length === 0) {
+            return delete _this.cancel;
+          }
         } else {
           if (!!_this.updating) {
             return _this.requestFrameKey = requestFrame(update);
           }
         }
       };
-      return this.requestFrameKey = requestFrame(update);
+      this.requestFrameKey = requestFrame(update);
+      return updateId;
     },
-    stopDrawUpdate: function() {
+    stopDrawUpdate: function(updateId) {
       this.updating = false;
-      this.cancel = true;
+      if (!this.cancel) {
+        this.cancel = [];
+      }
+      this.cancel.push(updateId);
       return cancelFrame(this.requestFrameKey);
     },
     extend: function(object) {
@@ -1042,207 +1414,323 @@
 }).call(this);
 
 (function() {
-  var Debug;
-
-  Debug = (function() {
-
-    Debug.prototype.html = "<div id=\"debug\"></div>";
-
-    function Debug() {}
-
-    Debug.prototype.log = function() {
-      var messages;
-      messages = arguments;
-      return console.log(arguments);
-    };
-
-    return Debug;
-
-  })();
-
-  $(function() {
-    nv.Debug = new Debug;
-    return nv.log = nv.Debug.log;
-  });
-
-}).call(this);
-
-(function() {
-  var Asteroid, Asteroids, Background, Bullet, GameObject, Global, Hud, Ship, __gameObjectCounter,
+  var WrappingEntity, entities,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __slice = [].slice;
 
-  Background = (function() {
+  window.entities = entities = {};
 
-    function Background() {
-      this.x = 0;
-      this.y = 0;
+  entities.Background = (function(_super) {
+
+    __extends(Background, _super);
+
+    function Background(scene, follow, variance) {
+      this.follow = follow;
+      this.variance = variance;
+      Background.__super__.constructor.call(this, scene, [renderers.Background], new models.Background);
     }
+
+    Background.prototype.update = function(dt) {
+      if (!!this.follow) {
+        this.model.x = this.follow.model.x * this.variance;
+        return this.model.y = this.follow.model.y * this.variance;
+      }
+    };
 
     return Background;
 
-  })();
+  })(nv.Entity);
 
-  __gameObjectCounter = 0;
+  entities.Title = (function(_super) {
 
-  GameObject = (function() {
+    __extends(Title, _super);
 
-    function GameObject(options) {
-      var key, value;
-      this.id = "" + this.constructor.name + (__gameObjectCounter++);
-      this.x = 0;
-      this.y = 0;
-      this.width = 0;
-      this.height = 0;
-      this.rotation = 0;
-      this.type = 'passive';
-      for (key in options) {
-        value = options[key];
-        this[key] = value;
-      }
-      this._path = [];
-      this._wireframe = [];
-      this._bounds = new nv.Rect(0, 0, 0, 0);
-      this.initPath();
+    function Title(scene) {
+      Title.__super__.constructor.call(this, scene, [nv.TextRenderingPlugin], {
+        color: "#0F0",
+        x: 200,
+        y: 200,
+        font: "bold 20px sans-serif",
+        text: "Asteroids"
+      });
     }
 
-    GameObject.prototype.initPath = function() {
-      this._wireframe = this.buildWireframe();
-      return this._updatePath();
-    };
+    return Title;
 
-    GameObject.prototype._updatePath = function() {
-      var cosine, gameObject, newPath, sine;
-      cosine = Math.cos(this.rotation);
-      sine = Math.sin(this.rotation);
-      newPath = [];
-      gameObject = this;
-      $.each(this._wireframe, function() {
-        return newPath.push(new nv.Point(this.x * cosine - this.y * sine + gameObject.x, this.x * sine + this.y * cosine + gameObject.y));
+  })(nv.Entity);
+
+  entities.ActionText = (function(_super) {
+
+    __extends(ActionText, _super);
+
+    function ActionText(scene) {
+      ActionText.__super__.constructor.call(this, scene, [nv.TextRenderingPlugin], {
+        color: "#0F0",
+        x: 200,
+        y: 400,
+        font: "bold 20px sans-serif",
+        text: "Press <Space> to Start"
       });
-      this._path = newPath;
-      return this._updateBounds();
+    }
+
+    return ActionText;
+
+  })(nv.Entity);
+
+  entities.Cursor = (function(_super) {
+
+    __extends(Cursor, _super);
+
+    function Cursor(scene) {
+      Cursor.__super__.constructor.call(this, scene, [nv.DrawableRenderingPlugin], {
+        drawable: new gl.square
+      });
+      this.gamepad = this.scene.gamepad;
+    }
+
+    Cursor.prototype.update = function(dt) {
+      var state;
+      state = this.gamepad.getState();
+      this.model.drawable.x = state.mouse.x;
+      return this.model.drawable.y = state.mouse.y;
     };
 
-    GameObject.prototype._updateBounds = function() {
-      var x1, x2, y1, y2;
-      x1 = x2 = y1 = y2 = null;
-      $.each(this._path, function() {
-        if (x1 === null || this.x < x1) {
-          x1 = this.x;
-        }
-        if (x2 === null || this.x > x2) {
-          x2 = this.x;
-        }
-        if (y1 === null || this.y < y1) {
-          y1 = this.y;
-        }
-        if (y2 === null || this.y > y2) {
-          return y2 = this.y;
+    return Cursor;
+
+  })(nv.Entity);
+
+  WrappingEntity = (function(_super) {
+
+    __extends(WrappingEntity, _super);
+
+    function WrappingEntity() {
+      var args;
+      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      WrappingEntity.__super__.constructor.apply(this, args);
+    }
+
+    WrappingEntity.prototype.wrap = function() {
+      var dimensions;
+      dimensions = this.scene.get('canvas').size();
+      if (this.model.x < 0) {
+        this.model.x = dimensions.width;
+      } else if (this.model.x > dimensions.width) {
+        this.model.x = 0;
+      }
+      if (this.model.y < 0) {
+        return this.model.y = dimensions.height;
+      } else if (this.model.y > dimensions.height) {
+        return this.model.y = 0;
+      }
+    };
+
+    return WrappingEntity;
+
+  })(nv.Entity);
+
+  entities.Ship = (function(_super) {
+
+    __extends(Ship, _super);
+
+    function Ship(scene) {
+      var _this = this;
+      Ship.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Ship);
+      this.scene.on('engine:collision:Ship:Asteroid', function(data) {});
+      this.scene.on('engine:gamepad:shoot', function() {
+        return _this.fireBullet.call(_this);
+      });
+    }
+
+    Ship.prototype.fireBullet = function() {
+      return this.scene.addEntity(entities.Bullet, this.model.path()[0], this.model.rotation);
+    };
+
+    Ship.prototype.update = function(dt) {
+      var state;
+      state = this.scene.gamepad.getState();
+      if (state.left) {
+        this.model.rotate(-0.1);
+      }
+      if (state.right) {
+        this.model.rotate(0.1);
+      }
+      if (state.up) {
+        this.model.translate(this.model.speed * Math.sin(this.model.rotation), -this.model.speed * Math.cos(this.model.rotation));
+      }
+      if (state.down) {
+        this.model.translate(-this.model.speed / 2 * Math.sin(this.model.rotation), this.model.speed / 2 * Math.cos(this.model.rotation));
+      }
+      this.model.thrusters = state.up;
+      return this.wrap();
+    };
+
+    return Ship;
+
+  })(WrappingEntity);
+
+  entities.Asteroid = (function(_super) {
+
+    __extends(Asteroid, _super);
+
+    function Asteroid(scene) {
+      var _this = this;
+      Asteroid.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid(500, 500));
+      this.scene.on('engine:collision:Ship:Asteroid', function(data) {
+        if (data.target === _this) {
+          return _this.scene.fire("entity:remove", _this);
         }
       });
-      return this._bounds.reset(x1, y1, x2, y2);
+      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
+        if (data.target === _this) {
+          return _this.scene.fire("entity:remove", _this);
+        }
+      });
+    }
+
+    Asteroid.prototype.update = function(dt) {
+      this.model.rotation += this.model.rotationSpeed;
+      this.model.translate(Math.sin(this.model.direction) * this.model.speed, Math.cos(this.model.direction) * this.model.speed);
+      return this.wrap();
     };
 
-    GameObject.prototype.path = function() {
-      return this._path;
-    };
+    return Asteroid;
 
-    GameObject.prototype.bounds = function() {
-      return this._bounds;
-    };
+  })(WrappingEntity);
 
-    GameObject.prototype.rotate = function(r) {
-      this.rotation += r;
-      return this._updatePath();
-    };
-
-    GameObject.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      this.y += dy;
-      return this._updatePath();
-    };
-
-    return GameObject;
-
-  })();
-
-  Bullet = (function(_super) {
+  entities.Bullet = (function(_super) {
 
     __extends(Bullet, _super);
 
-    function Bullet(pt, angle) {
-      Bullet.__super__.constructor.call(this, {
-        x: pt.x,
-        y: pt.y,
-        speed: 400,
-        radius: 3,
-        alive: true,
-        life: 100,
-        angle: angle,
-        type: 'active'
+    function Bullet(scene, point, rotation) {
+      var _this = this;
+      Bullet.__super__.constructor.call(this, scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet(point, rotation));
+      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
+        if (data.actor === _this) {
+          return _this.scene.fire("entity:remove", _this);
+        }
       });
     }
 
-    Bullet.prototype.buildWireframe = function() {
-      return [new nv.Point(0, 0)];
-    };
-
-    Bullet.prototype._updateBounds = function() {
-      return this._bounds.reset(this._path[0].x - this.radius, this._path[0].y - this.radius, this._path[0].x + this.radius, this._path[0].y + this.radius);
+    Bullet.prototype.update = function(dt) {
+      this.model.translate(this.model.speed * Math.sin(this.model.angle) * dt, -1 * this.model.speed * Math.cos(this.model.angle) * dt);
+      if (this.model.x < -100 || this.model.x > 900) {
+        if (this.model.y < -100 || this.model.y > 900) {
+          this.model.alive = false;
+        }
+      }
+      this.model.life--;
+      if (this.model.life === 0) {
+        this.model.alive = false;
+        return this.scene.fire("entity:remove", this);
+      } else {
+        return this.wrap();
+      }
     };
 
     return Bullet;
 
-  })(GameObject);
+  })(WrappingEntity);
 
-  Ship = (function(_super) {
+  entities.Hud = (function(_super) {
+
+    __extends(Hud, _super);
+
+    function Hud(scene) {
+      var canvas;
+      canvas = scene.get('canvas');
+      Hud.__super__.constructor.call(this, scene, [renderers.Hud], {
+        color: '#FFF',
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height
+      });
+    }
+
+    return Hud;
+
+  })(nv.Entity);
+
+}).call(this);
+
+(function() {
+  var models,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  window.models = models = {};
+
+  models.Background = (function(_super) {
+
+    __extends(Background, _super);
+
+    function Background() {
+      Background.__super__.constructor.call(this, {
+        x: 0,
+        y: 0,
+        width: 500,
+        height: 500
+      });
+    }
+
+    return Background;
+
+  })(nv.Model);
+
+  models.Ship = (function(_super) {
 
     __extends(Ship, _super);
 
     function Ship() {
       Ship.__super__.constructor.call(this, {
-        x: 0,
+        speed: 5,
+        health: 100,
+        shootDelay: 10,
+        x: 30,
         y: 30,
         width: 16,
         height: 24,
-        speed: 5,
         rotation: 0,
         thrusters: false,
-        type: 'both'
+        type: 'both',
+        color: '#FFF',
+        strokeColor: '#FFF',
+        strokeWidth: 2
       });
+      this.points = this.buildWireframe();
     }
 
     Ship.prototype.buildWireframe = function() {
       return [new nv.Point(0, -this.height / 2), new nv.Point(this.width / 2, this.height / 2), new nv.Point(0, this.height * 0.4), new nv.Point(-this.width / 2, this.height / 2)];
     };
 
-    Ship.prototype.nose = function() {
-      return this._path[0];
+    Ship.prototype.path = function() {
+      var cosine, model, path, sine;
+      cosine = Math.cos(this.rotation);
+      sine = Math.sin(this.rotation);
+      path = [];
+      model = this;
+      $.each(this.points, function() {
+        return path.push(new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y));
+      });
+      return path;
+    };
+
+    Ship.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    Ship.prototype.rotate = function(r) {
+      return this.rotation += r;
     };
 
     return Ship;
 
-  })(GameObject);
+  })(nv.Model);
 
-  Asteroids = (function(_super) {
-
-    __extends(Asteroids, _super);
-
-    function Asteroids(initialSpawnCount) {
-      var i, _i, _ref;
-      this.initialSpawnCount = initialSpawnCount;
-      Asteroids.__super__.constructor.apply(this, arguments);
-      for (i = _i = 1, _ref = this.initialSpawnCount; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
-        this.items.push(new nv.models.Asteroid(500, 500));
-      }
-    }
-
-    return Asteroids;
-
-  })(nv.Collection);
-
-  Asteroid = (function(_super) {
+  models.Asteroid = (function(_super) {
 
     __extends(Asteroid, _super);
 
@@ -1259,8 +1747,11 @@
         rotation: 0,
         rotationSpeed: 0.01,
         direction: (Math.random() * Math.PI) - (Math.PI / 2),
-        type: 'passive'
+        type: 'passive',
+        strokeColor: '#FFF',
+        strokeWidth: 2
       });
+      this.points = this.buildWireframe();
     }
 
     Asteroid.prototype.buildWireframe = function() {
@@ -1276,350 +1767,130 @@
       return points;
     };
 
+    Asteroid.prototype.path = function() {
+      var cosine, model, path, sine;
+      cosine = Math.cos(this.rotation);
+      sine = Math.sin(this.rotation);
+      path = [];
+      model = this;
+      $.each(this.points, function() {
+        return path.push(new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y));
+      });
+      return path;
+    };
+
+    Asteroid.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    Asteroid.prototype.rotate = function(r) {
+      return this.rotation += r;
+    };
+
     return Asteroid;
 
-  })(GameObject);
+  })(nv.Model);
 
-  Hud = (function(_super) {
+  models.Bullet = (function(_super) {
+
+    __extends(Bullet, _super);
+
+    function Bullet(pt, angle) {
+      Bullet.__super__.constructor.call(this, {
+        x: pt.x,
+        y: pt.y,
+        color: "#ff7600",
+        speed: 400,
+        radius: 3,
+        alive: true,
+        life: 100,
+        angle: angle,
+        type: 'active'
+      });
+      this.points = this.buildWireframe();
+    }
+
+    Bullet.prototype.path = function() {
+      var model, path;
+      path = [];
+      model = this;
+      $.each(this.points, function() {
+        return path.push(new nv.Point(model.x, model.y));
+      });
+      return path;
+    };
+
+    Bullet.prototype.buildWireframe = function() {
+      return [new nv.Point(0, 0)];
+    };
+
+    Bullet.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    return Bullet;
+
+  })(nv.Model);
+
+}).call(this);
+
+(function() {
+  var renderers,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  window.renderers = renderers = {};
+
+  renderers.Hud = (function(_super) {
 
     __extends(Hud, _super);
 
-    function Hud(glcanvas) {
-      this.glcanvas = glcanvas;
-      this.x = 0;
-      this.y = 0;
-      this.width = this.glcanvas.size().width;
-      this.height = this.glcanvas.size().height;
-      this.color = "#FFF";
-      this.lives = 3;
-      this.score = 100000;
+    function Hud(scene, entity) {
+      Hud.__super__.constructor.call(this, scene, entity);
     }
+
+    Hud.prototype.draw = function(context, canvas) {
+      context.strokeColor(this.entity.model.color);
+      return context.strokeRect(this.entity.model.x, this.entity.model.y, this.entity.model.width, this.entity.model.height);
+    };
 
     return Hud;
 
-  })(nv.Model);
+  })(nv.RenderingPlugin);
 
-  Global = (function(_super) {
+  renderers.Bullet = (function(_super) {
 
-    __extends(Global, _super);
+    __extends(Bullet, _super);
 
-    function Global() {
-      this.title = "Asteroids";
-      this.actionText = "Press <Space> to Start.";
-      this.options = {
-        difficulty: "easy"
-      };
+    function Bullet(scene, entity) {
+      Bullet.__super__.constructor.call(this, scene, entity);
     }
 
-    return Global;
-
-  })(nv.Model);
-
-  $(function() {
-    return nv.models = {
-      Background: Background,
-      Ship: Ship,
-      Bullet: Bullet,
-      Asteroid: Asteroid,
-      Asteroids: Asteroids,
-      Hud: Hud,
-      Global: Global
-    };
-  });
-
-}).call(this);
-
-(function() {
-  var AsteroidController, BulletController, GamePhysicsController, ShipController, wrap,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  wrap = function(asset, glcanvas) {
-    var dimensions;
-    dimensions = glcanvas.size();
-    if (asset.x < 0) {
-      asset.x = dimensions.width;
-    } else if (asset.x > dimensions.width) {
-      asset.x = 0;
-    }
-    if (asset.y < 0) {
-      return asset.y = dimensions.height;
-    } else if (asset.y > dimensions.height) {
-      return asset.y = 0;
-    }
-  };
-
-  BulletController = (function(_super) {
-
-    __extends(BulletController, _super);
-
-    function BulletController(scene) {
+    Bullet.prototype.draw = function(context, canvas) {
       var _this = this;
-      this.scene = scene;
-      BulletController.__super__.constructor.call(this, null);
-      this.ship = this.scene.getModel('ship');
-      this.assets = [];
-      this.depletedAssets = [];
-      this.shotDelay = 10;
-      this.scene.dispatcher.on('collision:Bullet:Asteroid', function(data) {
-        console.log("bullet hit asteroid");
-        return _this.scene.dispatcher.fire('delete:Bullet', {
-          asset: data.actor
-        });
-      });
-    }
-
-    BulletController.prototype.update = function(dt) {
-      var bullet, state,
-        _this = this;
-      state = this.scene.gamepad.getState();
-      if (state.shoot && this.shotDelay === 0) {
-        bullet = new nv.models.Bullet(this.ship.nose(), this.ship.rotation);
-        this.assets.push(bullet);
-        this.scene.dispatcher.fire('new:Bullet', {
-          asset: bullet
-        });
-        this.shotDelay = 10;
-      }
-      if (this.shotDelay) {
-        this.shotDelay--;
-      }
-      $.each(this.assets, function(index, asset) {
-        asset.translate(asset.speed * Math.sin(asset.angle) * dt, -1 * asset.speed * Math.cos(asset.angle) * dt);
-        if (asset.x < -100 || asset.x > 900) {
-          if (asset.y < -100 || asset.y > 900) {
-            asset.alive = false;
-          }
-        }
-        asset.life--;
-        if (asset.life === 0) {
-          asset.alive = false;
-          if (!asset.alive) {
-            return _this.depletedAssets.push(asset);
-          }
-        } else {
-          return wrap(asset, _this.scene.glcanvas);
-        }
-      });
-      this.assets = this.assets.filter(function(asset) {
-        return asset.alive;
-      });
-      $.each(this.depletedAssets, function(index, asset) {
-        return _this.scene.dispatcher.fire('delete:Bullet', {
-          asset: asset
-        });
-      });
-      return this.depletedAssets = [];
-    };
-
-    return BulletController;
-
-  })(nv.Controller);
-
-  AsteroidController = (function(_super) {
-
-    __extends(AsteroidController, _super);
-
-    function AsteroidController(scene) {
-      var _this = this;
-      this.scene = scene;
-      AsteroidController.__super__.constructor.call(this, null);
-      this.assets = this.scene.getModel('asteroids').items;
-      this.scene.dispatcher.on('collision:Ship:Asteroid', function(data) {
-        console.log("asteroid hit by ship");
-        return _this.destoryAsteroid(data.target);
-      });
-      this.scene.dispatcher.on('collision:Bullet:Asteroid', function(data) {
-        console.log("asteroid hit by bullet");
-        return _this.destoryAsteroid(data.target);
-      });
-    }
-
-    AsteroidController.prototype.destoryAsteroid = function(obj) {
-      this.scene.dispatcher.fire('delete:Asteroid', {
-        asset: obj
-      });
-      return this.assets = this.assets.filter(function(asset) {
-        return asset.id !== obj.id;
+      return context.fillPath(function(context) {
+        context.color(_this.entity.model.color);
+        return context.arc(_this.entity.model.x, _this.entity.model.y, _this.entity.model.radius, 0, Math.PI * 2, true);
       });
     };
 
-    AsteroidController.prototype.update = function(dt) {
-      var _this = this;
-      return $.each(this.assets, function(index, asset) {
-        asset.rotation += asset.rotationSpeed;
-        asset.translate(Math.sin(asset.direction) * asset.speed, Math.cos(asset.direction) * asset.speed);
-        return wrap(asset, _this.scene.glcanvas);
-      });
-    };
+    return Bullet;
 
-    return AsteroidController;
+  })(nv.RenderingPlugin);
 
-  })(nv.Controller);
+  renderers.Background = (function(_super) {
 
-  ShipController = (function(_super) {
+    __extends(Background, _super);
 
-    __extends(ShipController, _super);
-
-    function ShipController(scene) {
-      var _this = this;
-      this.scene = scene;
-      ShipController.__super__.constructor.call(this, this.scene.getModel('ship'));
-      this.speed = 5;
-      this.shootDelay = 10;
-      this.scene.dispatcher.on('collision:Ship:Asteroid', function(data) {
-        console.log("ship hit asteroid");
-        return _this.scene.dispatcher.fire('delete:Ship', {
-          asset: data.actor
-        });
-      });
-    }
-
-    ShipController.prototype.update = function(dt) {
-      var state;
-      state = this.scene.gamepad.getState();
-      if (state.left) {
-        this.asset.rotate(-0.1);
-      }
-      if (state.right) {
-        this.asset.rotate(0.1);
-      }
-      if (state.up) {
-        this.asset.translate(this.speed * Math.sin(this.asset.rotation), -this.speed * Math.cos(this.asset.rotation));
-      }
-      if (state.down) {
-        this.asset.translate(-this.speed / 2 * Math.sin(this.asset.rotation), this.speed / 2 * Math.cos(this.asset.rotation));
-      }
-      this.asset.thrusters = state.up;
-      return wrap(this.asset, this.scene.glcanvas);
-    };
-
-    return ShipController;
-
-  })(nv.Controller);
-
-  GamePhysicsController = (function(_super) {
-
-    __extends(GamePhysicsController, _super);
-
-    function GamePhysicsController(scene) {
-      var _this = this;
-      this.scene = scene;
-      GamePhysicsController.__super__.constructor.call(this, null);
-      this.passiveObjects = {};
-      this.activeObjects = {};
-      this.scene.dispatcher.on('delete:Bullet', function(data) {
-        console.log("[GPC] delete bullet");
-        return _this.removeObject(data.asset);
-      });
-      this.scene.dispatcher.on('delete:Ship', function(data) {
-        return console.log("[GPC] delete ship");
-      });
-      this.scene.dispatcher.on('delete:Asteroid', function(data) {
-        console.log("[GPC] delete Asteroid");
-        return _this.removeObject(data.asset);
-      });
-      this.scene.dispatcher.on('new:Bullet', function(data) {
-        console.log('[GPC] track new bullet');
-        return _this.trackObject(data.asset);
-      });
-    }
-
-    GamePhysicsController.prototype.trackObjects = function(array) {
-      var self;
-      self = this;
-      return $.each(array, function() {
-        return self.trackObject(this);
-      });
-    };
-
-    GamePhysicsController.prototype.trackObject = function(obj) {
-      switch (obj.type) {
-        case 'passive':
-          return this.passiveObjects[obj.id] = obj;
-        case 'active':
-          return this.activeObjects[obj.id] = obj;
-        case 'both':
-          this.passiveObjects[obj.id] = obj;
-          return this.activeObjects[obj.id] = obj;
-      }
-    };
-
-    GamePhysicsController.prototype.removeObject = function(obj) {
-      switch (obj.type) {
-        case 'passive':
-          return delete this.passiveObjects[obj.id];
-        case 'active':
-          return delete this.activeObjects[obj.id];
-        case 'both':
-          delete this.passiveObjects[obj.id];
-          return delete this.activeObjects[obj.id];
-      }
-    };
-
-    GamePhysicsController.prototype.update = function(dt) {
-      var ida, idp, obja, objaBounds, objp, _ref, _results;
-      _ref = this.activeObjects;
-      _results = [];
-      for (ida in _ref) {
-        obja = _ref[ida];
-        objaBounds = obja.bounds();
-        _results.push((function() {
-          var _ref1, _results1;
-          _ref1 = this.passiveObjects;
-          _results1 = [];
-          for (idp in _ref1) {
-            objp = _ref1[idp];
-            if (ida === idp) {
-              continue;
-            }
-            if (objp.bounds().intersects(objaBounds)) {
-              _results1.push(this.scene.dispatcher.fire("collision:" + obja.constructor.name + ":" + objp.constructor.name, {
-                actor: obja,
-                target: objp
-              }));
-            } else {
-              _results1.push(void 0);
-            }
-          }
-          return _results1;
-        }).call(this));
-      }
-      return _results;
-    };
-
-    return GamePhysicsController;
-
-  })(nv.Controller);
-
-  $(function() {
-    return nv.controllers = {
-      ShipController: ShipController,
-      BulletController: BulletController,
-      AsteroidController: AsteroidController,
-      GamePhysicsController: GamePhysicsController
-    };
-  });
-
-}).call(this);
-
-(function() {
-  var AsteroidRenderer, BackgroundRenderer, BulletRenderer, HudRenderer, MainRenderer, ShipRenderer,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  BackgroundRenderer = (function(_super) {
-
-    __extends(BackgroundRenderer, _super);
-
-    function BackgroundRenderer(glcanvas, asset) {
+    function Background(scene, entity) {
       var i, radius, x, y;
-      this.glcanvas = glcanvas;
-      BackgroundRenderer.__super__.constructor.apply(this, arguments);
-      this.zIndex = this.nextZIndex();
+      Background.__super__.constructor.call(this, scene, entity);
       this.canvas = gl().size(700, 700);
-      this.asset.width = this.canvas.width;
-      this.asset.height = this.canvas.height;
+      this.canvas.width = entity.model.width;
+      this.canvas.height = entity.model.height;
+      this.glcanvas = scene.get('canvas');
       i = 0;
       while (!(i > 100)) {
         i++;
@@ -1639,284 +1910,106 @@
       }
     }
 
-    BackgroundRenderer.prototype.draw = function(context, canvas) {
+    Background.prototype.draw = function(context, canvas) {
       var camX, camY, curX, curY, startX, startY;
       context.globalCompositeOperation = "lighter";
       camX = -this.glcanvas.camera.x;
       camY = -this.glcanvas.camera.y;
-      startX = camX + ((this.asset.x - camX) % this.asset.width);
-      startY = camY + ((this.asset.y - camY) % this.asset.height);
+      startX = camX + ((this.entity.model.x - camX) % this.entity.model.width);
+      startY = camY + ((this.entity.model.y - camY) % this.entity.model.height);
       if (startX > camX) {
-        startX -= this.asset.width;
+        startX -= this.entity.model.width;
       }
       if (startY > camY) {
-        startY -= this.asset.height;
+        startY -= this.entity.model.height;
       }
       curX = startX;
       curY = startY;
       while (curX < camX + this.glcanvas.width) {
         while (curY < camY + this.glcanvas.height) {
           context.drawImage(this.canvas, curX, curY);
-          curY += this.asset.height;
+          curY += this.entity.model.height;
         }
         curY = startY;
-        curX += this.asset.width;
+        curX += this.entity.model.width;
       }
       return context.globalCompositeOperation = "source-over";
     };
 
-    return BackgroundRenderer;
+    return Background;
 
-  })(nv.ObjectRenderer);
-
-  BulletRenderer = (function(_super) {
-
-    __extends(BulletRenderer, _super);
-
-    function BulletRenderer(scene, glcanvas) {
-      var _this = this;
-      this.scene = scene;
-      this.glcanvas = glcanvas;
-      BulletRenderer.__super__.constructor.call(this, this.glcanvas, []);
-      this.scene.dispatcher.on('new:Bullet', function(event) {
-        return _this.add(event.asset);
-      });
-    }
-
-    BulletRenderer.prototype.draw = function(context) {
-      $.each(this.assets, function(index, asset) {
-        var _this = this;
-        return context.fillPath(function(context) {
-          context.color('#ff7600');
-          return context.arc(asset.x, asset.y, asset.radius, 0, Math.PI * 2, true);
-        });
-      });
-      return this.assets = this.assets.filter(function(asset) {
-        return asset.alive;
-      });
-    };
-
-    return BulletRenderer;
-
-  })(nv.ObjectListRenderer);
-
-  ShipRenderer = (function(_super) {
-
-    __extends(ShipRenderer, _super);
-
-    function ShipRenderer(glcanvas, ship) {
-      ShipRenderer.__super__.constructor.apply(this, arguments);
-      this.color = '#FFF';
-      this.strokeWidth = 2;
-    }
-
-    ShipRenderer.prototype.draw = function(context) {
-      var points;
-      context.strokeColor(this.color);
-      context.strokeWidth(this.strokeWidth);
-      points = this.asset.path();
-      context.beginPath();
-      context.strokeColor(this.color);
-      context.strokeWidth(2);
-      context.moveTo(points[0].x, points[0].y);
-      $.each(points.slice(1), function() {
-        return context.lineTo(this.x, this.y);
-      });
-      context.lineTo(points[0].x, points[0].y);
-      context.stroke();
-      return context.closePath();
-    };
-
-    return ShipRenderer;
-
-  })(nv.ObjectRenderer);
-
-  AsteroidRenderer = (function(_super) {
-
-    __extends(AsteroidRenderer, _super);
-
-    function AsteroidRenderer(scene, glcanvas) {
-      var _this = this;
-      this.scene = scene;
-      this.glcanvas = glcanvas;
-      AsteroidRenderer.__super__.constructor.call(this, this.glcanvas, this.scene.getModel('asteroids').items);
-      this.color = '#FFF';
-      this.strokeWidth = 2;
-      this.scene.dispatcher.on('delete:Asteroid', function(data) {
-        return _this.assets = _this.assets.filter(function(asset) {
-          return asset.id !== data.asset.id;
-        });
-      });
-    }
-
-    AsteroidRenderer.prototype.draw = function(context) {
-      var _this = this;
-      return $.each(this.assets, function(index, asset) {
-        var bounds, points;
-        context.strokeColor(_this.color);
-        context.strokeWidth(_this.strokeWidth);
-        points = asset.path();
-        context.beginPath();
-        context.strokeColor(_this.color);
-        context.strokeWidth(2);
-        context.moveTo(points[0].x, points[0].y);
-        $.each(points.slice(1), function() {
-          return context.lineTo(this.x, this.y);
-        });
-        context.lineTo(points[0].x, points[0].y);
-        context.stroke();
-        context.closePath();
-        context.strokeRect(asset.x, asset.y, 2, 2);
-        bounds = asset.bounds();
-        context.beginPath();
-        context.strokeColor("yellow");
-        context.strokeWidth(1);
-        context.moveTo(bounds.x, bounds.y);
-        context.lineTo(bounds.x, bounds.y2);
-        context.lineTo(bounds.x2, bounds.y2);
-        context.lineTo(bounds.x2, bounds.y);
-        context.lineTo(bounds.x, bounds.y);
-        context.stroke();
-        return context.closePath();
-      });
-    };
-
-    return AsteroidRenderer;
-
-  })(nv.ObjectListRenderer);
-
-  HudRenderer = (function(_super) {
-
-    __extends(HudRenderer, _super);
-
-    function HudRenderer(glcanvas, hud) {
-      this.glcanvas = glcanvas;
-      HudRenderer.__super__.constructor.apply(this, arguments);
-      this.ship = new nv.models.Ship;
-      this.shipRenderer = new nv.renderers.ShipRenderer(this.glcanvas, this.ship);
-    }
-
-    HudRenderer.prototype.draw = function(context) {
-      var dimensions, num;
-      context.strokeColor(this.color);
-      context.strokeRect(this.asset.x, this.asset.y, this.asset.width, this.asset.height);
-      context.fillStyle = '#F00';
-      context.font = 'italic bold 30px sans-serif';
-      context.textBaseline = 'bottom';
-      context.fillText("Asteroids", -this.glcanvas.camera.x + 20, -this.glcanvas.camera.y + 50);
-      context.fillStyle = '#FFF';
-      context.font = 'bold 30px sans-serif';
-      context.textBaseline = 'bottom';
-      dimensions = this.glcanvas.size();
-      context.fillText(this.asset.score, -this.glcanvas.camera.x + dimensions.width - 120, -this.glcanvas.camera.y + dimensions.height - 10);
-      num = this.asset.lives;
-      while (num--) {
-        this.ship.x = -this.glcanvas.camera.x + 180 + (num * 30);
-        this.ship.y = -this.glcanvas.camera.y + 25;
-        this.shipRenderer.draw(context);
-      }
-      return this;
-    };
-
-    return HudRenderer;
-
-  })(nv.ObjectRenderer);
-
-  MainRenderer = (function(_super) {
-
-    __extends(MainRenderer, _super);
-
-    function MainRenderer(glcanvas, model) {
-      this.glcanvas = glcanvas;
-      this.model = model;
-      MainRenderer.__super__.constructor.apply(this, arguments);
-      this.title = new gl.text({
-        color: "#F00",
-        x: 200,
-        y: 200,
-        font: "bold 20px sans-serif",
-        text: this.model.title
-      });
-      this.actionText = new gl.text({
-        color: "#F00",
-        x: 200,
-        y: 300,
-        font: "bold 20px sans-serif",
-        text: this.model.actionText
-      });
-    }
-
-    MainRenderer.prototype.draw = function(context) {
-      this.title.draw(context);
-      return this.actionText.draw(context);
-    };
-
-    return MainRenderer;
-
-  })(nv.ObjectRenderer);
-
-  $(function() {
-    return nv.renderers = {
-      ShipRenderer: ShipRenderer,
-      BulletRenderer: BulletRenderer,
-      BackgroundRenderer: BackgroundRenderer,
-      AsteroidRenderer: AsteroidRenderer,
-      HudRenderer: HudRenderer,
-      MainRenderer: MainRenderer
-    };
-  });
+  })(nv.RenderingPlugin);
 
 }).call(this);
 
 (function() {
-  var Game, Main,
+  var Asteroids, Game, Main,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Asteroids = (function(_super) {
+
+    __extends(Asteroids, _super);
+
+    function Asteroids() {
+      var canvasEl, glcanvas;
+      Asteroids.__super__.constructor.apply(this, arguments);
+      canvasEl = document.querySelector('canvas');
+      glcanvas = gl(canvasEl);
+      glcanvas.size(500, 500);
+      glcanvas.background('#000');
+      glcanvas.fullscreen();
+      if (canvasEl === void 0) {
+        document.body.appendChild(glcanvas.canvas);
+      }
+      this.registerEngine(nv.RenderingEngine);
+      this.registerEngine(nv.GamepadEngine);
+      this.registerEngine(nv.PhysicsEngine);
+      this.registerScene('Main', Main);
+      this.registerScene('Game', Game);
+      this.openScene('Main', glcanvas);
+    }
+
+    return Asteroids;
+
+  })(nv.Game);
 
   Main = (function(_super) {
 
     __extends(Main, _super);
 
-    function Main(glcanvas, callback) {
-      var _ref;
+    function Main(game, glcanvas) {
+      var _this = this;
       this.glcanvas = glcanvas;
-      this.callback = callback;
-      Main.__super__.constructor.apply(this, arguments);
-      this.addModel('Global', (_ref = window.global) != null ? _ref : new nv.models.Global);
-      this.addModel('Bg', new nv.models.Background);
-      this.addModel('Bg2', new nv.models.Background);
-      this.addRenderer(new nv.renderers.MainRenderer(this.glcanvas, this.getModel('Global')));
-      this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg')));
-      this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('Bg2')));
-      this.square = new gl.square;
-      this.glcanvas.addDrawable(this.square);
+      Main.__super__.constructor.call(this, game, {
+        canvas: glcanvas,
+        keys: {
+          start: nv.Key.Spacebar,
+          left: nv.Key.A,
+          right: nv.Key.D
+        },
+        trackMouse: true
+      });
+      this.addEntities(entities.Background, entities.Background, entities.Title, entities.ActionText, entities.Cursor);
       this.glcanvas.camera = nv.camera();
-      this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
-      this.gamepad.aliasKey('start', nv.Key.Spacebar);
-      this.gamepad.trackMouse();
+      this.updateId = this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
+      this.on("engine:gamepad:start", function() {
+        return _this.game.openScene('Game', _this.glcanvas);
+      });
     }
 
+    Main.prototype.fire = function(event, data) {
+      console.log("[EVENT] - " + event);
+      return Main.__super__.fire.call(this, event, data);
+    };
+
     Main.prototype.update = function(dt) {
-      var state;
-      state = this.gamepad.getState();
-      this.square.x = state.mouse.x;
-      this.square.y = state.mouse.y;
-      if (state.start) {
-        return this.destroy();
-      }
+      return Main.__super__.update.call(this, dt);
     };
 
     Main.prototype.destroy = function() {
-      var renderer, _i, _len, _ref;
-      _ref = this.renderers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        renderer = _ref[_i];
-        renderer.destroy();
-      }
-      this.glcanvas.stopDrawUpdate();
-      if (!!this.callback) {
-        return this.callback();
-      }
+      Main.__super__.destroy.apply(this, arguments);
+      return this.glcanvas.stopDrawUpdate(this.updateId);
     };
 
     return Main;
@@ -1927,53 +2020,42 @@
 
     __extends(Game, _super);
 
-    function Game(glcanvas) {
-      var physicsController,
-        _this = this;
+    function Game(game, glcanvas) {
+      var ship;
       this.glcanvas = glcanvas;
-      Game.__super__.constructor.apply(this, arguments);
-      this.gamepad.aliasKey('left', nv.Key.A);
-      this.gamepad.aliasKey('right', nv.Key.D);
-      this.gamepad.aliasKey('up', nv.Key.W);
-      this.gamepad.aliasKey('down', nv.Key.S);
-      this.gamepad.aliasKey('shoot', nv.Key.Spacebar);
-      this.addModel('bg', new nv.models.Background);
-      this.addModel('bg2', new nv.models.Background);
-      this.addModel('ship', new nv.models.Ship);
-      this.addModel('asteroids', new nv.models.Asteroids(30));
-      this.addModel('hud', new nv.models.Hud(this.glcanvas));
-      this.addController(new nv.controllers.AsteroidController(this));
-      this.addController(new nv.controllers.ShipController(this));
-      this.addController(new nv.controllers.BulletController(this));
-      physicsController = new nv.controllers.GamePhysicsController(this);
-      physicsController.trackObjects(this.getModel('asteroids').items);
-      physicsController.trackObject(this.getModel('ship'));
-      this.addController(physicsController);
-      this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('bg'), this.getModel('ship')));
-      this.addRenderer(new nv.renderers.BackgroundRenderer(this.glcanvas, this.getModel('bg2'), this.getModel('ship')));
-      this.addRenderer(new nv.renderers.ShipRenderer(this.glcanvas, this.getModel('ship')));
-      this.addRenderer(new nv.renderers.AsteroidRenderer(this, this.glcanvas));
-      this.addRenderer(new nv.renderers.HudRenderer(this.glcanvas, this.getModel('hud')));
-      this.addRenderer(new nv.renderers.BulletRenderer(this, this.glcanvas));
+      Game.__super__.constructor.call(this, game, {
+        canvas: this.glcanvas,
+        keys: {
+          left: nv.Key.A,
+          right: nv.Key.D,
+          up: nv.Key.W,
+          down: nv.Key.S,
+          shoot: nv.Key.Spacebar
+        }
+      });
+      ship = this.addEntity(entities.Ship);
+      this.addEntity(entities.Background, ship, 0.05);
+      this.addEntity(entities.Background, ship, 0.01);
+      this.addEntities(entities.Hud, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid);
       this.glcanvas.camera = nv.camera();
-      this.glcanvas.camera.follow(this.getModel('ship'), 250, 250);
+      this.glcanvas.camera.follow(ship.model, 250, 250);
       this.glcanvas.camera.zoom(0.5);
       this.glcanvas.camera.zoom(1, 2000);
-      this.glcanvas.startDrawUpdate(60, function(dt) {
-        return _this.update.call(_this, dt);
-      });
+      this.updateId = this.glcanvas.startDrawUpdate(60, nv.bind(this, this.update));
     }
 
+    Game.prototype.fire = function(event, data) {
+      console.log("[EVENT] - " + event);
+      return Game.__super__.fire.call(this, event, data);
+    };
+
     Game.prototype.update = function(dt) {
-      var bg, bg2, ship;
-      Game.__super__.update.call(this, dt);
-      bg = this.getModel('bg');
-      bg2 = this.getModel('bg2');
-      ship = this.getModel('ship');
-      bg.x = -ship.x * 0.05;
-      bg.y = -ship.y * 0.05;
-      bg2.x = -ship.x * 0.01;
-      return bg2.y = -ship.y * 0.01;
+      return Game.__super__.update.call(this, dt);
+    };
+
+    Game.prototype.destroy = function() {
+      Game.__super__.destroy.apply(this, arguments);
+      return this.glcanvas.stopDrawUpdate(this.updateId);
     };
 
     return Game;
@@ -1981,18 +2063,7 @@
   })(nv.Scene);
 
   $(function() {
-    var canvasEl, glcanvas;
-    canvasEl = document.querySelector('canvas');
-    glcanvas = gl(canvasEl);
-    if (canvasEl === void 0) {
-      document.body.appendChild(glcanvas.canvas);
-    }
-    glcanvas.size(500, 500);
-    glcanvas.background('#000');
-    glcanvas.fullscreen();
-    return new Main(glcanvas, function() {
-      return new Game(glcanvas);
-    });
+    return new Asteroids;
   });
 
 }).call(this);
