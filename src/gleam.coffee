@@ -37,12 +37,12 @@ gl.prototype =
 
   fullscreen: () ->
     @fullscreened = true
-    @size document.width, document.height
+    @size window.innerWidth, window.innerHeight
 
     document.body.style.overflow = "hidden"
 
     window.addEventListener 'resize', (event) =>
-      @size document.width, document.height
+      @size window.innerWidth, window.innerHeight
 
   background: (color) ->
     @style.background = color

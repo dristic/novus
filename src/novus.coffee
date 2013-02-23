@@ -36,6 +36,8 @@ class Main extends nv.Scene
         right: nv.Key.D
       trackMouse: true
 
+    @gamepad.aliasElement "start", "left"
+
     @addEntities entities.Background,
       entities.Background,
       entities.Title,
@@ -71,6 +73,8 @@ class Game extends nv.Scene
         up: nv.Key.W
         down: nv.Key.S
         shoot: nv.Key.Spacebar
+
+    @gamepad.aliasElement "up", "left"
 
     ship = @addEntity entities.Ship
     @addEntity entities.Background, ship, 0.05

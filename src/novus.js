@@ -222,6 +222,21 @@
       }));
     };
 
+    Gamepad.prototype.aliasElement = function(button, id) {
+      var el,
+        _this = this;
+      el = $("#" + id);
+      if (!this.trackers[button]) {
+        this.trackers[button] = [];
+      }
+      this.trackers[button].push(el.on('touchstart', function(event) {
+        return _this.fireButton(button);
+      }));
+      return this.trackers[button].push(el.on('touchend', function(event) {
+        return _this.state[button] = false;
+      }));
+    };
+
     Gamepad.prototype.fireButton = function(button) {
       var listener, listeners, _i, _len, _results;
       this.state[button] = true;
@@ -1197,10 +1212,10 @@
     fullscreen: function() {
       var _this = this;
       this.fullscreened = true;
-      this.size(document.width, document.height);
+      this.size(window.innerWidth, window.innerHeight);
       document.body.style.overflow = "hidden";
       return window.addEventListener('resize', function(event) {
-        return _this.size(document.width, document.height);
+        return _this.size(window.innerWidth, window.innerHeight);
       });
     },
     background: function(color) {
@@ -2039,6 +2054,7 @@
         },
         trackMouse: true
       });
+      this.gamepad.aliasElement("start", "left");
       this.addEntities(entities.Background, entities.Background, entities.Title, entities.ActionText, entities.Cursor);
       this.glcanvas.camera = nv.camera();
       this.updateId = this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
@@ -2082,6 +2098,7 @@
           shoot: nv.Key.Spacebar
         }
       });
+      this.gamepad.aliasElement("up", "left");
       ship = this.addEntity(entities.Ship);
       this.addEntity(entities.Background, ship, 0.05);
       this.addEntity(entities.Background, ship, 0.01);

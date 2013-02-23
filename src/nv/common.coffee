@@ -70,6 +70,16 @@ class Gamepad
     @trackers[button].push nv.keyup key, () =>
       @state[button] = false
 
+  aliasElement: (button, id) ->
+    el = $ "##{id}"
+    @trackers[button] = [] unless @trackers[button]
+    @trackers[button].push el.on('touchstart', (event) =>
+      @fireButton(button)
+    )
+    @trackers[button].push el.on('touchend', (event) =>
+      @state[button] = false
+    )
+
   fireButton: (button) ->
     @state[button] = true
     listeners = @listeners[button]
