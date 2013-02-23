@@ -423,16 +423,30 @@
 
     EventDispatcher.prototype.fire = function(event, data) {
       var listener, listeners, _i, _len, _results;
-      data = data != null ? data : {};
       listeners = this.listeners[event];
       if (listeners instanceof Array) {
         _results = [];
         for (_i = 0, _len = listeners.length; _i < _len; _i++) {
           listener = listeners[_i];
-          _results.push(listener(data));
+          _results.push(listener(data != null ? data : {}));
         }
         return _results;
       }
+    };
+
+    EventDispatcher.prototype.send = function(event, targets, data) {
+      var target, _i, _len, _results;
+      console.log(event, targets, data);
+      _results = [];
+      for (_i = 0, _len = targets.length; _i < _len; _i++) {
+        target = targets[_i];
+        if (!(target.events === void 0 || target.events[event] === void 0)) {
+          _results.push(target.events[event](data));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     };
 
     EventDispatcher.prototype.off = function(event, func) {
@@ -541,6 +555,9 @@
       this.on("entity:remove", function() {
         var _ref2;
         return (_ref2 = _this.onRemoveEntity).call.apply(_ref2, [_this].concat(__slice.call(arguments)));
+      });
+      this.on("entity:add", function(options) {
+        return _this.addEntity(options.entity, options);
       });
     }
 
@@ -1063,7 +1080,7 @@
               continue;
             }
             if (objp.bounds().intersects(objaBounds)) {
-              _results1.push(this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
+              _results1.push(this.scene.send("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, [obja.entity, objp.entity], {
                 actor: obja.entity,
                 target: objp.entity
               }));
@@ -1618,19 +1635,36 @@
 
     __extends(Asteroid, _super);
 
-    function Asteroid(scene) {
-      var _this = this;
-      Asteroid.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid(500, 500));
-      this.scene.on('engine:collision:Ship:Asteroid', function(data) {
-        if (data.target === _this) {
-          return _this.scene.fire("entity:remove", _this);
+    function Asteroid(scene, options) {
+      var scale, _ref,
+        _this = this;
+      if (options == null) {
+        options = {};
+      }
+      scale = (_ref = options.scale) != null ? _ref : Math.ceil(Math.random() * 4);
+      Asteroid.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid(options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction));
+      this.events = {
+        'engine:collision:Ship:Asteroid': function(data) {
+          return _this.scene.fire("entity:remove", data.target);
+        },
+        'engine:collision:Bullet:Asteroid': function(data) {
+          var size;
+          _this.scene.fire("entity:remove", data.target);
+          size = data.target.model.get('size') - 1;
+          if (size !== 0) {
+            options = {
+              entity: entities.Asteroid,
+              x: data.target.model.get('x'),
+              y: data.target.model.get('y'),
+              scale: size,
+              direction: data.target.model.get('direction') - 0.2
+            };
+            _this.scene.fire('entity:add', options);
+            options.direction += 0.4;
+            return _this.scene.fire('entity:add', options);
+          }
         }
-      });
-      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
-        if (data.target === _this) {
-          return _this.scene.fire("entity:remove", _this);
-        }
-      });
+      };
     }
 
     Asteroid.prototype.update = function(dt) {
@@ -1650,11 +1684,11 @@
     function Bullet(scene, point, rotation) {
       var _this = this;
       Bullet.__super__.constructor.call(this, scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet(point, rotation));
-      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
-        if (data.actor === _this) {
-          return _this.scene.fire("entity:remove", _this);
+      this.events = {
+        'engine:collision:Bullet:Asteroid': function(data) {
+          return _this.scene.fire("entity:remove", data.actor);
         }
-      });
+      };
     }
 
     Bullet.prototype.update = function(dt) {
@@ -1779,36 +1813,40 @@
 
     __extends(Asteroid, _super);
 
-    function Asteroid(cw, ch, scale) {
+    function Asteroid(x, y, scale, direction) {
       if (scale == null) {
         scale = 1;
       }
+      if (direction == null) {
+        direction = null;
+      }
       Asteroid.__super__.constructor.call(this, {
-        x: cw * Math.random(),
-        y: ch * Math.random(),
-        width: 24 * scale,
-        height: 24 * scale,
+        x: x,
+        y: y,
+        width: 12 * scale,
+        height: 12 * scale,
         speed: Math.random() + 0.3,
         rotation: 0,
-        rotationSpeed: 0.01,
-        direction: (Math.random() * Math.PI) - (Math.PI / 2),
+        rotationSpeed: ((Math.random() / 10) - 0.05) / 8,
+        direction: direction || (Math.random() * Math.PI) - (Math.PI / 2),
         type: 'passive',
         strokeColor: '#FFF',
-        strokeWidth: 2
+        strokeWidth: 2,
+        size: scale
       });
-      this.points = this.buildWireframe();
+      this.points = this.buildWireframe(scale * .5);
     }
 
-    Asteroid.prototype.buildWireframe = function() {
+    Asteroid.prototype.buildWireframe = function(scalar) {
       var points, pt;
       pt = new nv.Point(0, -this.height);
       points = [];
       points.push(pt.clone());
-      points.push(pt.translate(30, 20).clone());
-      points.push(pt.translate(5, 30).clone());
-      points.push(pt.translate(-12, 10).clone());
-      points.push(pt.translate(-33, -10).clone());
-      points.push(pt.translate(-10, -35).clone());
+      points.push(pt.translate(30 * scalar, 20 * scalar).clone());
+      points.push(pt.translate(5 * scalar, 30 * scalar).clone());
+      points.push(pt.translate(-12 * scalar, 10 * scalar).clone());
+      points.push(pt.translate(-33 * scalar, -10 * scalar).clone());
+      points.push(pt.translate(-10 * scalar, -35 * scalar).clone());
       return points;
     };
 
@@ -1829,8 +1867,8 @@
       return this.y += dy;
     };
 
-    Asteroid.prototype.rotate = function(r) {
-      return this.rotation += r;
+    Asteroid.prototype.rotate = function(dr) {
+      return this.rotation += dr;
     };
 
     return Asteroid;

@@ -37,7 +37,7 @@ class nv.PhysicsEngine extends nv.Engine
       for idp, objp of @passiveObjects
         continue if ida is idp
         if objp.bounds().intersects(objaBounds)
-          @scene.fire "engine:collision:#{obja.entity.constructor.name}:#{objp.entity.constructor.name}",
+          @scene.send "engine:collision:#{obja.entity.constructor.name}:#{objp.entity.constructor.name}", [obja.entity, objp.entity],
             actor: obja.entity
             target: objp.entity
 

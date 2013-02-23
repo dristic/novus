@@ -12,15 +12,16 @@ class nv.EventDispatcher
     this
 
   fire: (event, data) ->
-    data = data ? {}
-    #data.data = data
-    #data.type = event
-
     listeners = @listeners[event]
-
     if listeners instanceof Array
       for listener in listeners
-        listener(data)
+        listener(data ? {})
+
+  send: (event, targets, data) ->
+    console.log event, targets, data
+    for target in targets
+      #console.log "send message", event, target.constructor.name
+      target.events[event](data) unless target.events is undefined or target.events[event] is undefined
 
   off: (event, func) ->
     if not @listeners[event] instanceof Array

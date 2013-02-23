@@ -80,14 +80,27 @@ class entities.Ship extends WrappingEntity
     @wrap()
 
 class entities.Asteroid extends WrappingEntity
-  constructor: (scene) ->
-    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid 500, 500
+  constructor: (scene, options = {}) ->
+    scale = options.scale ? Math.ceil(Math.random() * 4)
+    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction
 
-    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
-      @scene.fire "entity:remove", this unless data.target isnt this
+    @events =
+      'engine:collision:Ship:Asteroid': (data) =>
+        @scene.fire "entity:remove", data.target
+      'engine:collision:Bullet:Asteroid': (data) =>
+        @scene.fire "entity:remove", data.target
 
-    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
-      @scene.fire "entity:remove", this unless data.target isnt this
+        size = data.target.model.get('size') - 1 
+        unless size is 0
+          options = 
+            entity: entities.Asteroid
+            x: data.target.model.get('x')
+            y: data.target.model.get('y')
+            scale: size
+            direction: data.target.model.get('direction') - 0.2
+          @scene.fire 'entity:add', options
+          options.direction += 0.4
+          @scene.fire 'entity:add', options
 
   update: (dt) ->
     @model.rotation += @model.rotationSpeed
@@ -99,8 +112,9 @@ class entities.Bullet extends WrappingEntity
   constructor: (scene, point, rotation) ->
     super scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet point, rotation
 
-    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
-      @scene.fire "entity:remove", this unless data.actor isnt this
+    @events =
+      'engine:collision:Bullet:Asteroid': (data) =>
+        @scene.fire "entity:remove", data.actor
 
   update: (dt) ->
     @model.translate @model.speed * Math.sin(@model.angle) * dt, -1 * @model.speed * Math.cos(@model.angle) * dt
