@@ -1631,7 +1631,6 @@
           return _this.scene.fire("entity:remove", _this);
         }
       });
-      this.getPlugin(nv.PathRenderingPlugin).cache(35, 35);
     }
 
     Asteroid.prototype.update = function(dt) {
@@ -1898,8 +1897,12 @@
     }
 
     Hud.prototype.draw = function(context, canvas) {
+      context.save();
+      context.shadowColor = this.entity.model.color;
+      context.shadowBlur = 5;
       context.strokeColor(this.entity.model.color);
-      return context.strokeRect(this.entity.model.x, this.entity.model.y, this.entity.model.width, this.entity.model.height);
+      context.strokeRect(this.entity.model.x, this.entity.model.y, this.entity.model.width, this.entity.model.height);
+      return context.restore();
     };
 
     return Hud;

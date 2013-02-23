@@ -5,8 +5,12 @@ class renderers.Hud extends nv.RenderingPlugin
     super scene, entity
 
   draw: (context, canvas) ->
+    context.save()
+    context.shadowColor = @entity.model.color
+    context.shadowBlur = 5
     context.strokeColor @entity.model.color
     context.strokeRect @entity.model.x, @entity.model.y, @entity.model.width, @entity.model.height
+    context.restore()
 
 class renderers.Bullet extends nv.RenderingPlugin
   constructor: (scene, entity) ->
