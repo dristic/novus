@@ -22,6 +22,7 @@ gl.prototype =
     canvas.objects = []
     canvas.requestFrameKey = null
     canvas.updating = false
+    canvas.fullscreened = false
     canvas
 
   size: (width, height) ->
@@ -35,16 +36,19 @@ gl.prototype =
         height: @height
 
   fullscreen: () ->
-    @size window.innerWidth, window.innerHeight
+    @fullscreened = true
+    @size document.width, document.height
+
+    document.body.style.overflow = "hidden"
 
     window.addEventListener 'resize', (event) =>
-      @size window.innerWidth, window.innerHeight      
+      @size document.width, document.height
 
   background: (color) ->
     @style.background = color
 
-  draw: (object) ->
-    object.draw @context, this
+  draw: (object, context = @context) ->
+    object.draw context, this
 
   addDrawable: (object) ->
     @objects.push object
@@ -52,7 +56,7 @@ gl.prototype =
   removeDrawable: (object) ->
     @objects.splice @objects.indexOf(object), 1
 
-  drawObjects: () ->
+  drawObjects: (context = @context) ->
     @objects.sort (a, b) ->
       a = a[gl.zOrderProperty]
       b = b[gl.zOrderProperty]
@@ -62,12 +66,16 @@ gl.prototype =
       else if a is b then 0
       else if a > b then 1
 
-    @draw object for object in @objects
+    @draw object, context for object in @objects
 
   startDrawUpdate: (fps, func) ->
     @updating = true
     lastTime = Date.now()
     updateId = _updateId++
+
+    dimensions = @size()
+    @buffer = gl().size dimensions.width, dimensions.height
+    @buffer.fullscreen() unless not @fullscreened
 
     update = () =>
       now = Date.now()
@@ -76,14 +84,18 @@ gl.prototype =
 
       stop = func delta
 
-      @context.save()
+      bufferContext = @buffer.context
+      bufferContext.save()
+      bufferContext.clear()
+
+      if @camera then @camera.update delta, bufferContext, this
+
+      @drawObjects bufferContext
+
+      bufferContext.restore()
+
       @context.clear()
-
-      if @camera then @camera.update delta, @context, this
-
-      @drawObjects()
-
-      @context.restore()
+      @context.drawImage @buffer, 0, 0
 
       lastTime = now
 

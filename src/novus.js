@@ -1150,6 +1150,7 @@
       canvas.objects = [];
       canvas.requestFrameKey = null;
       canvas.updating = false;
+      canvas.fullscreened = false;
       return canvas;
     },
     size: function(width, height) {
@@ -1167,16 +1168,21 @@
     },
     fullscreen: function() {
       var _this = this;
-      this.size(window.innerWidth, window.innerHeight);
+      this.fullscreened = true;
+      this.size(document.width, document.height);
+      document.body.style.overflow = "hidden";
       return window.addEventListener('resize', function(event) {
-        return _this.size(window.innerWidth, window.innerHeight);
+        return _this.size(document.width, document.height);
       });
     },
     background: function(color) {
       return this.style.background = color;
     },
-    draw: function(object) {
-      return object.draw(this.context, this);
+    draw: function(object, context) {
+      if (context == null) {
+        context = this.context;
+      }
+      return object.draw(context, this);
     },
     addDrawable: function(object) {
       return this.objects.push(object);
@@ -1184,8 +1190,11 @@
     removeDrawable: function(object) {
       return this.objects.splice(this.objects.indexOf(object), 1);
     },
-    drawObjects: function() {
+    drawObjects: function(context) {
       var object, _i, _len, _ref11, _results;
+      if (context == null) {
+        context = this.context;
+      }
       this.objects.sort(function(a, b) {
         a = a[gl.zOrderProperty];
         b = b[gl.zOrderProperty];
@@ -1205,29 +1214,37 @@
       _results = [];
       for (_i = 0, _len = _ref11.length; _i < _len; _i++) {
         object = _ref11[_i];
-        _results.push(this.draw(object));
+        _results.push(this.draw(object, context));
       }
       return _results;
     },
     startDrawUpdate: function(fps, func) {
-      var lastTime, update, updateId,
+      var dimensions, lastTime, update, updateId,
         _this = this;
       this.updating = true;
       lastTime = Date.now();
       updateId = _updateId++;
+      dimensions = this.size();
+      this.buffer = gl().size(dimensions.width, dimensions.height);
+      if (!!this.fullscreened) {
+        this.buffer.fullscreen();
+      }
       update = function() {
-        var delta, now, stop;
+        var bufferContext, delta, now, stop;
         now = Date.now();
         delta = now - lastTime;
         delta /= 1000;
         stop = func(delta);
-        _this.context.save();
-        _this.context.clear();
+        bufferContext = _this.buffer.context;
+        bufferContext.save();
+        bufferContext.clear();
         if (_this.camera) {
-          _this.camera.update(delta, _this.context, _this);
+          _this.camera.update(delta, bufferContext, _this);
         }
-        _this.drawObjects();
-        _this.context.restore();
+        _this.drawObjects(bufferContext);
+        bufferContext.restore();
+        _this.context.clear();
+        _this.context.drawImage(_this.buffer, 0, 0);
         lastTime = now;
         if (_this.cancel !== void 0 && _this.cancel.indexOf(updateId) !== -1) {
           _this.cancel.splice(_this.cancel.indexOf(updateId), 1);
