@@ -1052,7 +1052,7 @@
               continue;
             }
             if (objp.bounds().intersects(objaBounds)) {
-              _results1.push(this.scene.send("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, [obja.entity, objp.entity], {
+              _results1.push(this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
                 actor: obja.entity,
                 target: objp.entity
               }));
@@ -1617,27 +1617,44 @@
       Asteroid.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid(options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction));
       this.events = {
         'engine:collision:Ship:Asteroid': function(data) {
-          return _this.scene.fire("entity:remove", data.target);
+          console.log("MESSAGE received");
+          return _this.handleCollision();
         },
         'engine:collision:Bullet:Asteroid': function(data) {
-          var size;
-          _this.scene.fire("entity:remove", data.target);
-          size = data.target.model.get('size') - 1;
-          if (size !== 0) {
-            options = {
-              entity: entities.Asteroid,
-              x: data.target.model.get('x'),
-              y: data.target.model.get('y'),
-              scale: size,
-              direction: data.target.model.get('direction') - 0.2
-            };
-            _this.scene.fire('entity:add', options);
-            options.direction += 0.4;
-            return _this.scene.fire('entity:add', options);
-          }
+          console.log("MESSAGE received");
+          return _this.handleCollision();
         }
       };
+      this.scene.on('engine:collision:Ship:Asteroid', function(data) {
+        if (data.target === _this) {
+          return _this.handleCollision(data);
+        }
+      });
+      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
+        if (data.target === _this) {
+          return _this.handleCollision(data);
+        }
+      });
     }
+
+    Asteroid.prototype.handleCollision = function(data) {
+      var options, size;
+      this.scene.fire("asteroid:collision", data.target);
+      this.scene.fire("entity:remove", data.target);
+      size = data.target.model.get('size') - 1;
+      if (size !== 0) {
+        options = {
+          entity: entities.Asteroid,
+          x: data.target.model.get('x'),
+          y: data.target.model.get('y'),
+          scale: size,
+          direction: data.target.model.get('direction') - 0.3
+        };
+        this.scene.fire('entity:add', options);
+        options.direction += 0.6;
+        return this.scene.fire('entity:add', options);
+      }
+    };
 
     Asteroid.prototype.update = function(dt) {
       this.model.rotation += this.model.rotationSpeed;
@@ -1658,9 +1675,15 @@
       Bullet.__super__.constructor.call(this, scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet(point, rotation));
       this.events = {
         'engine:collision:Bullet:Asteroid': function(data) {
+          console.log("MESSAGE received");
           return _this.scene.fire("entity:remove", data.actor);
         }
       };
+      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
+        if (data.actor === _this) {
+          return _this.scene.fire("entity:remove", data.actor);
+        }
+      });
     }
 
     Bullet.prototype.update = function(dt) {

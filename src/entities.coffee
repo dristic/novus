@@ -84,23 +84,34 @@ class entities.Asteroid extends WrappingEntity
     scale = options.scale ? Math.ceil(Math.random() * 4)
     super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction
 
-    @events =
-      'engine:collision:Ship:Asteroid': (data) =>
-        @scene.fire "entity:remove", data.target
-      'engine:collision:Bullet:Asteroid': (data) =>
-        @scene.fire "entity:remove", data.target
+    #//@events =
+    #//  'engine:collision:Ship:Asteroid': (data) =>
+    #//    console.log "MESSAGE received"
+    #//    @handleCollision()
+    #//  'engine:collision:Bullet:Asteroid': (data) =>
+    #//   console.log "MESSAGE received"
+    #//    @handleCollision()
 
-        size = data.target.model.get('size') - 1 
-        unless size is 0
-          options = 
-            entity: entities.Asteroid
-            x: data.target.model.get('x')
-            y: data.target.model.get('y')
-            scale: size
-            direction: data.target.model.get('direction') - 0.2
-          @scene.fire 'entity:add', options
-          options.direction += 0.4
-          @scene.fire 'entity:add', options
+    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
+      @handleCollision data if data.target is this
+    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
+      @handleCollision data if data.target is this
+
+  handleCollision: (data) ->
+    @scene.fire "asteroid:collision", data.target
+    @scene.fire "entity:remove", data.target
+
+    size = data.target.model.get('size') - 1 
+    unless size is 0
+      options = 
+        entity: entities.Asteroid
+        x: data.target.model.get('x')
+        y: data.target.model.get('y')
+        scale: size
+        direction: data.target.model.get('direction') - 0.3
+      @scene.fire 'entity:add', options
+      options.direction += 0.6
+      @scene.fire 'entity:add', options
 
   update: (dt) ->
     @model.rotation += @model.rotationSpeed
@@ -112,9 +123,14 @@ class entities.Bullet extends WrappingEntity
   constructor: (scene, point, rotation) ->
     super scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet point, rotation
 
-    @events =
-      'engine:collision:Bullet:Asteroid': (data) =>
-        @scene.fire "entity:remove", data.actor
+    #//@events =
+    #//  'engine:collision:Bullet:Asteroid': (data) =>
+    #//    console.log "MESSAGE received"
+    #//    @scene.fire "entity:remove", data.actor
+
+    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
+      @scene.fire "entity:remove", data.actor if data.actor is this
+
 
   update: (dt) ->
     @model.translate @model.speed * Math.sin(@model.angle) * dt, -1 * @model.speed * Math.cos(@model.angle) * dt
