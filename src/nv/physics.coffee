@@ -3,12 +3,16 @@ class nv.PhysicsEngine extends nv.Engine
     super scene
     @passiveObjects = {}
     @activeObjects = {}
+    @physicsObjects = []
 
     @scene.on "engine:physics:create", (collidable) =>
       @trackObject collidable
 
     @scene.on "engine:physics:delete", (collidable) =>
       @removeObject collidable
+
+    @scene.on "engine:physics:register", (obj) =>
+      @physicsObjects.push obj
 
   trackObjects: (array) ->
     self = this
@@ -40,6 +44,9 @@ class nv.PhysicsEngine extends nv.Engine
           @scene.fire "engine:collision:#{obja.entity.constructor.name}:#{objp.entity.constructor.name}",
             actor: obja.entity
             target: objp.entity
+
+    for obj in @physicsObjects
+      obj.update(dt)
 
 class nv.PhysicsPlugin extends nv.Plugin
   constructor: (scene, entity) ->
@@ -75,3 +82,20 @@ class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
       y1 = this.y if y1 == null || this.y < y1
       y2 = this.y if y2 == null || this.y > y2
     @boundingRect.reset x1, y1, x2, y2
+
+
+class nv.GravityPhysicsPlugin extends nv.PhysicsPlugin
+  constructor: (scene, entity) ->
+    @gravity = 0.003
+
+    super scene, entity
+
+    @scene.fire "engine:physics:register", this
+
+  update: (dt) ->
+    model = @entity.model
+    unless model.thrusters
+      tx = @gravity * if model.thrustVector.x < 0 then 1 else -1
+      ty = @gravity * if model.thrustVector.y < 0 then 1 else -1
+
+      model.thrustVector.translate tx, ty

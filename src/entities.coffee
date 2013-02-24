@@ -56,13 +56,15 @@ class WrappingEntity extends nv.Entity
 
 class entities.Ship extends WrappingEntity
   constructor: (scene) ->
-    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Ship
+    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       #@scene.fire "entity:remove", this
 
     @scene.on 'engine:gamepad:shoot', () =>
       @fireBullet.call this
+
+    @maxVelocity = 3
 
   fireBullet: () ->
     @scene.addEntity entities.Bullet, @model.path()[0], @model.rotation
@@ -72,10 +74,14 @@ class entities.Ship extends WrappingEntity
     if state.left then @model.rotate -0.1
     if state.right then @model.rotate 0.1
     if state.up
-      @model.translate @model.speed * Math.sin(@model.rotation), -@model.speed * Math.cos(@model.rotation)
-    if state.down
-      @model.translate -@model.speed/2 * Math.sin(@model.rotation), @model.speed/2 * Math.cos(@model.rotation)
+      @model.velocity = Math.min(@model.velocity * 1.01 || 1, @maxVelocity)
+      unless @model.velocity >= @maxVelocity
+        @model.thrustVector.translate @model.velocity * Math.sin(@model.rotation) * dt * 4, -@model.velocity * Math.cos(@model.rotation) * dt * 4
+    #//if state.down
+      #//@model.translate -@model.velocity/2 * Math.sin(@model.rotation), @model.velocity/2 * Math.cos(@model.rotation)
     @model.thrusters = state.up
+    @model.velocity = 0 unless @model.thrusters
+    @model.translate @model.thrustVector.x, @model.thrustVector.y
 
     @wrap()
 

@@ -995,11 +995,15 @@
       PhysicsEngine.__super__.constructor.call(this, scene);
       this.passiveObjects = {};
       this.activeObjects = {};
+      this.physicsObjects = [];
       this.scene.on("engine:physics:create", function(collidable) {
         return _this.trackObject(collidable);
       });
       this.scene.on("engine:physics:delete", function(collidable) {
         return _this.removeObject(collidable);
+      });
+      this.scene.on("engine:physics:register", function(obj) {
+        return _this.physicsObjects.push(obj);
       });
     }
 
@@ -1036,32 +1040,30 @@
     };
 
     PhysicsEngine.prototype.update = function(dt) {
-      var ida, idp, obja, objaBounds, objp, _ref, _results;
+      var ida, idp, obj, obja, objaBounds, objp, _i, _len, _ref, _ref1, _ref2, _results;
       _ref = this.activeObjects;
-      _results = [];
       for (ida in _ref) {
         obja = _ref[ida];
         objaBounds = obja.bounds();
-        _results.push((function() {
-          var _ref1, _results1;
-          _ref1 = this.passiveObjects;
-          _results1 = [];
-          for (idp in _ref1) {
-            objp = _ref1[idp];
-            if (ida === idp) {
-              continue;
-            }
-            if (objp.bounds().intersects(objaBounds)) {
-              _results1.push(this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
-                actor: obja.entity,
-                target: objp.entity
-              }));
-            } else {
-              _results1.push(void 0);
-            }
+        _ref1 = this.passiveObjects;
+        for (idp in _ref1) {
+          objp = _ref1[idp];
+          if (ida === idp) {
+            continue;
           }
-          return _results1;
-        }).call(this));
+          if (objp.bounds().intersects(objaBounds)) {
+            this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
+              actor: obja.entity,
+              target: objp.entity
+            });
+          }
+        }
+      }
+      _ref2 = this.physicsObjects;
+      _results = [];
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        obj = _ref2[_i];
+        _results.push(obj.update(dt));
       }
       return _results;
     };
@@ -1128,6 +1130,30 @@
     };
 
     return PathPhysicsPlugin;
+
+  })(nv.PhysicsPlugin);
+
+  nv.GravityPhysicsPlugin = (function(_super) {
+
+    __extends(GravityPhysicsPlugin, _super);
+
+    function GravityPhysicsPlugin(scene, entity) {
+      this.gravity = 0.003;
+      GravityPhysicsPlugin.__super__.constructor.call(this, scene, entity);
+      this.scene.fire("engine:physics:register", this);
+    }
+
+    GravityPhysicsPlugin.prototype.update = function(dt) {
+      var model, tx, ty;
+      model = this.entity.model;
+      if (!model.thrusters) {
+        tx = this.gravity * (model.thrustVector.x < 0 ? 1 : -1);
+        ty = this.gravity * (model.thrustVector.y < 0 ? 1 : -1);
+        return model.thrustVector.translate(tx, ty);
+      }
+    };
+
+    return GravityPhysicsPlugin;
 
   })(nv.PhysicsPlugin);
 
@@ -1713,11 +1739,12 @@
 
     function Ship(scene) {
       var _this = this;
-      Ship.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Ship);
+      Ship.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship);
       this.scene.on('engine:collision:Ship:Asteroid', function(data) {});
       this.scene.on('engine:gamepad:shoot', function() {
         return _this.fireBullet.call(_this);
       });
+      this.maxVelocity = 3;
     }
 
     Ship.prototype.fireBullet = function() {
@@ -1734,12 +1761,17 @@
         this.model.rotate(0.1);
       }
       if (state.up) {
-        this.model.translate(this.model.speed * Math.sin(this.model.rotation), -this.model.speed * Math.cos(this.model.rotation));
-      }
-      if (state.down) {
-        this.model.translate(-this.model.speed / 2 * Math.sin(this.model.rotation), this.model.speed / 2 * Math.cos(this.model.rotation));
+        this.model.velocity = Math.min(this.model.velocity * 1.01 || 1, this.maxVelocity);
+        console.log(this.model.velocity);
+        if (!(this.model.velocity >= this.maxVelocity)) {
+          this.model.thrustVector.translate(this.model.velocity * Math.sin(this.model.rotation) * dt * 4, -this.model.velocity * Math.cos(this.model.rotation) * dt * 4);
+        }
       }
       this.model.thrusters = state.up;
+      if (!this.model.thrusters) {
+        this.model.velocity = 0;
+      }
+      this.model.translate(this.model.thrustVector.x, this.model.thrustVector.y);
       return this.wrap();
     };
 
@@ -1885,7 +1917,8 @@
 
     function Ship() {
       Ship.__super__.constructor.call(this, {
-        speed: 5,
+        thrustVector: new nv.Point(0, 0),
+        velocity: 0,
         health: 100,
         shootDelay: 10,
         x: 30,
