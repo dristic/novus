@@ -84,21 +84,12 @@ class entities.Asteroid extends WrappingEntity
     scale = options.scale ? Math.ceil(Math.random() * 4)
     super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction
 
-    #//@events =
-    #//  'engine:collision:Ship:Asteroid': (data) =>
-    #//    console.log "MESSAGE received"
-    #//    @handleCollision()
-    #//  'engine:collision:Bullet:Asteroid': (data) =>
-    #//   console.log "MESSAGE received"
-    #//    @handleCollision()
-
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       @handleCollision data if data.target is this
     @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
       @handleCollision data if data.target is this
 
   handleCollision: (data) ->
-    @scene.fire "asteroid:collision", data.target
     @scene.fire "entity:remove", data.target
 
     size = data.target.model.get('size') - 1 
@@ -122,11 +113,6 @@ class entities.Asteroid extends WrappingEntity
 class entities.Bullet extends WrappingEntity
   constructor: (scene, point, rotation) ->
     super scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet point, rotation
-
-    #//@events =
-    #//  'engine:collision:Bullet:Asteroid': (data) =>
-    #//    console.log "MESSAGE received"
-    #//    @scene.fire "entity:remove", data.actor
 
     @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
       @scene.fire "entity:remove", data.actor if data.actor is this

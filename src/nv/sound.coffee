@@ -22,15 +22,28 @@ class nv.SoundPlugin extends nv.Plugin
     @sound = new Audio(@options.path)
     @sound.onended = () ->
       @sound.currentTime = 0
+      @state = "stopped"
+      @play() if @options.repeat
 
-    @scene.on @options.event, () ->
-      switch @options.action
-        when "start" then @play()
-        when "stop" then @stop()
-        when "pause" then @pause()
+    self = this
+    dispatch = () ->
+      switch this.action
+        when "play" then self.play()
+        when "stop" then self.stop()
+        when "pause" then self.pause()
+
+    for obj in @options.events
+      @scene.on obj.event, dispatch.bind(obj)
+
+    @play() if @options.autoplay
+
+  update: (dt) ->
+    return unless @options.maxPlayTime
+    @stop() if new Date().getTime() - @playTime > @options.maxPlayTime
 
   play: () ->
     @rewind() if @state is "playing"
+    @playTime = new Date().getTime()
     @sound.play()
     @state = "playing"
 
@@ -45,3 +58,13 @@ class nv.SoundPlugin extends nv.Plugin
 
   stop: () ->
     @rewind()
+
+
+class nv.SoundFactory
+  constructor: (@scene) ->
+
+  wire: (sounds) ->
+    @_add sound for sound in sounds
+
+  _add: (sound) ->
+    @scene.fire 'sound:plugin:create', new nv.SoundPlugin @scene, null, sound

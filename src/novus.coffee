@@ -20,6 +20,7 @@ class Asteroids extends nv.Game
     @registerEngine nv.RenderingEngine
     @registerEngine nv.GamepadEngine
     @registerEngine nv.PhysicsEngine
+    @registerEngine nv.SoundEngine
 
     @registerScene 'Main', Main
     @registerScene 'Game', Game
@@ -96,6 +97,16 @@ class Game extends nv.Scene
       entities.Asteroid,
       entities.Asteroid,
       entities.Asteroid
+
+    sdoc = []
+    sdoc.push
+      path: "/src/assets/sounds/pew_pew.wav"
+      events: [ { event: "engine:gamepad:shoot", action: "play" } ]
+    sdoc.push
+      path: "/src/assets/sounds/depth_charge.wav"
+      events: [ { event: "engine:collision:Bullet:Asteroid", action: "play" } ]
+
+    new nv.SoundFactory(this).wire sdoc
 
     @glcanvas.camera = nv.camera()
     @glcanvas.camera.follow ship.model, 250, 250
