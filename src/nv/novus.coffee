@@ -12,3 +12,5 @@
 #= require renderer
 #= require gamepad
 #= require physics
+#= require sound
+#= require particles

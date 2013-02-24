@@ -11,7 +11,8 @@ class models.Background extends nv.Model
 class models.Ship extends nv.Model
   constructor: () ->
     super
-      speed: 5
+      thrustVector: new nv.Point(0,0)
+      velocity: 0
       health: 100
       shootDelay: 10
       x: 30
@@ -38,9 +39,6 @@ class models.Ship extends nv.Model
     $.each @points, () ->
       path.push new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y)
     path
-
-  # nose: () ->
-  #   @_path[0]
 
   translate: (dx,dy) ->
     @x += dx

@@ -56,13 +56,15 @@ class WrappingEntity extends nv.Entity
 
 class entities.Ship extends WrappingEntity
   constructor: (scene) ->
-    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Ship
+    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       #@scene.fire "entity:remove", this
 
     @scene.on 'engine:gamepad:shoot', () =>
       @fireBullet.call this
+
+    @maxVelocity = 3
 
   fireBullet: () ->
     @scene.addEntity entities.Bullet, @model.path()[0], @model.rotation
@@ -72,10 +74,14 @@ class entities.Ship extends WrappingEntity
     if state.left then @model.rotate -0.1
     if state.right then @model.rotate 0.1
     if state.up
-      @model.translate @model.speed * Math.sin(@model.rotation), -@model.speed * Math.cos(@model.rotation)
-    if state.down
-      @model.translate -@model.speed/2 * Math.sin(@model.rotation), @model.speed/2 * Math.cos(@model.rotation)
+      @model.velocity = Math.min(@model.velocity * 1.01 || 1, @maxVelocity)
+      unless @model.velocity >= @maxVelocity
+        @model.thrustVector.translate @model.velocity * Math.sin(@model.rotation) * dt * 4, -@model.velocity * Math.cos(@model.rotation) * dt * 4
+    #//if state.down
+      #//@model.translate -@model.velocity/2 * Math.sin(@model.rotation), @model.velocity/2 * Math.cos(@model.rotation)
     @model.thrusters = state.up
+    @model.velocity = 0 unless @model.thrusters
+    @model.translate @model.thrustVector.x, @model.thrustVector.y
 
     @wrap()
 
@@ -84,23 +90,25 @@ class entities.Asteroid extends WrappingEntity
     scale = options.scale ? Math.ceil(Math.random() * 4)
     super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction
 
-    @events =
-      'engine:collision:Ship:Asteroid': (data) =>
-        @scene.fire "entity:remove", data.target
-      'engine:collision:Bullet:Asteroid': (data) =>
-        @scene.fire "entity:remove", data.target
+    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
+      @handleCollision data if data.target is this
+    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
+      @handleCollision data if data.target is this
 
-        size = data.target.model.get('size') - 1 
-        unless size is 0
-          options = 
-            entity: entities.Asteroid
-            x: data.target.model.get('x')
-            y: data.target.model.get('y')
-            scale: size
-            direction: data.target.model.get('direction') - 0.2
-          @scene.fire 'entity:add', options
-          options.direction += 0.4
-          @scene.fire 'entity:add', options
+  handleCollision: (data) ->
+    @scene.fire "entity:remove", data.target
+
+    size = data.target.model.get('size') - 1 
+    unless size is 0
+      options = 
+        entity: entities.Asteroid
+        x: data.target.model.get('x')
+        y: data.target.model.get('y')
+        scale: size
+        direction: data.target.model.get('direction') - 0.3
+      @scene.fire 'entity:add', options
+      options.direction += 0.6
+      @scene.fire 'entity:add', options
 
   update: (dt) ->
     @model.rotation += @model.rotationSpeed
@@ -112,9 +120,9 @@ class entities.Bullet extends WrappingEntity
   constructor: (scene, point, rotation) ->
     super scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet point, rotation
 
-    @events =
-      'engine:collision:Bullet:Asteroid': (data) =>
-        @scene.fire "entity:remove", data.actor
+    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
+      @scene.fire "entity:remove", data.actor if data.actor is this
+
 
   update: (dt) ->
     @model.translate @model.speed * Math.sin(@model.angle) * dt, -1 * @model.speed * Math.cos(@model.angle) * dt

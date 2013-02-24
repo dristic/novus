@@ -1023,11 +1023,15 @@
       PhysicsEngine.__super__.constructor.call(this, scene);
       this.passiveObjects = {};
       this.activeObjects = {};
+      this.physicsObjects = [];
       this.scene.on("engine:physics:create", function(collidable) {
         return _this.trackObject(collidable);
       });
       this.scene.on("engine:physics:delete", function(collidable) {
         return _this.removeObject(collidable);
+      });
+      this.scene.on("engine:physics:register", function(obj) {
+        return _this.physicsObjects.push(obj);
       });
     }
 
@@ -1064,32 +1068,30 @@
     };
 
     PhysicsEngine.prototype.update = function(dt) {
-      var ida, idp, obja, objaBounds, objp, _ref, _results;
+      var ida, idp, obj, obja, objaBounds, objp, _i, _len, _ref, _ref1, _ref2, _results;
       _ref = this.activeObjects;
-      _results = [];
       for (ida in _ref) {
         obja = _ref[ida];
         objaBounds = obja.bounds();
-        _results.push((function() {
-          var _ref1, _results1;
-          _ref1 = this.passiveObjects;
-          _results1 = [];
-          for (idp in _ref1) {
-            objp = _ref1[idp];
-            if (ida === idp) {
-              continue;
-            }
-            if (objp.bounds().intersects(objaBounds)) {
-              _results1.push(this.scene.send("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, [obja.entity, objp.entity], {
-                actor: obja.entity,
-                target: objp.entity
-              }));
-            } else {
-              _results1.push(void 0);
-            }
+        _ref1 = this.passiveObjects;
+        for (idp in _ref1) {
+          objp = _ref1[idp];
+          if (ida === idp) {
+            continue;
           }
-          return _results1;
-        }).call(this));
+          if (objp.bounds().intersects(objaBounds)) {
+            this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
+              actor: obja.entity,
+              target: objp.entity
+            });
+          }
+        }
+      }
+      _ref2 = this.physicsObjects;
+      _results = [];
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        obj = _ref2[_i];
+        _results.push(obj.update(dt));
       }
       return _results;
     };
@@ -1158,6 +1160,174 @@
     return PathPhysicsPlugin;
 
   })(nv.PhysicsPlugin);
+
+  nv.GravityPhysicsPlugin = (function(_super) {
+
+    __extends(GravityPhysicsPlugin, _super);
+
+    function GravityPhysicsPlugin(scene, entity) {
+      this.gravity = 0.003;
+      GravityPhysicsPlugin.__super__.constructor.call(this, scene, entity);
+      this.scene.fire("engine:physics:register", this);
+    }
+
+    GravityPhysicsPlugin.prototype.update = function(dt) {
+      var model, tx, ty;
+      model = this.entity.model;
+      if (!model.thrusters) {
+        tx = this.gravity * (model.thrustVector.x < 0 ? 1 : -1);
+        ty = this.gravity * (model.thrustVector.y < 0 ? 1 : -1);
+        return model.thrustVector.translate(tx, ty);
+      }
+    };
+
+    return GravityPhysicsPlugin;
+
+  })(nv.PhysicsPlugin);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.SoundEngine = (function(_super) {
+
+    __extends(SoundEngine, _super);
+
+    function SoundEngine(scene) {
+      var _this = this;
+      SoundEngine.__super__.constructor.call(this, scene);
+      this.plugins = [];
+      this.scene.on("sound:plugin:create", function(plugin) {
+        return _this.plugins.push(plugin);
+      });
+      this.scene.on("sound:plugin:delete", function(plugin) {
+        return _this.plugins = _this.plugins.filter(function(p) {
+          return p.id !== plugin.id;
+        });
+      });
+    }
+
+    SoundEngine.prototype.update = function(dt) {
+      var plugin, _i, _len, _ref, _results;
+      _ref = this.plugins;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        plugin = _ref[_i];
+        _results.push(plugin.update(dt));
+      }
+      return _results;
+    };
+
+    return SoundEngine;
+
+  })(nv.Engine);
+
+  nv.SoundPlugin = (function(_super) {
+
+    __extends(SoundPlugin, _super);
+
+    function SoundPlugin(scene, entity, options) {
+      var dispatch, obj, self, _i, _len, _ref;
+      this.options = options;
+      SoundPlugin.__super__.constructor.call(this, scene, entity);
+      this.state = "stopped";
+      this.sound = new Audio(this.options.path);
+      this.sound.onended = function() {
+        this.sound.currentTime = 0;
+        this.state = "stopped";
+        if (this.options.repeat) {
+          return this.play();
+        }
+      };
+      self = this;
+      dispatch = function() {
+        switch (this.action) {
+          case "play":
+            return self.play();
+          case "stop":
+            return self.stop();
+          case "pause":
+            return self.pause();
+        }
+      };
+      _ref = this.options.events;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        obj = _ref[_i];
+        this.scene.on(obj.event, dispatch.bind(obj));
+      }
+      if (this.options.autoplay) {
+        this.play();
+      }
+    }
+
+    SoundPlugin.prototype.update = function(dt) {
+      if (!this.options.maxPlayTime) {
+        return;
+      }
+      if (new Date().getTime() - this.playTime > this.options.maxPlayTime) {
+        return this.stop();
+      }
+    };
+
+    SoundPlugin.prototype.play = function() {
+      if (this.state === "playing") {
+        this.rewind();
+      }
+      this.playTime = new Date().getTime();
+      this.sound.play();
+      return this.state = "playing";
+    };
+
+    SoundPlugin.prototype.pause = function() {
+      this.sound.pause();
+      return this.state = "paused";
+    };
+
+    SoundPlugin.prototype.rewind = function() {
+      this.pause();
+      this.sound.currentTime = 0;
+      return this.state = "stopped";
+    };
+
+    SoundPlugin.prototype.stop = function() {
+      return this.rewind();
+    };
+
+    return SoundPlugin;
+
+  })(nv.Plugin);
+
+  nv.SoundFactory = (function() {
+
+    function SoundFactory(scene) {
+      this.scene = scene;
+    }
+
+    SoundFactory.prototype.wire = function(sounds) {
+      var sound, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = sounds.length; _i < _len; _i++) {
+        sound = sounds[_i];
+        _results.push(this._add(sound));
+      }
+      return _results;
+    };
+
+    SoundFactory.prototype._add = function(sound) {
+      return this.scene.fire('sound:plugin:create', new nv.SoundPlugin(this.scene, null, sound));
+    };
+
+    return SoundFactory;
+
+  })();
+
+}).call(this);
+
+(function() {
+
+
 
 }).call(this);
 
@@ -1597,11 +1767,12 @@
 
     function Ship(scene) {
       var _this = this;
-      Ship.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Ship);
+      Ship.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship);
       this.scene.on('engine:collision:Ship:Asteroid', function(data) {});
       this.scene.on('engine:gamepad:shoot', function() {
         return _this.fireBullet.call(_this);
       });
+      this.maxVelocity = 3;
     }
 
     Ship.prototype.fireBullet = function() {
@@ -1618,12 +1789,17 @@
         this.model.rotate(0.1);
       }
       if (state.up) {
-        this.model.translate(this.model.speed * Math.sin(this.model.rotation), -this.model.speed * Math.cos(this.model.rotation));
-      }
-      if (state.down) {
-        this.model.translate(-this.model.speed / 2 * Math.sin(this.model.rotation), this.model.speed / 2 * Math.cos(this.model.rotation));
+        this.model.velocity = Math.min(this.model.velocity * 1.01 || 1, this.maxVelocity);
+        console.log(this.model.velocity);
+        if (!(this.model.velocity >= this.maxVelocity)) {
+          this.model.thrustVector.translate(this.model.velocity * Math.sin(this.model.rotation) * dt * 4, -this.model.velocity * Math.cos(this.model.rotation) * dt * 4);
+        }
       }
       this.model.thrusters = state.up;
+      if (!this.model.thrusters) {
+        this.model.velocity = 0;
+      }
+      this.model.translate(this.model.thrustVector.x, this.model.thrustVector.y);
       return this.wrap();
     };
 
@@ -1643,29 +1819,35 @@
       }
       scale = (_ref = options.scale) != null ? _ref : Math.ceil(Math.random() * 4);
       Asteroid.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid(options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction));
-      this.events = {
-        'engine:collision:Ship:Asteroid': function(data) {
-          return _this.scene.fire("entity:remove", data.target);
-        },
-        'engine:collision:Bullet:Asteroid': function(data) {
-          var size;
-          _this.scene.fire("entity:remove", data.target);
-          size = data.target.model.get('size') - 1;
-          if (size !== 0) {
-            options = {
-              entity: entities.Asteroid,
-              x: data.target.model.get('x'),
-              y: data.target.model.get('y'),
-              scale: size,
-              direction: data.target.model.get('direction') - 0.2
-            };
-            _this.scene.fire('entity:add', options);
-            options.direction += 0.4;
-            return _this.scene.fire('entity:add', options);
-          }
+      this.scene.on('engine:collision:Ship:Asteroid', function(data) {
+        if (data.target === _this) {
+          return _this.handleCollision(data);
         }
-      };
+      });
+      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
+        if (data.target === _this) {
+          return _this.handleCollision(data);
+        }
+      });
     }
+
+    Asteroid.prototype.handleCollision = function(data) {
+      var options, size;
+      this.scene.fire("entity:remove", data.target);
+      size = data.target.model.get('size') - 1;
+      if (size !== 0) {
+        options = {
+          entity: entities.Asteroid,
+          x: data.target.model.get('x'),
+          y: data.target.model.get('y'),
+          scale: size,
+          direction: data.target.model.get('direction') - 0.3
+        };
+        this.scene.fire('entity:add', options);
+        options.direction += 0.6;
+        return this.scene.fire('entity:add', options);
+      }
+    };
 
     Asteroid.prototype.update = function(dt) {
       this.model.rotation += this.model.rotationSpeed;
@@ -1684,11 +1866,11 @@
     function Bullet(scene, point, rotation) {
       var _this = this;
       Bullet.__super__.constructor.call(this, scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet(point, rotation));
-      this.events = {
-        'engine:collision:Bullet:Asteroid': function(data) {
+      this.scene.on('engine:collision:Bullet:Asteroid', function(data) {
+        if (data.actor === _this) {
           return _this.scene.fire("entity:remove", data.actor);
         }
-      };
+      });
     }
 
     Bullet.prototype.update = function(dt) {
@@ -1763,7 +1945,8 @@
 
     function Ship() {
       Ship.__super__.constructor.call(this, {
-        speed: 5,
+        thrustVector: new nv.Point(0, 0),
+        velocity: 0,
         health: 100,
         shootDelay: 10,
         x: 30,
@@ -2052,6 +2235,7 @@
       this.registerEngine(nv.RenderingEngine);
       this.registerEngine(nv.GamepadEngine);
       this.registerEngine(nv.PhysicsEngine);
+      this.registerEngine(nv.SoundEngine);
       this.registerScene('Main', Main);
       this.registerScene('Game', Game);
       this.openScene('Main', glcanvas);
@@ -2108,7 +2292,7 @@
     __extends(Game, _super);
 
     function Game(game, glcanvas) {
-      var ship;
+      var sdoc, ship;
       this.glcanvas = glcanvas;
       Game.__super__.constructor.call(this, game, {
         canvas: this.glcanvas,
@@ -2124,6 +2308,26 @@
       this.addEntity(entities.Background, ship, 0.05);
       this.addEntity(entities.Background, ship, 0.01);
       this.addEntities(entities.Hud, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid);
+      sdoc = [];
+      sdoc.push({
+        path: "/src/assets/sounds/pew_pew.wav",
+        events: [
+          {
+            event: "engine:gamepad:shoot",
+            action: "play"
+          }
+        ]
+      });
+      sdoc.push({
+        path: "/src/assets/sounds/depth_charge.wav",
+        events: [
+          {
+            event: "engine:collision:Bullet:Asteroid",
+            action: "play"
+          }
+        ]
+      });
+      new nv.SoundFactory(this).wire(sdoc);
       this.glcanvas.camera = nv.camera();
       this.glcanvas.camera.follow(ship.model, 250, 250);
       this.glcanvas.camera.zoom(0.5);
