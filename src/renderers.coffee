@@ -1,5 +1,23 @@
 window.renderers = renderers = {}
 
+class renderers.StrokeText extends nv.RenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+  draw: (context, canvas) ->
+    context.save()
+    context.color @entity.model.color
+    context.strokeColor @entity.model.color
+    context.setFont @entity.model.font
+    context.strokeWidth = @entity.model.strokeWidth
+    context.shadowColor = @entity.model.color
+    context.shadowBlur = @entity.model.shadowBlur
+
+    context.color "#00000000"
+    context.fillText @entity.model.text, @entity.model.x, @entity.model.y
+    context.strokeText @entity.model.text, @entity.model.x, @entity.model.y
+    context.restore()
+
 class renderers.Hud extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
@@ -13,9 +31,9 @@ class renderers.Hud extends nv.RenderingPlugin
     context.restore()
 
     context.font = @entity.model.font
+    context.strokeColor @entity.model.color
     score = @entity.model.score.toString()
     textWidth = context.measureText(score).width
-    console.log "width", textWidth
     context.strokeText score, @entity.model.width - textWidth - 20, @entity.model.y + 50
 
 class renderers.Bullet extends nv.RenderingPlugin

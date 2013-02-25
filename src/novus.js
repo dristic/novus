@@ -1698,12 +1698,14 @@
     __extends(Title, _super);
 
     function Title(scene) {
-      Title.__super__.constructor.call(this, scene, [nv.TextRenderingPlugin], {
+      Title.__super__.constructor.call(this, scene, [renderers.StrokeText], {
         color: "#0F0",
         x: 200,
-        y: 200,
-        font: "bold 20px sans-serif",
-        text: "Asteroids"
+        y: 320,
+        font: "bold italic 50px sans-serif",
+        text: "Asteroids",
+        strokeWidth: 4,
+        shadowBlur: 20
       });
     }
 
@@ -1934,12 +1936,10 @@
         score: 0
       });
       this.scene.on("entity:destroyed:Asteroid", function(data) {
-        _this.model.score += [500, 300, 200, 100][data.model.size - 1];
-        return console.log("score", _this.model.score);
+        return _this.model.score += [500, 300, 200, 100][data.model.size - 1];
       });
       this.scene.on("entity:destroyed:Ship", function(data) {
-        _this.model.ships--;
-        return console.log("ships", _this.model.ships);
+        return _this.model.ships--;
       });
     }
 
@@ -2184,6 +2184,32 @@
 
   window.renderers = renderers = {};
 
+  renderers.StrokeText = (function(_super) {
+
+    __extends(StrokeText, _super);
+
+    function StrokeText(scene, entity) {
+      StrokeText.__super__.constructor.call(this, scene, entity);
+    }
+
+    StrokeText.prototype.draw = function(context, canvas) {
+      context.save();
+      context.color(this.entity.model.color);
+      context.strokeColor(this.entity.model.color);
+      context.setFont(this.entity.model.font);
+      context.strokeWidth = this.entity.model.strokeWidth;
+      context.shadowColor = this.entity.model.color;
+      context.shadowBlur = this.entity.model.shadowBlur;
+      context.color("#00000000");
+      context.fillText(this.entity.model.text, this.entity.model.x, this.entity.model.y);
+      context.strokeText(this.entity.model.text, this.entity.model.x, this.entity.model.y);
+      return context.restore();
+    };
+
+    return StrokeText;
+
+  })(nv.RenderingPlugin);
+
   renderers.Hud = (function(_super) {
 
     __extends(Hud, _super);
@@ -2193,23 +2219,18 @@
     }
 
     Hud.prototype.draw = function(context, canvas) {
-<<<<<<< HEAD
+      var score, textWidth;
       context.save();
       context.shadowColor = this.entity.model.color;
       context.shadowBlur = 5;
       context.strokeColor(this.entity.model.color);
       context.strokeRect(this.entity.model.x, this.entity.model.y, this.entity.model.width, this.entity.model.height);
-      return context.restore();
-=======
-      var score, textWidth;
-      context.strokeColor(this.entity.model.color);
-      context.strokeRect(this.entity.model.x, this.entity.model.y, this.entity.model.width, this.entity.model.height);
+      context.restore();
       context.font = this.entity.model.font;
+      context.strokeColor(this.entity.model.color);
       score = this.entity.model.score.toString();
       textWidth = context.measureText(score).width;
-      console.log("width", textWidth);
       return context.strokeText(score, this.entity.model.width - textWidth - 20, this.entity.model.y + 50);
->>>>>>> origin/develop
     };
 
     return Hud;

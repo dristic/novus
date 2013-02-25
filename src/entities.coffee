@@ -11,12 +11,14 @@ class entities.Background extends nv.Entity
 
 class entities.Title extends nv.Entity
   constructor: (scene) ->
-    super scene, [nv.TextRenderingPlugin],
+    super scene, [renderers.StrokeText],
       color: "#0F0"
       x: 200
-      y: 200
-      font: "bold 20px sans-serif"
+      y: 320
+      font: "bold italic 50px sans-serif"
       text: "Asteroids"
+      strokeWidth: 4
+      shadowBlur: 20
 
 class entities.ActionText extends nv.Entity
   constructor: (scene) ->
