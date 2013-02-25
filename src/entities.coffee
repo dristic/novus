@@ -56,7 +56,7 @@ class WrappingEntity extends nv.Entity
 
 class entities.Ship extends WrappingEntity
   constructor: (scene) ->
-    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship
+    super scene, [renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       #@scene.fire "entity:remove", this
@@ -82,6 +82,7 @@ class entities.Ship extends WrappingEntity
     @model.thrusters = state.up
     @model.velocity = 0 unless @model.thrusters
     @model.translate @model.thrustVector.x, @model.thrustVector.y
+    @scene.fire "entity:thrust:Ship" if @model.thrusters
 
     @wrap()
 
@@ -96,6 +97,7 @@ class entities.Asteroid extends WrappingEntity
       @handleCollision data if data.target is this
 
   handleCollision: (data) ->
+    @scene.fire "entity:destroyed:Asteroid", data.target 
     @scene.fire "entity:remove", data.target
 
     size = data.target.model.get('size') - 1 
@@ -145,7 +147,16 @@ class entities.Hud extends nv.Entity
 
     super scene, [renderers.Hud],
       color: '#FFF'
+      font: "40px sans-serif"
       x: 0
       y: 0
       width: canvas.width
       height: canvas.height
+      ships: 3
+      score: 0
+
+    @scene.on "entity:destroyed:Asteroid", (data) =>
+      @model.score += [500, 300, 200, 100][data.model.size - 1]
+
+    @scene.on "entity:destroyed:Ship", (data) =>
+      @model.ships--

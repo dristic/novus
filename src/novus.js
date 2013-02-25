@@ -946,18 +946,33 @@
     }
 
     PathRenderingPlugin.prototype.draw = function(context, canvas) {
-      var points;
-      context.strokeColor(this.entity.model.strokeColor);
-      context.strokeWidth(this.entity.model.strokeWidth);
-      points = this.entity.model.path();
-      context.beginPath();
-      context.moveTo(points[0].x, points[0].y);
-      $.each(points.slice(1), function() {
-        return context.lineTo(this.x, this.y);
-      });
-      context.lineTo(points[0].x, points[0].y);
-      context.stroke();
-      return context.closePath();
+      var shape, _i, _len, _ref, _results;
+      _ref = this.entity.model.shapes();
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        shape = _ref[_i];
+        if (shape.strokeColor) {
+          context.strokeColor(shape.strokeColor);
+        }
+        if (shape.strokeWidth) {
+          context.strokeWidth(shape.strokeWidth);
+        }
+        if (shape.fillStyle) {
+          context.color(shape.fillStyle);
+        }
+        context.beginPath();
+        context.moveTo(shape.points[0].x, shape.points[0].y);
+        $.each(shape.points.slice(1), function() {
+          return context.lineTo(this.x, this.y);
+        });
+        context.lineTo(shape.points[0].x, shape.points[0].y);
+        if (shape.fillStyle) {
+          context.fill();
+        }
+        context.stroke();
+        _results.push(context.closePath());
+      }
+      return _results;
     };
 
     return PathRenderingPlugin;
@@ -1084,6 +1099,7 @@
               actor: obja.entity,
               target: objp.entity
             });
+            break;
           }
         }
       }
@@ -1276,6 +1292,9 @@
         this.rewind();
       }
       this.playTime = new Date().getTime();
+      if (this.options.startTime) {
+        this.sound.currentTime = this.options.startTime;
+      }
       this.sound.play();
       return this.state = "playing";
     };
@@ -1767,7 +1786,7 @@
 
     function Ship(scene) {
       var _this = this;
-      Ship.__super__.constructor.call(this, scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship);
+      Ship.__super__.constructor.call(this, scene, [renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship);
       this.scene.on('engine:collision:Ship:Asteroid', function(data) {});
       this.scene.on('engine:gamepad:shoot', function() {
         return _this.fireBullet.call(_this);
@@ -1790,7 +1809,6 @@
       }
       if (state.up) {
         this.model.velocity = Math.min(this.model.velocity * 1.01 || 1, this.maxVelocity);
-        console.log(this.model.velocity);
         if (!(this.model.velocity >= this.maxVelocity)) {
           this.model.thrustVector.translate(this.model.velocity * Math.sin(this.model.rotation) * dt * 4, -this.model.velocity * Math.cos(this.model.rotation) * dt * 4);
         }
@@ -1800,6 +1818,9 @@
         this.model.velocity = 0;
       }
       this.model.translate(this.model.thrustVector.x, this.model.thrustVector.y);
+      if (this.model.thrusters) {
+        this.scene.fire("entity:thrust:Ship");
+      }
       return this.wrap();
     };
 
@@ -1833,6 +1854,7 @@
 
     Asteroid.prototype.handleCollision = function(data) {
       var options, size;
+      this.scene.fire("entity:destroyed:Asteroid", data.target);
       this.scene.fire("entity:remove", data.target);
       size = data.target.model.get('size') - 1;
       if (size !== 0) {
@@ -1898,14 +1920,26 @@
     __extends(Hud, _super);
 
     function Hud(scene) {
-      var canvas;
+      var canvas,
+        _this = this;
       canvas = scene.get('canvas');
       Hud.__super__.constructor.call(this, scene, [renderers.Hud], {
         color: '#FFF',
+        font: "40px sans-serif",
         x: 0,
         y: 0,
         width: canvas.width,
-        height: canvas.height
+        height: canvas.height,
+        ships: 3,
+        score: 0
+      });
+      this.scene.on("entity:destroyed:Asteroid", function(data) {
+        _this.model.score += [500, 300, 200, 100][data.model.size - 1];
+        return console.log("score", _this.model.score);
+      });
+      this.scene.on("entity:destroyed:Ship", function(data) {
+        _this.model.ships--;
+        return console.log("ships", _this.model.ships);
       });
     }
 
@@ -1958,25 +1992,56 @@
         type: 'both',
         color: '#FFF',
         strokeColor: '#FFF',
-        strokeWidth: 2
+        strokeWidth: 2,
+        thrustersColor: 'orange',
+        thrustersWidth: 2,
+        thrustersFill: 'yellow'
       });
-      this.points = this.buildWireframe();
+      this.buildWireframes();
     }
 
-    Ship.prototype.buildWireframe = function() {
-      return [new nv.Point(0, -this.height / 2), new nv.Point(this.width / 2, this.height / 2), new nv.Point(0, this.height * 0.4), new nv.Point(-this.width / 2, this.height / 2)];
+    Ship.prototype.buildWireframes = function() {
+      this.shipWF = {
+        strokeColor: this.strokeColor,
+        strokeWidth: this.strokeWidth,
+        points: [new nv.Point(0, -this.height / 2), new nv.Point(this.width / 2, this.height / 2), new nv.Point(0, this.height * 0.4), new nv.Point(-this.width / 2, this.height / 2)]
+      };
+      return this.thrustersWF = {
+        strokeColor: this.thrustersColor,
+        strokeWidth: this.thrustersWidth,
+        fillStyle: this.thrustersFill,
+        points: [new nv.Point(0, this.height * 0.4 + 4), new nv.Point((this.width / 2) - 4, (this.height / 2) + 4), new nv.Point(0, this.height * 1.3), new nv.Point((-this.width / 2) + 4, (this.height / 2) + 4)]
+      };
+    };
+
+    Ship.prototype.shapes = function() {
+      var shapes;
+      shapes = [];
+      shapes.push(this.prepareShape(this.shipWF));
+      if (this.thrusters) {
+        shapes.push(this.prepareShape(this.thrustersWF));
+      }
+      return shapes;
     };
 
     Ship.prototype.path = function() {
-      var cosine, model, path, sine;
+      var ship;
+      ship = this.prepareShape(this.shipWF);
+      return ship.points;
+    };
+
+    Ship.prototype.prepareShape = function(wf) {
+      var cosine, model, path, shape, sine;
+      shape = $.extend({}, wf);
+      model = this;
       cosine = Math.cos(this.rotation);
       sine = Math.sin(this.rotation);
       path = [];
-      model = this;
-      $.each(this.points, function() {
+      $.each(shape.points, function() {
         return path.push(new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y));
       });
-      return path;
+      shape.points = path;
+      return shape;
     };
 
     Ship.prototype.translate = function(dx, dy) {
@@ -2031,6 +2096,16 @@
       points.push(pt.translate(-33 * scalar, -10 * scalar).clone());
       points.push(pt.translate(-10 * scalar, -35 * scalar).clone());
       return points;
+    };
+
+    Asteroid.prototype.shapes = function() {
+      return [
+        {
+          points: this.path(),
+          strokeColor: this.strokeColor,
+          strokeWidth: this.strokeWidth
+        }
+      ];
     };
 
     Asteroid.prototype.path = function() {
@@ -2118,12 +2193,23 @@
     }
 
     Hud.prototype.draw = function(context, canvas) {
+<<<<<<< HEAD
       context.save();
       context.shadowColor = this.entity.model.color;
       context.shadowBlur = 5;
       context.strokeColor(this.entity.model.color);
       context.strokeRect(this.entity.model.x, this.entity.model.y, this.entity.model.width, this.entity.model.height);
       return context.restore();
+=======
+      var score, textWidth;
+      context.strokeColor(this.entity.model.color);
+      context.strokeRect(this.entity.model.x, this.entity.model.y, this.entity.model.width, this.entity.model.height);
+      context.font = this.entity.model.font;
+      score = this.entity.model.score.toString();
+      textWidth = context.measureText(score).width;
+      console.log("width", textWidth);
+      return context.strokeText(score, this.entity.model.width - textWidth - 20, this.entity.model.y + 50);
+>>>>>>> origin/develop
     };
 
     return Hud;
@@ -2149,6 +2235,29 @@
     return Bullet;
 
   })(nv.RenderingPlugin);
+
+  renderers.Ship = (function(_super) {
+
+    __extends(Ship, _super);
+
+    function Ship() {
+      return Ship.__super__.constructor.apply(this, arguments);
+    }
+
+    Ship.prototype.constuctor = function(scene, entity) {
+      return Ship.__super__.constuctor.call(this, scene, entity);
+    };
+
+    Ship.prototype.draw = function(context, canvas) {
+      Ship.__super__.draw.call(this, context, canvas);
+      if (this.entity.model.thrusters) {
+        return this.entity.model.path("thrusters");
+      }
+    };
+
+    return Ship;
+
+  })(nv.PathRenderingPlugin);
 
   renderers.Background = (function(_super) {
 
@@ -2326,6 +2435,17 @@
             action: "play"
           }
         ]
+      });
+      sdoc.push({
+        path: "/src/assets/sounds/bullet_whizzing.wav",
+        events: [
+          {
+            event: "entity:thrust:Ship",
+            action: "play"
+          }
+        ],
+        maxPlayTime: 350,
+        startTime: 0.15
       });
       new nv.SoundFactory(this).wire(sdoc);
       this.glcanvas.camera = nv.camera();

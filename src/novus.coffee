@@ -105,6 +105,11 @@ class Game extends nv.Scene
     sdoc.push
       path: "/src/assets/sounds/depth_charge.wav"
       events: [ { event: "engine:collision:Bullet:Asteroid", action: "play" } ]
+    sdoc.push
+      path: "/src/assets/sounds/bullet_whizzing.wav"
+      events: [ { event: "entity:thrust:Ship", action: "play" } ]
+      maxPlayTime: 350
+      startTime: 0.15
 
     new nv.SoundFactory(this).wire sdoc
 

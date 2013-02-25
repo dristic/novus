@@ -44,6 +44,7 @@ class nv.SoundPlugin extends nv.Plugin
   play: () ->
     @rewind() if @state is "playing"
     @playTime = new Date().getTime()
+    @sound.currentTime = @options.startTime if @options.startTime
     @sound.play()
     @state = "playing"
 

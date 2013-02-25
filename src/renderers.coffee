@@ -12,6 +12,12 @@ class renderers.Hud extends nv.RenderingPlugin
     context.strokeRect @entity.model.x, @entity.model.y, @entity.model.width, @entity.model.height
     context.restore()
 
+    context.font = @entity.model.font
+    score = @entity.model.score.toString()
+    textWidth = context.measureText(score).width
+    console.log "width", textWidth
+    context.strokeText score, @entity.model.width - textWidth - 20, @entity.model.y + 50
+
 class renderers.Bullet extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
@@ -20,6 +26,17 @@ class renderers.Bullet extends nv.RenderingPlugin
     context.fillPath (context) =>
       context.color @entity.model.color
       context.arc @entity.model.x, @entity.model.y, @entity.model.radius, 0, Math.PI * 2, true
+
+class renderers.Ship extends nv.PathRenderingPlugin
+  constuctor: (scene, entity) ->
+    super scene, entity
+
+  draw: (context, canvas) ->
+    super context, canvas
+
+    if @entity.model.thrusters
+      @entity.model.path("thrusters")
+
 
 class renderers.Background extends nv.RenderingPlugin
   constructor: (scene, entity) ->
