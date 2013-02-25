@@ -2,6 +2,8 @@ window.renderers = renderers = {}
 
 class renderers.StrokeText extends nv.RenderingPlugin
   constructor: (scene, entity) ->
+    @alpha = 1
+    @direction = "out"
     super scene, entity
 
   draw: (context, canvas) ->
@@ -14,9 +16,19 @@ class renderers.StrokeText extends nv.RenderingPlugin
     context.shadowBlur = @entity.model.shadowBlur
 
     context.color "#00000000"
+    context.globalAlpha = @alpha
     context.fillText @entity.model.text, @entity.model.x, @entity.model.y
     context.strokeText @entity.model.text, @entity.model.x, @entity.model.y
     context.restore()
+
+  update: (dt) ->
+    if @entity.model.fade is true
+      if @direction is "out"
+        @alpha -= @entity.model.fadeSpeed
+        @direction = "in" unless @alpha > 0 + @entity.model.fadeSpeed
+      else if @direction is "in"
+        @alpha += @entity.model.fadeSpeed
+        @direction = "out" unless @alpha < 1
 
 class renderers.Hud extends nv.RenderingPlugin
   constructor: (scene, entity) ->

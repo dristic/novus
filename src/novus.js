@@ -1718,14 +1718,22 @@
     __extends(ActionText, _super);
 
     function ActionText(scene) {
-      ActionText.__super__.constructor.call(this, scene, [nv.TextRenderingPlugin], {
+      ActionText.__super__.constructor.call(this, scene, [renderers.StrokeText], {
         color: "#0F0",
         x: 200,
         y: 400,
         font: "bold 20px sans-serif",
-        text: "Press <Space> to Start"
+        text: "Press <Space> to Start",
+        strokeWidth: 0,
+        shadowBlur: 0,
+        fade: true,
+        fadeSpeed: 0.02
       });
     }
+
+    ActionText.prototype.update = function(dt) {
+      return this.plugins[0].update(dt);
+    };
 
     return ActionText;
 
@@ -2189,6 +2197,8 @@
     __extends(StrokeText, _super);
 
     function StrokeText(scene, entity) {
+      this.alpha = 1;
+      this.direction = "out";
       StrokeText.__super__.constructor.call(this, scene, entity);
     }
 
@@ -2201,9 +2211,26 @@
       context.shadowColor = this.entity.model.color;
       context.shadowBlur = this.entity.model.shadowBlur;
       context.color("#00000000");
+      context.globalAlpha = this.alpha;
       context.fillText(this.entity.model.text, this.entity.model.x, this.entity.model.y);
       context.strokeText(this.entity.model.text, this.entity.model.x, this.entity.model.y);
       return context.restore();
+    };
+
+    StrokeText.prototype.update = function(dt) {
+      if (this.entity.model.fade === true) {
+        if (this.direction === "out") {
+          this.alpha -= this.entity.model.fadeSpeed;
+          if (!(this.alpha > 0 + this.entity.model.fadeSpeed)) {
+            return this.direction = "in";
+          }
+        } else if (this.direction === "in") {
+          this.alpha += this.entity.model.fadeSpeed;
+          if (!(this.alpha < 1)) {
+            return this.direction = "out";
+          }
+        }
+      }
     };
 
     return StrokeText;

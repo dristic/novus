@@ -22,12 +22,19 @@ class entities.Title extends nv.Entity
 
 class entities.ActionText extends nv.Entity
   constructor: (scene) ->
-    super scene, [nv.TextRenderingPlugin],
+    super scene, [renderers.StrokeText],
       color: "#0F0"
       x: 200
       y: 400
       font: "bold 20px sans-serif"
       text: "Press <Space> to Start"
+      strokeWidth: 0
+      shadowBlur: 0
+      fade: true
+      fadeSpeed: 0.02
+
+  update: (dt) ->
+    @plugins[0].update dt
 
 class entities.Cursor extends nv.Entity
   constructor: (scene) ->
