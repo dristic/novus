@@ -2207,7 +2207,7 @@
       context.color(this.entity.model.color);
       context.strokeColor(this.entity.model.color);
       context.setFont(this.entity.model.font);
-      context.strokeWidth = this.entity.model.strokeWidth;
+      context.strokeWidth(this.entity.model.strokeWidth);
       context.shadowColor = this.entity.model.color;
       context.shadowBlur = this.entity.model.shadowBlur;
       context.color("#00000000");
@@ -2410,7 +2410,7 @@
       var _this = this;
       this.glcanvas = glcanvas;
       Main.__super__.constructor.call(this, game, {
-        canvas: glcanvas,
+        canvas: this.glcanvas,
         keys: {
           start: nv.Key.Spacebar,
           left: nv.Key.A,
@@ -2418,7 +2418,7 @@
         },
         trackMouse: true
       });
-      this.addEntities(entities.Background, entities.Background, entities.Title, entities.ActionText, entities.Cursor);
+      this.addEntities(entities.Background, entities.Background, entities.Title, entities.ActionText, entities.Cursor, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid);
       this.glcanvas.camera = nv.camera();
       this.updateId = this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
       this.on("engine:gamepad:start", function() {

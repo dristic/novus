@@ -11,7 +11,7 @@ class renderers.StrokeText extends nv.RenderingPlugin
     context.color @entity.model.color
     context.strokeColor @entity.model.color
     context.setFont @entity.model.font
-    context.strokeWidth = @entity.model.strokeWidth
+    context.strokeWidth @entity.model.strokeWidth
     context.shadowColor = @entity.model.color
     context.shadowBlur = @entity.model.shadowBlur
 

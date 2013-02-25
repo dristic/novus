@@ -87,4 +87,3 @@ class nv.PathRenderingPlugin extends nv.RenderingPlugin
       context.fill() if shape.fillStyle
       context.stroke()
       context.closePath()
-      

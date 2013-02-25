@@ -30,7 +30,7 @@ class Asteroids extends nv.Game
 class Main extends nv.Scene
   constructor: (game, @glcanvas) ->
     super game,
-      canvas: glcanvas
+      canvas: @glcanvas
       keys:
         start: nv.Key.Spacebar
         left: nv.Key.A
@@ -41,7 +41,11 @@ class Main extends nv.Scene
       entities.Background,
       entities.Title,
       entities.ActionText,
-      entities.Cursor
+      entities.Cursor,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid
 
     @glcanvas.camera = nv.camera()
     @updateId = @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
