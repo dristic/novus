@@ -44,6 +44,7 @@ class nv.PhysicsEngine extends nv.Engine
           @scene.fire "engine:collision:#{obja.entity.constructor.name}:#{objp.entity.constructor.name}",
             actor: obja.entity
             target: objp.entity
+          break
 
     for obj in @physicsObjects
       obj.update(dt)

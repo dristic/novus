@@ -25,20 +25,45 @@ class models.Ship extends nv.Model
       color: '#FFF'
       strokeColor: '#FFF'
       strokeWidth: 2
+      thrustersColor: 'orange'
+      thrustersWidth: 2
+      thrustersFill: 'yellow'
 
-    @points = @buildWireframe()
+    @buildWireframes()
 
-  buildWireframe: () ->
-    [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
+  buildWireframes: () ->
+    @shipWF =
+      strokeColor: @strokeColor
+      strokeWidth: @strokeWidth
+      points: [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
+    @thrustersWF =
+      strokeColor: @thrustersColor
+      strokeWidth: @thrustersWidth
+      fillStyle: @thrustersFill
+      points: [ new nv.Point(0, @height*0.4+4), new nv.Point((@width/2)-4, (@height/2)+4), new nv.Point(0, @height*1.3), new nv.Point((-@width/2)+4, (@height/2)+4) ]
+
+  shapes: () ->
+    shapes = []
+    shapes.push @prepareShape(@shipWF)
+    shapes.push @prepareShape(@thrustersWF) if @thrusters
+    shapes
 
   path: () ->
+    ship = @prepareShape @shipWF
+    ship.points
+
+  prepareShape: (wf) ->
+    shape = $.extend({},wf)
+    model = this
+
     cosine = Math.cos(@rotation)
     sine = Math.sin(@rotation)
+
     path = []
-    model = this
-    $.each @points, () ->
+    $.each shape.points, () ->
       path.push new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y)
-    path
+    shape.points = path
+    shape
 
   translate: (dx,dy) ->
     @x += dx
@@ -76,6 +101,13 @@ class models.Asteroid extends nv.Model
     points.push pt.translate(-33 * scalar, -10 * scalar).clone()
     points.push pt.translate(-10 * scalar, -35 * scalar).clone()
     points
+
+  shapes: () ->
+    [ 
+      points: @path()
+      strokeColor: @strokeColor
+      strokeWidth: @strokeWidth
+    ]
 
   path: () ->
     cosine = Math.cos(@rotation)

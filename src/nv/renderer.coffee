@@ -58,20 +58,22 @@ class nv.PathRenderingPlugin extends nv.RenderingPlugin
     super scene, entity
 
   draw: (context, canvas) ->
-    context.strokeColor @entity.model.strokeColor
-    context.strokeWidth @entity.model.strokeWidth
+    for shape in @entity.model.shapes()
+      context.strokeColor shape.strokeColor if shape.strokeColor
+      context.strokeWidth shape.strokeWidth if shape.strokeWidth
+      context.color shape.fillStyle if shape.fillStyle
 
-    points = @entity.model.path()
-    context.beginPath()
-    context.moveTo points[0].x, points[0].y
+      context.beginPath()
+      context.moveTo shape.points[0].x, shape.points[0].y
 
-    $.each points.slice(1), () ->
-      context.lineTo this.x, this.y
+      $.each shape.points.slice(1), () ->
+        context.lineTo this.x, this.y
 
-    context.lineTo points[0].x, points[0].y
+      context.lineTo shape.points[0].x, shape.points[0].y
 
-    context.stroke()
-    context.closePath()
+      context.fill() if shape.fillStyle
+      context.stroke()
+      context.closePath()
 
 # zIndex = 0
 
