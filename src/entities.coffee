@@ -12,13 +12,24 @@ class entities.Background extends nv.Entity
 class entities.Title extends nv.Entity
   constructor: (scene) ->
     super scene, [renderers.StrokeText],
-      color: "#0F0"
+      color: "#000"
+      strokeColor: "#0F0"
       x: 200
       y: 320
       font: "bold italic 50px sans-serif"
       text: "Asteroids"
-      strokeWidth: 4
+      strokeWidth: 2
       shadowBlur: 20
+
+    @direction = "out"
+
+  update: (dt) ->
+    if @direction is "out"
+      @model.shadowBlur -= 0.2
+      @direction = "in" unless @model.shadowBlur > 0
+    else if @direction is "in"
+      @model.shadowBlur += 0.2
+      @direction = "out" unless @model.shadowBlur < 20
 
 class entities.ActionText extends nv.Entity
   constructor: (scene) ->

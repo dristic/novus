@@ -1699,15 +1699,31 @@
 
     function Title(scene) {
       Title.__super__.constructor.call(this, scene, [renderers.StrokeText], {
-        color: "#0F0",
+        color: "#000",
+        strokeColor: "#0F0",
         x: 200,
         y: 320,
         font: "bold italic 50px sans-serif",
         text: "Asteroids",
-        strokeWidth: 4,
+        strokeWidth: 2,
         shadowBlur: 20
       });
+      this.direction = "out";
     }
+
+    Title.prototype.update = function(dt) {
+      if (this.direction === "out") {
+        this.model.shadowBlur -= 0.2;
+        if (!(this.model.shadowBlur > 0)) {
+          return this.direction = "in";
+        }
+      } else if (this.direction === "in") {
+        this.model.shadowBlur += 0.2;
+        if (!(this.model.shadowBlur < 20)) {
+          return this.direction = "out";
+        }
+      }
+    };
 
     return Title;
 
@@ -2203,12 +2219,13 @@
     }
 
     StrokeText.prototype.draw = function(context, canvas) {
+      var _ref, _ref1;
       context.save();
       context.color(this.entity.model.color);
-      context.strokeColor(this.entity.model.color);
+      context.strokeColor((_ref = this.entity.model.strokeColor) != null ? _ref : this.entity.model.color);
       context.setFont(this.entity.model.font);
       context.strokeWidth(this.entity.model.strokeWidth);
-      context.shadowColor = this.entity.model.color;
+      context.shadowColor = (_ref1 = this.entity.model.strokeColor) != null ? _ref1 : this.entity.model.color;
       context.shadowBlur = this.entity.model.shadowBlur;
       context.color("#00000000");
       context.globalAlpha = this.alpha;
