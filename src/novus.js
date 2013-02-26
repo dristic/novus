@@ -187,6 +187,11 @@
     mousemove: function(callback) {
       $(document).on('mousemove', callback);
       return $(document).on('touchmove', callback);
+    },
+    isMobile: function() {
+      var agent;
+      agent = navigator.userAgent.toLowerCase();
+      return (agent.match(/android/i) || agent.match(/webos/i) || agent.match(/iphone/i) || agent.match(/ipad/i) || agent.match(/ipod/i) || agent.match(/blackberry/i) || agent.match(/windows phone/i)) !== null;
     }
   });
 

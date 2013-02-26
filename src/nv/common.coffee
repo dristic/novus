@@ -45,6 +45,16 @@ nv.implement
     $(document).on 'mousemove', callback
     $(document).on 'touchmove', callback
 
+  isMobile: () ->
+    agent = navigator.userAgent.toLowerCase()
+    (agent.match(/android/i) or
+    agent.match(/webos/i) or
+    agent.match(/iphone/i) or
+    agent.match(/ipad/i) or
+    agent.match(/ipod/i) or
+    agent.match(/blackberry/i) or
+    agent.match(/windows phone/i)) isnt null
+
 class Gamepad
   constructor: () ->
     @gamepad = navigator.webkitGamepad
