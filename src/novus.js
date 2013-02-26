@@ -117,7 +117,7 @@
   var Camera, Gamepad,
     __slice = [].slice;
 
-  nv.extend = function(other) {
+  nv.implement = function(other) {
     var key, _results;
     _results = [];
     for (key in other) {
@@ -126,7 +126,7 @@
     return _results;
   };
 
-  nv.extend({
+  nv.implement({
     log: function() {
       var message, _i, _len, _results;
       _results = [];
@@ -142,6 +142,19 @@
         return func.call.apply(func, [context].concat(__slice.call(arguments)));
       };
       return f;
+    },
+    clone: function(object) {
+      var obj;
+      obj = {};
+      nv.extend(obj, object);
+      return obj;
+    },
+    extend: function(object, other) {
+      var key;
+      for (key in other) {
+        object[key] = other[key];
+      }
+      return object;
     },
     keydown: function(key, callback) {
       var func;
@@ -330,6 +343,45 @@
   nv.camera = function() {
     return new Camera;
   };
+
+  nv.Color = (function() {
+
+    function Color(r, b, g, a) {
+      this.r = r;
+      this.b = b;
+      this.g = g;
+      this.a = a;
+    }
+
+    Color.prototype.interpolate = function(percent, other) {
+      return new Color(this.r + (other.r - this.r) * percent, this.g + (other.g - this.g) * percent, this.b + (other.b - this.b) * percent, this.a + (other.a - this.a) * percent);
+    };
+
+    Color.prototype.toCanvasColor = function() {
+      return "rgb(" + (parseInt(this.r)) + ", " + (parseInt(this.g)) + ", " + (parseInt(this.b)) + ")";
+    };
+
+    return Color;
+
+  })();
+
+  nv.Gradient = (function() {
+
+    function Gradient(colorStops) {
+      this.colorStops = colorStops;
+    }
+
+    Gradient.prototype.getColor = function(percent) {
+      var color1, color2, colorF;
+      colorF = percent * (this.colorStops.length - 1);
+      color1 = parseInt(colorF);
+      color2 = parseInt(colorF + 1);
+      return this.colorStops[color1].interpolate((colorF - color1) / (color2 - color1), this.colorStops[color2]);
+    };
+
+    return Gradient;
+
+  })();
 
 }).call(this);
 
@@ -633,6 +685,18 @@
       return this.renderers.splice(this.renderers.indexOf(renderer), 1);
     };
 
+    Scene.prototype.getEngine = function(type) {
+      var engine, _i, _len, _ref;
+      _ref = this.engines;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        engine = _ref[_i];
+        if (engine instanceof type) {
+          return engine;
+        }
+      }
+      return null;
+    };
+
     Scene.prototype.update = function(dt) {
       var engine, entity, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
       _ref = this.engines;
@@ -691,6 +755,26 @@
     Point.prototype.translate = function(dx, dy) {
       this.x += dx;
       this.y += dy;
+      return this;
+    };
+
+    Point.prototype.add = function(point) {
+      this.x += point.x;
+      this.y += point.y;
+      return this;
+    };
+
+    Point.prototype.times = function(num) {
+      return new nv.Point(this.x * num, this.y * num);
+    };
+
+    Point.prototype.clone = function() {
+      return new nv.Point(this.x, this.y);
+    };
+
+    Point.prototype.fromPolar = function(ang, rad) {
+      this.x = Math.cos(ang) * rad;
+      this.y = Math.sin(ang) * rad;
       return this;
     };
 
@@ -1345,8 +1429,220 @@
 }).call(this);
 
 (function() {
+  var randRange, randVariation,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  randRange = function(min, max) {
+    return Math.random() * (max - min) + min;
+  };
 
+  randVariation = function(center, variation) {
+    return center + variation * randRange(-0.5, 0.5);
+  };
+
+  nv.ParticleEngine = (function(_super) {
+
+    __extends(ParticleEngine, _super);
+
+    function ParticleEngine(scene) {
+      var _this = this;
+      ParticleEngine.__super__.constructor.call(this, scene);
+      this.canvas = scene.options.canvas;
+      this.context = this.canvas.context;
+      this.emitters = [];
+      scene.on("engine:particle:create_emitter", function(options) {
+        var emitter;
+        emitter = _this.createEmitter(options);
+        return _this.canvas.addDrawable(emitter);
+      });
+      scene.on("engine:particle:destroy_emitter", function(id) {
+        _this.canvas.removeDrawable(_this.getEmitter(id));
+        return _this.destroyEmitter(id);
+      });
+    }
+
+    ParticleEngine.prototype.createEmitter = function(options) {
+      var emitter;
+      emitter = new nv.ParticleEmitter(options);
+      this.emitters.push(emitter);
+      return emitter;
+    };
+
+    ParticleEngine.prototype.getEmitter = function(id) {
+      var emitter, _i, _len, _ref;
+      _ref = this.emitters;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        emitter = _ref[_i];
+        if (emitter.id === id) {
+          return emitter;
+        }
+      }
+      return null;
+    };
+
+    ParticleEngine.prototype.destroyEmitter = function(id) {
+      var emitter, index, _i, _len, _ref, _results;
+      _ref = this.emitters;
+      _results = [];
+      for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
+        emitter = _ref[index];
+        if (emitter.id === id) {
+          emitter.destroy();
+          _results.push(this.emitters.splice(index, 1));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
+    ParticleEngine.prototype.update = function(dt) {
+      var emitter, _i, _len, _ref, _results;
+      _ref = this.emitters;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        emitter = _ref[_i];
+        _results.push(emitter.update(dt));
+      }
+      return _results;
+    };
+
+    ParticleEngine.prototype.destroy = function() {
+      var emitter, _i, _len, _ref;
+      _ref = this.emitters;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        emitter = _ref[_i];
+        this.canvas.removeDrawable(emitter);
+        emitter.destroy;
+      }
+      return delete this.emitters;
+    };
+
+    return ParticleEngine;
+
+  })(nv.Engine);
+
+  nv.ParticleEmitter = (function() {
+
+    ParticleEmitter.prototype.defaults = {
+      position: new nv.Point(0, 0),
+      particlesPerSecond: 100,
+      particleLife: 0.5,
+      lifeVariation: 0.52,
+      colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(0, 0, 0, 0)]),
+      angle: 0,
+      angleVariation: Math.PI * 2,
+      minVelocity: 20,
+      maxVelocity: 50,
+      gravity: new nv.Point(0, 30.8),
+      collider: null,
+      bounceDamper: 0.5,
+      id: -1
+    };
+
+    function ParticleEmitter(options) {
+      this.options = nv.clone(this.defaults);
+      this.options = nv.extend(this.options, options);
+      this.particles = [];
+      this.id = this.options.id;
+    }
+
+    ParticleEmitter.prototype.draw = function(context, canvas) {
+      var particle, _i, _len, _ref, _results;
+      _ref = this.particles;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        particle = _ref[_i];
+        _results.push(particle.draw(context, canvas));
+      }
+      return _results;
+    };
+
+    ParticleEmitter.prototype.spawnParticle = function(offset) {
+      var angle, life, position, speed, velocity;
+      angle = randVariation(this.options.angle, this.options.angleVariation);
+      speed = randRange(this.options.minVelocity, this.options.maxVelocity);
+      life = randVariation(this.options.particleLife, this.options.particleLife * this.options.lifeVariation);
+      velocity = new nv.Point().fromPolar(angle, speed);
+      position = this.options.position.clone().add(velocity.times(offset));
+      return this.particles.push(new nv.Particle(this.options, position, velocity, life));
+    };
+
+    ParticleEmitter.prototype.update = function(dt) {
+      var dead, deadParticle, i, index, particle, particlesToSpawn, _i, _j, _k, _len, _len1, _ref, _results;
+      dead = [];
+      _ref = this.particles;
+      for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
+        particle = _ref[index];
+        particle.update(dt);
+        if (particle.isDead()) {
+          dead.push(particle);
+        }
+      }
+      for (_j = 0, _len1 = dead.length; _j < _len1; _j++) {
+        deadParticle = dead[_j];
+        deadParticle.destroy();
+        this.particles.splice(this.particles.indexOf(deadParticle), 1);
+      }
+      dead = void 0;
+      particlesToSpawn = this.options.particlesPerSecond * dt;
+      _results = [];
+      for (i = _k = 0; _k <= particlesToSpawn; i = _k += 1) {
+        _results.push(this.spawnParticle((1.0 + i) / particlesToSpawn * dt));
+      }
+      return _results;
+    };
+
+    return ParticleEmitter;
+
+  })();
+
+  nv.Particle = (function() {
+
+    function Particle(options, position, velocity, life) {
+      this.options = options;
+      this.position = position;
+      this.velocity = velocity;
+      this.life = life;
+      this.maxLife = this.life;
+    }
+
+    Particle.prototype.isDead = function() {
+      return this.life <= 0;
+    };
+
+    Particle.prototype.draw = function(context, canvas) {
+      var color, lifePercent;
+      if (this.isDead()) {
+        return;
+      }
+      lifePercent = 1.0 - (this.life / this.maxLife);
+      color = this.options.colors.getColor(lifePercent);
+      context.save();
+      context.globalAlpha = color.a;
+      context.color(color.toCanvasColor());
+      context.fillRect(this.position.x - 1, this.position.y - 1, 3, 3);
+      return context.restore();
+    };
+
+    Particle.prototype.update = function(dt) {
+      this.velocity.add(this.options.gravity.times(dt));
+      this.position.add(this.velocity.times(dt));
+      return this.life -= dt;
+    };
+
+    Particle.prototype.destroy = function() {
+      delete this.options;
+      delete this.position;
+      delete this.velocity;
+      delete this.life;
+      return delete this.maxLife;
+    };
+
+    return Particle;
+
+  })();
 
 }).call(this);
 
@@ -2410,6 +2706,7 @@
       this.registerEngine(nv.GamepadEngine);
       this.registerEngine(nv.PhysicsEngine);
       this.registerEngine(nv.SoundEngine);
+      this.registerEngine(nv.ParticleEngine);
       this.registerScene('Main', Main);
       this.registerScene('Game', Game);
       this.openScene('Main', glcanvas);
@@ -2436,6 +2733,17 @@
         trackMouse: true
       });
       this.addEntities(entities.Background, entities.Background, entities.Title, entities.ActionText, entities.Cursor, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid);
+      this.fire("engine:particle:create_emitter", {
+        position: new nv.Point(450, 300),
+        particlesPerSecond: 100,
+        colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(0, 255, 0, 1), new nv.Color(0, 0, 0, 0)]),
+        particleLife: 2,
+        angleVariation: 1,
+        minVelocity: 50,
+        maxVelocity: 100,
+        id: 1
+      });
+      this.emitter = this.getEngine(nv.ParticleEngine).getEmitter(1);
       this.glcanvas.camera = nv.camera();
       this.updateId = this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
       this.on("engine:gamepad:start", function() {
@@ -2449,7 +2757,11 @@
     };
 
     Main.prototype.update = function(dt) {
-      return Main.__super__.update.call(this, dt);
+      Main.__super__.update.call(this, dt);
+      this.emitter.options.angle += 0.03;
+      if (this.emitter.options.angle > Math.PI * 2) {
+        return this.emitter.options.angle = 0;
+      }
     };
 
     Main.prototype.destroy = function() {

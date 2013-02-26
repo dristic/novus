@@ -61,6 +61,12 @@ class nv.Scene extends nv.EventDispatcher
   removeRenderer: (renderer) ->
     @renderers.splice @renderers.indexOf(renderer), 1
 
+  getEngine: (type) ->
+    for engine in @engines
+      if engine instanceof type
+        return engine
+    null
+
   update: (dt) ->
     engine.update dt for engine in @engines
     entity.update dt for entity in @entities

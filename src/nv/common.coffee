@@ -1,9 +1,9 @@
 #= require key
 
-nv.extend = (other) ->
+nv.implement = (other) ->
   this[key] = other[key] for key of other
 
-nv.extend
+nv.implement
   log: () ->
     console.log message for message in arguments
 
@@ -11,6 +11,15 @@ nv.extend
     f = () ->
       func.call context, arguments...
     f
+
+  clone: (object) ->
+    obj = {}
+    nv.extend obj, object
+    obj
+
+  extend: (object, other) ->
+    object[key] = other[key] for key of other
+    object
 
   keydown: (key, callback) ->
     func = (event) ->
@@ -146,3 +155,28 @@ class Camera
 
 nv.camera = () ->
   new Camera
+
+class nv.Color
+  constructor: (@r, @b, @g, @a) ->
+
+  interpolate: (percent, other) ->
+    new Color(
+      @r + (other.r - @r) * percent,
+      @g + (other.g - @g) * percent,
+      @b + (other.b - @b) * percent,
+      @a + (other.a - @a) * percent
+    )
+
+  toCanvasColor: () ->
+    "rgb(#{parseInt(@r)}, #{parseInt(@g)}, #{parseInt(@b)})"
+
+class nv.Gradient
+  constructor: (@colorStops) ->
+
+  getColor: (percent) ->
+    colorF = percent * (@colorStops.length - 1)
+
+    color1 = parseInt(colorF)
+    color2 = parseInt(colorF + 1)
+
+    @colorStops[color1].interpolate((colorF - color1) / (color2 - color1), @colorStops[color2])
