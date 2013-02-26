@@ -2,7 +2,7 @@ randRange = (min, max) ->
   Math.random() * (max - min) + min
 
 randVariation = (center, variation) ->
-  center + variation * randRange(-0.5, 0.5)
+  center + (variation * randRange(-0.5, 0.5))
 
 class nv.ParticleEngine extends nv.Engine
   constructor: (scene) ->
@@ -61,6 +61,7 @@ class nv.ParticleEmitter
     gravity: new nv.Point(0, 30.8)
     collider: null
     bounceDamper: 0.5
+    on: true
     id: -1
 
   constructor: (options) ->
@@ -68,6 +69,12 @@ class nv.ParticleEmitter
     @options = nv.extend(@options, options)
     @particles = []
     @id = @options.id
+
+  set: (key, value) ->
+    @options[key] = value
+
+  get: (key) ->
+    @options[key]
 
   draw: (context, canvas) ->
     particle.draw(context, canvas) for particle in @particles
@@ -95,9 +102,11 @@ class nv.ParticleEmitter
       @particles.splice @particles.indexOf(deadParticle), 1
     dead = undefined
 
-    particlesToSpawn = @options.particlesPerSecond * dt
-    for i in [0..particlesToSpawn] by 1
-      @spawnParticle (1.0 + i) / particlesToSpawn * dt
+    # Only spawn new particles if on
+    if @options.on
+      particlesToSpawn = @options.particlesPerSecond * dt
+      for i in [0..particlesToSpawn] by 1
+        @spawnParticle (1.0 + i) / particlesToSpawn * dt
 
 class nv.Particle
   constructor: (@options, @position, @velocity, @life) ->

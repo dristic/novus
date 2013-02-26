@@ -1438,7 +1438,7 @@
   };
 
   randVariation = function(center, variation) {
-    return center + variation * randRange(-0.5, 0.5);
+    return center + (variation * randRange(-0.5, 0.5));
   };
 
   nv.ParticleEngine = (function(_super) {
@@ -1538,6 +1538,7 @@
       gravity: new nv.Point(0, 30.8),
       collider: null,
       bounceDamper: 0.5,
+      on: true,
       id: -1
     };
 
@@ -1547,6 +1548,14 @@
       this.particles = [];
       this.id = this.options.id;
     }
+
+    ParticleEmitter.prototype.set = function(key, value) {
+      return this.options[key] = value;
+    };
+
+    ParticleEmitter.prototype.get = function(key) {
+      return this.options[key];
+    };
 
     ParticleEmitter.prototype.draw = function(context, canvas) {
       var particle, _i, _len, _ref, _results;
@@ -1586,12 +1595,14 @@
         this.particles.splice(this.particles.indexOf(deadParticle), 1);
       }
       dead = void 0;
-      particlesToSpawn = this.options.particlesPerSecond * dt;
-      _results = [];
-      for (i = _k = 0; _k <= particlesToSpawn; i = _k += 1) {
-        _results.push(this.spawnParticle((1.0 + i) / particlesToSpawn * dt));
+      if (this.options.on) {
+        particlesToSpawn = this.options.particlesPerSecond * dt;
+        _results = [];
+        for (i = _k = 0; _k <= particlesToSpawn; i = _k += 1) {
+          _results.push(this.spawnParticle((1.0 + i) / particlesToSpawn * dt));
+        }
+        return _results;
       }
-      return _results;
     };
 
     return ParticleEmitter;
@@ -2114,6 +2125,18 @@
         return _this.fireBullet.call(_this);
       });
       this.maxVelocity = 3;
+      this.scene.fire("engine:particle:create_emitter", {
+        position: new nv.Point(450, 300),
+        particlesPerSecond: 200,
+        colors: new nv.Gradient([new nv.Color(255, 100, 100, 1), new nv.Color(150, 50, 50, 1), new nv.Color(0, 0, 0, 0)]),
+        gravity: new nv.Point(0, 0),
+        particleLife: 0.1,
+        angleVariation: 0.75,
+        minVelocity: 700,
+        maxVelocity: 700,
+        id: 2
+      });
+      this.emitter = this.scene.getEngine(nv.ParticleEngine).getEmitter(2);
     }
 
     Ship.prototype.fireBullet = function() {
@@ -2142,6 +2165,13 @@
       this.model.translate(this.model.thrustVector.x, this.model.thrustVector.y);
       if (this.model.thrusters) {
         this.scene.fire("entity:thrust:Ship");
+      }
+      this.emitter.set('position', new nv.Point(this.model.x, this.model.y));
+      if (this.model.thrusters) {
+        this.emitter.set('on', true);
+        this.emitter.set('angle', this.model.rotation + (Math.PI * 0.5));
+      } else {
+        this.emitter.set('on', false);
       }
       return this.wrap();
     };

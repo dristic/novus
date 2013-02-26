@@ -86,6 +86,23 @@ class entities.Ship extends WrappingEntity
 
     @maxVelocity = 3
 
+    @scene.fire "engine:particle:create_emitter",
+      position: new nv.Point(450, 300)
+      particlesPerSecond: 200
+      colors: new nv.Gradient([
+        new nv.Color(255, 100, 100, 1),
+        new nv.Color(150, 50, 50, 1),
+        new nv.Color(0, 0, 0, 0)
+      ])
+      gravity: new nv.Point(0, 0)
+      particleLife: 0.1
+      angleVariation: 0.75
+      minVelocity: 700
+      maxVelocity: 700
+      id: 2
+
+    @emitter = @scene.getEngine(nv.ParticleEngine).getEmitter(2)
+
   fireBullet: () ->
     @scene.addEntity entities.Bullet, @model.path()[0], @model.rotation
 
@@ -103,6 +120,13 @@ class entities.Ship extends WrappingEntity
     @model.velocity = 0 unless @model.thrusters
     @model.translate @model.thrustVector.x, @model.thrustVector.y
     @scene.fire "entity:thrust:Ship" if @model.thrusters
+
+    @emitter.set 'position', new nv.Point(@model.x, @model.y)
+    if @model.thrusters
+      @emitter.set 'on', true
+      @emitter.set 'angle', @model.rotation + (Math.PI * 0.5)
+    else
+      @emitter.set 'on', false
 
     @wrap()
 
