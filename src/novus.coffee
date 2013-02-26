@@ -21,6 +21,7 @@ class Asteroids extends nv.Game
     @registerEngine nv.GamepadEngine
     @registerEngine nv.PhysicsEngine
     @registerEngine nv.SoundEngine
+    @registerEngine nv.ParticleEngine
 
     @registerScene 'Main', Main
     @registerScene 'Game', Game
@@ -46,6 +47,9 @@ class Main extends nv.Scene
       entities.Asteroid,
       entities.Asteroid,
       entities.Asteroid
+
+    @fire "engine:particle:create_emitter",
+      position: new nv.Point(300, 300)
 
     @glcanvas.camera = nv.camera()
     @updateId = @glcanvas.startDrawUpdate 10, nv.bind(this, @update)

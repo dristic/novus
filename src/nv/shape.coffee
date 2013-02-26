@@ -9,8 +9,21 @@ class nv.Point
     @y += dy
     this
 
+  add: (point) ->
+    @x += point.x
+    @y += point.y
+    this
 
+  times: (num) ->
+    new nv.Point @x * num, @y * num 
 
+  clone: () ->
+    new nv.Point @x, @y
+
+  fromPolar: (ang, rad) ->
+    @x = Math.cos(ang) * rad
+    @y = Math.sin(ang) * rad
+    this
 
 class nv.Rect
   constructor: (@x,@y,@x2,@y2) ->
