@@ -41,6 +41,12 @@ class nv.ParticleEngine extends nv.Engine
   update: (dt) ->
     emitter.update dt for emitter in @emitters
 
+  destroy: () ->
+    for emitter in @emitters
+      @canvas.removeDrawable emitter
+      emitter.destroy
+    delete @emitters
+
 class nv.ParticleEmitter
   defaults:
     position: new nv.Point(0, 0)

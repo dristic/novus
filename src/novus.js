@@ -1508,6 +1508,17 @@
       return _results;
     };
 
+    ParticleEngine.prototype.destroy = function() {
+      var emitter, _i, _len, _ref;
+      _ref = this.emitters;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        emitter = _ref[_i];
+        this.canvas.removeDrawable(emitter);
+        emitter.destroy;
+      }
+      return delete this.emitters;
+    };
+
     return ParticleEngine;
 
   })(nv.Engine);
@@ -2725,7 +2736,7 @@
       this.fire("engine:particle:create_emitter", {
         position: new nv.Point(450, 300),
         particlesPerSecond: 100,
-        colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(191, 23, 75, 1), new nv.Color(0, 0, 0, 0)]),
+        colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(0, 255, 0, 1), new nv.Color(0, 0, 0, 0)]),
         particleLife: 2,
         angleVariation: 1,
         minVelocity: 50,

@@ -53,7 +53,7 @@ class Main extends nv.Scene
       particlesPerSecond: 100
       colors: new nv.Gradient([
         new nv.Color(255, 255, 255, 1),
-        new nv.Color(191, 23, 75, 1),
+        new nv.Color(0, 255, 0, 1),
         new nv.Color(0, 0, 0, 0)
       ])
       particleLife: 2
