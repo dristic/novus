@@ -49,7 +49,20 @@ class Main extends nv.Scene
       entities.Asteroid
 
     @fire "engine:particle:create_emitter",
-      position: new nv.Point(300, 300)
+      position: new nv.Point(450, 300)
+      particlesPerSecond: 100
+      colors: new nv.Gradient([
+        new nv.Color(255, 255, 255, 1),
+        new nv.Color(191, 23, 75, 1),
+        new nv.Color(0, 0, 0, 0)
+      ])
+      particleLife: 2
+      angleVariation: 1
+      minVelocity: 50
+      maxVelocity: 100
+      id: 1
+
+    @emitter = @getEngine(nv.ParticleEngine).getEmitter(1)
 
     @glcanvas.camera = nv.camera()
     @updateId = @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
@@ -64,6 +77,9 @@ class Main extends nv.Scene
 
   update: (dt) ->
     super dt
+
+    @emitter.options.angle += 0.03
+    if @emitter.options.angle > Math.PI * 2 then @emitter.options.angle = 0
 
   destroy: () ->
     super

@@ -55,11 +55,13 @@ class nv.ParticleEmitter
     gravity: new nv.Point(0, 30.8)
     collider: null
     bounceDamper: 0.5
+    id: -1
 
   constructor: (options) ->
     @options = nv.clone(@defaults)
     @options = nv.extend(@options, options)
     @particles = []
+    @id = @options.id
 
   draw: (context, canvas) ->
     particle.draw(context, canvas) for particle in @particles
@@ -76,10 +78,20 @@ class nv.ParticleEmitter
     @particles.push new nv.Particle(@options, position, velocity, life)
 
   update: (dt) ->
-    particle.update(dt) for particle in @particles
+    dead = []
+    for particle, index in @particles
+      particle.update dt
+      if particle.isDead()
+        dead.push particle
 
-    for i in [0..(@options.particlesPerSecond * dt)]
-      @spawnParticle 1.0 + i
+    for deadParticle in dead
+      deadParticle.destroy()
+      @particles.splice @particles.indexOf(deadParticle), 1
+    dead = undefined
+
+    particlesToSpawn = @options.particlesPerSecond * dt
+    for i in [0..particlesToSpawn] by 1
+      @spawnParticle (1.0 + i) / particlesToSpawn * dt
 
 class nv.Particle
   constructor: (@options, @position, @velocity, @life) ->
@@ -100,8 +112,16 @@ class nv.Particle
     context.color color.toCanvasColor()
 
     context.fillRect @position.x - 1, @position.y - 1, 3, 3
+    context.restore()
 
   update: (dt) ->
     @velocity.add @options.gravity.times(dt)
     @position.add @velocity.times(dt)
     @life -= dt
+
+  destroy: () ->
+    delete @options
+    delete @position
+    delete @velocity
+    delete @life
+    delete @maxLife

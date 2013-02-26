@@ -168,7 +168,7 @@ class nv.Color
     )
 
   toCanvasColor: () ->
-    "rgb(#{@r}, #{@g}, @{b})"
+    "rgb(#{parseInt(@r)}, #{parseInt(@g)}, #{parseInt(@b)})"
 
 class nv.Gradient
   constructor: (@colorStops) ->

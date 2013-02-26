@@ -358,7 +358,7 @@
     };
 
     Color.prototype.toCanvasColor = function() {
-      return "rgb(" + this.r + ", " + this.g + ", @{b})";
+      return "rgb(" + (parseInt(this.r)) + ", " + (parseInt(this.g)) + ", " + (parseInt(this.b)) + ")";
     };
 
     return Color;
@@ -683,6 +683,18 @@
 
     Scene.prototype.removeRenderer = function(renderer) {
       return this.renderers.splice(this.renderers.indexOf(renderer), 1);
+    };
+
+    Scene.prototype.getEngine = function(type) {
+      var engine, _i, _len, _ref;
+      _ref = this.engines;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        engine = _ref[_i];
+        if (engine instanceof type) {
+          return engine;
+        }
+      }
+      return null;
     };
 
     Scene.prototype.update = function(dt) {
@@ -1514,13 +1526,15 @@
       maxVelocity: 50,
       gravity: new nv.Point(0, 30.8),
       collider: null,
-      bounceDamper: 0.5
+      bounceDamper: 0.5,
+      id: -1
     };
 
     function ParticleEmitter(options) {
       this.options = nv.clone(this.defaults);
       this.options = nv.extend(this.options, options);
       this.particles = [];
+      this.id = this.options.id;
     }
 
     ParticleEmitter.prototype.draw = function(context, canvas) {
@@ -1545,15 +1559,26 @@
     };
 
     ParticleEmitter.prototype.update = function(dt) {
-      var i, particle, _i, _j, _len, _ref, _ref1, _results;
+      var dead, deadParticle, i, index, particle, particlesToSpawn, _i, _j, _k, _len, _len1, _ref, _results;
+      dead = [];
       _ref = this.particles;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        particle = _ref[_i];
+      for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
+        particle = _ref[index];
         particle.update(dt);
+        if (particle.isDead()) {
+          dead.push(particle);
+        }
       }
+      for (_j = 0, _len1 = dead.length; _j < _len1; _j++) {
+        deadParticle = dead[_j];
+        deadParticle.destroy();
+        this.particles.splice(this.particles.indexOf(deadParticle), 1);
+      }
+      dead = void 0;
+      particlesToSpawn = this.options.particlesPerSecond * dt;
       _results = [];
-      for (i = _j = 0, _ref1 = this.options.particlesPerSecond * dt; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
-        _results.push(this.spawnParticle(1.0 + i));
+      for (i = _k = 0; _k <= particlesToSpawn; i = _k += 1) {
+        _results.push(this.spawnParticle((1.0 + i) / particlesToSpawn * dt));
       }
       return _results;
     };
@@ -1586,13 +1611,22 @@
       context.save();
       context.globalAlpha = color.a;
       context.color(color.toCanvasColor());
-      return context.fillRect(this.position.x - 1, this.position.y - 1, 3, 3);
+      context.fillRect(this.position.x - 1, this.position.y - 1, 3, 3);
+      return context.restore();
     };
 
     Particle.prototype.update = function(dt) {
       this.velocity.add(this.options.gravity.times(dt));
       this.position.add(this.velocity.times(dt));
       return this.life -= dt;
+    };
+
+    Particle.prototype.destroy = function() {
+      delete this.options;
+      delete this.position;
+      delete this.velocity;
+      delete this.life;
+      return delete this.maxLife;
     };
 
     return Particle;
@@ -2689,8 +2723,16 @@
       });
       this.addEntities(entities.Background, entities.Background, entities.Title, entities.ActionText, entities.Cursor, entities.Asteroid, entities.Asteroid, entities.Asteroid, entities.Asteroid);
       this.fire("engine:particle:create_emitter", {
-        position: new nv.Point(300, 300)
+        position: new nv.Point(450, 300),
+        particlesPerSecond: 100,
+        colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(191, 23, 75, 1), new nv.Color(0, 0, 0, 0)]),
+        particleLife: 2,
+        angleVariation: 1,
+        minVelocity: 50,
+        maxVelocity: 100,
+        id: 1
       });
+      this.emitter = this.getEngine(nv.ParticleEngine).getEmitter(1);
       this.glcanvas.camera = nv.camera();
       this.updateId = this.glcanvas.startDrawUpdate(10, nv.bind(this, this.update));
       this.on("engine:gamepad:start", function() {
@@ -2704,7 +2746,11 @@
     };
 
     Main.prototype.update = function(dt) {
-      return Main.__super__.update.call(this, dt);
+      Main.__super__.update.call(this, dt);
+      this.emitter.options.angle += 0.03;
+      if (this.emitter.options.angle > Math.PI * 2) {
+        return this.emitter.options.angle = 0;
+      }
     };
 
     Main.prototype.destroy = function() {
