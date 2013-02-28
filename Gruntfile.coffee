@@ -67,7 +67,7 @@ module.exports = (grunt) ->
     coffee:
       options:
         src: 'src/novus.coffee'
-        output: 'dist/novus.js'
+        output: 'dist/novus-<%= meta.version %>.js'
 
   # Load up grunt libraries
   grunt.loadNpmTasks 'grunt-contrib-jasmine'
