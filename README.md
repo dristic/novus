@@ -4,42 +4,36 @@ Novus is a game engine written in javascript and HTML 5 on top of canvas. The ma
 
 # Getting Started
 
-## Prereqs
+## Quick Start
+
+This project is built on top of Node.js technologies. Before you start you should have the latest `node` and `npm` installed on your system.
+
+After that install dependencies using `npm install`
+
+From here cd into to the example you want to check out and run: `./../../bin/novus server`
+
+It should tell you the server is running. Now navigate to `http://localhost:8000` and you should see the example for the directory you are in.
+
+## Prereqs for Contributing
 
 Install git flow using `brew install git-flow` and run `git flow init`. Check out git flow and how to use it for contributing [here](https://github.com/nvie/gitflow)
 
 Also install PhantomJs as it is used to run Jasmine tests. You can use `brew install phantomjs` or any other method of installation.
 
-## Quick Start
-
-This project is built on top of Node.js technologies. Before you start you should have the latest `node` and `npm` installed on your system.
+## Grunt
 
 The engine is built on top of a great CLI tool called grunt. We have updated to version 0.4 so please follow the new [getting started guide](https://github.com/gruntjs/grunt/wiki/Getting-started)
 
-After that install dependencies using `$ npm install`
-
-Run the server using `$ grunt server` and navigate your browser to http://localhost:8000/public
-
 ## Project Layout
 
+ * bin : Holds the version of our CLI
  * dist : Current build of the js library (can be created using `grunt build`)
- * lib : Holds the vendor libraries used.
- * public : Public HTML and CSS files
- * src : Coffeescript source of the engine and sample game.
- * test: Jasmine test framework specs are here.
+ * lib : Holds the vendor libraries used
+ * src : Coffeescript source of the engine
+ * test: Jasmine test framework specs are here
 
-## Grunt Tasks
+## Contributing
 
-Grunt is used to build and serve up the project files. To build the project navigate to the root folder and use `$ grunt build`. This will compile coffeescript, run jasmine tests, concat files, and finally create a build.
+Grunt is used to build and run tests. To build the project navigate to the root folder and use `$ grunt build`. This will compile coffeescript, run jasmine tests, concat files, and finally create a build.
 
-To serve up files run `$ grunt server`. Then open up `http://localhost:8000/public` to view the project.
-
-## FAQ
-
-If you get an error with coffeePath you probably have to update your version of connect-coffee-script. Go to node_modules/connect-coffee-script/lib/middleware.js and change line 91 from:
-
-`js = options.compile(str, options);`
-
-to
-
-`js = options.compile(str, options, coffeePath);`
+Feel free to create pull requests and issues. Follow the coding standards and write tests for all new features.
