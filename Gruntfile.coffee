@@ -1,9 +1,6 @@
 snockets = require 'snockets'
 fs = require 'fs'
 path = require 'path'
-connect = require 'connect'
-compiler = require 'connect-compiler'
-coffeescript = require 'connect-coffee-script'
 
 module.exports = (grunt) ->
   # Configure grunt tasks.
@@ -16,7 +13,7 @@ module.exports = (grunt) ->
 
     jasmine:
       dist:
-        src: 'dist/novus-<%= meta.version %>.min.js'
+        src: '<%= coffee.options.output %>'
         options:
           specs: 'test/spec/*Spec.js'
           helpers: 'test/spec/*Helper.js'
@@ -35,7 +32,7 @@ module.exports = (grunt) ->
 
     watch:
       files: '<config:lint.files>'
-      tasks: 'lint qunit'
+      tasks: 'lint test'
 
     jshint:
       options:
@@ -52,17 +49,6 @@ module.exports = (grunt) ->
         browser: true
       globals:
         console: true
-
-    server:
-      options:
-        port: 8000
-        base: '.'
-        coffeescript:
-          src: __dirname
-          bare: true
-          force: true
-          compile: (str, options, coffeePath) ->
-            new snockets().getConcatenation(coffeePath, { minify: false, async: false })
 
     coffee:
       options:
@@ -88,26 +74,3 @@ module.exports = (grunt) ->
 
     js = new snockets().getConcatenation(options.src, { minify: true, async: false })
     fs.writeFileSync options.output, js
-
-  # Spins up a server the builds out coffee files and serves static html.
-  grunt.registerTask 'server', 'Start a static web server', () ->
-    done = this.async()
-    options = this.options
-      port: 8000
-      base: '.'
-
-    if options.debug
-      connect.logger.format('grunt', ('[D] server :method :url :status ' +
-        ':res[content-length] - :response-time ms').magenta)
-      middleware.unshift(connect.logger('grunt'))
-
-    grunt.log.writeln "Starting static web server on port #{options.port}."
-
-    app = connect()
-      .use(compiler(options.compiler))
-      .use(coffeescript(options.coffeescript))
-      #.use(connect.directory(options.base))
-      .use(connect.static(__dirname))
-      .listen(options.port)
-
-    grunt.log.writeln "Press CTRL + C to stop the server."
