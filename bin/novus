@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+
+'use strict';
+
+var fs = require('fs');
+
+var config = {
+  version: '0.1.0',
+  folders: ['assets', 'config', 'entities', 'models', 'renderers']
+};
+
+var args = process.argv.slice(2);
+
+function log() {
+  console.log.apply(console, arguments);
+}
+
+if (args[0] === undefined) {
+  log("Novus command line interface version " + config.version);
+} else if (args[0] === "new") {
+  var directory = args[1];
+
+  // Create base directory
+  if (!fs.existsSync(directory)) {
+    log("Creating " + directory + "/");
+    fs.mkdirSync(directory);
+  } else {
+    log("Exists " + directory + "/");
+  }
+
+  // Create sub folders
+  config.folders.forEach(function (folder) {
+    folder = directory + "/" + folder;
+    if (!fs.existsSync(folder)) {
+      log("Creating " + folder + "/");
+      fs.mkdirSync(folder);
+    } else {
+      log("Exists " + folder + "/");
+    }
+  });
+
+  // Copy over startup game script
+  log("Copying in game script");
+  fs.createReadStream(__dirname + '/game.coffee').pipe(fs.createWriteStream(directory + '/game.coffee'));
+} else {
+  log("Sorry, Novus does not recognize the command: " + args[0]);
+}
