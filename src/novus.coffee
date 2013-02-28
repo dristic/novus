@@ -1,3 +1,6 @@
+#= require ../lib/vendor/zepto.min
+#= require gleam
+
 #= require base
 #= require common
 #= require plugin

@@ -57,10 +57,6 @@ module.exports = (grunt) ->
       options:
         port: 8000
         base: '.'
-        compiler:
-          enabled: [ 'stylus' ]
-          src: 'public'
-          dest: 'public'
         coffeescript:
           src: __dirname
           bare: true

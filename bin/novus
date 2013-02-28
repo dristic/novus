@@ -2,11 +2,14 @@
 
 'use strict';
 
-var fs = require('fs');
+var fs = require('fs'),
+    connect = require('connect'),
+    snockets = require('snockets');
 
 var config = {
   version: '0.1.0',
-  folders: ['assets', 'config', 'entities', 'models', 'renderers']
+  folders: ['assets', 'config', 'entities', 'models', 'renderers'],
+  port: 8000
 };
 
 var args = process.argv.slice(2);
@@ -16,8 +19,14 @@ function log() {
 }
 
 if (args[0] === undefined) {
+  /////////////////////////
+  // novus
+  /////////////////////////
   log("Novus command line interface version " + config.version);
 } else if (args[0] === "new") {
+  /////////////////////////
+  // novus new {name}
+  /////////////////////////
   var directory = args[1];
 
   // Create base directory
@@ -42,6 +51,38 @@ if (args[0] === undefined) {
   // Copy over startup game script
   log("Copying in game script");
   fs.createReadStream(__dirname + '/game.coffee').pipe(fs.createWriteStream(directory + '/game.coffee'));
+
+  // Copy over game index file
+  log("Copying in index.html");
+  fs.createReadStream(__dirname + '/index.html').pipe(fs.createWriteStream(directory + '/assets/index.html'));
+} else if (args[0] == "server") {
+  /////////////////////////
+  // novus server
+  /////////////////////////
+  log("Starting static web server on port " + config.port);
+
+  var app = connect()
+    .use(connect.logger('dev'))
+    .use('/assets', connect.static('assets'))
+    .use(function (req, res, next) {
+      if (req.url === '/game.js') {
+        var data = new snockets().getConcatenation('game.coffee', { minify: false, async: false });
+        res.setHeader('Content-Type', 'application/javascript');
+        res.end(data);
+      } else if (req.url === '/' || req.url === '/index.html') {
+        var fileStream = fs.createReadStream('assets/index.html');
+        fileStream.pipe(res);
+      } else {
+        next();
+      }
+    })
+    .listen(config.port);
+
+  log("Navigate to http://localhost:" + config.port + " to see your game");
+  log("Press CTRL + C to stop the server.");
 } else {
+  /////////////////////////
+  // novus {unknown_argument}
+  /////////////////////////
   log("Sorry, Novus does not recognize the command: " + args[0]);
 }
