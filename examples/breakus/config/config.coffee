@@ -1,0 +1,2 @@
+nv.configure
+  debug: false
