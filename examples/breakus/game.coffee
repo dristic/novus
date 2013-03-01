@@ -13,7 +13,8 @@ class Game extends nv.Game
   constructor: () ->
     super
 
-    canvas = new gl.Canvas
+    canvas = new gleam.Canvas
+    console.log canvas
     canvas.setSize 500, 500
     canvas.setBackground '#000'
     canvas.setStyle 'margin', '30px auto 0 auto'

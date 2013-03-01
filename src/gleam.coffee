@@ -1,10 +1,10 @@
 requestFrame = window.requestAnimationFrame ? window.webkitRequestAnimationFrame ? window.mozRequestAnimationFrame ? window.oRequestAnimationFrame ? window.msRequestAnimationFrame ? (callback) -> return setTimeout(callback, 17)
 cancelFrame = window.cancelRequestAnimationFrame ? window.webkitCancelAnimationFrame ? window.webkitCancelRequestAnimationFrame ? window.mozCancelRequestAnimationFrame ? window.oCancelRequestAnimationFrame ? window.msCancelRequestAnimationFrame ? clearTimeout
 
-gl = gl ? {}
+gleam = gleam ? {}
 
 # From http://www.nczonline.net/blog/2012/12/11/are-your-mixins-ecmascript-5-compatible/
-gl.extend = (object, other) ->
+gleam.extend = (object, other) ->
   if Object.keys
     Object.keys(other).forEach (property) ->
       Object.defineProperty object, property, Object.getOwnPropertyDescriptor(other, property)
@@ -14,15 +14,93 @@ gl.extend = (object, other) ->
         object[key] = other[key]
   object
 
-gl.Canvas = (canvas) ->
+gleam.Canvas = (canvas) ->
   if typeof canvas is 'string'
     canvas = document.querySelector canvas
   @element = canvas ? document.createElement 'canvas'
   @context = @element.getContext('2d')
   @drawables = []
+  @cacheValues =
+    width: @element.width
+    height: @element.height
+    halfWidth: @element.width / 2
+    halfHeight: @element.height / 2
+  @aliases =
+    opacity: "globalAlpha"
 
-gl.extend gl.Canvas,
+  this
 
+gleam.extend gleam.Canvas.prototype,
+  cache: (key, value) ->
+    @cacheValues[key] = value
+
+  get: (key) ->
+    key = @aliases[key] unless not @aliases[key]
+    @cacheValues[key] ? @context[key]
+
+  set: (key, value) ->
+    key = @aliases[key] unless not @aliases[key]
+    @context[key] = value
+
+  setStyle: (key, value) ->
+    @element.style[key] = value
+
+  setSize: (width, height) ->
+    @element.width = width
+    @element.height = height
+
+    @cache 'width', width
+    @cache 'height', height
+    @cache 'halfWidth', width / 2
+    @cache 'halfHeight', height / 2
+
+  fullscreen: () ->
+    @fullscreened = true
+    @setSize document.width, document.height
+
+    document.body.style.overflow = "hidden"
+
+    window.addEventListener 'resize', (event) =>
+      @setSize document.width, document.height
+
+  setClearColor: (hex, opacity) ->
+    @cache 'clearColor', hex
+    @cache 'clearOpacity', opacity
+
+  clear: (x, y, width, height) ->
+    x = x ? 0
+    y = y ? 0
+    width = width ? @cache.width
+    height = height ? @cache.height
+
+    if @cache.clearColor
+      @context.fillStyle = @cache.clearColor
+      @context.globalAlpha = @cache.clearOpacity
+      @context.fillRect x, y, width, height
+    else
+      @context.clearRect x, y, width, height
+
+  # Creates a line using the arguments passed in
+  # Arguments must be divisible by "2"
+  line: () ->
+    @context.beginPath()
+    @context.moveTo Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
+
+    while arguments.length > 0
+      @context.lineTo Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
+
+    @context.stroke()
+    @context.closePath()
+
+  rotateAround: (x, y, angle, func) ->
+    @context.save()
+    @context.translate(x, y)
+    @context.rotate(angle)
+    @context.translate(-x, -y)
+    func()
+    @context.restore()
+
+@gleam = gleam
 
 gl = (canvas) ->
   return new gl.prototype.init(canvas)
