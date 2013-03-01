@@ -31,6 +31,14 @@ class models.Ship extends nv.Model
 
     @buildWireframes()
 
+  reset: () ->
+    @x = 30
+    @y = 30
+    @thrusters = false
+    @velocity = 0
+    @health = 100
+    @rotation = 0
+
   buildWireframes: () ->
     @shipWF =
       strokeColor: @strokeColor
@@ -48,9 +56,9 @@ class models.Ship extends nv.Model
     shapes.push @prepareShape(@thrustersWF) if @thrusters
     shapes
 
-  path: () ->
-    ship = @prepareShape @shipWF
-    ship.points
+  path: (which = "ship") ->
+    shape = @prepareShape @[which + "WF"]
+    shape.points
 
   prepareShape: (wf) ->
     shape = $.extend({},wf)
@@ -68,9 +76,11 @@ class models.Ship extends nv.Model
   translate: (dx,dy) ->
     @x += dx
     @y += dy
+    this
 
   rotate: (r) ->
     @rotation += r
+    this
 
 class models.Asteroid extends nv.Model
   constructor: (x, y, scale = 1, direction = null) ->

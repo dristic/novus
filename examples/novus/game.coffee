@@ -103,8 +103,8 @@ class Game extends nv.Scene
     @addEntity entities.Background, ship, 0.05
     @addEntity entities.Background, ship, 0.01
 
-    @addEntities entities.Hud,
-      entities.Asteroid,
+    hud = @addEntity entities.Hud
+    @addEntities entities.Asteroid,
       entities.Asteroid,
       entities.Asteroid,
       entities.Asteroid,
@@ -145,6 +145,15 @@ class Game extends nv.Scene
     @glcanvas.camera.zoom 1, 2000
 
     @updateId = @glcanvas.startDrawUpdate 60, nv.bind(this, @update)
+
+    @on "entity:destroyed:Ship", () =>
+      console.log "ship destroyed"
+      remaining = hud.shipDestroyed()
+      if remaining
+        ship.model.reset()
+      else
+        console.log "game over"
+        @game.openScene 'Main', @glcanvas
 
   fire: (event, data) ->
     console.log "[EVENT] - #{event}"

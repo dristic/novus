@@ -79,6 +79,7 @@ class entities.Ship extends WrappingEntity
     super scene, [renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
+      @scene.fire "entity:destroyed:Ship", this
       #@scene.fire "entity:remove", this
 
     @scene.on 'engine:gamepad:shoot', () =>
@@ -121,7 +122,8 @@ class entities.Ship extends WrappingEntity
     @model.translate @model.thrustVector.x, @model.thrustVector.y
     @scene.fire "entity:thrust:Ship" if @model.thrusters
 
-    @emitter.set 'position', new nv.Point(@model.x, @model.y)
+    anchor = @model.path("thrusters")[0]
+    @emitter.set 'position', new nv.Point(anchor.x, anchor.y)
     if @model.thrusters
       @emitter.set 'on', true
       @emitter.set 'angle', @model.rotation + (Math.PI * 0.5)
@@ -189,6 +191,8 @@ class entities.Hud extends nv.Entity
   constructor: (scene) ->
     canvas = scene.get('canvas')
 
+    ships = [ new models.Ship, (new models.Ship).translate(25,0), (new models.Ship).translate(50,0) ]
+
     super scene, [renderers.Hud],
       color: '#FFF'
       font: "40px sans-serif"
@@ -196,11 +200,14 @@ class entities.Hud extends nv.Entity
       y: 0
       width: canvas.width
       height: canvas.height
-      ships: 3
+      ships: ships
+      lives: ships.length + 1
       score: 0
 
     @scene.on "entity:destroyed:Asteroid", (data) =>
       @model.score += [500, 300, 200, 100][data.model.size - 1]
 
-    @scene.on "entity:destroyed:Ship", (data) =>
-      @model.ships--
+  shipDestroyed: () ->
+    @model.ships.pop()
+    @model.lives--
+    @model.lives
