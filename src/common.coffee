@@ -61,11 +61,11 @@ nv.implement
     agent.match(/blackberry/i) or
     agent.match(/windows phone/i)) isnt null
 
-  ready: (function) ->
-    return function() unless not @isReady
+  ready: (func) ->
+    return func() unless not @isReady
     document.addEventListener 'DOMContentLoaded', () =>
       @isReady = true
-      function()
+      func()
 
 class Gamepad
   constructor: () ->
