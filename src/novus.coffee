@@ -9,9 +9,9 @@
 #= require model
 #= require scene
 #= require shape
-#= require debug
 #= require game
 #= require engine
+#= require debug
 #= require renderer
 #= require gamepad
 #= require physics

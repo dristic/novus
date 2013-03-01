@@ -100,6 +100,9 @@ gleam.extend gleam.Canvas.prototype,
     func()
     @context.restore()
 
+  render: (drawables) ->
+    drawable.draw(this) for drawable in drawables
+
 @gleam = gleam
 
 gl = (canvas) ->

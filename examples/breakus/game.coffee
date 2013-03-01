@@ -14,14 +14,16 @@ class Game extends nv.Game
     super
 
     canvas = new gleam.Canvas
-    console.log canvas
     canvas.setSize 500, 500
-    canvas.setBackground '#000'
+    canvas.setStyle 'background', 'gray'
     canvas.setStyle 'margin', '30px auto 0 auto'
+    canvas.setStyle 'display', 'block'
 
     document.body.appendChild canvas.element
 
+    @registerEngine nv.DebugEngine
     @registerEngine nv.RenderingEngine
+    @registerEngine nv.GamepadEngine
 
     @registerScene 'Main', scenes.Main
 

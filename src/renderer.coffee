@@ -9,12 +9,8 @@ class nv.RenderingEngine extends nv.Engine
     scene.on "engine:rendering:create", (drawable) =>
       @drawables.push drawable
 
-      @canvas.addDrawable drawable
-
     scene.on "engine:rendering:delete", (drawable) =>
       @drawables.splice @drawables.indexOf(drawable), 1
-
-      @canvas.removeDrawable drawable
 
   destroy: () ->
     i = @drawables.length

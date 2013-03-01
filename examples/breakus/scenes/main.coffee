@@ -5,3 +5,5 @@ class scenes.Main extends nv.Scene
       keys:
         left: nv.Key.A
         right: nv.Key.D
+
+    @addEntities entities.Player
