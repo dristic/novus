@@ -7,13 +7,24 @@
 #= require_tree renderers
 #= require_tree models
 #= require_tree entities
+#= require_tree scenes
 
 class Game extends nv.Game
   constructor: () ->
     super
 
-    # Start game logic here.
+    canvas = new gl.Canvas
+    canvas.setSize 500, 500
+    canvas.setBackground '#000'
+    canvas.setStyle 'margin', '30px auto 0 auto'
 
-$(() ->
+    document.body.appendChild canvas.element
+
+    @registerEngine nv.RenderingEngine
+
+    @registerScene 'Main', scenes.Main
+
+    @openScene 'Main', canvas
+
+nv.ready ->
   new Game
-)

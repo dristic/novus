@@ -8,7 +8,7 @@ var fs = require('fs'),
 
 var config = {
   version: '0.1.0',
-  folders: ['assets', 'config', 'entities', 'models', 'renderers'],
+  folders: ['assets', 'config', 'entities', 'models', 'renderers', 'scenes'],
   port: 8000
 };
 
