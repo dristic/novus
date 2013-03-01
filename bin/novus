@@ -55,6 +55,10 @@ if (args[0] === undefined) {
   // Copy over game index file
   log("Copying in index.html");
   fs.createReadStream(__dirname + '/index.html').pipe(fs.createWriteStream(directory + '/assets/index.html'));
+
+  // Copy over configuration file
+  log("Copying in config.coffee");
+  fs.createReadStream(__dirname + '/config.coffee').pipe(fs.createWriteStream(directory + '/config/config.coffee'));
 } else if (args[0] == "server") {
   /////////////////////////
   // novus server

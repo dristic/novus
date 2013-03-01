@@ -1,11 +1,17 @@
 #= require key
 
+nv.config =
+  debug: false
+
 nv.implement = (other) ->
   this[key] = other[key] for key of other
 
 nv.implement
   log: () ->
     console.log message for message in arguments
+
+  configure: (options) ->
+    nv.config = nv.extend(nv.config, options)
 
   bind: (context, func) ->
     f = () ->
