@@ -1,8 +1,8 @@
 class nv.RenderingEngine extends nv.Engine
-  constructor: (scene) ->
-    super scene
+  constructor: (scene, config) ->
+    super scene, config
 
-    @canvas = scene.options.canvas
+    @canvas = config.canvas
     @context = @canvas.context
     @drawables = []
 

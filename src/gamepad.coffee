@@ -1,14 +1,13 @@
 class nv.GamepadEngine extends nv.Engine
-  constructor: (scene) ->
-    super scene
+  constructor: (scene, config) ->
+    super scene, config
 
-    @gamepad = scene.gamepad
-    @options = scene.options
+    @gamepad = config.gamepad
 
-    @gamepad.trackMouse() unless not @options.trackMouse
+    @gamepad.trackMouse() unless not @config.trackMouse
 
-    for key of @options.keys
-      @gamepad.aliasKey key, @options.keys[key]
+    for key of @config.keys
+      @gamepad.aliasKey key, @config.keys[key]
       @updateFunction = nv.bind(this, @onButtonPress)
       @gamepad.onButtonPress key, @updateFunction
 
@@ -16,9 +15,9 @@ class nv.GamepadEngine extends nv.Engine
     @scene.fire "engine:gamepad:#{button}"
 
   destroy: () ->
-    for key of @options.keys
+    for key of @config.keys
       @gamepad.offButtonPress key, @updateFunction
     delete @gamepad
-    delete @options
+    delete @config
 
     super

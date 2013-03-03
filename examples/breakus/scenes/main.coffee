@@ -3,7 +3,8 @@ class scenes.Main extends nv.Scene
     super game
 
     # Fire up engines associated with this scene
-    @useEngine nv.RenderingEngine, (rootModel) ->
+    @useEngine "RenderingEngine"
+    @useEngine "GamepadEngine", (rootModel) ->
       return {
         left: nv.Key.D
       }

@@ -31,8 +31,17 @@ class @Application extends nv.Game
 
     @registerEngine nv.DebugEngine
     @registerEngine nv.GamepadEngine, (rootModel) ->
+      unless rootModel.gamepad
+        rootModel.gamepad = nv.gamepad()
+
       return {
-        left: nv.Key.A
+        gamepad: rootModel.gamepad
+        keys:
+          up: nv.Key.W
+          down: nv.Key.S
+          left: nv.Key.A
+          right: nv.Key.D
+          shoot: nv.Key.Spacebar
       }
 
     # Register all the game scenes off of an object
