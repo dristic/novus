@@ -23,11 +23,11 @@ class nv.Scene extends nv.EventDispatcher
     engineObj = @game.engines[name]
     config = {}
 
-    if engineObj.initializer
-      nv.extend(config, engineObj.initializer(@game.rootModel))
+    if engineObj.initializer?
+      engineObj.initializer config, @game.model()
 
-    if initializer
-      nv.extend(config, initializer(@game.rootModel))
+    if initializer?
+      initializer config, @game.model()
 
     @engines.push new engineObj.klass this, config
 

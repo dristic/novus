@@ -12,29 +12,29 @@ class @Application extends nv.Game
     nv.configure
       debug: true
 
-    # Create initializers and register engines
-    @registerEngine nv.RenderingEngine, (rootModel) ->
-      unless rootModel.canvas
-        canvas = new gleam.Canvas
-        canvas.setSize 500, 500
-        canvas.setStyle 'background', 'gray'
-        canvas.setStyle 'margin', '30px auto 0 auto'
-        canvas.setStyle 'display', 'block'
-        document.body.appendChild canvas.element
-        rootModel.canvas = canvas
+    # Setup the global canvas
+    canvas = new gleam.Canvas
+    canvas.setSize 500, 500
+    canvas.setStyle 'background', 'gray'
+    canvas.setStyle 'margin', '30px auto 0 auto'
+    canvas.setStyle 'display', 'block'
+    document.body.appendChild canvas.element
+    @rootModel.canvas = canvas
 
-      return {
+    # Setup the global gamepad
+    @rootModel.gamepad = nv.gamepad()
+
+    # Create initializers and register engines
+    @registerEngine nv.RenderingEngine, (config, rootModel) ->
+      nv.extend config,
         canvas: rootModel.canvas
         width: 500
         height: 500
-      }
 
     @registerEngine nv.DebugEngine
-    @registerEngine nv.GamepadEngine, (rootModel) ->
-      unless rootModel.gamepad
-        rootModel.gamepad = nv.gamepad()
-
-      return {
+    
+    @registerEngine nv.GamepadEngine, (config, rootModel) ->
+      nv.extend config,
         gamepad: rootModel.gamepad
         keys:
           up: nv.Key.W
@@ -42,7 +42,6 @@ class @Application extends nv.Game
           left: nv.Key.A
           right: nv.Key.D
           shoot: nv.Key.Spacebar
-      }
 
     # Register all the game scenes off of an object
     @registerScenes scenes

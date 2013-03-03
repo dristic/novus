@@ -24,7 +24,11 @@ nv.implement
     obj
 
   extend: (object, other) ->
-    object[key] = other[key] for key of other
+    for key of other
+      if object[key] instanceof Object and other[key] instanceof Object
+        nv.extend(object[key], other[key])
+      else
+        object[key] = other[key]
     object
 
   keydown: (key, callback) ->
