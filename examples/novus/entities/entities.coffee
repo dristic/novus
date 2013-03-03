@@ -87,7 +87,7 @@ class entities.Ship extends WrappingEntity
 
     @maxVelocity = 3
 
-    @scene.fire "engine:particle:create_emitter",
+    @scene.send "engine:particle:create_emitter",
       position: new nv.Point(450, 300)
       particlesPerSecond: 200
       colors: new nv.Gradient([
@@ -115,8 +115,6 @@ class entities.Ship extends WrappingEntity
       @model.velocity = Math.min(@model.velocity * 1.01 || 1, @maxVelocity)
       unless @model.velocity >= @maxVelocity
         @model.thrustVector.translate @model.velocity * Math.sin(@model.rotation) * dt * 4, -@model.velocity * Math.cos(@model.rotation) * dt * 4
-    #//if state.down
-      #//@model.translate -@model.velocity/2 * Math.sin(@model.rotation), @model.velocity/2 * Math.cos(@model.rotation)
     @model.thrusters = state.up
     @model.velocity = 0 unless @model.thrusters
     @model.translate @model.thrustVector.x, @model.thrustVector.y
@@ -131,6 +129,9 @@ class entities.Ship extends WrappingEntity
       @emitter.set 'on', false
 
     @wrap()
+
+  destroy: () ->
+    super
 
 class entities.Asteroid extends WrappingEntity
   constructor: (scene, options = {}) ->

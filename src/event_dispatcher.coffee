@@ -1,32 +1,50 @@
 class nv.EventDispatcher
   constructor: () ->
-    @listeners = []
+    @event_listeners = {}
+    @event_async_queue = []
+
+  destroy: () ->
+    @processQueuedEvents()
 
   on: (event, func) ->
-    listeners = @listeners[event]
-    if not (listeners instanceof Array)
-      listeners = []
+    event_listeners = @event_listeners[event]
+    if not (event_listeners instanceof Array)
+      event_listeners = []
 
-    listeners.push func
-    @listeners[event] = listeners
+    event_listeners.push func
+    @event_listeners[event] = event_listeners
     this
 
   fire: (event, data) ->
-    listeners = @listeners[event]
-    if listeners instanceof Array
-      for listener in listeners
+    event_listeners = @event_listeners[event]
+    if event_listeners instanceof Array
+      for listener in event_listeners
+        @event_async_queue.push
+          event: event
+          callback: listener
+          data: data ? {}
+
+  send: (event, data) ->
+    event_listeners = @event_listeners[event]
+    if event_listeners instanceof Array
+      for listener in event_listeners
         listener(data ? {})
 
-  send: (event, targets, data) ->
-    console.log event, targets, data
-    for target in targets
-      #console.log "send message", event, target.constructor.name
-      target.events[event](data) unless target.events is undefined or target.events[event] is undefined
-
   off: (event, func) ->
-    if not @listeners[event] instanceof Array
+    if not @event_listeners[event] instanceof Array
       # Do nothing
     else
-      if @listeners[event].indexOf func not 0
-        @listeners[event].splice @listeners[event].indexOf(func), 1
+      if @event_listeners[event].indexOf func not 0
+        @event_listeners[event].splice @event_listeners[event].indexOf(func), 1
     this
+
+  update: (dt) ->
+    @processQueuedEvents()
+
+  processQueuedEvents: () ->
+    while @event_async_queue.length
+      events = @event_async_queue.slice(0)
+      @event_async_queue = []
+      for event in events
+        event.callback event.data
+

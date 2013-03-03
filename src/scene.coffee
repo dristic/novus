@@ -13,10 +13,13 @@ class nv.Scene extends nv.EventDispatcher
     @engines.push new klass this for klass in @game.engines
 
     @on "entity:remove", () =>
-      @onRemoveEntity.call this, arguments...
+      @removeEntity.call this, arguments...
 
     @on "entity:add", (options) =>
       @addEntity options.entity, options
+
+    @on "scene:destroy", (options) =>
+      @destruct()
 
   get: (key) ->
     @options[key]
@@ -67,13 +70,23 @@ class nv.Scene extends nv.EventDispatcher
         return engine
     null
 
+  fire: (event, data) ->
+    console.log "[EVENT] - #{event}"
+    super event, data
+
   update: (dt) ->
     engine.update dt for engine in @engines
     entity.update dt for entity in @entities
 
-    @removeEntity entity for entity in @deletedEntities
-    @deletedEntities = []
+    super dt
 
   destroy: () ->
-    @removeEntity entity for entity in @entities
+    @fire "scene:destroy"
+
+  destruct: () ->
+    entity.destroy() for entity in @entities
     engine.destroy() for engine in @engines
+    
+    delete @entities
+    delete @engines
+    

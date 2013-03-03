@@ -27,6 +27,7 @@ class Novus extends nv.Game
 
     @registerScene 'Main', Main
     @registerScene 'Game', Game
+    @registerScene 'GameOver', GameOver
 
     @openScene 'Main', glcanvas
 
@@ -50,7 +51,7 @@ class Main extends nv.Scene
       entities.Asteroid,
       entities.Asteroid
 
-    @fire "engine:particle:create_emitter",
+    @send "engine:particle:create_emitter",
       position: new nv.Point(450, 300)
       particlesPerSecond: 100
       colors: new nv.Gradient([
@@ -72,11 +73,6 @@ class Main extends nv.Scene
     @on "engine:gamepad:start", () =>
       @game.openScene 'Game', @glcanvas
 
-  fire: (event, data) ->
-    console.log "[EVENT] - #{event}"
-
-    super event, data
-
   update: (dt) ->
     super dt
 
@@ -84,9 +80,8 @@ class Main extends nv.Scene
     if @emitter.options.angle > Math.PI * 2 then @emitter.options.angle = 0
 
   destroy: () ->
-    super
-
     @glcanvas.stopDrawUpdate(@updateId)
+    super
 
 class Game extends nv.Scene
   constructor: (game, @glcanvas) ->
@@ -153,21 +148,37 @@ class Game extends nv.Scene
         ship.model.reset()
       else
         console.log "game over"
-        @game.openScene 'Main', @glcanvas
-
-  fire: (event, data) ->
-    console.log "[EVENT] - #{event}"
-
-    super event, data
-
-  update: (dt) ->
-    super dt
+        @game.openScene 'GameOver', @glcanvas
 
   destroy: () ->
+    @glcanvas.stopDrawUpdate @updateId
     super
 
-    @glcanvas.stopDrawUpdate @updateId
+class GameOver extends nv.Scene
+  constructor: (game, @glcanvas) ->
+    super game,
+      canvas: @glcanvas
+      keys:
+        start: nv.Key.Spacebar
+      trackMouse: false
+
+    @addEntities entities.Background,
+      entities.Background,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid,
+      entities.Asteroid
+
+    @glcanvas.camera = nv.camera()
+    @updateId = @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
+
+    @on "engine:gamepad:start", () =>
+      @game.openScene 'Game', @glcanvas
+
+  destroy: () ->
+    @glcanvas.stopDrawUpdate(@updateId)
+    super
 
 $(() ->
-  new Novus
+  @app = new Novus
 )
