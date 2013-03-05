@@ -27,6 +27,7 @@ gleam.Canvas = (canvas) ->
     halfHeight: @element.height / 2
   @aliases =
     opacity: "globalAlpha"
+    color: 'fillStyle'
 
   this
 
@@ -102,6 +103,24 @@ gleam.extend gleam.Canvas.prototype,
 
   render: (drawables) ->
     drawable.draw(this) for drawable in drawables
+
+# Gleam.Square
+gleam.Square = (options) ->
+  defaults =
+    color: '#CCC'
+    width: 10
+    height: 10
+    x: 10
+    y: 10
+  options = options ? {}
+  gleam.extend defaults, options
+  gleam.extend this, defaults
+  this
+
+gleam.extend gleam.Square.prototype,
+  draw: (canvas, context) ->
+    context.fillStyle = @color
+    context.fillRect @x, @y, @width, @height
 
 @gleam = gleam
 

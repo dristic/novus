@@ -1,4 +1,4 @@
 class entities.Player extends nv.Entity
   constructor: (scene) ->
     super scene, [nv.DrawableRenderingPlugin],
-      drawable: new gl.square
+      drawable: new gleam.Square

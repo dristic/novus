@@ -12,6 +12,9 @@ class nv.RenderingEngine extends nv.Engine
     scene.on "engine:rendering:delete", (drawable) =>
       @drawables.splice @drawables.indexOf(drawable), 1
 
+  update: (dt) ->
+    drawable.draw @canvas, @context for drawable in @drawables
+
   destroy: () ->
     i = @drawables.length
     while i--

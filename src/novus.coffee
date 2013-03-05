@@ -11,6 +11,7 @@
 #= require shape
 #= require game
 #= require engine
+#= require time
 #= require debug
 #= require renderer
 #= require gamepad
