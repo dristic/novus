@@ -12,7 +12,9 @@ class nv.RenderingEngine extends nv.Engine
     scene.on "engine:rendering:delete", (drawable) =>
       @drawables.splice @drawables.indexOf(drawable), 1
 
-  update: (dt) ->
+    scene.fire "engine:timing:register:after", nv.bind(this, @draw)
+    
+  draw: () ->
     drawable.draw @canvas, @context for drawable in @drawables
 
   destroy: () ->
