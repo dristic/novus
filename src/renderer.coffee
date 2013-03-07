@@ -15,6 +15,7 @@ class nv.RenderingEngine extends nv.Engine
     scene.fire "engine:timing:register:after", nv.bind(this, @draw)
     
   draw: () ->
+    @canvas.clear()
     drawable.draw @canvas, @context for drawable in @drawables
 
   destroy: () ->

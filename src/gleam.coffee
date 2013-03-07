@@ -71,12 +71,12 @@ gleam.extend gleam.Canvas.prototype,
   clear: (x, y, width, height) ->
     x = x ? 0
     y = y ? 0
-    width = width ? @cache.width
-    height = height ? @cache.height
+    width = width ? @cacheValues.width
+    height = height ? @cacheValues.height
 
-    if @cache.clearColor
-      @context.fillStyle = @cache.clearColor
-      @context.globalAlpha = @cache.clearOpacity
+    if @cacheValues.clearColor
+      @context.fillStyle = @cacheValues.clearColor
+      @context.globalAlpha = @cacheValues.clearOpacity
       @context.fillRect x, y, width, height
     else
       @context.clearRect x, y, width, height
