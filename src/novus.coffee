@@ -1,5 +1,5 @@
 #= require ../lib/vendor/zepto.min
-#= require gleam
+#= require gleam/gleam
 
 #= require base
 #= require common

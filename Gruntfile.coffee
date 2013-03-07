@@ -15,8 +15,8 @@ module.exports = (grunt) ->
       dist:
         src: '<%= generate.options.output %>'
         options:
-          specs: 'test/dist/*_spec.js'
-          helpers: 'test/dist/*_helper.js'
+          specs: 'test/dist/**/*_spec.js'
+          helpers: 'test/dist/**/*_helper.js'
 
     concat:
       options:
@@ -54,7 +54,7 @@ module.exports = (grunt) ->
       glob_to_multiple:
         expand: true
         cwd: 'test/spec'
-        src: ['*_spec.coffee', '*_helper.coffee']
+        src: ['**/*_spec.coffee', '**/*_helper.coffee']
         dest: 'test/dist'
         ext: '.js'
 
