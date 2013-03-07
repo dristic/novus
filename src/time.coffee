@@ -19,6 +19,7 @@ class nv.TimingEngine extends nv.Engine
 
   start: () ->
     lastTime = Date.now()
+    @updating = true
 
     update = () =>
       now = Date.now()

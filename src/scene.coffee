@@ -57,7 +57,6 @@ class nv.Scene extends nv.EventDispatcher
     null
 
   fire: (event, data) ->
-    console.log "[EVENT] - #{event}"
     super event, data
 
   update: (dt) ->

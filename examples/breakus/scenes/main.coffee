@@ -6,13 +6,10 @@ class scenes.Main extends nv.Scene
     @useEngine "TimingEngine"
     @useEngine "RenderingEngine"
     @useEngine "DebugEngine"
-    @useEngine "GamepadEngine", (config, rootModel) ->
-      nv.extend config,
-        keys:
-          left: nv.Key.D
+    @useEngine "GamepadEngine"
 
     # Add all the entities in this scene
     @addEntities entities.Player
 
-    # Start the scene
-    @fire "engine:timing:start"
+    # Start the scene (we use send here because nothing is updating yet)
+    @send "engine:timing:start"
