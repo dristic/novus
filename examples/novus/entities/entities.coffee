@@ -61,12 +61,14 @@ class entities.Cursor extends nv.Entity
     @model.drawable.y = state.mouse.y
 
 class WrappingEntity extends nv.Entity
-  constructor: (args...) ->
-    super args...
+  constructor: (scene, pluginClasses, model) ->
+    super scene, pluginClasses, model
+
+    @canvas = @scene.getEngine(nv.RenderingEngine).canvas
 
   wrap: () ->
     # Boundary Wrapping
-    dimensions = @scene.get('canvas').size()
+    dimensions = @canvas.getSize()
 
     if @model.x < 0 then @model.x = dimensions.width
     else if @model.x > dimensions.width then @model.x = 0

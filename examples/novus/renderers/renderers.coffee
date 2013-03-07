@@ -86,7 +86,7 @@ class renderers.Background extends nv.RenderingPlugin
     @canvas.width = entity.model.width
     @canvas.height = entity.model.height
 
-    @glcanvas = scene.get 'canvas'
+    @glcanvas = scene.getEngine(nv.RenderingEngine).canvas
 
     i = 0
     until i > 100

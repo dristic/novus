@@ -55,6 +55,12 @@ gleam.extend gleam.Canvas.prototype,
     @cache 'halfWidth', width / 2
     @cache 'halfHeight', height / 2
 
+  getSize: () ->
+    {
+      width: @cacheValues.width
+      height: @cacheValues.height
+    }
+
   fullscreen: () ->
     @fullscreened = true
     @setSize document.width, document.height

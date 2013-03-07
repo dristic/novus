@@ -6,17 +6,19 @@ class nv.RenderingEngine extends nv.Engine
     @context = @canvas.context
     @drawables = []
 
+    @canvas.camera = nv.camera()
+
     scene.on "engine:rendering:create", (drawable) =>
       @drawables.push drawable
 
-    scene.on "engine:rendering:delete", (drawable) =>
+    scene.on "engine:rendering:destroy", (drawable) =>
       @drawables.splice @drawables.indexOf(drawable), 1
 
     scene.fire "engine:timing:register:after", nv.bind(this, @draw)
     
   draw: () ->
     @canvas.clear()
-    drawable.draw @canvas, @context for drawable in @drawables
+    drawable.draw @context, @canvas for drawable in @drawables
 
   destroy: () ->
     #i = @drawables.length
@@ -46,7 +48,7 @@ class nv.RenderingPlugin extends nv.Plugin
     # Do nothing
 
   destroy: () ->
-    @scene.fire "engine:rendering:delete", this
+    @scene.fire "engine:rendering:destroy", this
 
     super
 

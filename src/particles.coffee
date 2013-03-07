@@ -5,20 +5,20 @@ randVariation = (center, variation) ->
   center + (variation * randRange(-0.5, 0.5))
 
 class nv.ParticleEngine extends nv.Engine
-  constructor: (scene) ->
+  constructor: (scene, config) ->
     super scene
 
-    @canvas = scene.options.canvas
+    @canvas = config.canvas
     @context = @canvas.context
     @emitters = []
 
     scene.on "engine:particle:create_emitter", (options) =>
       emitter = @createEmitter options
 
-      @canvas.addDrawable emitter
+      @scene.fire "engine:rendering:create", emitter
 
     scene.on "engine:particle:destroy_emitter", (id) =>
-      @canvas.removeDrawable @getEmitter(id)
+      @scene.fire "engine:rendering:destroy", @getEmitter(id)
       @destroyEmitter id
 
   createEmitter: (options) ->

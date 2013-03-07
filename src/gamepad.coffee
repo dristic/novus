@@ -3,6 +3,7 @@ class nv.GamepadEngine extends nv.Engine
     super scene, config
 
     @gamepad = config.gamepad
+    scene.gamepad = config.gamepad
 
     @gamepad.trackMouse() unless not @config.trackMouse
 
