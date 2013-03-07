@@ -79,6 +79,7 @@ class entities.Ship extends WrappingEntity
     super scene, [renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
+      @scene.fire "entity:destroyed:Ship", this
       #@scene.fire "entity:remove", this
 
     @scene.on 'engine:gamepad:shoot', () =>
@@ -86,7 +87,7 @@ class entities.Ship extends WrappingEntity
 
     @maxVelocity = 3
 
-    @scene.fire "engine:particle:create_emitter",
+    @scene.send "engine:particle:create_emitter",
       position: new nv.Point(450, 300)
       particlesPerSecond: 200
       colors: new nv.Gradient([
@@ -114,14 +115,13 @@ class entities.Ship extends WrappingEntity
       @model.velocity = Math.min(@model.velocity * 1.01 || 1, @maxVelocity)
       unless @model.velocity >= @maxVelocity
         @model.thrustVector.translate @model.velocity * Math.sin(@model.rotation) * dt * 4, -@model.velocity * Math.cos(@model.rotation) * dt * 4
-    #//if state.down
-      #//@model.translate -@model.velocity/2 * Math.sin(@model.rotation), @model.velocity/2 * Math.cos(@model.rotation)
     @model.thrusters = state.up
     @model.velocity = 0 unless @model.thrusters
     @model.translate @model.thrustVector.x, @model.thrustVector.y
     @scene.fire "entity:thrust:Ship" if @model.thrusters
 
-    @emitter.set 'position', new nv.Point(@model.x, @model.y)
+    anchor = @model.path("thrusters")[0]
+    @emitter.set 'position', new nv.Point(anchor.x, anchor.y)
     if @model.thrusters
       @emitter.set 'on', true
       @emitter.set 'angle', @model.rotation + (Math.PI * 0.5)
@@ -129,6 +129,9 @@ class entities.Ship extends WrappingEntity
       @emitter.set 'on', false
 
     @wrap()
+
+  destroy: () ->
+    super
 
 class entities.Asteroid extends WrappingEntity
   constructor: (scene, options = {}) ->
@@ -189,6 +192,8 @@ class entities.Hud extends nv.Entity
   constructor: (scene) ->
     canvas = scene.get('canvas')
 
+    ships = [ new models.Ship, (new models.Ship).translate(25,0), (new models.Ship).translate(50,0) ]
+
     super scene, [renderers.Hud],
       color: '#FFF'
       font: "40px sans-serif"
@@ -196,11 +201,14 @@ class entities.Hud extends nv.Entity
       y: 0
       width: canvas.width
       height: canvas.height
-      ships: 3
+      ships: ships
+      lives: ships.length + 1
       score: 0
 
     @scene.on "entity:destroyed:Asteroid", (data) =>
       @model.score += [500, 300, 200, 100][data.model.size - 1]
 
-    @scene.on "entity:destroyed:Ship", (data) =>
-      @model.ships--
+  shipDestroyed: () ->
+    @model.ships.pop()
+    @model.lives--
+    @model.lives

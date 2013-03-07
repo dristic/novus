@@ -42,11 +42,24 @@ class renderers.Hud extends nv.RenderingPlugin
     context.strokeRect @entity.model.x, @entity.model.y, @entity.model.width, @entity.model.height
     context.restore()
 
+    context.save()
+    context.translate(-@scene.glcanvas.camera.x, -@scene.glcanvas.camera.y)
     context.font = @entity.model.font
     context.strokeColor @entity.model.color
     score = @entity.model.score.toString()
     textWidth = context.measureText(score).width
-    context.strokeText score, @entity.model.width - textWidth - 20, @entity.model.y + 50
+    context.strokeText score, @entity.model.width - textWidth - 20 ,  50
+
+    $.each @entity.model.ships, () ->
+      data = []
+      points = this.path()
+      $.each points, () ->
+        data.push this.x, this.y
+      data.push points[0].x, points[0].y
+      context.strokeColor this.strokeColor
+      context.strokeWidth this.strokeWidth
+      context.line.apply(context, data)
+    context.restore()
 
 class renderers.Bullet extends nv.RenderingPlugin
   constructor: (scene, entity) ->
@@ -61,11 +74,8 @@ class renderers.Ship extends nv.PathRenderingPlugin
   constuctor: (scene, entity) ->
     super scene, entity
 
-  draw: (context, canvas) ->
-    super context, canvas
-
-    if @entity.model.thrusters
-      @entity.model.path("thrusters")
+  #draw: (context, canvas) ->
+  #  super context, canvas
 
 
 class renderers.Background extends nv.RenderingPlugin

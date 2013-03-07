@@ -18,9 +18,9 @@ class nv.RenderingEngine extends nv.Engine
     drawable.draw @canvas, @context for drawable in @drawables
 
   destroy: () ->
-    i = @drawables.length
-    while i--
-      @drawables[i].destroy()
+    #i = @drawables.length
+    #while i--
+    #  @drawables[i].destroy()
 
 class nv.RenderingPlugin extends nv.Plugin
   constructor: (scene, entity) ->
