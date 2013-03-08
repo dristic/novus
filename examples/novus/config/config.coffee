@@ -18,8 +18,8 @@ class @Application extends nv.Game
     canvas.setStyle 'background', '#000'
     canvas.setStyle 'margin', '30px auto 0 auto'
     canvas.setStyle 'display', 'block'
-    canvas.fullscreen()
-    document.body.appendChild canvas.element
+    canvas.setFullscreen true
+    document.body.appendChild canvas.source
     @rootModel.canvas = canvas
 
     # Setup the global gamepad
@@ -32,8 +32,8 @@ class @Application extends nv.Game
     @registerEngine nv.RenderingEngine, (config, rootModel) ->
       nv.extend config,
         canvas: rootModel.canvas
-        width: rootModel.canvas.get 'width'
-        height: rootModel.canvas.get 'height'
+        width: rootModel.canvas.width
+        height: rootModel.canvas.height
 
     @registerEngine nv.DebugEngine
     

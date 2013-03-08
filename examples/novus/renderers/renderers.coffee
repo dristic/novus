@@ -8,14 +8,14 @@ class renderers.StrokeText extends nv.RenderingPlugin
 
   draw: (context, canvas) ->
     context.save()
-    context.color @entity.model.color
-    context.strokeColor @entity.model.strokeColor ? @entity.model.color
+    context.setFillStyle @entity.model.color
+    context.setStrokeStyle @entity.model.strokeColor ? @entity.model.color
     context.setFont @entity.model.font
-    context.strokeWidth @entity.model.strokeWidth
+    context.setStrokeWidth @entity.model.strokeWidth
     context.shadowColor = @entity.model.strokeColor ? @entity.model.color
     context.shadowBlur = @entity.model.shadowBlur
 
-    context.color "#00000000"
+    context.setFillStyle "#00000000"
     context.globalAlpha = @alpha
     context.fillText @entity.model.text, @entity.model.x, @entity.model.y
     context.strokeText @entity.model.text, @entity.model.x, @entity.model.y
@@ -82,11 +82,12 @@ class renderers.Background extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
 
-    @canvas = gl().size 700, 700
+    @canvas = new gleam.Canvas
+    @canvas.setSize 700, 700
     @canvas.width = entity.model.width
     @canvas.height = entity.model.height
 
-    @glcanvas = scene.getEngine(nv.RenderingEngine).canvas
+    @rootCanvas = scene.getEngine(nv.RenderingEngine).canvas
 
     i = 0
     until i > 100
@@ -100,14 +101,14 @@ class renderers.Background extends nv.RenderingPlugin
         gradient.addColorStop 0.4, "white"
         gradient.addColorStop 0.4, "white"
         gradient.addColorStop 1, "black"
-        context.color gradient
+        context.setFillStyle gradient
         context.arc x, y, radius, 0, Math.PI * 2, true
 
   draw: (context, canvas) ->
     context.globalCompositeOperation = "lighter"
 
-    camX = -@glcanvas.camera.x
-    camY = -@glcanvas.camera.y
+    camX = -@canvas.camera.x
+    camY = -@canvas.camera.y
 
     startX = camX + ((@entity.model.x - camX) % @entity.model.width)
     startY = camY + ((@entity.model.y - camY) % @entity.model.height)
@@ -118,9 +119,9 @@ class renderers.Background extends nv.RenderingPlugin
     curX = startX
     curY = startY
 
-    while curX < camX + @glcanvas.width
-      while curY < camY + @glcanvas.height
-        context.drawImage @canvas, curX, curY
+    while curX < camX + @rootCanvas.width
+      while curY < camY + @rootCanvas.height
+        context.drawImage @canvas.source, curX, curY
         curY += @entity.model.height
 
       curY = startY

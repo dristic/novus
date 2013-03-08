@@ -50,7 +50,7 @@ class entities.ActionText extends nv.Entity
 class entities.Cursor extends nv.Entity
   constructor: (scene) ->
     super scene, [nv.DrawableRenderingPlugin],
-      drawable: new gl.square
+      drawable: new gleam.Square
 
     @gamepad = @scene.gamepad
 

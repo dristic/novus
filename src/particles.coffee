@@ -124,7 +124,7 @@ class nv.Particle
 
     context.save()
     context.globalAlpha = color.a
-    context.color color.toCanvasColor()
+    context.setFillStyle color.toCanvasColor()
 
     context.fillRect @position.x - 1, @position.y - 1, 3, 3
     context.restore()

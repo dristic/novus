@@ -17,7 +17,7 @@ class nv.RenderingEngine extends nv.Engine
     scene.fire "engine:timing:register:after", nv.bind(this, @draw)
     
   draw: () ->
-    @canvas.clear()
+    @context.clearRect()
     drawable.draw @context, @canvas for drawable in @drawables
 
   destroy: () ->
@@ -76,9 +76,9 @@ class nv.PathRenderingPlugin extends nv.RenderingPlugin
 
   draw: (context, canvas) ->
     for shape in @entity.model.shapes()
-      context.strokeColor shape.strokeColor if shape.strokeColor
-      context.strokeWidth shape.strokeWidth if shape.strokeWidth
-      context.color shape.fillStyle if shape.fillStyle
+      context.setStrokeColor shape.strokeColor if shape.strokeColor
+      context.setStrokeWidth shape.strokeWidth if shape.strokeWidth
+      context.setFillStyle shape.fillStyle if shape.fillStyle
 
       context.beginPath()
       context.moveTo shape.points[0].x, shape.points[0].y
