@@ -2,6 +2,12 @@
 class gleam.Context
   constructor: (@source, @canvas) ->
 
+  set: (key, value) ->
+    @source[key] = value
+
+  get: (key) ->
+    @source[key]
+
   setFillStyle: (style) ->
     @source.fillStyle = style
 
@@ -14,15 +20,18 @@ class gleam.Context
   setFont: (font) ->
     @source.font = font
 
+  setTextBaseline: (baseline) ->
+    @source.textBaseline = baseline
+
   fillPath: (func) ->
     @beginPath()
     func(this)
     @fill()
     @closePath()
 
-  # Creates a line using the arguments passed in
+  # Creates a path using the arguments passed in
   # Arguments must be divisible by "2"
-  line: () ->
+  path: () ->
     @beginPath()
     @moveTo Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
 
@@ -60,8 +69,12 @@ class gleam.Context
     else
       @source.clearRect x, y, width, height
 
-# Extend the base context class
-proto = CanvasRenderingContext2D.prototype
-for key of proto
+# Add context aliasing function so closures work right
+gleam.Context.addContextAlias = (key) ->
   unless gleam.Context.prototype[key]
-    gleam.Context.prototype[key] = proto[key]
+    gleam.Context.prototype[key] = (args...) ->
+      @source[key](args...)
+
+# Extend the base context class
+for key of CanvasRenderingContext2D.prototype
+  gleam.Context.addContextAlias(key)
