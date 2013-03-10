@@ -1,9 +1,6 @@
 snockets = require 'snockets'
 fs = require 'fs'
 path = require 'path'
-connect = require 'connect'
-compiler = require 'connect-compiler'
-coffeescript = require 'connect-coffee-script'
 
 module.exports = (grunt) ->
   # Configure grunt tasks.
@@ -16,10 +13,10 @@ module.exports = (grunt) ->
 
     jasmine:
       dist:
-        src: 'dist/novus-<%= meta.version %>.min.js'
+        src: '<%= generate.options.output %>'
         options:
-          specs: 'test/spec/*Spec.js'
-          helpers: 'test/spec/*Helper.js'
+          specs: 'test/dist/**/*_spec.js'
+          helpers: 'test/dist/**/*_helper.js'
 
     concat:
       options:
@@ -35,7 +32,7 @@ module.exports = (grunt) ->
 
     watch:
       files: '<config:lint.files>'
-      tasks: 'lint qunit'
+      tasks: 'lint test'
 
     jshint:
       options:
@@ -53,62 +50,36 @@ module.exports = (grunt) ->
       globals:
         console: true
 
-    server:
-      options:
-        port: 8000
-        base: '.'
-        compiler:
-          enabled: [ 'stylus' ]
-          src: 'public'
-          dest: 'public'
-        coffeescript:
-          src: __dirname
-          bare: true
-          force: true
-          compile: (str, options, coffeePath) ->
-            new snockets().getConcatenation(coffeePath, { minify: false, async: false })
-
     coffee:
+      glob_to_multiple:
+        expand: true
+        cwd: 'test/spec'
+        src: ['**/*_spec.coffee', '**/*_helper.coffee']
+        dest: 'test/dist'
+        ext: '.js'
+
+    generate:
       options:
         src: 'src/novus.coffee'
-        output: 'dist/novus.js'
+        output: 'dist/novus-<%= meta.version %>.js'
 
   # Load up grunt libraries
+  grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-jasmine'
   grunt.loadNpmTasks 'grunt-contrib-concat'
 
   # Default task lints, tests, and builds everything.
-  grunt.registerTask 'default', ['build']
+  grunt.registerTask 'default', ['test']
 
   # Build task builds and tests.
-  grunt.registerTask 'build', ['coffee', 'concat', 'jasmine']
+  grunt.registerTask 'build', ['generate', 'concat']
+
+  # Builds and tests the engine.
+  grunt.registerTask 'test', ['build', 'coffee', 'jasmine']
 
   # Coffee task builds the main novus engine and game.
-  grunt.registerTask 'coffee', 'Compiles coffeescript into js files', () ->
+  grunt.registerTask 'generate', 'Compiles coffeescript into js files', () ->
     options = this.options({})
 
     js = new snockets().getConcatenation(options.src, { minify: true, async: false })
     fs.writeFileSync options.output, js
-
-  # Spins up a server the builds out coffee files and serves static html.
-  grunt.registerTask 'server', 'Start a static web server', () ->
-    done = this.async()
-    options = this.options
-      port: 8000
-      base: '.'
-
-    if options.debug
-      connect.logger.format('grunt', ('[D] server :method :url :status ' +
-        ':res[content-length] - :response-time ms').magenta)
-      middleware.unshift(connect.logger('grunt'))
-
-    grunt.log.writeln "Starting static web server on port #{options.port}."
-
-    app = connect()
-      .use(compiler(options.compiler))
-      .use(coffeescript(options.coffeescript))
-      #.use(connect.directory(options.base))
-      .use(connect.static(__dirname))
-      .listen(options.port)
-
-    grunt.log.writeln "Press CTRL + C to stop the server."

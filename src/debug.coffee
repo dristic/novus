@@ -1,15 +1,17 @@
-class Debug
-  html: """
-  <div id="debug"></div>
-  """
+class nv.DebugEngine extends nv.Engine
+  constructor: (scene) ->
+    @messageLog = []
 
-  constructor: () ->
+    fire = scene.fire
+    scene.fire = () =>
+      args = Array.prototype.slice.call arguments, 0
+      @log "[EVENT] - #{args[0]}"
+
+      fire.call scene, arguments...
 
   log: () ->
-    messages = arguments
-    console.log arguments
-
-$(() ->
-  nv.Debug = new Debug
-  nv.log = nv.Debug.log
-)
+    messages = Array.prototype.slice.call arguments, 0
+    message = ""
+    message += part.toString() for part in messages
+    @messageLog.push message
+    console.log message

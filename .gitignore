@@ -6,3 +6,5 @@ build
 node_modules/
 dist/**/*
 dist-debug/**/*
+.grunt
+dotcloud.yml

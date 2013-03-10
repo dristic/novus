@@ -1,9 +1,11 @@
 To Do
 ------------------------
-* Collision Detection
 * Particle Effects
-* Physics
 * Clickable Objects
 * Sprite Maps
+
+Future Ideas
+-----------------------
 * AI
 * View Scripting
+* Multiplayer

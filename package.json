@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "connect-coffee-script": "*",
+    "connect-compiler": "*",
     "coffee-script": "*",
     "snockets": "*",
     "nib": "*",
@@ -18,6 +19,7 @@
     "grunt-contrib-jshint": "0.1.1rc6",
     "grunt-contrib-nodeunit": "0.1.2rc6",
     "grunt-contrib-jasmine": "*",
+    "grunt-contrib-coffee": "*",
     "grunt-contrib-concat": "~0.1.1"
   }
 }

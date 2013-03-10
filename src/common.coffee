@@ -1,24 +1,47 @@
 #= require key
 
-nv.extend = (other) ->
+nv.config =
+  debug: false
+
+nv.implement = (other) ->
   this[key] = other[key] for key of other
 
-nv.extend
+nv.implement
   log: () ->
     console.log message for message in arguments
+
+  configure: (options) ->
+    nv.config = nv.extend(nv.config, options)
 
   bind: (context, func) ->
     f = () ->
       func.call context, arguments...
     f
 
+  clone: (object) ->
+    obj = {}
+    nv.extend obj, object
+    obj
+
+  extend: (object, other) ->
+    for key of other
+      if object[key] instanceof Object and other[key] instanceof Object
+        nv.extend(object[key], other[key])
+      else
+        object[key] = other[key]
+    object
+
   keydown: (key, callback) ->
-    $(document).on 'keydown', (event) ->
+    func = (event) ->
       if event.keyCode is key then callback()
+    $(document).on 'keydown', func
+    func
 
   keyup: (key, callback) ->
-    $(document).on 'keyup', (event) ->
+    func = (event) ->
       if event.keyCode is key then callback()
+    $(document).on 'keyup', func
+    func
 
   mousedown: (callback) ->
     $(document).on 'mousedown', callback
@@ -32,111 +55,43 @@ nv.extend
     $(document).on 'mousemove', callback
     $(document).on 'touchmove', callback
 
-class Gamepad
-  constructor: () ->
-    @gamepad = navigator.webkitGamepad
-    @state = {}
-    @listeners = {}
+  isMobile: () ->
+    agent = navigator.userAgent.toLowerCase()
+    (agent.match(/android/i) or
+    agent.match(/webos/i) or
+    agent.match(/iphone/i) or
+    agent.match(/ipad/i) or
+    agent.match(/ipod/i) or
+    agent.match(/blackberry/i) or
+    agent.match(/windows phone/i)) isnt null
 
-  trackMouse: () ->
-    @state.mouse =
-      x: -1
-      y: -1
-      down: false
+  ready: (func) ->
+    return func() unless not @isReady
+    document.addEventListener 'DOMContentLoaded', () =>
+      @isReady = true
+      func()
 
-    nv.mousedown (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
-      @state.mouse.down = true
+class nv.Color
+  constructor: (@r, @b, @g, @a) ->
 
-    nv.mouseup (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
-      @state.mouse.down = false
+  interpolate: (percent, other) ->
+    new Color(
+      @r + (other.r - @r) * percent,
+      @g + (other.g - @g) * percent,
+      @b + (other.b - @b) * percent,
+      @a + (other.a - @a) * percent
+    )
 
-    nv.mousemove (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
+  toCanvasColor: () ->
+    "rgb(#{parseInt(@r)}, #{parseInt(@g)}, #{parseInt(@b)})"
 
-  aliasKey: (button, key) ->
-    nv.keydown key, () =>
-      @fireButton(button)
-    nv.keyup key, () =>
-      @state[button] = false
+class nv.Gradient
+  constructor: (@colorStops) ->
 
-  fireButton: (button) ->
-    @state[button] = true
-    listeners = @listeners[button]
-    if listeners instanceof Array
-      for listener in listeners
-        listener(button)
+  getColor: (percent) ->
+    colorF = percent * (@colorStops.length - 1)
 
-  onButtonPress: (button, func) ->
-    listeners = @listeners[button]
+    color1 = parseInt(colorF)
+    color2 = parseInt(colorF + 1)
 
-    if not listeners then listeners = []
-
-    listeners.push func
-    @listeners[button] = listeners
-    func
-
-  offButtonPress: (button, func) ->
-    listeners = @listeners[button]
-
-    if listeners.indexOf func not 0
-      listeners.splice listeners.indexOf(func), 1
-
-    @listeners[button] = listeners
-    func
-
-  getState: () ->
-    @state
-
-nv.gamepad = () ->
-  new Gamepad
-
-class Camera
-  constructor: () ->
-    @following = null
-    @x = 0
-    @y = 0
-    @offsetX = 0
-    @offsetY = 0
-    @zoomValue = 1
-
-  follow: (object, offsetX, offsetY) ->
-    @following = object
-    @offsetX = offsetX
-    @offsetY = offsetY
-
-  zoom: (distance, duration) ->
-    if duration
-      startTime = Date.now()
-      initial = @zoomValue
-
-      @onUpdate = (dt) =>
-        now = Date.now()
-        diff = now - startTime
-        @zoomValue = (distance - initial) * (diff / duration) + initial
-
-        if diff > duration
-          @onUpdate = null
-          @zoomValue = distance
-    else
-      @zoomValue = distance
-
-  update: (dt, context, canvas) ->
-    if @following
-      size = canvas.size()
-      @offsetX = size.width / 2
-      @offsetY = size.height / 2
-      @x = -@following.x * @zoomValue + @offsetX
-      @y = -@following.y * @zoomValue + @offsetY
-
-    if @onUpdate then @onUpdate dt
-
-    context.translate @x, @y
-    context.scale @zoomValue, @zoomValue
-
-nv.camera = () ->
-  new Camera
+    @colorStops[color1].interpolate((colorF - color1) / (color2 - color1), @colorStops[color2])
