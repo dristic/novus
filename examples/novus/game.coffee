@@ -8,38 +8,25 @@
 #= require_tree models
 #= require_tree entities
 
+#= require game.config
+
 class Novus extends nv.Game
   constructor: () ->
-    super
+    glcanvas = super nv.gameConfig
 
-    glcanvas = gl()
-    glcanvas.size 500, 500
-    glcanvas.background '#000'
-    glcanvas.fullscreen()
-
-    document.body.appendChild glcanvas
-
-    @registerEngine nv.RenderingEngine
-    @registerEngine nv.GamepadEngine
-    @registerEngine nv.PhysicsEngine
-    @registerEngine nv.SoundEngine
-    @registerEngine nv.ParticleEngine
-
-    @registerScene 'Main', Main
     @registerScene 'Game', Game
     @registerScene 'GameOver', GameOver
 
     @openScene 'Main', glcanvas
 
-class Main extends nv.Scene
+class scenes.Main extends nv.Scene
   constructor: (game, @glcanvas) ->
     super game,
       canvas: @glcanvas
-      keys:
-        start: nv.Key.Spacebar
-        left: nv.Key.A
-        right: nv.Key.D
-      trackMouse: true
+      gamepad:
+        keys:
+          start: nv.Key.Spacebar
+        trackMouse: true
 
     @addEntities entities.Background,
       entities.Background,
@@ -83,7 +70,7 @@ class Main extends nv.Scene
     @glcanvas.stopDrawUpdate(@updateId)
     super
 
-class Game extends nv.Scene
+class scenes.Game extends nv.Scene
   constructor: (game, @glcanvas) ->
     super game,
       canvas: @glcanvas
@@ -154,7 +141,7 @@ class Game extends nv.Scene
     @glcanvas.stopDrawUpdate @updateId
     super
 
-class GameOver extends nv.Scene
+class scenes.GameOver extends nv.Scene
   constructor: (game, @glcanvas) ->
     super game,
       canvas: @glcanvas

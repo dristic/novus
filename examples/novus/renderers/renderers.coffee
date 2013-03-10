@@ -1,4 +1,3 @@
-window.renderers = renderers = {}
 
 class renderers.StrokeText extends nv.RenderingPlugin
   constructor: (scene, entity) ->
