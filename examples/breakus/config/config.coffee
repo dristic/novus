@@ -18,7 +18,7 @@ class @Application extends nv.Game
     canvas.setStyle 'background', 'gray'
     canvas.setStyle 'margin', '30px auto 0 auto'
     canvas.setStyle 'display', 'block'
-    document.body.appendChild canvas.element
+    document.body.appendChild canvas.source
     @rootModel.canvas = canvas
 
     # Setup the global gamepad
