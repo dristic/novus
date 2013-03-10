@@ -1,20 +1,30 @@
 class nv.RenderingEngine extends nv.Engine
-  constructor: (scene) ->
-    super scene
+  constructor: (scene, config) ->
+    super scene, config
 
-    @canvas = scene.options.canvas
+    @canvas = config.canvas
     @context = @canvas.context
     @drawables = []
+
+    @camera = new gleam.Camera
 
     scene.on "engine:rendering:create", (drawable) =>
       @drawables.push drawable
 
-      @canvas.addDrawable drawable
-
-    scene.on "engine:rendering:delete", (drawable) =>
+    scene.on "engine:rendering:destroy", (drawable) =>
       @drawables.splice @drawables.indexOf(drawable), 1
 
-      @canvas.removeDrawable drawable
+    scene.fire "engine:timing:register:after", nv.bind(this, @draw)
+    
+  draw: (dt) ->
+    @context.save()
+    @context.clearRect()
+
+    @camera.update dt, @context, @canvas
+
+    drawable.draw @context, @canvas for drawable in @drawables
+
+    @context.restore()
 
   destroy: () ->
     #i = @drawables.length
@@ -44,7 +54,7 @@ class nv.RenderingPlugin extends nv.Plugin
     # Do nothing
 
   destroy: () ->
-    @scene.fire "engine:rendering:delete", this
+    @scene.fire "engine:rendering:destroy", this
 
     super
 
@@ -72,9 +82,9 @@ class nv.PathRenderingPlugin extends nv.RenderingPlugin
 
   draw: (context, canvas) ->
     for shape in @entity.model.shapes()
-      context.strokeColor shape.strokeColor if shape.strokeColor
-      context.strokeWidth shape.strokeWidth if shape.strokeWidth
-      context.color shape.fillStyle if shape.fillStyle
+      context.setStrokeColor shape.strokeColor if shape.strokeColor
+      context.setStrokeWidth shape.strokeWidth if shape.strokeWidth
+      context.setFillStyle shape.fillStyle if shape.fillStyle
 
       context.beginPath()
       context.moveTo shape.points[0].x, shape.points[0].y

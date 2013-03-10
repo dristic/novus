@@ -7,6 +7,7 @@
 #= require_tree renderers
 #= require_tree models
 #= require_tree entities
+#= require_tree scenes
 
 class Game extends nv.Game
   constructor: () ->
@@ -14,6 +15,5 @@ class Game extends nv.Game
 
     # Start game logic here.
 
-$(() ->
+nv.ready ->
   new Game
-)

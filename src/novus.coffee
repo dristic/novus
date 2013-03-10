@@ -1,5 +1,5 @@
 #= require ../lib/vendor/zepto.min
-#= require gleam
+#= require gleam/gleam
 
 #= require base
 #= require common
@@ -9,9 +9,10 @@
 #= require model
 #= require scene
 #= require shape
-#= require debug
 #= require game
 #= require engine
+#= require time
+#= require debug
 #= require renderer
 #= require gamepad
 #= require physics

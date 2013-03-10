@@ -17,7 +17,7 @@ class entities.Title extends nv.Entity
       x: 200
       y: 320
       font: "bold italic 50px sans-serif"
-      text: "Asteroids"
+      text: "Novus"
       strokeWidth: 2
       shadowBlur: 20
 
@@ -50,7 +50,7 @@ class entities.ActionText extends nv.Entity
 class entities.Cursor extends nv.Entity
   constructor: (scene) ->
     super scene, [nv.DrawableRenderingPlugin],
-      drawable: new gl.square
+      drawable: new gleam.Square
 
     @gamepad = @scene.gamepad
 
@@ -61,12 +61,14 @@ class entities.Cursor extends nv.Entity
     @model.drawable.y = state.mouse.y
 
 class WrappingEntity extends nv.Entity
-  constructor: (args...) ->
-    super args...
+  constructor: (scene, pluginClasses, model) ->
+    super scene, pluginClasses, model
+
+    @canvas = @scene.getEngine(nv.RenderingEngine).canvas
 
   wrap: () ->
     # Boundary Wrapping
-    dimensions = @scene.get('canvas').size()
+    dimensions = @canvas.getSize()
 
     if @model.x < 0 then @model.x = dimensions.width
     else if @model.x > dimensions.width then @model.x = 0
@@ -82,7 +84,7 @@ class entities.Ship extends WrappingEntity
       @scene.fire "entity:destroyed:Ship", this
       #@scene.fire "entity:remove", this
 
-    @scene.on 'engine:gamepad:shoot', () =>
+    @scene.on 'engine:gamepad:press:shoot', () =>
       @fireBullet.call this
 
     @maxVelocity = 3
@@ -190,7 +192,7 @@ class entities.Bullet extends WrappingEntity
 
 class entities.Hud extends nv.Entity
   constructor: (scene) ->
-    canvas = scene.get('canvas')
+    canvas = scene.canvas
 
     ships = [ new models.Ship, (new models.Ship).translate(25,0), (new models.Ship).translate(50,0) ]
 

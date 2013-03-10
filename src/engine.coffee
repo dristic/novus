@@ -1,7 +1,8 @@
 class nv.Engine
-  constructor: (@scene) ->
+  constructor: (@scene, @config) ->
 
   update: (dt) ->
 
   destroy: () ->
     delete @scene
+    delete @config

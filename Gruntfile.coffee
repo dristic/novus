@@ -13,10 +13,10 @@ module.exports = (grunt) ->
 
     jasmine:
       dist:
-        src: '<%= coffee.options.output %>'
+        src: '<%= generate.options.output %>'
         options:
-          specs: 'test/spec/*Spec.js'
-          helpers: 'test/spec/*Helper.js'
+          specs: 'test/dist/**/*_spec.js'
+          helpers: 'test/dist/**/*_helper.js'
 
     concat:
       options:
@@ -51,11 +51,20 @@ module.exports = (grunt) ->
         console: true
 
     coffee:
+      glob_to_multiple:
+        expand: true
+        cwd: 'test/spec'
+        src: ['**/*_spec.coffee', '**/*_helper.coffee']
+        dest: 'test/dist'
+        ext: '.js'
+
+    generate:
       options:
         src: 'src/novus.coffee'
         output: 'dist/novus-<%= meta.version %>.js'
 
   # Load up grunt libraries
+  grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-jasmine'
   grunt.loadNpmTasks 'grunt-contrib-concat'
 
@@ -63,13 +72,13 @@ module.exports = (grunt) ->
   grunt.registerTask 'default', ['test']
 
   # Build task builds and tests.
-  grunt.registerTask 'build', ['coffee', 'concat']
+  grunt.registerTask 'build', ['generate', 'concat']
 
   # Builds and tests the engine.
-  grunt.registerTask 'test', ['build', 'jasmine']
+  grunt.registerTask 'test', ['build', 'coffee', 'jasmine']
 
   # Coffee task builds the main novus engine and game.
-  grunt.registerTask 'coffee', 'Compiles coffeescript into js files', () ->
+  grunt.registerTask 'generate', 'Compiles coffeescript into js files', () ->
     options = this.options({})
 
     js = new snockets().getConcatenation(options.src, { minify: true, async: false })

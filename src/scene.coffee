@@ -1,16 +1,11 @@
 class nv.Scene extends nv.EventDispatcher
   constructor: (@game, @options) ->
     super
-    @gamepad = nv.gamepad()
-    @controllers = []
-    @models = {}
-    @renderers = []
+
     @entities = []
     @deletedEntities = []
     @options = @options ? {}
-
     @engines = []
-    @engines.push new klass this for klass in @game.engines
 
     @on "entity:remove", () =>
       @removeEntity.call this, arguments...
@@ -26,6 +21,18 @@ class nv.Scene extends nv.EventDispatcher
 
   set: (key, value) ->
     @options[key] = value
+
+  useEngine: (name, initializer) ->
+    engineObj = @game.engines[name]
+    config = {}
+
+    if engineObj.initializer?
+      engineObj.initializer config, @game.model()
+
+    if initializer?
+      initializer config, @game.model()
+
+    @engines.push new engineObj.klass this, config
 
   addEntities: (entities...) ->
     @addEntity entity for entity in entities
@@ -43,27 +50,6 @@ class nv.Scene extends nv.EventDispatcher
   onRemoveEntity: (entity) ->
     @deletedEntities.push entity
 
-  addController: (controller) ->
-    @controllers.push controller
-
-  removeController: (controller) ->
-    @controllers.splice @controllers.indexOf(controller), 1
-
-  addModel: (name, model) ->
-    @models[name] = model
-
-  getModel: (name) ->
-    @models[name]
-
-  removeModel: (name) ->
-    delete @models[name]
-
-  addRenderer: (renderer) ->
-    @renderers.push renderer
-
-  removeRenderer: (renderer) ->
-    @renderers.splice @renderers.indexOf(renderer), 1
-
   getEngine: (type) ->
     for engine in @engines
       if engine instanceof type
@@ -71,7 +57,6 @@ class nv.Scene extends nv.EventDispatcher
     null
 
   fire: (event, data) ->
-    console.log "[EVENT] - #{event}"
     super event, data
 
   update: (dt) ->

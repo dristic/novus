@@ -24,7 +24,11 @@ nv.implement
     obj
 
   extend: (object, other) ->
-    object[key] = other[key] for key of other
+    for key of other
+      if object[key] instanceof Object and other[key] instanceof Object
+        nv.extend(object[key], other[key])
+      else
+        object[key] = other[key]
     object
 
   keydown: (key, callback) ->
@@ -61,116 +65,11 @@ nv.implement
     agent.match(/blackberry/i) or
     agent.match(/windows phone/i)) isnt null
 
-class Gamepad
-  constructor: () ->
-    @gamepad = navigator.webkitGamepad
-    @state = {}
-    @listeners = {}
-    @trackers = {}
-
-  trackMouse: () ->
-    @state.mouse =
-      x: -1
-      y: -1
-      down: false
-
-    nv.mousedown (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
-      @state.mouse.down = true
-
-    nv.mouseup (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
-      @state.mouse.down = false
-
-    nv.mousemove (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
-
-  aliasKey: (button, key) ->
-    @trackers[button] = [] unless @trackers[button]
-    @trackers[button].push nv.keydown key, () =>
-      @fireButton(button)
-    @trackers[button].push nv.keyup key, () =>
-      @state[button] = false
-
-  fireButton: (button) ->
-    @state[button] = true
-    listeners = @listeners[button]
-    if listeners instanceof Array
-      for listener in listeners
-        listener(button)
-
-  onButtonPress: (button, func) ->
-    listeners = @listeners[button]
-
-    if not listeners then listeners = []
-
-    listeners.push func
-    @listeners[button] = listeners
-    func
-
-  offButtonPress: (button, func) ->
-    listeners = @listeners[button]
-
-    if listeners.indexOf func isnt 0
-      listeners.splice listeners.indexOf(func), 1
-
-    @listeners[button] = listeners
-    func
-
-  getState: () ->
-    @state
-
-nv.gamepad = () ->
-  new Gamepad
-
-class Camera
-  constructor: () ->
-    @following = null
-    @x = 0
-    @y = 0
-    @offsetX = 0
-    @offsetY = 0
-    @zoomValue = 1
-
-  follow: (object, offsetX, offsetY) ->
-    @following = object
-    @offsetX = offsetX
-    @offsetY = offsetY
-
-  zoom: (distance, duration) ->
-    if duration
-      startTime = Date.now()
-      initial = @zoomValue
-
-      @onUpdate = (dt) =>
-        now = Date.now()
-        diff = now - startTime
-        @zoomValue = (distance - initial) * (diff / duration) + initial
-
-        if diff > duration
-          @onUpdate = null
-          @zoomValue = distance
-    else
-      @zoomValue = distance
-
-  update: (dt, context, canvas) ->
-    if @following
-      size = canvas.size()
-      @offsetX = size.width / 2
-      @offsetY = size.height / 2
-      @x = -@following.x * @zoomValue + @offsetX
-      @y = -@following.y * @zoomValue + @offsetY
-
-    if @onUpdate then @onUpdate dt
-
-    context.translate @x, @y
-    context.scale @zoomValue, @zoomValue
-
-nv.camera = () ->
-  new Camera
+  ready: (func) ->
+    return func() unless not @isReady
+    document.addEventListener 'DOMContentLoaded', () =>
+      @isReady = true
+      func()
 
 class nv.Color
   constructor: (@r, @b, @g, @a) ->
