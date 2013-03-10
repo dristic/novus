@@ -3,16 +3,18 @@ class nv.GamepadEngine extends nv.Engine
     super scene, config
 
     @gamepad = config.gamepad
-    scene.gamepad = config.gamepad
+    @scene.gamepad = config.gamepad
 
     @gamepad.trackMouse() unless not @config.trackMouse
 
     for key of @config.keys
       @gamepad.aliasKey key, @config.keys[key]
-      @buttonPressFunction = nv.bind(this, @onButtonPress)
-      @gamepad.onButtonPress key, @buttonPressFunction
-      @buttonReleaseFunction = nv.bind(this, @onButtonRelease)
-      @gamepad.onButtonRelease key, @buttonReleaseFunction
+
+    @buttonPressFunction = nv.bind(this, @onButtonPress)
+    @buttonReleaseFunction = nv.bind(this, @onButtonRelease)
+
+    @gamepad.on "press", @buttonPressFunction
+    @gamepad.on "release", @buttonReleaseFunction
 
   onButtonPress: (button) ->
     @scene.fire "engine:gamepad:press:#{button}"
@@ -21,16 +23,18 @@ class nv.GamepadEngine extends nv.Engine
     @scene.fire "engine:gamepad:release:#{button}"
 
   destroy: () ->
-    for key of @config.keys
-      @gamepad.offButtonPress key, @buttonPressFunction
-      @gamepad.offButtonRelease key, @buttonReleaseFunction
+    @gamepad.off "press", @buttonPressFunction
+    @gamepad.off "release", @buttonReleaseFunction
+    delete @buttonPressFunction
+    delete @buttonReleaseFunction
     delete @gamepad
     delete @config
 
     super
 
-class nv.Gamepad
+class nv.Gamepad extends nv.EventDispatcher
   constructor: () ->
+    super
     @gamepad = navigator.webkitGamepad
     @state = {}
     @listeners = {}
@@ -60,57 +64,14 @@ class nv.Gamepad
     @trackers[button] = [] unless @trackers[button]
     @trackers[button].push nv.keydown key, () =>
       unless @state[button]
-        @fireButton(button, "-press")
+        @fireButton(button, "press")
         @state[button] = true
     @trackers[button].push nv.keyup key, () =>
       @state[button] = false
-      @fireButton(button, "-release")
+      @fireButton(button, "release")
 
   fireButton: (button, state) ->
-    listeners = @listeners[button + state]
-    if listeners instanceof Array
-      for listener in listeners
-        listener(button)
-
-  onButtonPress: (button, func) ->
-    button = button + "-press"
-    listeners = @listeners[button]
-
-    if not listeners then listeners = []
-
-    listeners.push func
-    @listeners[button] = listeners
-    func
-
-  onButtonRelease: (button, func) ->
-    button = button + "-release"
-    listeners = @listeners[button]
-
-    if not listeners then listeners = []
-
-    listeners.push func
-    @listeners[button] = listeners
-    func
-
-  offButtonPress: (button, func) ->
-    button = button + "-press"
-    listeners = @listeners[button]
-
-    if listeners.indexOf func isnt 0
-      listeners.splice listeners.indexOf(func), 1
-
-    @listeners[button] = listeners
-    func
-
-  offButtonRelease: (button, func) ->
-    button = button + "-release"
-    listeners = @listeners[button]
-
-    if listeners.indexOf func isnt 0
-      listeners.splice listeners.indexOf(func), 1
-
-    @listeners[button] = listeners
-    func
+    @send state, button
 
   getState: () ->
     @state

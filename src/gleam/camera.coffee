@@ -30,7 +30,7 @@ class gleam.Camera
 
   update: (dt, context, canvas) ->
     if @following
-      size = canvas.size()
+      size = canvas.getSize()
       @offsetX = size.width / 2
       @offsetY = size.height / 2
       @x = -@following.x * @zoomValue + @offsetX

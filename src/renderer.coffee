@@ -16,9 +16,15 @@ class nv.RenderingEngine extends nv.Engine
 
     scene.fire "engine:timing:register:after", nv.bind(this, @draw)
     
-  draw: () ->
+  draw: (dt) ->
+    @context.save()
     @context.clearRect()
+
+    @camera.update dt, @context, @canvas
+
     drawable.draw @context, @canvas for drawable in @drawables
+
+    @context.restore()
 
   destroy: () ->
     #i = @drawables.length
