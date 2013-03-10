@@ -1,5 +1,5 @@
 class scenes.Main extends nv.Scene
-  constructor: (game, @glcanvas) ->
+  constructor: (game) ->
     super game,
       canvas: @glcanvas
       keys:
@@ -13,6 +13,7 @@ class scenes.Main extends nv.Scene
     @useEngine "GamepadEngine"
     @useEngine "SoundEngine"
     @useEngine "ParticleEngine"
+    @useEngine "DebugEngine"
 
     @addEntities entities.Background,
       entities.Background,
@@ -40,8 +41,9 @@ class scenes.Main extends nv.Scene
 
     @emitter = @getEngine(nv.ParticleEngine).getEmitter(1)
 
-    @on "engine:gamepad:start", () =>
-      @game.openScene 'Game', @glcanvas
+    @on "engine:gamepad:press:shoot", () =>
+      @game.closeScene 'Main'
+      @game.openScene 'Game'
 
     @send "engine:timing:start"
 
@@ -52,5 +54,5 @@ class scenes.Main extends nv.Scene
     if @emitter.options.angle > Math.PI * 2 then @emitter.options.angle = 0
 
   destroy: () ->
-    @glcanvas.stopDrawUpdate(@updateId)
+    @send "engine:timing:stop"
     super

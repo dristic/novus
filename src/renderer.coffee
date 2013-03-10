@@ -6,7 +6,7 @@ class nv.RenderingEngine extends nv.Engine
     @context = @canvas.context
     @drawables = []
 
-    @canvas.camera = nv.camera()
+    @camera = new gleam.Camera
 
     scene.on "engine:rendering:create", (drawable) =>
       @drawables.push drawable

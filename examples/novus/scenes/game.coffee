@@ -9,6 +9,16 @@ class scenes.Game extends nv.Scene
         down: nv.Key.S
         shoot: nv.Key.Spacebar
 
+    @useEngine "TimingEngine"
+    @useEngine "RenderingEngine"
+    @useEngine "GamepadEngine"
+    @useEngine "SoundEngine"
+    @useEngine "ParticleEngine"
+    @useEngine "DebugEngine"
+    @useEngine "PhysicsEngine"
+
+    @canvas = @getEngine(nv.RenderingEngine).canvas
+
     ship = @addEntity entities.Ship
     @addEntity entities.Background, ship, 0.05
     @addEntity entities.Background, ship, 0.01
@@ -49,12 +59,10 @@ class scenes.Game extends nv.Scene
 
     new nv.SoundFactory(this).wire sdoc
 
-    @glcanvas.camera = nv.camera()
-    @glcanvas.camera.follow ship.model, 250, 250
-    @glcanvas.camera.zoom 0.5
-    @glcanvas.camera.zoom 1, 2000
-
-    @updateId = @glcanvas.startDrawUpdate 60, nv.bind(this, @update)
+    @camera = @getEngine(nv.RenderingEngine).camera
+    @camera.follow ship.model, 250, 250
+    @camera.zoom 0.5
+    @camera.zoom 1, 2000
 
     @on "entity:destroyed:Ship", () =>
       console.log "ship destroyed"
@@ -63,8 +71,8 @@ class scenes.Game extends nv.Scene
         ship.model.reset()
       else
         console.log "game over"
-        @game.openScene 'GameOver', @glcanvas
+        @game.openScene 'GameOver', @canvas
 
   destroy: () ->
-    @glcanvas.stopDrawUpdate @updateId
+    @canvas.stopDrawUpdate @updateId
     super

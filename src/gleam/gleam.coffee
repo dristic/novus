@@ -4,3 +4,4 @@
 #= require square
 #= require text
 #= require sprite
+#= require camera

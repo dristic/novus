@@ -22,7 +22,7 @@ class nv.Game
     @sceneClasses[name] = klass
 
   openScene: (name, args...) ->
-    @scenes.push = new @sceneClasses[name] this, args...
+    @scenes.push new @sceneClasses[name] this, args...
 
   closeScene: (name) ->
     name = name ? @scenes[@scenes.length - 1].constructor.name

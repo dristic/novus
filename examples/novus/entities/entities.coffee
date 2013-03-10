@@ -192,7 +192,7 @@ class entities.Bullet extends WrappingEntity
 
 class entities.Hud extends nv.Entity
   constructor: (scene) ->
-    canvas = scene.get('canvas')
+    canvas = scene.canvas
 
     ships = [ new models.Ship, (new models.Ship).translate(25,0), (new models.Ship).translate(50,0) ]
 

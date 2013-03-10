@@ -32,6 +32,8 @@ class nv.TimingEngine extends nv.Engine
 
       after delta for after in @config.afters
 
+      lastTime = now
+
       if @updating
         requestFrame update
 

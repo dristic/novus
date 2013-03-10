@@ -87,7 +87,9 @@ class renderers.Background extends nv.RenderingPlugin
     @canvas.width = entity.model.width
     @canvas.height = entity.model.height
 
-    @rootCanvas = scene.getEngine(nv.RenderingEngine).canvas
+    renderingEngine = scene.getEngine(nv.RenderingEngine)
+    @rootCanvas = renderingEngine.canvas
+    @camera = renderingEngine.camera
 
     i = 0
     until i > 100
@@ -107,8 +109,8 @@ class renderers.Background extends nv.RenderingPlugin
   draw: (context, canvas) ->
     context.globalCompositeOperation = "lighter"
 
-    camX = -@canvas.camera.x
-    camY = -@canvas.camera.y
+    camX = -@camera.x
+    camY = -@camera.y
 
     startX = camX + ((@entity.model.x - camX) % @entity.model.width)
     startY = camY + ((@entity.model.y - camY) % @entity.model.height)
