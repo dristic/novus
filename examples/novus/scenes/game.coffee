@@ -71,11 +71,11 @@ class scenes.Game extends nv.Scene
         ship.model.reset()
       else
         console.log "game over"
+        @game.closeScene "Game"
         @game.openScene 'GameOver', @canvas
 
     # Start the scene
     @send "engine:timing:start"
 
   destroy: () ->
-    @canvas.stopDrawUpdate @updateId
     super

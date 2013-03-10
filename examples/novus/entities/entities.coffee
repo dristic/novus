@@ -84,7 +84,7 @@ class entities.Ship extends WrappingEntity
       @scene.fire "entity:destroyed:Ship", this
       #@scene.fire "entity:remove", this
 
-    @scene.on 'engine:gamepad:shoot', () =>
+    @scene.on 'engine:gamepad:press:shoot', () =>
       @fireBullet.call this
 
     @maxVelocity = 3

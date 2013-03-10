@@ -46,7 +46,7 @@ class renderers.Hud extends nv.RenderingPlugin
 
     context.save()
     context.translate(-@camera.x, -@camera.y)
-    context.font = @entity.model.font
+    context.setFont @entity.model.font
     context.setStrokeStyle @entity.model.color
     score = @entity.model.score.toString()
     textWidth = context.measureText(score).width
@@ -69,7 +69,7 @@ class renderers.Bullet extends nv.RenderingPlugin
 
   draw: (context, canvas) ->
     context.fillPath (context) =>
-      context.color @entity.model.color
+      context.setFillStyle @entity.model.color
       context.arc @entity.model.x, @entity.model.y, @entity.model.radius, 0, Math.PI * 2, true
 
 class renderers.Ship extends nv.PathRenderingPlugin

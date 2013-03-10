@@ -6,6 +6,13 @@ class scenes.GameOver extends nv.Scene
         start: nv.Key.Spacebar
       trackMouse: false
 
+    @useEngine "TimingEngine"
+    @useEngine "RenderingEngine"
+    @useEngine "GamepadEngine"
+    @useEngine "SoundEngine"
+    @useEngine "ParticleEngine"
+    @useEngine "DebugEngine"
+
     @addEntities entities.Background,
       entities.Background,
       entities.Asteroid,
@@ -13,12 +20,11 @@ class scenes.GameOver extends nv.Scene
       entities.Asteroid,
       entities.Asteroid
 
-    @glcanvas.camera = nv.camera()
-    @updateId = @glcanvas.startDrawUpdate 10, nv.bind(this, @update)
-
-    @on "engine:gamepad:start", () =>
+    @on "engine:gamepad:press:shoot", () =>
+      @game.closeScene "GameOver"
       @game.openScene 'Game', @glcanvas
 
+    @send "engine:timing:start"
+
   destroy: () ->
-    @glcanvas.stopDrawUpdate(@updateId)
     super
