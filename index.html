@@ -5,15 +5,75 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Novus by dristic</title>
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
+    <!-- <link rel="stylesheet" href="stylesheets/styles.css"> -->
+    <link rel="stylesheet" href="css/bootstrap.min.css"?
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <style type="text/css">
+      body {
+        padding-top: 20px;
+        padding-bottom: 40px;
+      }
+
+      /* Custom container */
+      .container-narrow {
+        margin: 0 auto;
+        max-width: 700px;
+      }
+      .container-narrow > hr {
+        margin: 30px 0;
+      }
+
+      /* Main marketing message and sign up button */
+      .jumbotron {
+        margin: 60px 0;
+        text-align: center;
+      }
+      .jumbotron h1 {
+        font-size: 72px;
+        line-height: 1;
+      }
+      .jumbotron .btn {
+        font-size: 21px;
+        padding: 14px 24px;
+      }
+
+      /* Supporting marketing content */
+      .marketing {
+        margin: 60px 0;
+      }
+      .marketing p + h4 {
+        margin-top: 28px;
+      }
+    </style>
   </head>
   <body>
-    <div class="wrapper">
+    <div class="container-narrow">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">Community</a></li>
+          <li><a href="#">Docs</a></li>
+          <li><a href="https://github.com/dristic/novus">GitHub</a></li>
+        </ul>
+        <h3 class="muted">Novus</h3>
+      </div>
+
+      <hr>
+
+      <div class="jumbotron">
+        <h1>Make Greate Games in the Browser!</h1>
+        <p class="lead">The Novus game engine is an event driven modular game framework for the web. Its power lies in fast iteration using customizable, pluggable components.</p>
+        <a class="btn btn-large btn-success" href="https://github.com/dristic/novus/zipball/master">Download <strong>ZIP File</strong></a>
+        <a class="btn btn-large btn-primary" href="https://github.com/dristic/novus">View on <strong>GitHub</strong></a>
+      </div>
+
+      <hr>
+    <!-- <div class="wrapper">
       <header>
         <h1>Novus</h1>
         <p>Game engine written in JavaScript for the HTML 5 canvas.</p>
@@ -59,8 +119,9 @@ $ git checkout gh-pages
         <p>This project is maintained by <a href="https://github.com/dristic">dristic</a></p>
         <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
-    </div>
+    </div> -->
     <script src="javascripts/scale.fix.js"></script>
-    
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
   </body>
 </html>
