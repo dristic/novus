@@ -73,6 +73,9 @@ class scenes.Game extends nv.Scene
         console.log "game over"
         @game.openScene 'GameOver', @canvas
 
+    # Start the scene
+    @send "engine:timing:start"
+
   destroy: () ->
     @canvas.stopDrawUpdate @updateId
     super

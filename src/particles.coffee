@@ -43,7 +43,7 @@ class nv.ParticleEngine extends nv.Engine
 
   destroy: () ->
     for emitter in @emitters
-      @canvas.removeDrawable emitter
+      @scene.fire "engine:rendering:destroy", emitter
       emitter.destroy
     delete @emitters
 

@@ -30,14 +30,20 @@ class nv.TimingEngine extends nv.Engine
 
       @scene.update delta
 
-      after delta for after in @config.afters
-
-      lastTime = now
-
+      # Check here in case our update killed the scene
       if @updating
+        after delta for after in @config.afters
+
+        lastTime = now
+
         requestFrame update
 
     requestFrame update
 
   stop: () ->
     @updating = false
+
+  destroy: () ->
+    delete @updating
+
+    super

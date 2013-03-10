@@ -34,18 +34,20 @@ class renderers.Hud extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
 
+    @camera = scene.getEngine(nv.RenderingEngine).camera
+
   draw: (context, canvas) ->
     context.save()
     context.shadowColor = @entity.model.color
     context.shadowBlur = 5
-    context.strokeColor @entity.model.color
+    context.setStrokeStyle @entity.model.color
     context.strokeRect @entity.model.x, @entity.model.y, @entity.model.width, @entity.model.height
     context.restore()
 
     context.save()
-    context.translate(-@scene.glcanvas.camera.x, -@scene.glcanvas.camera.y)
+    context.translate(-@camera.x, -@camera.y)
     context.font = @entity.model.font
-    context.strokeColor @entity.model.color
+    context.setStrokeStyle @entity.model.color
     score = @entity.model.score.toString()
     textWidth = context.measureText(score).width
     context.strokeText score, @entity.model.width - textWidth - 20 ,  50
@@ -56,9 +58,9 @@ class renderers.Hud extends nv.RenderingPlugin
       $.each points, () ->
         data.push this.x, this.y
       data.push points[0].x, points[0].y
-      context.strokeColor this.strokeColor
-      context.strokeWidth this.strokeWidth
-      context.line.apply(context, data)
+      context.setStrokeStyle this.strokeColor
+      context.setStrokeWidth this.strokeWidth
+      context.path.apply(context, data)
     context.restore()
 
 class renderers.Bullet extends nv.RenderingPlugin
