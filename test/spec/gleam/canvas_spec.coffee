@@ -33,6 +33,14 @@ describe "gleam.Canvas", () ->
       canvas.getContext '3d'
       expect(canvas.context).toBeDefined()
 
+    it "should allow drawing of a list of objects", () ->
+      object =
+        draw: () ->
+          # Do nothing
+      spyOn object, 'draw'
+      canvas.draw [object]
+      expect(object.draw).toHaveBeenCalled()
+
   describe "with a canvas", () ->
     canvas = null
     source = null

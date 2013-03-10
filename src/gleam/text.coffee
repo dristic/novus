@@ -7,7 +7,7 @@ class gleam.Text
       font: 'bold 20px sans-serif'
       textBaseline: 'bottom'
       text: 'Lorem Ipsum'
-    gleam.extend defaults, options
+    gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
   draw: (context, canvas) ->

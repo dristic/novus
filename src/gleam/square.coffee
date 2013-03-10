@@ -7,7 +7,7 @@ class gleam.Square
       x: 10
       y: 10
     options = options ? {}
-    gleam.extend defaults, options
+    gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
   draw: (context, canvas) ->

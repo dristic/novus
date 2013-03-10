@@ -32,9 +32,18 @@
         expect(canvas.width).toBe(document.width);
         return expect(canvas.height).toBe(document.height);
       });
-      return it("should allow you to switch contexts", function() {
+      it("should allow you to switch contexts", function() {
         canvas.getContext('3d');
         return expect(canvas.context).toBeDefined();
+      });
+      return it("should allow drawing of a list of objects", function() {
+        var object;
+        object = {
+          draw: function() {}
+        };
+        spyOn(object, 'draw');
+        canvas.draw([object]);
+        return expect(object.draw).toHaveBeenCalled();
       });
     });
     return describe("with a canvas", function() {

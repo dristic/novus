@@ -6,7 +6,7 @@ class gleam.Sprite
       y: 10
       width: null
       height: null
-    gleam.extend defaults, options
+    gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
     @loaded = false

@@ -49,6 +49,10 @@ class gleam.Canvas
       @fullscreened = false
       window.removeEventListener 'resize', @fullscreenListener
 
+  # Draws the objects given with the camera on this canvas
+  draw: (objects, camera) ->
+    object.draw this.context, this for object in objects
+
   # Pass through for toDataUrl
   toDataUrl: (args...) ->
     @source.toDataUrl args...

@@ -32,6 +32,7 @@ class gleam.Context
   # Creates a path using the arguments passed in
   # Arguments must be divisible by "2"
   path: () ->
+    throw new Exception("Arguments should be divisible by 2") unless arguments.length % 2 is 0
     @beginPath()
     @moveTo Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
 
@@ -53,7 +54,7 @@ class gleam.Context
   # Allows the clearing of the screen with a color instead of using clear
   setClearColor: (hex, opacity) ->
     @clearColor = hex
-    @clearOpacity = opacity
+    @clearOpacity = opacity ? 1
 
   # Clears the full screen by default or the passed in rect
   clearRect: (x, y, width, height) ->
