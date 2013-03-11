@@ -15,7 +15,7 @@ class @Application extends nv.Game
     # Setup the global canvas
     canvas = new gleam.Canvas
     canvas.setSize 500, 500
-    canvas.setStyle 'background', 'gray'
+    canvas.setStyle 'background', '#444'
     canvas.setStyle 'margin', '30px auto 0 auto'
     canvas.setStyle 'display', 'block'
     document.body.appendChild canvas.source

@@ -9,7 +9,8 @@ class scenes.Main extends nv.Scene
     @useEngine "GamepadEngine"
 
     # Add all the entities in this scene
-    @addEntities entities.Player
+    @addEntities entities.Player,
+      entities.Ball
 
     # Start the scene (we use send here because nothing is updating yet)
     @send "engine:timing:start"
