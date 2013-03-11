@@ -28,6 +28,9 @@ class entities.Ball extends nv.Entity
         @model.direction.y = -@model.direction.y
         @model.y += @model.speed * 2
 
+    @scene.on "engine:collision:Ball:Brick", (data) =>
+      @model.direction.y = -@model.direction.y
+
   update: (dt) ->
     if @started is false
       @startDelay -= dt
