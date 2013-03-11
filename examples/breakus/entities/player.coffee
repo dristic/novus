@@ -5,7 +5,7 @@ class entities.Player extends nv.Entity
         width: 150
         height: 20
         color: "#FFF"
-      type: 'active'
+      type: 'passive'
       width: 150
       height: 20
       x: 250

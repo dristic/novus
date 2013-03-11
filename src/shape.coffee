@@ -34,7 +34,7 @@ class nv.Rect
   reset: (@x,@y,@x2,@y2) ->
 
   _checkPt: (tx,ty) ->
-    (tx >= @x and tx <= @x2) and  (ty >= @y and ty <= @y2)
+    (tx >= @x and tx <= @x2) and (ty >= @y and ty <= @y2)
 
   contains: (pt) ->
     @_checkPt pt.x, pt.y

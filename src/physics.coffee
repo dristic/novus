@@ -14,6 +14,20 @@ class nv.PhysicsEngine extends nv.Engine
     @scene.on "engine:physics:register", (obj) =>
       @physicsObjects.push obj
 
+    @canvas = @scene.getEngine(nv.RenderingEngine).canvas
+
+    @scene.fire "engine:timing:register:after", nv.bind(this, @drawObjects)
+
+  drawObjects: () ->
+    drawObj = (obj) =>
+      @canvas.context.setStrokeStyle "#FF0000"
+      @canvas.context.setStrokeWidth 2
+      bounds = obj.bounds()
+      @canvas.context.strokeRect bounds.x, bounds.y, bounds.x2 - bounds.x, bounds.y2 - bounds.y
+
+    drawObj obj for ida, obj of @activeObjects
+    drawObj obj for ida, obj of @passiveObjects
+
   trackObjects: (array) ->
     self = this
     $.each array, () ->

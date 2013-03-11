@@ -5,7 +5,7 @@ class entities.Ball extends nv.Entity
         width: 20
         height: 20
         color: "#FFF"
-      type: 'passive'
+      type: 'active'
       width: 20
       height: 20
       x: 150
@@ -20,9 +20,13 @@ class entities.Ball extends nv.Entity
     @canvas = @scene.getEngine(nv.RenderingEngine).canvas
 
     # Collision handler
-    @scene.on "engine:collision:Player:Ball", (data) =>
-      @model.direction.x = -@model.direction.x
-      @model.direction.y = -@model.direction.y
+    @scene.on "engine:collision:Ball:Player", (data) =>
+      if data.target.model.y > @model.y
+        @model.direction.y = -@model.direction.y
+        @model.y -= @model.speed * 2
+      else
+        @model.direction.y = -@model.direction.y
+        @model.y += @model.speed * 2
 
   update: (dt) ->
     if @started is false
