@@ -84,6 +84,17 @@ class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
       y2 = this.y if y2 == null || this.y > y2
     @boundingRect.reset x1, y1, x2, y2
 
+class nv.RectanglePhysicsPlugin extends nv.PhysicsPlugin
+  constructor: (scene, entity) ->
+    @id = __objectId++
+    @type = entity.model.type
+    @boundingRect = new nv.Rect 0, 0, 0, 0
+
+    super scene, entity
+
+  bounds: () ->
+    model = @entity.model
+    new nv.Rect model.x, model.y, model.x + model.width, model.y + model.height
 
 class nv.GravityPhysicsPlugin extends nv.PhysicsPlugin
   constructor: (scene, entity) ->

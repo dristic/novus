@@ -25,16 +25,14 @@ class @Application extends nv.Game
     @rootModel.gamepad = nv.gamepad()
 
     # Create initializers and register engines
-    @registerEngine nv.TimingEngine, (config, rootModel) ->
-      # Do nothing
-
+    @registerEngine nv.DebugEngine
+    @registerEngine nv.TimingEngine
+    @registerEngine nv.PhysicsEngine
     @registerEngine nv.RenderingEngine, (config, rootModel) ->
       nv.extend config,
         canvas: rootModel.canvas
         width: 500
         height: 500
-
-    @registerEngine nv.DebugEngine
     
     @registerEngine nv.GamepadEngine, (config, rootModel) ->
       nv.extend config,

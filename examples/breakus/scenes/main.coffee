@@ -7,6 +7,7 @@ class scenes.Main extends nv.Scene
     @useEngine "RenderingEngine"
     @useEngine "DebugEngine"
     @useEngine "GamepadEngine"
+    @useEngine "PhysicsEngine"
 
     # Add all the entities in this scene
     @addEntities entities.Player,

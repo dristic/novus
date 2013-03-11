@@ -1,10 +1,11 @@
 class entities.Ball extends nv.Entity
   constructor: (scene) ->
-    super scene, [nv.DrawableRenderingPlugin],
+    super scene, [nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin],
       drawable: new gleam.Square
         width: 20
         height: 20
         color: "#FFF"
+      type: 'passive'
       width: 20
       height: 20
       x: 150
@@ -18,6 +19,11 @@ class entities.Ball extends nv.Entity
     # Get dependencies
     @canvas = @scene.getEngine(nv.RenderingEngine).canvas
 
+    # Collision handler
+    @scene.on "engine:collision:Player:Ball", (data) =>
+      @model.direction.x = -@model.direction.x
+      @model.direction.y = -@model.direction.y
+
   update: (dt) ->
     if @started is false
       @startDelay -= dt
@@ -27,8 +33,10 @@ class entities.Ball extends nv.Entity
       @model.y += @model.speed * @model.direction.y
 
       dimensions = @canvas.getSize()
-      if @model.x < @model.width then @model.direction.x = -@model.direction.x
+      if @model.x < 0 then @model.direction.x = -@model.direction.x
       else if @model.x > dimensions.width - @model.width then @model.direction.x = -@model.direction.x
 
-      if @model.y < @model.height then @model.direction.y = -@model.direction.y
+      if @model.y < 0 then @model.direction.y = -@model.direction.y
+
+      # Add in for god mode
       else if @model.y > dimensions.height - @model.height then @model.direction.y = -@model.direction.y

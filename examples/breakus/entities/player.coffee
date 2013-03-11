@@ -1,10 +1,13 @@
 class entities.Player extends nv.Entity
   constructor: (scene) ->
-    super scene, [nv.DrawableRenderingPlugin],
+    super scene, [nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin],
       drawable: new gleam.Square
         width: 150
         height: 20
         color: "#FFF"
+      type: 'active'
+      width: 150
+      height: 20
       x: 250
       y: 450
       speed: 3
