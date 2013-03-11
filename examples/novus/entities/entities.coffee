@@ -1,13 +1,8 @@
 window.entities = entities = {}
 
 class entities.Background extends nv.Entity
-  constructor: (scene, @follow, @variance) ->
-    super scene, [renderers.Background], new models.Background
-
-  update: (dt) ->
-    unless not @follow
-      @model.x = @follow.model.x * @variance
-      @model.y = @follow.model.y * @variance
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
 class entities.Title extends nv.Entity
   constructor: (scene) ->
@@ -66,7 +61,7 @@ class WrappingEntity extends nv.Entity
 
   wrap: () ->
     # Boundary Wrapping
-    dimensions = @scene.get('canvas').size()
+    dimensions = @scene.canvas.size()
 
     if @model.x < 0 then @model.x = dimensions.width
     else if @model.x > dimensions.width then @model.x = 0

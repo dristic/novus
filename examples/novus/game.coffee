@@ -14,29 +14,14 @@ class Novus extends nv.Game
   constructor: () ->
     glcanvas = super nv.gameConfig
 
-    @registerScene 'Game', Game
-    @registerScene 'GameOver', GameOver
+    @registerScene 'Game', scenes.Game
+    @registerScene 'GameOver', scenes.GameOver
 
     @openScene 'Main', glcanvas
 
 class scenes.Main extends nv.Scene
-  constructor: (game, @glcanvas) ->
-    super game,
-      canvas: @glcanvas
-      gamepad:
-        keys:
-          start: nv.Key.Spacebar
-        trackMouse: true
-
-    @addEntities entities.Background,
-      entities.Background,
-      entities.Title,
-      entities.ActionText,
-      entities.Cursor,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid
+  constructor: (name, game, @glcanvas) ->
+    super name, game, glcanvas
 
     @send "engine:particle:create_emitter",
       position: new nv.Point(450, 300)

@@ -18,25 +18,25 @@ nv.gameConfig =
 
       entities:
         background_layer1:
-          entity: "Background"
-          renderer: "Background"
+          entity: "nv.Entity"
+          plugins: [ "renderers.Background" ]
           model:
             x: 0
             y: 0
             width: 500
             height: 500
         background_layer2:
-          entity: "Background"
-          renderer: "Background"
+          entity: "nv.Entity"
+          plugins: [ "renderers.Background" ]
           model:
             x: 0
             y: 0
             width: 500
             height: 500
         title:
-          entity: "Title"
-          renderer: "StrokeText"
-          effect: "ShadowBlurAnimator"
+          entity: "nv.Entity"
+          plugins: [ "renderers.StrokeText" ]
+          later: "effects.ShadowBlurAnimator"
           model:
             color: "#000"
             strokeColor: "#0F0"
@@ -48,9 +48,9 @@ nv.gameConfig =
             shadowBlur: 20
             shadowBlurIncrement: 0.2
         action_text:
-          entity: "ActionText"
-          renderer: "StrokeRenderer"
-          effect: "GlobalAlphaAnimator"
+          entity: "nv.Entity"
+          plugins: [ "renderers.StrokeText" ]
+          later: "effects.GlobalAlphaAnimator"
           model:
             color: "#0F0"
             x: 200
@@ -61,6 +61,14 @@ nv.gameConfig =
             shadowBlur: 0
             fade: true
             fadeSpeed: 0.02
+        asteroids:
+          entity: "entities.Asteroid"
+          plugins: [ "nv.PathRenderingPlugin", "nv.PathPhysicsPlugin" ]
+          models:
+            count: 4
+            model:
+              scale: () -> Math.ceil(Math.random() * 4)
+
 
 
 

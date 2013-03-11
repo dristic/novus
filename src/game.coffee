@@ -13,12 +13,10 @@ class nv.Game
 
     for engine in config.engines
       klass = "nv." + engine[0].toUpperCase() + engine.slice(1) + "Engine"
-      console.log "engine: #{klass}, #{getClass(klass)}"
       @registerEngine getClass(klass) 
 
     for name of config.scenes
       klass = "scenes." + name[0].toUpperCase() + name.slice(1)
-      console.log "scene: #{klass}, #{getClass(klass)}"
       @registerScene klass, getClass(klass)
 
     return glcanvas
@@ -31,7 +29,7 @@ class nv.Game
 
   openScene: (name, args...) ->
     @closeScene()
-    @currentScene = new @sceneClasses['scenes.' + name] this, args...
+    @currentScene = new @sceneClasses['scenes.' + name] name, this, args...
 
   closeScene: () ->
     @currentScene.destroy() unless not @currentScene
