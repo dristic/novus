@@ -1,5 +1,11 @@
 window.nv = window.nv ? {}
 
+window.nv.Controller =
+  Up: 12
+  Down: 13
+  Left: 14
+  Right: 15
+
 window.nv.Key =
   Backspace:   8,
   Tab:         9,

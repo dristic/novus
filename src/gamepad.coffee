@@ -10,6 +10,9 @@ class nv.GamepadEngine extends nv.Engine
     for key of @config.keys
       @gamepad.aliasKey key, @config.keys[key]
 
+    for key of @config.controller
+      @gamepad.aliasGamepadButton key, @config.controller[key]
+
     @buttonPressFunction = nv.bind(this, @onButtonPress)
     @buttonReleaseFunction = nv.bind(this, @onButtonRelease)
 
@@ -21,6 +24,9 @@ class nv.GamepadEngine extends nv.Engine
 
   onButtonRelease: (button) ->
     @scene.fire "engine:gamepad:release:#{button}"
+
+  update: (dt) ->
+    @gamepad.update dt
 
   destroy: () ->
     @gamepad.off "press", @buttonPressFunction
@@ -39,6 +45,9 @@ class nv.Gamepad extends nv.EventDispatcher
     @state = {}
     @listeners = {}
     @trackers = {}
+    @gamepadAliases = {}
+    @previousGamepadState = undefined
+    @trackGamepad = false
 
   trackMouse: () ->
     @state.mouse =
@@ -70,11 +79,31 @@ class nv.Gamepad extends nv.EventDispatcher
       @state[button] = false
       @fireButton(button, "release")
 
+  # Alias a button from a plugged in game pad
+  aliasGamepadButton: (button, gamepadButton) ->
+    @trackGamepad = true
+    @gamepadAliases[gamepadButton] = [] unless @gamepadAliases[gamepadButton]
+    @gamepadAliases[gamepadButton].push button
+
   fireButton: (button, state) ->
     @send state, button
 
   getState: () ->
     @state
+
+  update: (dt) ->
+    if @trackGamepad
+      gamepad = navigator.webkitGetGamepads()[0]
+      if gamepad and @previousGamepadState
+        for key of @gamepadAliases
+          key = parseInt key
+          if gamepad.buttons[key] > 0 and @previousGamepadState.buttons[key] is 0
+            @fireButton button, "press" for button in @gamepadAliases[key]
+          else if gamepad.buttons[key] is 0 and @previousGamepadState.buttons[key] > 0
+            @fireButton button, "release" for button in @gamepadAliases[key]
+        @previousGamepadState = nv.extend {}, gamepad
+      else
+        @previousGamepadState = nv.extend {}, gamepad
 
 nv.gamepad = () ->
   new nv.Gamepad

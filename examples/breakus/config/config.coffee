@@ -43,6 +43,9 @@ class @Application extends nv.Game
           left: nv.Key.A
           right: nv.Key.D
           shoot: nv.Key.Spacebar
+        controller:
+          left: nv.Controller.Left
+          right: nv.Controller.Right
 
     # Register all the game scenes off of an object
     @registerScenes scenes
