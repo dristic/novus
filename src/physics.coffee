@@ -1,6 +1,6 @@
 class nv.PhysicsEngine extends nv.Engine
-  constructor: (scene) ->
-    super scene
+  constructor: (scene, config) ->
+    super scene, config
     @passiveObjects = {}
     @activeObjects = {}
     @physicsObjects = []
@@ -13,6 +13,20 @@ class nv.PhysicsEngine extends nv.Engine
 
     @scene.on "engine:physics:register", (obj) =>
       @physicsObjects.push obj
+
+    if @config.debug is true
+      @canvas = @scene.getEngine(nv.RenderingEngine).canvas
+      @scene.fire "engine:timing:register:after", nv.bind(this, @drawObjects)
+
+  drawObjects: () ->
+    drawObj = (obj) =>
+      @canvas.context.setStrokeStyle "#FF0000"
+      @canvas.context.setStrokeWidth 2
+      bounds = obj.bounds()
+      @canvas.context.strokeRect bounds.x, bounds.y, bounds.x2 - bounds.x, bounds.y2 - bounds.y
+
+    drawObj obj for ida, obj of @activeObjects
+    drawObj obj for ida, obj of @passiveObjects
 
   trackObjects: (array) ->
     self = this
@@ -84,6 +98,17 @@ class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
       y2 = this.y if y2 == null || this.y > y2
     @boundingRect.reset x1, y1, x2, y2
 
+class nv.RectanglePhysicsPlugin extends nv.PhysicsPlugin
+  constructor: (scene, entity) ->
+    @id = __objectId++
+    @type = entity.model.type
+    @boundingRect = new nv.Rect 0, 0, 0, 0
+
+    super scene, entity
+
+  bounds: () ->
+    model = @entity.model
+    new nv.Rect model.x, model.y, model.x + model.width, model.y + model.height
 
 class nv.GravityPhysicsPlugin extends nv.PhysicsPlugin
   constructor: (scene, entity) ->

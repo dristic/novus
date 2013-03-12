@@ -65,6 +65,8 @@ class nv.DrawableRenderingPlugin extends nv.RenderingPlugin
     @drawable = entity.model.drawable
 
   draw: (context, canvas) ->
+    @drawable.x = @entity.model.x
+    @drawable.y = @entity.model.y
     @drawable.draw context, canvas
 
 class nv.TextRenderingPlugin extends nv.RenderingPlugin

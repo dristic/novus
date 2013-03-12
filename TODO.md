@@ -1,8 +1,9 @@
 To Do
 ------------------------
-* Particle Effects
+* Better Particle Effects
 * Clickable Objects
 * Sprite Maps
+* Animated Sprites
 
 Future Ideas
 -----------------------

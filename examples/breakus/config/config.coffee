@@ -15,26 +15,24 @@ class @Application extends nv.Game
     # Setup the global canvas
     canvas = new gleam.Canvas
     canvas.setSize 500, 500
-    canvas.setStyle 'background', 'gray'
+    canvas.setStyle 'background', '#444'
     canvas.setStyle 'margin', '30px auto 0 auto'
     canvas.setStyle 'display', 'block'
-    document.body.appendChild canvas.element
+    document.body.appendChild canvas.source
     @rootModel.canvas = canvas
 
     # Setup the global gamepad
     @rootModel.gamepad = nv.gamepad()
 
     # Create initializers and register engines
-    @registerEngine nv.TimingEngine, (config, rootModel) ->
-      # Do nothing
-
+    @registerEngine nv.DebugEngine
+    @registerEngine nv.TimingEngine
+    @registerEngine nv.PhysicsEngine
     @registerEngine nv.RenderingEngine, (config, rootModel) ->
       nv.extend config,
         canvas: rootModel.canvas
         width: 500
         height: 500
-
-    @registerEngine nv.DebugEngine
     
     @registerEngine nv.GamepadEngine, (config, rootModel) ->
       nv.extend config,
