@@ -11,6 +11,7 @@ class entities.Ball extends nv.Entity
       x: 150
       y: 250
       speed: 2
+      speedIncrement: 0.2
       direction: new nv.Point(1, 1)
 
     @startDelay = 5
@@ -30,6 +31,13 @@ class entities.Ball extends nv.Entity
 
     @scene.on "engine:collision:Ball:Brick", (data) =>
       @model.direction.y = -@model.direction.y
+      @model.speed += @model.speedIncrement
+
+  restart: () ->
+    @started = false
+    @startDelay = 5
+    @model.x = 150
+    @model.y = 250
 
   update: (dt) ->
     if @started is false
@@ -45,5 +53,7 @@ class entities.Ball extends nv.Entity
 
       if @model.y < 0 then @model.direction.y = -@model.direction.y
 
-      # Add in for god mode
-      else if @model.y > dimensions.height - @model.height then @model.direction.y = -@model.direction.y
+      else if @model.y > dimensions.height
+        # Add in for god mode
+        # @model.direction.y = -@model.direction.y
+        @restart()
