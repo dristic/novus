@@ -4,8 +4,8 @@
 #= Require any other libraries you need here.
 
 #= require_tree config
-#= require_tree renderers
-#= require_tree models
+#// = require_tree renderers
+#// = require_tree models
 #= require_tree entities
 #= require_tree scenes
 
