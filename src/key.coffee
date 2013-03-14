@@ -5,6 +5,18 @@ window.nv.Controller =
   Down: 13
   Left: 14
   Right: 15
+  A: 0
+  X: 1
+  Y: 3
+  B: 2
+  LB: 4
+  LT: 6
+  RB: 5
+  RT: 7
+  Select: 8
+  Start: 9
+  LeftStick: 10
+  RightStick: 11
 
 window.nv.Key =
   Backspace:   8,

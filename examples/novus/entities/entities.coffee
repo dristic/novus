@@ -208,7 +208,7 @@ class entities.Hud extends nv.Entity
       score: 0
 
     @scene.on "entity:destroyed:Asteroid", (data) =>
-      @model.score += [500, 300, 200, 100][data.model.size - 1]
+      @model.score += [500, 300, 200, 100][data.model.size - 1] unless not data.model
 
   shipDestroyed: () ->
     @model.ships.pop()

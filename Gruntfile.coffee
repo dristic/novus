@@ -63,10 +63,19 @@ module.exports = (grunt) ->
         src: 'src/novus.coffee'
         output: 'dist/novus-<%= meta.version %>.js'
 
+    dox:
+      glob_to_multiple:
+        expand: true
+        cwd: 'src'
+        src: ['**/*.coffee']
+        dest: 'docs'
+        ext: '.js'
+
   # Load up grunt libraries
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-jasmine'
   grunt.loadNpmTasks 'grunt-contrib-concat'
+  grunt.loadNpmTasks 'grunt-dox'
 
   # Default task lints, tests, and builds everything.
   grunt.registerTask 'default', ['test']

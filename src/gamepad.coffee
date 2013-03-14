@@ -98,8 +98,10 @@ class nv.Gamepad extends nv.EventDispatcher
         for key of @gamepadAliases
           key = parseInt key
           if gamepad.buttons[key] > 0 and @previousGamepadState.buttons[key] is 0
+            @state[button] = true for button in @gamepadAliases[key]
             @fireButton button, "press" for button in @gamepadAliases[key]
           else if gamepad.buttons[key] is 0 and @previousGamepadState.buttons[key] > 0
+            @state[button] = false for button in @gamepadAliases[key]
             @fireButton button, "release" for button in @gamepadAliases[key]
         @previousGamepadState = nv.extend {}, gamepad
       else
