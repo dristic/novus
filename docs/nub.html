@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>= require grounds</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="common.html">
+                common.coffee
+              </a>
+            
+              
+              <a class="source" href="debug.html">
+                debug.coffee
+              </a>
+            
+              
+              <a class="source" href="engine.html">
+                engine.coffee
+              </a>
+            
+              
+              <a class="source" href="entity.html">
+                entity.coffee
+              </a>
+            
+              
+              <a class="source" href="event_dispatcher.html">
+                event_dispatcher.coffee
+              </a>
+            
+              
+              <a class="source" href="game.html">
+                game.coffee
+              </a>
+            
+              
+              <a class="source" href="gamepad.html">
+                gamepad.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="camera.html">
+                camera.coffee
+              </a>
+            
+              
+              <a class="source" href="canvas.html">
+                canvas.coffee
+              </a>
+            
+              
+              <a class="source" href="context.html">
+                context.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="sprite.html">
+                sprite.coffee
+              </a>
+            
+              
+              <a class="source" href="square.html">
+                square.coffee
+              </a>
+            
+              
+              <a class="source" href="text.html">
+                text.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam_old.html">
+                gleam_old.coffee
+              </a>
+            
+              
+              <a class="source" href="key.html">
+                key.coffee
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.coffee
+              </a>
+            
+              
+              <a class="source" href="novus.html">
+                novus.coffee
+              </a>
+            
+              
+              <a class="source" href="nub.html">
+                nub.coffee
+              </a>
+            
+              
+              <a class="source" href="particles.html">
+                particles.coffee
+              </a>
+            
+              
+              <a class="source" href="physics.html">
+                physics.coffee
+              </a>
+            
+              
+              <a class="source" href="plugin.html">
+                plugin.coffee
+              </a>
+            
+              
+              <a class="source" href="renderer.html">
+                renderer.coffee
+              </a>
+            
+              
+              <a class="source" href="scene.html">
+                scene.coffee
+              </a>
+            
+              
+              <a class="source" href="shape.html">
+                shape.coffee
+              </a>
+            
+              
+              <a class="source" href="sound.html">
+                sound.coffee
+              </a>
+            
+              
+              <a class="source" href="time.html">
+                time.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h1">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h1>= require grounds</h1>
+<p>class Connection extends nv.EventDispatcher
+  constructor: () -&gt;
+    @listeners = {}</p>
+<pre><code>@connection = @connectToChannel &#39;novus&#39;
+
+@connection.on &#39;connect&#39;, () -&gt;
+  console.log &#39;Connected!&#39;
+
+@connection.on &#39;join&#39;, (user) -&gt;
+  console.log user
+
+@connection.on &#39;message&#39;, (message) =&gt;
+  @handleMessage message</code></pre>
+<p>  handleMessage: (message) -&gt;
+    console.log message</p>
+<pre><code>if message.id
+  @fire message.id, message</code></pre>
+<p>  send: (id, data) -&gt;
+    data.id = id
+    @connection.emit &#39;message&#39;, data</p>
+<p>  connectToChannel: (channel) -&gt;
+    io.connect &#39;<a href="http://pubsub.pubnub.com">http://pubsub.pubnub.com</a>&#39;,
+      channel: channel
+      publish_key: &#39;pub-c54880a5-ba99-4836-a084-08f57b4b5333&#39;
+      subscribe_key: &#39;sub-3129de73-8f26-11e1-94c8-1543525cae6d&#39;
+      ssl: false</p>
+<pre><code>  # cipher_key: null
+  # origin: &#39;pubsub.pubnub.com&#39;</code></pre>
+<p>  auth: (user) -&gt;
+    $.post &#39;<a href="http://localhost:3000">http://localhost:3000</a>&#39;, { user: user }, (response) =&gt;
+      token = JSON.parse(response).token</p>
+<pre><code>  @connection = @connectToChannel token
+
+  @connection.send &#39;Hello server!&#39;</code></pre>
+<p>window.nub = () -&gt;
+  return new Connection()</p>
+
+            </div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

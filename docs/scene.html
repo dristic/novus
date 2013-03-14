@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>scene.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="common.html">
+                common.coffee
+              </a>
+            
+              
+              <a class="source" href="debug.html">
+                debug.coffee
+              </a>
+            
+              
+              <a class="source" href="engine.html">
+                engine.coffee
+              </a>
+            
+              
+              <a class="source" href="entity.html">
+                entity.coffee
+              </a>
+            
+              
+              <a class="source" href="event_dispatcher.html">
+                event_dispatcher.coffee
+              </a>
+            
+              
+              <a class="source" href="game.html">
+                game.coffee
+              </a>
+            
+              
+              <a class="source" href="gamepad.html">
+                gamepad.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="camera.html">
+                camera.coffee
+              </a>
+            
+              
+              <a class="source" href="canvas.html">
+                canvas.coffee
+              </a>
+            
+              
+              <a class="source" href="context.html">
+                context.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="sprite.html">
+                sprite.coffee
+              </a>
+            
+              
+              <a class="source" href="square.html">
+                square.coffee
+              </a>
+            
+              
+              <a class="source" href="text.html">
+                text.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam_old.html">
+                gleam_old.coffee
+              </a>
+            
+              
+              <a class="source" href="key.html">
+                key.coffee
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.coffee
+              </a>
+            
+              
+              <a class="source" href="novus.html">
+                novus.coffee
+              </a>
+            
+              
+              <a class="source" href="nub.html">
+                nub.coffee
+              </a>
+            
+              
+              <a class="source" href="particles.html">
+                particles.coffee
+              </a>
+            
+              
+              <a class="source" href="physics.html">
+                physics.coffee
+              </a>
+            
+              
+              <a class="source" href="plugin.html">
+                plugin.coffee
+              </a>
+            
+              
+              <a class="source" href="renderer.html">
+                renderer.coffee
+              </a>
+            
+              
+              <a class="source" href="scene.html">
+                scene.coffee
+              </a>
+            
+              
+              <a class="source" href="shape.html">
+                shape.coffee
+              </a>
+            
+              
+              <a class="source" href="sound.html">
+                sound.coffee
+              </a>
+            
+              
+              <a class="source" href="time.html">
+                time.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>scene.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">nv</span>.<span class="title">Scene</span> <span class="keyword">extends</span> <span class="title">nv</span>.<span class="title">EventDispatcher</span></span>
+  constructor: (<span class="property">@game</span>, <span class="property">@options</span>) -&gt;
+    <span class="keyword">super</span>
+
+    <span class="property">@entities</span> = []
+    <span class="property">@deletedEntities</span> = []
+    <span class="property">@options</span> = <span class="property">@options</span> ? {}
+    <span class="property">@engines</span> = []
+
+    <span class="property">@on</span> <span class="string">"entity:remove"</span>, () =&gt;
+      <span class="property">@removeEntity</span>.call <span class="keyword">this</span>, arguments...
+
+    <span class="property">@on</span> <span class="string">"entity:add"</span>, (options) =&gt;
+      <span class="property">@addEntity</span> options.entity, options
+
+    <span class="property">@on</span> <span class="string">"scene:destroy"</span>, (options) =&gt;
+      <span class="property">@destruct</span>()
+
+  get: (key) -&gt;
+    <span class="property">@options</span>[key]
+
+  set: (key, value) -&gt;
+    <span class="property">@options</span>[key] = value
+
+  useEngine: (name, initializer) -&gt;
+    engineObj = <span class="property">@game</span>.engines[name]
+    config = {}
+
+    <span class="keyword">if</span> engineObj.initializer?
+      engineObj.initializer config, <span class="property">@game</span>.model()
+
+    <span class="keyword">if</span> initializer?
+      initializer config, <span class="property">@game</span>.model()
+
+    <span class="property">@engines</span>.push <span class="keyword">new</span> engineObj.klass <span class="keyword">this</span>, config
+
+  addEntities: (entities...) -&gt;
+    <span class="property">@addEntity</span> entity <span class="keyword">for</span> entity <span class="keyword">in</span> entities
+
+  addEntity: (entity, args...) -&gt;
+    entity = <span class="keyword">new</span> entity <span class="keyword">this</span>, args...
+    <span class="property">@entities</span>.push entity
+    entity
+
+  removeEntity: (entity) -&gt;
+    <span class="keyword">unless</span> <span class="property">@entities</span>.indexOf(entity) <span class="keyword">is</span> -<span class="number">1</span>
+      entity.destroy() <span class="keyword">unless</span> <span class="keyword">not</span> entity.destroy
+      <span class="property">@entities</span>.splice <span class="property">@entities</span>.indexOf(entity), <span class="number">1</span>
+
+  onRemoveEntity: (entity) -&gt;
+    <span class="property">@deletedEntities</span>.push entity
+
+  getEngine: (type) -&gt;
+    <span class="keyword">for</span> engine <span class="keyword">in</span> <span class="property">@engines</span>
+      <span class="keyword">if</span> engine <span class="keyword">instanceof</span> type
+        <span class="keyword">return</span> engine
+    <span class="literal">null</span>
+
+  fire: (event, data) -&gt;
+    <span class="keyword">super</span> event, data
+
+  update: (dt) -&gt;
+    engine.update dt <span class="keyword">for</span> engine <span class="keyword">in</span> <span class="property">@engines</span>
+    entity.update dt <span class="keyword">for</span> entity <span class="keyword">in</span> <span class="property">@entities</span>
+
+    <span class="keyword">super</span> dt
+
+  destroy: () -&gt;
+    <span class="property">@fire</span> <span class="string">"scene:destroy"</span>
+
+  destruct: () -&gt;
+    entity.destroy() <span class="keyword">for</span> entity <span class="keyword">in</span> <span class="property">@entities</span>
+    engine.destroy() <span class="keyword">for</span> engine <span class="keyword">in</span> <span class="property">@engines</span>
+    
+    <span class="keyword">delete</span> <span class="property">@entities</span>
+    <span class="keyword">delete</span> <span class="property">@engines</span></pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

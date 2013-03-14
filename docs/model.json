@@ -1,0 +1,12 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "",
+      "summary": "",
+      "body": ""
+    },
+    "isPrivate": false,
+    "code": "class nv.Model\n  constructor: (data) ->\n    @setMany data\n\n  setMany: (object) ->\n    for key of object\n      this[key] = object[key]\n\n  get: (key) ->\n    this[key]\n\n  set: (key, value) ->\n    this[key] = value\n\n  persist: () ->\n    data = {}\n    for key of this\n      data[key] = this[key]\n    window.localStorage[@constructor.name] = data\n\n  load: () ->\n    @setMany window.localStorage[@constructor.name]\n\nclass nv.Collection extends nv.Model\n  constructor: (arr) ->\n    @items = arr ? []"
+  }
+]

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>physics.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="common.html">
+                common.coffee
+              </a>
+            
+              
+              <a class="source" href="debug.html">
+                debug.coffee
+              </a>
+            
+              
+              <a class="source" href="engine.html">
+                engine.coffee
+              </a>
+            
+              
+              <a class="source" href="entity.html">
+                entity.coffee
+              </a>
+            
+              
+              <a class="source" href="event_dispatcher.html">
+                event_dispatcher.coffee
+              </a>
+            
+              
+              <a class="source" href="game.html">
+                game.coffee
+              </a>
+            
+              
+              <a class="source" href="gamepad.html">
+                gamepad.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="camera.html">
+                camera.coffee
+              </a>
+            
+              
+              <a class="source" href="canvas.html">
+                canvas.coffee
+              </a>
+            
+              
+              <a class="source" href="context.html">
+                context.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="sprite.html">
+                sprite.coffee
+              </a>
+            
+              
+              <a class="source" href="square.html">
+                square.coffee
+              </a>
+            
+              
+              <a class="source" href="text.html">
+                text.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam_old.html">
+                gleam_old.coffee
+              </a>
+            
+              
+              <a class="source" href="key.html">
+                key.coffee
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.coffee
+              </a>
+            
+              
+              <a class="source" href="novus.html">
+                novus.coffee
+              </a>
+            
+              
+              <a class="source" href="nub.html">
+                nub.coffee
+              </a>
+            
+              
+              <a class="source" href="particles.html">
+                particles.coffee
+              </a>
+            
+              
+              <a class="source" href="physics.html">
+                physics.coffee
+              </a>
+            
+              
+              <a class="source" href="plugin.html">
+                plugin.coffee
+              </a>
+            
+              
+              <a class="source" href="renderer.html">
+                renderer.coffee
+              </a>
+            
+              
+              <a class="source" href="scene.html">
+                scene.coffee
+              </a>
+            
+              
+              <a class="source" href="shape.html">
+                shape.coffee
+              </a>
+            
+              
+              <a class="source" href="sound.html">
+                sound.coffee
+              </a>
+            
+              
+              <a class="source" href="time.html">
+                time.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>physics.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">nv</span>.<span class="title">PhysicsEngine</span> <span class="keyword">extends</span> <span class="title">nv</span>.<span class="title">Engine</span></span>
+  constructor: (scene, config) -&gt;
+    <span class="keyword">super</span> scene, config
+    <span class="property">@passiveObjects</span> = {}
+    <span class="property">@activeObjects</span> = {}
+    <span class="property">@physicsObjects</span> = []
+
+    <span class="property">@scene</span>.<span class="literal">on</span> <span class="string">"engine:physics:create"</span>, (collidable) =&gt;
+      <span class="property">@trackObject</span> collidable
+
+    <span class="property">@scene</span>.<span class="literal">on</span> <span class="string">"engine:physics:delete"</span>, (collidable) =&gt;
+      <span class="property">@removeObject</span> collidable
+
+    <span class="property">@scene</span>.<span class="literal">on</span> <span class="string">"engine:physics:register"</span>, (obj) =&gt;
+      <span class="property">@physicsObjects</span>.push obj
+
+    <span class="keyword">if</span> <span class="property">@config</span>.debug <span class="keyword">is</span> <span class="literal">true</span>
+      <span class="property">@canvas</span> = <span class="property">@scene</span>.getEngine(nv.RenderingEngine).canvas
+      <span class="property">@scene</span>.fire <span class="string">"engine:timing:register:after"</span>, nv.bind(<span class="keyword">this</span>, <span class="property">@drawObjects</span>)
+
+  drawObjects: () -&gt;
+    <span class="function"><span class="title">drawObj</span></span> = (obj) =&gt;
+      <span class="property">@canvas</span>.context.setStrokeStyle <span class="string">"#FF0000"</span>
+      <span class="property">@canvas</span>.context.setStrokeWidth <span class="number">2</span>
+      bounds = obj.bounds()
+      <span class="property">@canvas</span>.context.strokeRect bounds.x, bounds.y, bounds.x2 - bounds.x, bounds.y2 - bounds.y
+
+    drawObj obj <span class="keyword">for</span> ida, obj <span class="keyword">of</span> <span class="property">@activeObjects</span>
+    drawObj obj <span class="keyword">for</span> ida, obj <span class="keyword">of</span> <span class="property">@passiveObjects</span>
+
+  trackObjects: (array) -&gt;
+    self = <span class="keyword">this</span>
+    $.each array, () -&gt;
+      self.trackObject <span class="keyword">this</span>
+
+  trackObject: (obj) -&gt;
+    <span class="keyword">switch</span> obj.type
+      <span class="keyword">when</span> <span class="string">'passive'</span> <span class="keyword">then</span> <span class="property">@passiveObjects</span>[obj.id] = obj
+      <span class="keyword">when</span> <span class="string">'active'</span> <span class="keyword">then</span> <span class="property">@activeObjects</span>[obj.id] = obj
+      <span class="keyword">when</span> <span class="string">'both'</span>
+        <span class="property">@passiveObjects</span>[obj.id] = obj
+        <span class="property">@activeObjects</span>[obj.id] = obj
+
+  removeObject: (obj) -&gt;
+    <span class="keyword">switch</span> obj.type
+      <span class="keyword">when</span> <span class="string">'passive'</span> <span class="keyword">then</span> <span class="keyword">delete</span> <span class="property">@passiveObjects</span>[obj.id]
+      <span class="keyword">when</span> <span class="string">'active'</span> <span class="keyword">then</span> <span class="keyword">delete</span> <span class="property">@activeObjects</span>[obj.id]
+      <span class="keyword">when</span> <span class="string">'both'</span>
+        <span class="keyword">delete</span> <span class="property">@passiveObjects</span>[obj.id]
+        <span class="keyword">delete</span> <span class="property">@activeObjects</span>[obj.id]
+
+  update: (dt) -&gt;
+    <span class="keyword">for</span> ida, obja <span class="keyword">of</span> <span class="property">@activeObjects</span>
+      objaBounds = obja.bounds()
+      <span class="keyword">for</span> idp, objp <span class="keyword">of</span> <span class="property">@passiveObjects</span>
+        <span class="keyword">continue</span> <span class="keyword">if</span> ida <span class="keyword">is</span> idp
+        <span class="keyword">if</span> objp.bounds().intersects(objaBounds)
+          <span class="property">@scene</span>.fire <span class="string">"engine:collision:<span class="subst">#{obja.entity.constructor.name}</span>:<span class="subst">#{objp.entity.constructor.name}</span>"</span>,
+            actor: obja.entity
+            target: objp.entity
+          <span class="keyword">break</span>
+
+    <span class="keyword">for</span> obj <span class="keyword">in</span> <span class="property">@physicsObjects</span>
+      obj.update(dt)
+
+<span class="class"><span class="keyword">class</span> <span class="title">nv</span>.<span class="title">PhysicsPlugin</span> <span class="keyword">extends</span> <span class="title">nv</span>.<span class="title">Plugin</span></span>
+  constructor: (scene, entity) -&gt;
+    <span class="keyword">super</span> scene, entity
+
+    <span class="property">@scene</span>.fire <span class="string">"engine:physics:create"</span>, <span class="keyword">this</span>
+
+  destroy: () -&gt;
+    <span class="property">@scene</span>.fire <span class="string">"engine:physics:delete"</span>, <span class="keyword">this</span>
+
+    <span class="keyword">super</span>
+
+__objectId = <span class="number">0</span>
+<span class="class"><span class="keyword">class</span> <span class="title">nv</span>.<span class="title">PathPhysicsPlugin</span> <span class="keyword">extends</span> <span class="title">nv</span>.<span class="title">PhysicsPlugin</span></span>
+  constructor: (scene, entity) -&gt;
+    <span class="property">@id</span> = __objectId++
+    <span class="property">@type</span> = entity.model.type
+    <span class="property">@boundingRect</span> = <span class="keyword">new</span> nv.Rect <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>
+
+    <span class="keyword">super</span> scene, entity
+
+    <span class="property">@updateBounds</span>()
+
+  bounds: () -&gt;
+    <span class="property">@updateBounds</span>()
+    <span class="property">@boundingRect</span>
+
+  updateBounds: () -&gt;
+    x1 = x2 = y1 = y2 = <span class="literal">null</span>
+    $.each <span class="property">@entity</span>.model.path(), () -&gt;
+      x1 = <span class="keyword">this</span>.x <span class="keyword">if</span> x1 == <span class="literal">null</span> || <span class="keyword">this</span>.x &lt; x1
+      x2 = <span class="keyword">this</span>.x <span class="keyword">if</span> x2 == <span class="literal">null</span> || <span class="keyword">this</span>.x &gt; x2
+      y1 = <span class="keyword">this</span>.y <span class="keyword">if</span> y1 == <span class="literal">null</span> || <span class="keyword">this</span>.y &lt; y1
+      y2 = <span class="keyword">this</span>.y <span class="keyword">if</span> y2 == <span class="literal">null</span> || <span class="keyword">this</span>.y &gt; y2
+    <span class="property">@boundingRect</span>.reset x1, y1, x2, y2
+
+<span class="class"><span class="keyword">class</span> <span class="title">nv</span>.<span class="title">RectanglePhysicsPlugin</span> <span class="keyword">extends</span> <span class="title">nv</span>.<span class="title">PhysicsPlugin</span></span>
+  constructor: (scene, entity) -&gt;
+    <span class="property">@id</span> = __objectId++
+    <span class="property">@type</span> = entity.model.type
+    <span class="property">@boundingRect</span> = <span class="keyword">new</span> nv.Rect <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>
+
+    <span class="keyword">super</span> scene, entity
+
+  bounds: () -&gt;
+    model = <span class="property">@entity</span>.model
+    <span class="keyword">new</span> nv.Rect model.x, model.y, model.x + model.width, model.y + model.height
+
+<span class="class"><span class="keyword">class</span> <span class="title">nv</span>.<span class="title">GravityPhysicsPlugin</span> <span class="keyword">extends</span> <span class="title">nv</span>.<span class="title">PhysicsPlugin</span></span>
+  constructor: (scene, entity) -&gt;
+    <span class="property">@gravity</span> = <span class="number">0.003</span>
+
+    <span class="keyword">super</span> scene, entity
+
+    <span class="property">@scene</span>.fire <span class="string">"engine:physics:register"</span>, <span class="keyword">this</span>
+
+  update: (dt) -&gt;
+    model = <span class="property">@entity</span>.model
+    <span class="keyword">unless</span> model.thrusters
+      tx = <span class="property">@gravity</span> * <span class="keyword">if</span> model.thrustVector.x &lt; <span class="number">0</span> <span class="keyword">then</span> <span class="number">1</span> <span class="keyword">else</span> -<span class="number">1</span>
+      ty = <span class="property">@gravity</span> * <span class="keyword">if</span> model.thrustVector.y &lt; <span class="number">0</span> <span class="keyword">then</span> <span class="number">1</span> <span class="keyword">else</span> -<span class="number">1</span>
+
+      model.thrustVector.translate tx, ty</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

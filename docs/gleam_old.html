@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>gleam_old.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="common.html">
+                common.coffee
+              </a>
+            
+              
+              <a class="source" href="debug.html">
+                debug.coffee
+              </a>
+            
+              
+              <a class="source" href="engine.html">
+                engine.coffee
+              </a>
+            
+              
+              <a class="source" href="entity.html">
+                entity.coffee
+              </a>
+            
+              
+              <a class="source" href="event_dispatcher.html">
+                event_dispatcher.coffee
+              </a>
+            
+              
+              <a class="source" href="game.html">
+                game.coffee
+              </a>
+            
+              
+              <a class="source" href="gamepad.html">
+                gamepad.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="camera.html">
+                camera.coffee
+              </a>
+            
+              
+              <a class="source" href="canvas.html">
+                canvas.coffee
+              </a>
+            
+              
+              <a class="source" href="context.html">
+                context.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="sprite.html">
+                sprite.coffee
+              </a>
+            
+              
+              <a class="source" href="square.html">
+                square.coffee
+              </a>
+            
+              
+              <a class="source" href="text.html">
+                text.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam_old.html">
+                gleam_old.coffee
+              </a>
+            
+              
+              <a class="source" href="key.html">
+                key.coffee
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.coffee
+              </a>
+            
+              
+              <a class="source" href="novus.html">
+                novus.coffee
+              </a>
+            
+              
+              <a class="source" href="nub.html">
+                nub.coffee
+              </a>
+            
+              
+              <a class="source" href="particles.html">
+                particles.coffee
+              </a>
+            
+              
+              <a class="source" href="physics.html">
+                physics.coffee
+              </a>
+            
+              
+              <a class="source" href="plugin.html">
+                plugin.coffee
+              </a>
+            
+              
+              <a class="source" href="renderer.html">
+                renderer.coffee
+              </a>
+            
+              
+              <a class="source" href="scene.html">
+                scene.coffee
+              </a>
+            
+              
+              <a class="source" href="shape.html">
+                shape.coffee
+              </a>
+            
+              
+              <a class="source" href="sound.html">
+                sound.coffee
+              </a>
+            
+              
+              <a class="source" href="time.html">
+                time.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>gleam_old.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>requestFrame = window.requestAnimationFrame ? window.webkitRequestAnimationFrame ? window.mozRequestAnimationFrame ? window.oRequestAnimationFrame ? window.msRequestAnimationFrame ? (callback) -&gt; <span class="keyword">return</span> setTimeout(callback, <span class="number">17</span>)
+cancelFrame = window.cancelRequestAnimationFrame ? window.webkitCancelAnimationFrame ? window.webkitCancelRequestAnimationFrame ? window.mozCancelRequestAnimationFrame ? window.oCancelRequestAnimationFrame ? window.msCancelRequestAnimationFrame ? clearTimeout
+
+gleam = gleam ? {}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>From <a href="http://www.nczonline.net/blog/2012/12/11/are-your-mixins-ecmascript-5-compatible/">http://www.nczonline.net/blog/2012/12/11/are-your-mixins-ecmascript-5-compatible/</a></p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>gleam.<span class="function"><span class="title">extend</span></span> = (object, other) -&gt;
+  <span class="keyword">if</span> Object.keys
+    Object.keys(other).forEach (property) -&gt;
+      Object.defineProperty object, property, Object.getOwnPropertyDescriptor(other, property)
+  <span class="keyword">else</span>
+    <span class="keyword">for</span> key <span class="keyword">of</span> other
+      <span class="keyword">if</span> other.hasOwnProperty key
+        object[key] = other[key]
+  object
+
+gleam.<span class="function"><span class="title">Canvas</span></span> = (canvas) -&gt;
+  <span class="keyword">if</span> <span class="keyword">typeof</span> canvas <span class="keyword">is</span> <span class="string">'string'</span>
+    canvas = document.querySelector canvas
+  <span class="property">@element</span> = canvas ? document.createElement <span class="string">'canvas'</span>
+  <span class="property">@context</span> = <span class="property">@element</span>.getContext(<span class="string">'2d'</span>)
+  <span class="property">@drawables</span> = []
+  <span class="property">@cacheValues</span> =
+    width: <span class="property">@element</span>.width
+    height: <span class="property">@element</span>.height
+    halfWidth: <span class="property">@element</span>.width / <span class="number">2</span>
+    halfHeight: <span class="property">@element</span>.height / <span class="number">2</span>
+  <span class="property">@aliases</span> =
+    opacity: <span class="string">"globalAlpha"</span>
+    color: <span class="string">'fillStyle'</span>
+
+  <span class="keyword">this</span>
+
+gleam.extend gleam.Canvas.prototype,
+  cache: (key, value) -&gt;
+    <span class="property">@cacheValues</span>[key] = value
+
+  get: (key) -&gt;
+    key = <span class="property">@aliases</span>[key] <span class="keyword">unless</span> <span class="keyword">not</span> <span class="property">@aliases</span>[key]
+    <span class="property">@cacheValues</span>[key] ? <span class="property">@context</span>[key]
+
+  set: (key, value) -&gt;
+    key = <span class="property">@aliases</span>[key] <span class="keyword">unless</span> <span class="keyword">not</span> <span class="property">@aliases</span>[key]
+    <span class="property">@context</span>[key] = value
+
+  setStyle: (key, value) -&gt;
+    <span class="property">@element</span>.style[key] = value
+
+  setSize: (width, height) -&gt;
+    <span class="property">@element</span>.width = width
+    <span class="property">@element</span>.height = height
+
+    <span class="property">@cache</span> <span class="string">'width'</span>, width
+    <span class="property">@cache</span> <span class="string">'height'</span>, height
+    <span class="property">@cache</span> <span class="string">'halfWidth'</span>, width / <span class="number">2</span>
+    <span class="property">@cache</span> <span class="string">'halfHeight'</span>, height / <span class="number">2</span>
+
+  getSize: () -&gt;
+    {
+      width: <span class="property">@cacheValues</span>.width
+      height: <span class="property">@cacheValues</span>.height
+    }
+
+  fullscreen: () -&gt;
+    <span class="property">@fullscreened</span> = <span class="literal">true</span>
+    <span class="property">@setSize</span> document.width, document.height
+
+    document.body.style.overflow = <span class="string">"hidden"</span>
+
+    window.addEventListener <span class="string">'resize'</span>, (event) =&gt;
+      <span class="property">@setSize</span> document.width, document.height
+
+  setClearColor: (hex, opacity) -&gt;
+    <span class="property">@cache</span> <span class="string">'clearColor'</span>, hex
+    <span class="property">@cache</span> <span class="string">'clearOpacity'</span>, opacity
+
+  clear: (x, y, width, height) -&gt;
+    x = x ? <span class="number">0</span>
+    y = y ? <span class="number">0</span>
+    width = width ? <span class="property">@cacheValues</span>.width
+    height = height ? <span class="property">@cacheValues</span>.height
+
+    <span class="keyword">if</span> <span class="property">@cacheValues</span>.clearColor
+      <span class="property">@context</span>.fillStyle = <span class="property">@cacheValues</span>.clearColor
+      <span class="property">@context</span>.globalAlpha = <span class="property">@cacheValues</span>.clearOpacity
+      <span class="property">@context</span>.fillRect x, y, width, height
+    <span class="keyword">else</span>
+      <span class="property">@context</span>.clearRect x, y, width, height</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Creates a line using the arguments passed in
+Arguments must be divisible by &quot;2&quot;</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>line: () -&gt;
+    <span class="property">@context</span>.beginPath()
+    <span class="property">@context</span>.moveTo Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
+
+    <span class="keyword">while</span> arguments.length &gt; <span class="number">0</span>
+      <span class="property">@context</span>.lineTo Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
+
+    <span class="property">@context</span>.stroke()
+    <span class="property">@context</span>.closePath()
+
+  rotateAround: (x, y, angle, func) -&gt;
+    <span class="property">@context</span>.save()
+    <span class="property">@context</span>.translate(x, y)
+    <span class="property">@context</span>.rotate(angle)
+    <span class="property">@context</span>.translate(-x, -y)
+    func()
+    <span class="property">@context</span>.restore()
+
+  render: (drawables) -&gt;
+    drawable.draw(<span class="keyword">this</span>) <span class="keyword">for</span> drawable <span class="keyword">in</span> drawables</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Gleam.Square</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>gleam.<span class="function"><span class="title">Square</span></span> = (options) -&gt;
+  defaults =
+    color: <span class="string">'#CCC'</span>
+    width: <span class="number">10</span>
+    height: <span class="number">10</span>
+    x: <span class="number">10</span>
+    y: <span class="number">10</span>
+  options = options ? {}
+  gleam.extend defaults, options
+  gleam.extend <span class="keyword">this</span>, defaults
+  <span class="keyword">this</span>
+
+gleam.extend gleam.Square.prototype,
+  draw: (canvas, context) -&gt;
+    context.fillStyle = <span class="property">@color</span>
+    context.fillRect <span class="property">@x</span>, <span class="property">@y</span>, <span class="property">@width</span>, <span class="property">@height</span>
+
+<span class="property">@gleam</span> = gleam
+
+<span class="function"><span class="title">gl</span></span> = (canvas) -&gt;
+  <span class="keyword">return</span> <span class="keyword">new</span> gl.prototype.init(canvas)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Global options</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>gl.zOrderProperty = <span class="string">'zIndex'</span>
+
+_updateId = <span class="number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Gleam.CanvasDecorator
+This decorates a canvas object and gives more options.</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>gl.prototype =</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Decorator function for canvas object</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>init: (canvas) -&gt;
+    <span class="keyword">if</span> <span class="keyword">typeof</span> canvas <span class="keyword">is</span> <span class="string">'string'</span>
+      canvas = document.querySelector canvas
+    canvas = canvas ? document.createElement <span class="string">'canvas'</span>
+    gl.prototype.extend.call canvas, gl.prototype
+    canvas.context = gl.context canvas.getContext(<span class="string">'2d'</span>)
+    canvas.objects = []
+    canvas.requestFrameKey = <span class="literal">null</span>
+    canvas.updating = <span class="literal">false</span>
+    canvas.fullscreened = <span class="literal">false</span>
+    canvas
+
+  size: (width, height) -&gt;
+    <span class="keyword">if</span> width? <span class="keyword">and</span> height?
+      <span class="property">@width</span> = width
+      <span class="property">@height</span> = height
+      <span class="keyword">this</span>
+    <span class="keyword">else</span>
+      dimensions =
+        width: <span class="property">@width</span>
+        height: <span class="property">@height</span>
+
+  fullscreen: () -&gt;
+    <span class="property">@fullscreened</span> = <span class="literal">true</span>
+    <span class="property">@size</span> document.width, document.height
+
+    document.body.style.overflow = <span class="string">"hidden"</span>
+
+    window.addEventListener <span class="string">'resize'</span>, (event) =&gt;
+      <span class="property">@size</span> document.width, document.height
+
+  background: (color) -&gt;
+    <span class="property">@style</span>.background = color
+
+  draw: (object, context = <span class="property">@context</span>) -&gt;
+    object.draw context, <span class="keyword">this</span>
+
+  addDrawable: (object) -&gt;
+    <span class="property">@objects</span>.push object
+
+  removeDrawable: (object) -&gt;
+    <span class="property">@objects</span>.splice <span class="property">@objects</span>.indexOf(object), <span class="number">1</span>
+
+  drawObjects: (context = <span class="property">@context</span>) -&gt;
+    <span class="property">@objects</span>.sort (a, b) -&gt;
+      a = a[gl.zOrderProperty]
+      b = b[gl.zOrderProperty]
+      <span class="keyword">if</span> a <span class="keyword">and</span> <span class="keyword">not</span> b <span class="keyword">then</span> <span class="number">1</span>
+      <span class="keyword">else</span> <span class="keyword">if</span> b <span class="keyword">and</span> <span class="keyword">not</span> a <span class="keyword">then</span> -<span class="number">1</span>
+      <span class="keyword">else</span> <span class="keyword">if</span> a &lt; b <span class="keyword">then</span> -<span class="number">1</span>
+      <span class="keyword">else</span> <span class="keyword">if</span> a <span class="keyword">is</span> b <span class="keyword">then</span> <span class="number">0</span>
+      <span class="keyword">else</span> <span class="keyword">if</span> a &gt; b <span class="keyword">then</span> <span class="number">1</span>
+
+    <span class="property">@draw</span> object, context <span class="keyword">for</span> object <span class="keyword">in</span> <span class="property">@objects</span>
+
+  startDrawUpdate: (fps, func) -&gt;
+    <span class="property">@updating</span> = <span class="literal">true</span>
+    lastTime = Date.now()
+    updateId = _updateId++
+
+    dimensions = <span class="property">@size</span>()
+    <span class="property">@buffer</span> = gl().size dimensions.width, dimensions.height
+    <span class="property">@buffer</span>.fullscreen() <span class="keyword">unless</span> <span class="keyword">not</span> <span class="property">@fullscreened</span>
+
+    update = () =&gt;
+      now = Date.now()
+      delta = now - lastTime
+      delta /= <span class="number">1000</span>
+
+      stop = func delta
+
+      bufferContext = <span class="property">@buffer</span>.context
+      bufferContext.save()
+      bufferContext.clear()
+
+      <span class="keyword">if</span> <span class="property">@camera</span> <span class="keyword">then</span> <span class="property">@camera</span>.update delta, bufferContext, <span class="keyword">this</span>
+
+      <span class="property">@drawObjects</span> bufferContext
+
+      bufferContext.restore()
+
+      <span class="property">@context</span>.clear()
+      <span class="property">@context</span>.drawImage <span class="property">@buffer</span>, <span class="number">0</span>, <span class="number">0</span>
+
+      lastTime = now
+
+      <span class="keyword">if</span> <span class="property">@cancel</span> <span class="keyword">isnt</span> <span class="literal">undefined</span> <span class="keyword">and</span> <span class="property">@cancel</span>.indexOf(updateId) <span class="keyword">isnt</span> -<span class="number">1</span>
+        <span class="property">@cancel</span>.splice <span class="property">@cancel</span>.indexOf(updateId), <span class="number">1</span>
+        <span class="keyword">delete</span> <span class="property">@cancel</span> <span class="keyword">if</span> <span class="property">@cancel</span>.length <span class="keyword">is</span> <span class="number">0</span>
+      <span class="keyword">else</span>
+        <span class="property">@requestFrameKey</span> = requestFrame update <span class="keyword">unless</span> <span class="keyword">not</span> <span class="property">@updating</span>
+
+    <span class="property">@requestFrameKey</span> = requestFrame update
+    updateId
+
+  stopDrawUpdate: (updateId) -&gt;
+    <span class="property">@updating</span> = <span class="literal">false</span>
+    <span class="property">@cancel</span> = [] <span class="keyword">unless</span> <span class="property">@cancel</span>
+    <span class="property">@cancel</span>.push updateId
+    cancelFrame <span class="property">@requestFrameKey</span>
+
+  extend: (object) -&gt;
+    <span class="keyword">this</span>[key] = object[key] <span class="keyword">for</span> key <span class="keyword">of</span> object
+    <span class="keyword">this</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Setup gl.init to implement the gl core methods</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>gl.prototype.init.prototype = gl.prototype
+window.gl = gl</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Gleam
+These are base methods that exist on the global object.</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>gl.prototype.extend.call gl,
+  implement: (methods) -&gt;
+    gl.prototype.extend.call gl, methods
+
+  context: (context) -&gt;
+    gl.prototype.extend.call context, gl.context.prototype
+    context</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Gleam.Context
+Context decorator to give drawable objects more options.</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>gl.prototype.extend.call gl.context.prototype,
+  color: (color) -&gt;
+    <span class="property">@fillStyle</span> = color
+
+  strokeColor: (color) -&gt;
+    <span class="property">@strokeStyle</span> = color
+
+  strokeWidth: (width) -&gt;
+    <span class="property">@lineWidth</span> = width
+
+  setFont: (font) -&gt;
+    <span class="property">@font</span> = font</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Wraps function in begin/close path and fill</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>fillPath: (func) -&gt;
+    <span class="property">@beginPath</span>()
+    func(<span class="keyword">this</span>)
+    <span class="property">@fill</span>()
+    <span class="property">@closePath</span>()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Creates a line using the arguments passed in
+Arguments must be divisible by &quot;2&quot;</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>line: () -&gt;
+    <span class="property">@beginPath</span>()
+    <span class="property">@moveTo</span> Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
+
+    <span class="keyword">while</span> arguments.length &gt; <span class="number">0</span>
+      <span class="property">@lineTo</span> Array.prototype.shift.call(arguments), Array.prototype.shift.call(arguments)
+
+    <span class="property">@stroke</span>()
+    <span class="property">@closePath</span>()
+
+  rotateAround: (x, y, angle, func) -&gt;
+    <span class="property">@save</span>()
+    <span class="property">@translate</span>(x, y)
+    <span class="property">@rotate</span>(angle)
+    <span class="property">@translate</span>(-x, -y)
+    func()
+    <span class="property">@restore</span>()
+
+  clear: () -&gt;
+    <span class="property">@clearRect</span> <span class="number">0</span>, <span class="number">0</span>, <span class="property">@canvas</span>.width, <span class="property">@canvas</span>.height</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>canvas.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="common.html">
+                common.coffee
+              </a>
+            
+              
+              <a class="source" href="debug.html">
+                debug.coffee
+              </a>
+            
+              
+              <a class="source" href="engine.html">
+                engine.coffee
+              </a>
+            
+              
+              <a class="source" href="entity.html">
+                entity.coffee
+              </a>
+            
+              
+              <a class="source" href="event_dispatcher.html">
+                event_dispatcher.coffee
+              </a>
+            
+              
+              <a class="source" href="game.html">
+                game.coffee
+              </a>
+            
+              
+              <a class="source" href="gamepad.html">
+                gamepad.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="camera.html">
+                camera.coffee
+              </a>
+            
+              
+              <a class="source" href="canvas.html">
+                canvas.coffee
+              </a>
+            
+              
+              <a class="source" href="context.html">
+                context.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="sprite.html">
+                sprite.coffee
+              </a>
+            
+              
+              <a class="source" href="square.html">
+                square.coffee
+              </a>
+            
+              
+              <a class="source" href="text.html">
+                text.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam_old.html">
+                gleam_old.coffee
+              </a>
+            
+              
+              <a class="source" href="key.html">
+                key.coffee
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.coffee
+              </a>
+            
+              
+              <a class="source" href="novus.html">
+                novus.coffee
+              </a>
+            
+              
+              <a class="source" href="nub.html">
+                nub.coffee
+              </a>
+            
+              
+              <a class="source" href="particles.html">
+                particles.coffee
+              </a>
+            
+              
+              <a class="source" href="physics.html">
+                physics.coffee
+              </a>
+            
+              
+              <a class="source" href="plugin.html">
+                plugin.coffee
+              </a>
+            
+              
+              <a class="source" href="renderer.html">
+                renderer.coffee
+              </a>
+            
+              
+              <a class="source" href="scene.html">
+                scene.coffee
+              </a>
+            
+              
+              <a class="source" href="shape.html">
+                shape.coffee
+              </a>
+            
+              
+              <a class="source" href="sound.html">
+                sound.coffee
+              </a>
+            
+              
+              <a class="source" href="time.html">
+                time.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>canvas.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>Canvas decorator class for html canvas element</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre><span class="class"><span class="keyword">class</span> <span class="title">gleam</span>.<span class="title">Canvas</span></span>
+  constructor: (canvas) -&gt;
+    <span class="keyword">if</span> <span class="keyword">typeof</span> canvas <span class="keyword">is</span> <span class="string">'string'</span>
+      canvas = document.querySelector(canvas)
+    <span class="property">@source</span> = canvas ? document.createElement <span class="string">'canvas'</span>
+    <span class="property">@context</span> = <span class="keyword">new</span> gleam.Context <span class="property">@source</span>.getContext(<span class="string">'2d'</span>), <span class="keyword">this</span>
+    <span class="property">@width</span> = <span class="property">@source</span>.width
+    <span class="property">@height</span> = <span class="property">@source</span>.height
+    <span class="property">@halfWidth</span> = <span class="property">@source</span>.width / <span class="number">2</span>
+    <span class="property">@halfHeight</span> = <span class="property">@source</span>.height / <span class="number">2</span>
+    <span class="property">@fullscreened</span> = <span class="literal">false</span>
+
+    <span class="keyword">this</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Allows setting of style properties through code</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>setStyle: (key, value) -&gt;
+    <span class="property">@source</span>.style[key] = value</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Alias for setting the size easily</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>setSize: (width, height) -&gt;
+    <span class="property">@source</span>.width = width
+    <span class="property">@source</span>.height = height
+
+    <span class="property">@width</span> = <span class="property">@source</span>.width
+    <span class="property">@height</span> = <span class="property">@source</span>.height
+    <span class="property">@halfWidth</span> = <span class="property">@source</span>.width / <span class="number">2</span>
+    <span class="property">@halfHeight</span> = <span class="property">@source</span>.height / <span class="number">2</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Gets the dimensions in one shot</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>getSize: () -&gt;
+    {
+      width: <span class="property">@width</span>
+      height: <span class="property">@height</span>
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>If enabled this will watch window resize and fullscreen the canvas</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>setFullscreen: (isOn) -&gt;
+    <span class="keyword">if</span> isOn
+      <span class="property">@fullscreened</span> = <span class="literal">true</span>
+      <span class="property">@setSize</span> document.width, document.height
+
+      document.body.style.overflow = <span class="string">"hidden"</span>
+
+      <span class="property">@fullscreenListener</span> = (event) =&gt;
+        <span class="property">@setSize</span> document.width, document.height
+      window.addEventListener <span class="string">'resize'</span>, <span class="property">@fullscreenListener</span>
+    <span class="keyword">else</span>
+      <span class="property">@fullscreened</span> = <span class="literal">false</span>
+      window.removeEventListener <span class="string">'resize'</span>, <span class="property">@fullscreenListener</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Draws the objects given with the camera on this canvas</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>draw: (objects, camera) -&gt;
+    object.draw <span class="keyword">this</span>.context, <span class="keyword">this</span> <span class="keyword">for</span> object <span class="keyword">in</span> objects</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Pass through for toDataUrl</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>toDataUrl: (args...) -&gt;
+    <span class="property">@source</span>.toDataUrl args...</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Can re-get the canvas if needed</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>getContext: (type = <span class="string">"2d"</span>) -&gt;
+    <span class="property">@context</span> = <span class="keyword">new</span> gleam.Context <span class="property">@source</span>.getContext(type), <span class="keyword">this</span></pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>common.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="common.html">
+                common.coffee
+              </a>
+            
+              
+              <a class="source" href="debug.html">
+                debug.coffee
+              </a>
+            
+              
+              <a class="source" href="engine.html">
+                engine.coffee
+              </a>
+            
+              
+              <a class="source" href="entity.html">
+                entity.coffee
+              </a>
+            
+              
+              <a class="source" href="event_dispatcher.html">
+                event_dispatcher.coffee
+              </a>
+            
+              
+              <a class="source" href="game.html">
+                game.coffee
+              </a>
+            
+              
+              <a class="source" href="gamepad.html">
+                gamepad.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
+              <a class="source" href="camera.html">
+                camera.coffee
+              </a>
+            
+              
+              <a class="source" href="canvas.html">
+                canvas.coffee
+              </a>
+            
+              
+              <a class="source" href="context.html">
+                context.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam.html">
+                gleam.coffee
+              </a>
+            
+              
+              <a class="source" href="sprite.html">
+                sprite.coffee
+              </a>
+            
+              
+              <a class="source" href="square.html">
+                square.coffee
+              </a>
+            
+              
+              <a class="source" href="text.html">
+                text.coffee
+              </a>
+            
+              
+              <a class="source" href="gleam_old.html">
+                gleam_old.coffee
+              </a>
+            
+              
+              <a class="source" href="key.html">
+                key.coffee
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.coffee
+              </a>
+            
+              
+              <a class="source" href="novus.html">
+                novus.coffee
+              </a>
+            
+              
+              <a class="source" href="nub.html">
+                nub.coffee
+              </a>
+            
+              
+              <a class="source" href="particles.html">
+                particles.coffee
+              </a>
+            
+              
+              <a class="source" href="physics.html">
+                physics.coffee
+              </a>
+            
+              
+              <a class="source" href="plugin.html">
+                plugin.coffee
+              </a>
+            
+              
+              <a class="source" href="renderer.html">
+                renderer.coffee
+              </a>
+            
+              
+              <a class="source" href="scene.html">
+                scene.coffee
+              </a>
+            
+              
+              <a class="source" href="shape.html">
+                shape.coffee
+              </a>
+            
+              
+              <a class="source" href="sound.html">
+                sound.coffee
+              </a>
+            
+              
+              <a class="source" href="time.html">
+                time.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>common.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>= require key</p>
+
+            </div>
+            
+            <div class="content"><div class="highlight"><pre>nv.config =
+  debug: <span class="literal">false</span>
+
+nv.<span class="function"><span class="title">implement</span></span> = (other) -&gt;
+  <span class="keyword">this</span>[key] = other[key] <span class="keyword">for</span> key <span class="keyword">of</span> other
+
+nv.implement
+  log: () -&gt;
+    console.log message <span class="keyword">for</span> message <span class="keyword">in</span> arguments
+
+  configure: (options) -&gt;
+    nv.config = nv.extend(nv.config, options)
+
+  bind: (context, func) -&gt;
+    f = () -&gt;
+      func.call context, arguments...
+    f
+
+  clone: (object) -&gt;
+    obj = {}
+    nv.extend obj, object
+    obj
+
+  extend: (object, other) -&gt;
+    <span class="keyword">for</span> key <span class="keyword">of</span> other
+      <span class="keyword">if</span> object[key] <span class="keyword">instanceof</span> Object <span class="keyword">and</span> other[key] <span class="keyword">instanceof</span> Object
+        nv.extend(object[key], other[key])
+      <span class="keyword">else</span>
+        object[key] = other[key]
+    object
+
+  keydown: (key, callback) -&gt;
+    <span class="function"><span class="title">func</span></span> = (event) -&gt;
+      <span class="keyword">if</span> event.keyCode <span class="keyword">is</span> key <span class="keyword">then</span> callback()
+    $(document).<span class="literal">on</span> <span class="string">'keydown'</span>, func
+    func
+
+  keyup: (key, callback) -&gt;
+    <span class="function"><span class="title">func</span></span> = (event) -&gt;
+      <span class="keyword">if</span> event.keyCode <span class="keyword">is</span> key <span class="keyword">then</span> callback()
+    $(document).<span class="literal">on</span> <span class="string">'keyup'</span>, func
+    func
+
+  mousedown: (callback) -&gt;
+    $(document).<span class="literal">on</span> <span class="string">'mousedown'</span>, callback
+    $(document).<span class="literal">on</span> <span class="string">'touchstart'</span>, callback
+
+  mouseup: (callback) -&gt;
+    $(document).<span class="literal">on</span> <span class="string">'mouseup'</span>, callback
+    $(document).<span class="literal">on</span> <span class="string">'touchend'</span>, callback
+
+  mousemove: (callback) -&gt;
+    $(document).<span class="literal">on</span> <span class="string">'mousemove'</span>, callback
+    $(document).<span class="literal">on</span> <span class="string">'touchmove'</span>, callback
+
+  isMobile: () -&gt;
+    agent = navigator.userAgent.toLowerCase()
+    (agent.match(<span class="regexp">/android/i</span>) <span class="keyword">or</span>
+    agent.match(<span class="regexp">/webos/i</span>) <span class="keyword">or</span>
+    agent.match(<span class="regexp">/iphone/i</span>) <span class="keyword">or</span>
+    agent.match(<span class="regexp">/ipad/i</span>) <span class="keyword">or</span>
+    agent.match(<span class="regexp">/ipod/i</span>) <span class="keyword">or</span>
+    agent.match(<span class="regexp">/blackberry/i</span>) <span class="keyword">or</span>
+    agent.match(<span class="regexp">/windows phone/i</span>)) <span class="keyword">isnt</span> <span class="literal">null</span>
+
+  ready: (func) -&gt;
+    <span class="keyword">return</span> func() <span class="keyword">unless</span> <span class="keyword">not</span> <span class="property">@isReady</span>
+    document.addEventListener <span class="string">'DOMContentLoaded'</span>, () =&gt;
+      <span class="property">@isReady</span> = <span class="literal">true</span>
+      func()
+
+<span class="class"><span class="keyword">class</span> <span class="title">nv</span>.<span class="title">Color</span></span>
+  constructor: (<span class="property">@r</span>, <span class="property">@b</span>, <span class="property">@g</span>, <span class="property">@a</span>) -&gt;
+
+  interpolate: (percent, other) -&gt;
+    <span class="keyword">new</span> Color(
+      <span class="property">@r</span> + (other.r - <span class="property">@r</span>) * percent,
+      <span class="property">@g</span> + (other.g - <span class="property">@g</span>) * percent,
+      <span class="property">@b</span> + (other.b - <span class="property">@b</span>) * percent,
+      <span class="property">@a</span> + (other.a - <span class="property">@a</span>) * percent
+    )
+
+  toCanvasColor: () -&gt;
+    <span class="string">"rgb(<span class="subst">#{parseInt(@r)}</span>, <span class="subst">#{parseInt(@g)}</span>, <span class="subst">#{parseInt(@b)}</span>)"</span>
+
+<span class="class"><span class="keyword">class</span> <span class="title">nv</span>.<span class="title">Gradient</span></span>
+  constructor: (<span class="property">@colorStops</span>) -&gt;
+
+  getColor: (percent) -&gt;
+    colorF = percent * (<span class="property">@colorStops</span>.length - <span class="number">1</span>)
+
+    color1 = parseInt(colorF)
+    color2 = parseInt(colorF + <span class="number">1</span>)
+
+    <span class="property">@colorStops</span>[color1].interpolate((colorF - color1) / (color2 - color1), <span class="property">@colorStops</span>[color2])</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
