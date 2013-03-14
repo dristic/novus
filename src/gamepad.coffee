@@ -2,13 +2,14 @@ class nv.GamepadEngine extends nv.Engine
   constructor: (scene, config) ->
     super scene, config
 
-    @gamepad = config.gamepad
-    @scene.gamepad = config.gamepad
+    @gamepad = scene.get 'gamepad'
+    @options = scene.options
+    @options.setMany config
 
-    @gamepad.trackMouse() unless not @config.trackMouse
+    @gamepad.trackMouse() if @options.trackMouse?
 
-    for key of @config.keys
-      @gamepad.aliasKey key, @config.keys[key]
+    for key of @options.keys
+      @gamepad.aliasKey key, @options.keys[key]
 
     @buttonPressFunction = nv.bind(this, @onButtonPress)
     @buttonReleaseFunction = nv.bind(this, @onButtonRelease)

@@ -1,4 +1,10 @@
 class nv.RenderingEngine extends nv.Engine
+  initializer: (config, rootModel) ->
+    nv.extend config,
+      canvas: rootModel.canvas
+      width: rootModel.canvas.width
+      height: rootModel.canvas.height
+
   constructor: (scene, config) ->
     super scene, config
 

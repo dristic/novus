@@ -12,42 +12,15 @@ class @Application extends nv.Game
     nv.configure
       debug: true
 
-    # Setup the global canvas
-    canvas = new gleam.Canvas
-    canvas.setSize 500, 500
-    canvas.setStyle 'background', 'gray'
-    canvas.setStyle 'margin', '30px auto 0 auto'
-    canvas.setStyle 'display', 'block'
-    document.body.appendChild canvas.source
-    @rootModel.canvas = canvas
-
-    # Setup the global gamepad
-    @rootModel.gamepad = nv.gamepad()
-
     # Create initializers and register engines
-    @registerEngine nv.TimingEngine, (config, rootModel) ->
-      # Do nothing
-
-    @registerEngine nv.RenderingEngine, (config, rootModel) ->
-      nv.extend config,
-        canvas: rootModel.canvas
-        width: 500
-        height: 500
-
-    @registerEngine nv.DebugEngine
-    
-    @registerEngine nv.GamepadEngine, (config, rootModel) ->
-      nv.extend config,
-        gamepad: rootModel.gamepad
-        keys:
-          up: nv.Key.W
-          down: nv.Key.S
-          left: nv.Key.A
-          right: nv.Key.D
-          shoot: nv.Key.Spacebar
+    #@registerEngine nv.DebugEngine
+    #@registerEngine nv.TimingEngine
+    #@registerEngine nv.PhysicsEngine
+    #@registerEngine nv.RenderingEngine
+    #@registerEngine nv.GamepadEngine
 
     # Register all the game scenes off of an object
-    @registerScenes scenes
+    #@registerScenes scenes
 
     # Start the game on a new thread
     start = () =>

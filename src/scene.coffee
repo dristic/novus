@@ -1,11 +1,20 @@
 class nv.Scene extends nv.EventDispatcher
-  constructor: (@game, @options) ->
+  constructor: (name, @game, @rootModel, @options) ->
     super
 
+    @sceneName = name.toLowerCase()
     @entities = []
     @deletedEntities = []
+ 
     @options = @options ? {}
+    if nv.gameConfig.scenes[@sceneName].config.scene?
+      @options = $.extend @options, nv.gameConfig.scenes[@sceneName].config.scene
+    @options = $.extend @options, @rootModel
+
     @engines = []
+    @useEngine klass.name for klass in nv.gameConfig.scenes[@sceneName].enginesUsed
+
+    @createEntities()
 
     @on "entity:remove", () =>
       @removeEntity.call this, arguments...
@@ -22,17 +31,42 @@ class nv.Scene extends nv.EventDispatcher
   set: (key, value) ->
     @options[key] = value
 
-  useEngine: (name, initializer) ->
-    engineObj = @game.engines[name]
-    config = {}
+  useEngine: (engineName, initializer) ->
+    engineObj = @game.engines[engineName]
+    configKey = engineName.replace("nv.","").replace("Engine","").toLowerCase()
+    config = nv.gameConfig.scenes[@sceneName].config[configKey] ? {}
 
-    if engineObj.initializer?
-      engineObj.initializer config, @game.model()
+    if engineObj.klass.prototype.initializer?
+      engineObj.klass.prototype.initializer config, @game.model()
 
     if initializer?
       initializer config, @game.model()
 
     @engines.push new engineObj.klass this, config
+
+  createEntities: () ->
+    for entity, config of nv.gameConfig.scenes[@sceneName].entities
+      @createEntity config
+
+  createEntity: (config) ->
+    models = []
+    if config.model?
+      models.push config.model
+    else if config.models?
+      index = config.models.count + 1
+      while index -= 1
+        model = $.extend {}, config.models.model
+        for property, value of model
+          if $.isFunction value
+            model[property] = value()
+        models.push model
+
+    klass = getClass(config.entity)
+
+    plugins = $.map config.plugins, (name) ->
+      getClass name
+
+    @addEntity klass, plugins, model for model in models
 
   addEntities: (entities...) ->
     @addEntity entity for entity in entities
