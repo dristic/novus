@@ -4,6 +4,7 @@ To Do
 * Clickable Objects
 * Sprite Maps
 * Animated Sprites
+* AABB
 
 Future Ideas
 -----------------------

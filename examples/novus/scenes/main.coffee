@@ -42,7 +42,7 @@ class scenes.Main extends nv.Scene
     # @emitter = @getEngine(nv.ParticleEngine).getEmitter(1)
 
     @on "engine:gamepad:press:shoot", () =>
-      @game.closeScene 'Main'
+      @fire "scene:close"
       @game.openScene 'Game'
 
     @send "engine:timing:start"

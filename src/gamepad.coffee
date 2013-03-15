@@ -15,15 +15,15 @@ class nv.GamepadEngine extends nv.Engine
 
     @buttonPressFunction = nv.bind(this, @onButtonPress)
     @buttonReleaseFunction = nv.bind(this, @onButtonRelease)
+    @mouseDownFunction = nv.bind(this, @onMouseDown)
+    @mouseUpFunction = nv.bind(this, @onMouseUp)
 
     @gamepad.on "press", @buttonPressFunction
     @gamepad.on "release", @buttonReleaseFunction
     @gamepad.on "gamepad:connected", () =>
       @scene.fire "engine:gamepad:controller:connected"
-    @gamepad.on "mousedown", (data) =>
-      @scene.fire "engine:gamepad:mouse:down", data unless not @config.trackMouse
-    @gamepad.on "mouseup", (data) =>
-      @scene.fire "engine:gamepad:mouse:up", data unless not @config.trackMouse
+    @gamepad.on "mousedown", @mouseDownFunction
+    @gamepad.on "mouseup", @mouseUpFunction
 
   onButtonPress: (button) ->
     @scene.fire "engine:gamepad:press:#{button}"
@@ -31,12 +31,20 @@ class nv.GamepadEngine extends nv.Engine
   onButtonRelease: (button) ->
     @scene.fire "engine:gamepad:release:#{button}"
 
+  onMouseDown: (data) ->
+    @scene.fire "engine:gamepad:mouse:down", data unless not @config.trackMouse
+
+  onMouseUp: (data) ->
+    @scene.fire "engine:gamepad:mouse:up", data unless not @config.trackMouse
+
   update: (dt) ->
     @gamepad.update dt
 
   destroy: () ->
     @gamepad.off "press", @buttonPressFunction
     @gamepad.off "release", @buttonReleaseFunction
+    @gamepad.off "mousedown", @mouseDownFunction
+    @gamepad.off "mouseup", @mouseUpFunction
     delete @buttonPressFunction
     delete @buttonReleaseFunction
     delete @gamepad
@@ -115,6 +123,9 @@ class nv.Gamepad extends nv.EventDispatcher
       else
         @previousGamepadState = nv.extend {}, gamepad
         @send "controller:connected"
+
+  destroy: () ->
+    # Nothing Yet
 
 nv.gamepad = () ->
   new nv.Gamepad
