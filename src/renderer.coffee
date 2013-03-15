@@ -15,6 +15,8 @@ class nv.RenderingEngine extends nv.Engine
       @drawables.splice @drawables.indexOf(drawable), 1
 
     scene.fire "engine:timing:register:after", nv.bind(this, @draw)
+
+    scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
     
   draw: (dt) ->
     @context.save()
@@ -26,6 +28,14 @@ class nv.RenderingEngine extends nv.Engine
 
     @context.restore()
 
+  onMouseDown: (data) ->
+    for drawable in @drawables
+      if drawable.clickable is true
+        if drawable.bounds
+          bounds = drawable.bounds()
+          if bounds.contains new nv.Point(data.x, data.y)
+            @scene.fire "engine:rendering:clicked:#{drawable.entity.constructor.name}", drawable.entity
+
   destroy: () ->
     #i = @drawables.length
     #while i--
@@ -34,6 +44,8 @@ class nv.RenderingEngine extends nv.Engine
 class nv.RenderingPlugin extends nv.Plugin
   constructor: (scene, entity) ->
     super scene, entity
+
+    @clickable = entity.model.clickable ? false
 
     @scene.fire "engine:rendering:create", this
 
@@ -63,6 +75,9 @@ class nv.DrawableRenderingPlugin extends nv.RenderingPlugin
     super scene, entity
 
     @drawable = entity.model.drawable
+
+  bounds: () ->
+    new nv.Rect @drawable.x, @drawable.y, @drawable.x + @drawable.width, @drawable.y + @drawable.height
 
   draw: (context, canvas) ->
     @drawable.x = @entity.model.x

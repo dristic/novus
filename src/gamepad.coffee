@@ -18,6 +18,12 @@ class nv.GamepadEngine extends nv.Engine
 
     @gamepad.on "press", @buttonPressFunction
     @gamepad.on "release", @buttonReleaseFunction
+    @gamepad.on "gamepad:connected", () =>
+      @scene.fire "engine:gamepad:controller:connected"
+    @gamepad.on "mousedown", (data) =>
+      @scene.fire "engine:gamepad:mouse:down", data unless not @config.trackMouse
+    @gamepad.on "mouseup", (data) =>
+      @scene.fire "engine:gamepad:mouse:up", data unless not @config.trackMouse
 
   onButtonPress: (button) ->
     @scene.fire "engine:gamepad:press:#{button}"
@@ -59,11 +65,13 @@ class nv.Gamepad extends nv.EventDispatcher
       @state.mouse.x = event.clientX
       @state.mouse.y = event.clientY
       @state.mouse.down = true
+      @send "mousedown", @state.mouse
 
     nv.mouseup (event) =>
       @state.mouse.x = event.clientX
       @state.mouse.y = event.clientY
       @state.mouse.down = false
+      @send "mouseup", @state.mouse
 
     nv.mousemove (event) =>
       @state.mouse.x = event.clientX
@@ -106,6 +114,7 @@ class nv.Gamepad extends nv.EventDispatcher
         @previousGamepadState = nv.extend {}, gamepad
       else
         @previousGamepadState = nv.extend {}, gamepad
+        @send "controller:connected"
 
 nv.gamepad = () ->
   new nv.Gamepad

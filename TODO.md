@@ -10,3 +10,4 @@ Future Ideas
 * AI
 * View Scripting
 * Multiplayer
+* Editor

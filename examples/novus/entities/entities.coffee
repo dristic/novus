@@ -20,6 +20,7 @@ class entities.Title extends nv.Entity
       text: "Novus"
       strokeWidth: 2
       shadowBlur: 20
+      clickable: true
 
     @direction = "out"
 
