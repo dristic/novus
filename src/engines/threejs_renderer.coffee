@@ -2,12 +2,13 @@ class nv.ThreejsRenderingEngine extends nv.Engine
   constructor: (scene, config) ->
     super scene, config
 
+    @plugins = []
     @renderer = config.renderer
-    @width = 400
-    @height = 300
+    @width = 500
+    @height = 500
 
-    WIDTH = 400
-    HEIGHT = 300
+    WIDTH = 500
+    HEIGHT = 500
     VIEW_ANGLE = 45
     ASPECT = WIDTH / HEIGHT
     NEAR = 0.1
@@ -19,22 +20,29 @@ class nv.ThreejsRenderingEngine extends nv.Engine
 
     @threeScene.add @camera
 
-    @camera.position.z = 300
+    @camera.position.x = 250
+    @camera.position.y = 240
+    @camera.position.z = -620
+
+    @camera.up = new THREE.Vector3 0, -1, 0
+    @camera.lookAt new THREE.Vector3(250, 240, 0)
 
     @renderer.setSize WIDTH, HEIGHT
 
     pointLight = new THREE.PointLight 0xFFFFFF
-    pointLight.position.x = 10
-    pointLight.position.y = 50
-    pointLight.position.z = 130
+    pointLight.position.x = 250
+    pointLight.position.y = 250
+    pointLight.position.z = -400
     @threeScene.add pointLight
 
     scene.on "engine:rendering:create", (plugin) =>
       if plugin instanceof nv.ThreejsRenderingPlugin
+        @plugins.push plugin
         @threeScene.add plugin.object3d
 
     scene.on "engine:rendering:destroy", (plugin) =>
       if plugin instanceof nv.ThreejsRenderingPlugin
+        @plugins.splice @plugins.indexOf(plugin), 1
         @threeScene.remove plugin.object3d
 
     scene.fire "engine:timing:register:after", nv.bind(this, @draw)
@@ -48,6 +56,7 @@ class nv.ThreejsRenderingEngine extends nv.Engine
     }
     
   draw: (dt) ->
+    plugin.update dt for plugin in @plugins
     @renderer.render @threeScene, @camera
 
   onMouseDown: (data) ->
@@ -87,6 +96,9 @@ class nv.ThreejsRenderingPlugin extends nv.Plugin
   draw: (context, canvas) ->
     # Do nothing
 
+  update: (dt) ->
+    # Nothing
+
   destroy: () ->
     @scene.fire "engine:rendering:destroy", this
 
@@ -98,8 +110,13 @@ class nv.ThreejsObjectPlugin extends nv.ThreejsRenderingPlugin
 
     @object3d = @entity.model.object3d
 
-  draw: (context, canvas) ->
-    # Nothing
+  update: (dt) ->
+    x = @entity.model.x
+    x += @entity.model.offsetX unless not @entity.model.offsetX
+    y = @entity.model.y
+    y += @entity.model.offsetY unless not @entity.model.offsetY
+    @object3d.position.x = x
+    @object3d.position.y = y
 
 class nv.TextRenderingPlugin extends nv.RenderingPlugin
   constructor: (scene, entity) ->

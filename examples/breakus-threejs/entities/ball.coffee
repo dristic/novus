@@ -1,7 +1,7 @@
 class entities.Ball extends nv.Entity
   constructor: (scene) ->
     # Create ball object
-    radius = 50
+    radius = 20
     segments = 16
     rings = 16
     sphereMaterial = new THREE.MeshLambertMaterial

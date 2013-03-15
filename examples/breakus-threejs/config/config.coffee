@@ -21,6 +21,9 @@ class @Application extends nv.Game
     # document.body.appendChild canvas.source
     @rootModel.renderer = new THREE.WebGLRenderer
     document.body.appendChild @rootModel.renderer.domElement
+    @rootModel.renderer.domElement.style.background = '#444'
+    @rootModel.renderer.domElement.style.margin = '30px auto 0 auto'
+    @rootModel.renderer.domElement.style.display = 'block'
 
     # Setup the global gamepad
     @rootModel.gamepad = nv.gamepad()

@@ -1,10 +1,19 @@
 class entities.Player extends nv.Entity
   constructor: (scene) ->
-    super scene, [nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin],
-      drawable: new gleam.Square
-        width: 150
-        height: 20
-        color: "#FFF"
+    # Create ball object
+    width = 150
+    height = 20
+    depth = 20
+    segments = 16
+    squareMaterial = new THREE.MeshLambertMaterial
+      color: 0xFFFFFF
+
+    square = new THREE.Mesh(new THREE.CubeGeometry(width, height, depth, segments, segments, segments), squareMaterial)
+
+    super scene, [nv.ThreejsObjectPlugin, nv.RectanglePhysicsPlugin],
+      object3d: square
+      offsetX: 75
+      offsetY: 10
       type: 'passive'
       width: 150
       height: 20
