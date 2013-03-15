@@ -9,7 +9,6 @@ nv.gameConfig =
       display: 'block'
 
   enginesToLoad: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine]
-  enginez: ['rendering','gamepad','physics','timing','debug']
 
   scenes:
     main:
