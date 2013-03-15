@@ -20,7 +20,8 @@ class nv.RenderingEngine extends nv.Engine
     scene.on "engine:rendering:destroy", (drawable) =>
       @drawables.splice @drawables.indexOf(drawable), 1
 
-    scene.fire "engine:timing:register:after", nv.bind(this, @draw)
+  prepare: () ->
+    @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
     
   draw: (dt) ->
     @context.save()

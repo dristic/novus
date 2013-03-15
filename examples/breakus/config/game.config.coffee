@@ -24,8 +24,8 @@ nv.gameConfig =
       enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine]
       entities:
         player:
-          entity: "entities.Player"
           plugins: [ nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin ]
+          entity: entities.Player
           model:
             drawable: new gleam.Square
               width: 150
@@ -38,7 +38,7 @@ nv.gameConfig =
             y: 450
             speed: 3
         ball:
-          entity: "entities.Ball"
+          entity: entities.Ball
           plugins: [ nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin ]
           model:
             drawable: new gleam.Square
@@ -54,7 +54,7 @@ nv.gameConfig =
             speedIncrement: 0.2
             direction: new nv.Point(1, 1)
         bricks:
-          entity: "entities.Brick"
+          entity: entities.Brick
           plugins: [ nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin ]
           models:
             count: 9
@@ -66,7 +66,7 @@ nv.gameConfig =
               type: "passive"
               width: 150
               height: 20
-              x: (index) -> [10, 170, 330, 10, 170, 330, 10, 170, 330]
-              y: (index) -> [10, 10, 10, 40, 40, 40, 70, 70, 70]
+              x: (index) -> [10, 170, 330, 10, 170, 330, 10, 170, 330][index]
+              y: (index) -> [10, 10, 10, 40, 40, 40, 70, 70, 70][index]
 
 

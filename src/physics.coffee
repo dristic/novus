@@ -14,6 +14,7 @@ class nv.PhysicsEngine extends nv.Engine
     @scene.on "engine:physics:register", (obj) =>
       @physicsObjects.push obj
 
+  prepare: () ->
     if @config.debug is true
       @canvas = @scene.getEngine(nv.RenderingEngine).canvas
       @scene.fire "engine:timing:register:after", nv.bind(this, @drawObjects)

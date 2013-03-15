@@ -3,6 +3,7 @@ class nv.Scene extends nv.EventDispatcher
     super
 
     @sceneName = name.toLowerCase()
+    @engines = []
     @entities = []
     @deletedEntities = []
  
@@ -11,9 +12,7 @@ class nv.Scene extends nv.EventDispatcher
       @options = $.extend @options, nv.gameConfig.scenes[@sceneName].config.scene
     @options = $.extend @options, @rootModel
 
-    @engines = []
-    @useEngine klass.name for klass in nv.gameConfig.scenes[@sceneName].enginesUsed
-
+    @prepareEngines()
     @createEntities()
 
     @on "entity:remove", () =>
@@ -31,6 +30,10 @@ class nv.Scene extends nv.EventDispatcher
   set: (key, value) ->
     @options[key] = value
 
+  prepareEngines: () ->
+    @useEngine klass.name for klass in nv.gameConfig.scenes[@sceneName].enginesUsed
+    engine.prepare() for engine in @engines
+
   useEngine: (engineName, initializer) ->
     engineObj = @game.engines[engineName]
     configKey = engineName.replace("nv.","").replace("Engine","").toLowerCase()
@@ -42,7 +45,7 @@ class nv.Scene extends nv.EventDispatcher
     if initializer?
       initializer config, @game.model()
 
-    @engines.push new engineObj.klass this, config
+    @engines.push new engineObj.klass this, config    
 
   createEntities: () ->
     for entity, config of nv.gameConfig.scenes[@sceneName].entities
@@ -58,15 +61,15 @@ class nv.Scene extends nv.EventDispatcher
         model = $.extend {}, config.models.model
         for property, value of model
           if $.isFunction value
-            model[property] = value()
+            model[property] = value(index-1)
         models.push model
 
-    klass = getClass(config.entity)
+    #klass = getClass(config.entity)
 
-    plugins = $.map config.plugins, (name) ->
-      getClass name
+    #plugins = $.map config.plugins, (name) ->
+    #  getClass name
 
-    @addEntity klass, plugins, model for model in models
+    @addEntity config.entity, config.plugins, model for model in models
 
   addEntities: (entities...) ->
     @addEntity entity for entity in entities

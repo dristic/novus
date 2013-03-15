@@ -1,6 +1,10 @@
 class nv.Engine
+  initializer: () ->
+
   constructor: (@scene, @config) ->
     @config = @config ? {}
+
+  prepare: () ->
 
   update: (dt) ->
 
