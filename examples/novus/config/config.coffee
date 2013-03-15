@@ -47,6 +47,12 @@ class @Application extends nv.Game
           left: nv.Key.A
           right: nv.Key.D
           shoot: nv.Key.Spacebar
+        controller:
+          up: nv.Controller.Up
+          down: nv.Controller.Down
+          left: nv.Controller.Left
+          right: nv.Controller.Right
+          shoot: nv.Controller.A
 
     @registerEngine nv.PhysicsEngine, (config, rootModel) ->
       # Nothing
