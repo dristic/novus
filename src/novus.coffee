@@ -18,3 +18,6 @@
 #= require physics
 #= require sound
 #= require particles
+
+# Vendor Engines
+#= require engines/threejs_renderer

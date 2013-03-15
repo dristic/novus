@@ -5,6 +5,7 @@ To Do
 * Sprite Maps
 * Animated Sprites
 * AABB
+* Preloader / Loading Screens
 
 Future Ideas
 -----------------------
