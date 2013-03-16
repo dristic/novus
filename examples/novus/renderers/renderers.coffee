@@ -15,10 +15,26 @@ class renderers.StrokeText extends nv.RenderingPlugin
     context.shadowColor = @entity.model.strokeColor ? @entity.model.color
     context.shadowBlur = @entity.model.shadowBlur
 
+    x = @entity.model.x
+    y = @entity.model.y
+
+    unless typeof(x) is "number"
+      size = context.canvas.getSize()
+      switch x
+        when "left" then x = 0
+        when "right", "center" 
+          textWidth = context.measureText(@entity.model.text).width
+          switch x
+            when "right" then x = size.width - textWidth
+            when "center" then x = (size.width * 0.5) - (textWidth * 0.5)
+        else
+          x = size.width * (parseFloat(x) / 100)
+
+
     context.setFillStyle "#00000000"
     context.globalAlpha = @alpha
-    context.fillText @entity.model.text, @entity.model.x, @entity.model.y
-    context.strokeText @entity.model.text, @entity.model.x, @entity.model.y
+    context.fillText @entity.model.text, x, y
+    context.strokeText @entity.model.text, x, y
     context.restore()
 
   update: (dt) ->

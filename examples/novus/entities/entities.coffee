@@ -138,7 +138,10 @@ class entities.Ship extends WrappingEntity
 class entities.Asteroid extends WrappingEntity
   constructor: (scene, options = {}) ->
     scale = options.scale ? Math.ceil(Math.random() * 4)
-    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction
+    screen = scene.get('canvas').getSize()
+    x = options.x || screen.width * Math.random()
+    y = options.y || screen.height * Math.random()
+    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid(x, y, scale, options.direction)
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       @handleCollision data if data.target is this

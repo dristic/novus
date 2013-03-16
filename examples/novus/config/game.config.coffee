@@ -43,7 +43,7 @@ nv.gameConfig =
           model:
             color: "#000"
             strokeColor: "#0F0"
-            x: 200
+            x: "center"
             y: 320
             font: "bold italic 50px sans-serif"
             text: "Asteroids"
@@ -56,7 +56,7 @@ nv.gameConfig =
           later: "effects.GlobalAlphaAnimator"
           model:
             color: "#0F0"
-            x: 200
+            x: "center"
             y: 400
             font: "bold 20px sans-serif"
             text: "Press <Space> to Start"

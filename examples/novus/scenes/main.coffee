@@ -3,7 +3,7 @@ class scenes.Main extends nv.Scene
     super name, game, rootModel
 
     @send "engine:particle:create_emitter",
-      position: new nv.Point(450, 300)
+      position: new nv.Point(450, 350)
       particlesPerSecond: 100
       colors: new nv.Gradient([
         new nv.Color(255, 255, 255, 1),
