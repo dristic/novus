@@ -1,23 +1,23 @@
 class nv.Game
-  constructor: () ->
+  constructor: (config) ->
     @rootModel = new nv.Model
     @scenes = []
     @sceneClasses = {}
     @engines = {}
 
     canvas = new gleam.Canvas
-    canvas.setSize nv.gameConfig.canvas.width, nv.gameConfig.canvas.height
-    canvas.setStyle property, value for property, value of nv.gameConfig.canvas.css
+    canvas.setSize config.canvas.width, config.canvas.height
+    canvas.setStyle property, value for property, value of config.canvas.css
     document.body.appendChild canvas.source
     
-    for engine in nv.gameConfig.enginesToLoad
-      #klass = "nv." + engine[0].toUpperCase() + engine.slice(1) + "Engine"
-      #@registerEngine getClass(klass) 
-      @registerEngine engine
+    if config.enginesToLoad?
+      for engine in config.enginesToLoad
+        @registerEngine engine
 
-    for name of nv.gameConfig.scenes
-      klass = "scenes." + name[0].toUpperCase() + name.slice(1)
-      @registerScene klass, getClass(klass)
+    if config.scenes?
+      for name of config.scenes
+        klass = "scenes." + name[0].toUpperCase() + name.slice(1)
+        @registerScene name, getClass(klass)
 
     @rootModel.setMany
       canvas: canvas
