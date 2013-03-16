@@ -8,6 +8,7 @@ class nv.Game
     canvas = new gleam.Canvas
     canvas.setSize config.canvas.width, config.canvas.height
     canvas.setStyle property, value for property, value of config.canvas.css
+    canvas.setFullscreen config.canvas.fullscreen if config.canvas.fullscreen?
     document.body.appendChild canvas.source
     
     if config.enginesToLoad?

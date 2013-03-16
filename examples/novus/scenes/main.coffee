@@ -1,29 +1,6 @@
 class scenes.Main extends nv.Scene
-  constructor: (game) ->
-    super game,
-      canvas: @glcanvas
-      keys:
-        start: nv.Key.Spacebar
-        left: nv.Key.A
-        right: nv.Key.D
-      trackMouse: true
-
-    @useEngine "TimingEngine"
-    @useEngine "RenderingEngine"
-    @useEngine "GamepadEngine"
-    @useEngine "SoundEngine"
-    @useEngine "ParticleEngine"
-    @useEngine "DebugEngine"
-
-    @addEntities entities.Background,
-      entities.Background,
-      entities.Title,
-      entities.ActionText,
-      entities.Cursor,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid
+  constructor: (name, game, rootModel) ->
+    super name, game, rootModel
 
     @send "engine:particle:create_emitter",
       position: new nv.Point(450, 300)

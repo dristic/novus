@@ -8,7 +8,7 @@
 #// = require_tree models
 #= require_tree entities
 #= require_tree scenes
-#= require ./config/game.config
+#= require_tree config
 
 nv.ready ->
   @app = new @Application
