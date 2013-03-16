@@ -6,6 +6,7 @@ To Do
 * Animated Sprites
 * AABB
 * Preloader / Loading Screens
+* Scene Transitions / Filter Effects
 
 Future Ideas
 -----------------------
