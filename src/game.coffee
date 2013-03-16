@@ -16,8 +16,9 @@ class nv.Game
 
     if config.scenes?
       for name of config.scenes
-        klass = "scenes." + name[0].toUpperCase() + name.slice(1)
-        @registerScene name, getClass(klass)
+        scene = name[0].toUpperCase() + name.toLowerCase().slice(1)
+        klass = "scenes." + scene
+        @registerScene scene, getClass(klass)
 
     @rootModel.setMany
       canvas: canvas
@@ -40,7 +41,7 @@ class nv.Game
     @sceneClasses[name] = klass
 
   openScene: (name, args...) ->
-    @scenes.push new @sceneClasses['scenes.' + name] name, this, @rootModel, args...
+    @scenes.push new @sceneClasses[name] name, this, @rootModel, args...
 
   closeScene: (name) ->
     name = name ? @scenes[@scenes.length - 1].constructor.name
