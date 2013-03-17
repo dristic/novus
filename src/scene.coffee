@@ -64,13 +64,8 @@ class nv.Scene extends nv.EventDispatcher
         model = $.extend {}, config.models.model.options
         for property, value of model
           if $.isFunction value
-            model[property] = value(index-1)
+            model[property] = value(this, index-1)
         models.push model
-
-    #klass = getClass(config.entity)
-
-    #plugins = $.map config.plugins, (name) ->
-    #  getClass name
 
     @addEntity config.entity, config.plugins, model for model in models
 

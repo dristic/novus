@@ -106,6 +106,20 @@ nv.gameConfig =
               y: 0
               width: 500
               height: 500
+        hud:
+          entity: entities.Hud
+          plugins: [ renderers.Hud ]
+          model:
+            options:
+              color: '#FFF'
+              font: "40px sans-serif"
+              x: 0
+              y: 0
+              width: (scene) -> scene.get('canvas').width
+              height: (scene) -> scene.get('canvas').height
+              ships: [  ]
+              lives: 4
+              score: 0           
         ship:
           entity: entities.Ship
           plugins: [ renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin ]
@@ -122,7 +136,7 @@ nv.gameConfig =
               height: 24
               rotation: 0
               thrusters: false
-              type: 'both'
+              physicsObjectType: 'both'
               shapes:
                 ship:
                   strokeColor: '#FFF'
@@ -134,6 +148,28 @@ nv.gameConfig =
                   strokeWidth: 2
                   fillStyle: 'yellow'
                   points: [ new nv.Point(0,13.6), new nv.Point(4,16), new nv.Point(0,31.2), new nv.Point(-4,16) ]
+        asteroids:
+          entity: entities.Asteroid
+          plugins: [ nv.PathRenderingPlugin, nv.PathPhysicsPlugin ]
+          models:
+            count: 20
+            model:
+              variables:
+                scale: () -> Math.ceil(Math.random() * 4)
+              options:
+                x: (scene) -> scene.get('canvas').getSize().width * Math.random()
+                y: (scene) -> scene.get('canvas').getSize().width * Math.random()
+                size: (scene, idx, vars) -> vars.scale
+                width: (scene, idx, vars) -> vars.scale * 12
+                height: (scene, idx, vars) -> vars.scale * 12
+                direction: (Math.random() * Math.PI) - (Math.PI / 2)
+                speed: Math.random() + 0.3
+                rotation: 0
+                rotationSpeed: ((Math.random() / 10) - 0.05) / 8
+                physicsObjectType: 'passive'
+                strokeColor: '#FFF'
+                strokeWidth: 2
+
 
 
 

@@ -9,8 +9,8 @@ class models.Background extends nv.Model
       height: 500
 
 class models.PathObject extends nv.Model
-  constructor: (options, @defaultShape) ->
-    @modelShapes = options.shapes
+  constructor: (options, @defaultShape = "") ->
+    @modelShapes = options.shapes if options.shapes?
     delete options.shapes
     super options
 
@@ -71,9 +71,10 @@ class models.Ship extends models.PathObject
     shape
 
 
-class models.Asteroid extends nv.Model
-  constructor: (x, y, scale = 1, direction = null) ->
-    super 
+class models.Asteroid extends models.PathObject
+  constructor: (options) ->
+    super options
+    ###
       x: x
       y: y
       width: 12 * scale
@@ -86,8 +87,9 @@ class models.Asteroid extends nv.Model
       strokeColor: '#FFF'
       strokeWidth: 2
       size: scale
+    ###
 
-    @points = @buildWireframe(scale * .5)
+    @wireframe = @buildWireframe(scale * .5)
 
   buildWireframe: (scalar) ->
     pt = new nv.Point(0, -@height)
@@ -103,7 +105,7 @@ class models.Asteroid extends nv.Model
 
   shapes: () ->
     [ 
-      points: @path()
+      points: @points()
       strokeColor: @strokeColor
       strokeWidth: @strokeWidth
     ]
@@ -113,7 +115,7 @@ class models.Asteroid extends nv.Model
     sine = Math.sin(@rotation)
     path = []
     model = this
-    $.each @points, () ->
+    $.each @wireframe, () ->
       path.push new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y)
     path
 
@@ -137,12 +139,12 @@ class models.Bullet extends nv.Model
       angle: angle
       type: 'active'
 
-    @points = @buildWireframe()
+    @wireframe = @buildWireframe()
 
-  path: () ->
+  points: () ->
     path = []
     model = this
-    $.each @points, () ->
+    $.each @wireframe, () ->
       path.push new nv.Point(model.x, model.y)
     path
 

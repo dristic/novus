@@ -136,12 +136,8 @@ class entities.Ship extends WrappingEntity
     super
 
 class entities.Asteroid extends WrappingEntity
-  constructor: (scene, options = {}) ->
-    scale = options.scale ? Math.ceil(Math.random() * 4)
-    screen = scene.get('canvas').getSize()
-    x = options.x || screen.width * Math.random()
-    y = options.y || screen.height * Math.random()
-    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid(x, y, scale, options.direction)
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       @handleCollision data if data.target is this
@@ -194,7 +190,9 @@ class entities.Bullet extends WrappingEntity
       @wrap()
 
 class entities.Hud extends nv.Entity
-  constructor: (scene) ->
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
+    ###
     canvas = scene.canvas
 
     ships = [ new models.Ship, (new models.Ship).translate(25,0), (new models.Ship).translate(50,0) ]
@@ -209,7 +207,7 @@ class entities.Hud extends nv.Entity
       ships: ships
       lives: ships.length + 1
       score: 0
-
+    ###
     @scene.on "entity:destroyed:Asteroid", (data) =>
       @model.score += [500, 300, 200, 100][data.model.size - 1]
 
