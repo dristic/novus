@@ -54,11 +54,14 @@ class nv.Scene extends nv.EventDispatcher
   createEntity: (config) ->
     models = []
     if config.model?
-      models.push config.model
+      if config.model.klass?
+        models.push new config.model.klass(config.model.options)
+      else
+        models.push new nv.Model(config.model.options)
     else if config.models?
       index = config.models.count + 1
       while index -= 1
-        model = $.extend {}, config.models.model
+        model = $.extend {}, config.models.model.options
         for property, value of model
           if $.isFunction value
             model[property] = value(index-1)

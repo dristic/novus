@@ -61,8 +61,8 @@ class entities.Cursor extends nv.Entity
     @model.drawable.y = state.mouse.y
 
 class WrappingEntity extends nv.Entity
-  constructor: (scene, pluginClasses, model) ->
-    super scene, pluginClasses, model
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
     @canvas = @scene.getEngine(nv.RenderingEngine).canvas
 
@@ -77,8 +77,8 @@ class WrappingEntity extends nv.Entity
     else if @model.y > dimensions.height then @model.y = 0
 
 class entities.Ship extends WrappingEntity
-  constructor: (scene) ->
-    super scene, [renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship
+  constructor: (scene, plugins, options) ->
+    super scene, plugins, new models.Ship(options)
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       @scene.fire "entity:destroyed:Ship", this
@@ -107,10 +107,10 @@ class entities.Ship extends WrappingEntity
     @emitter = @scene.getEngine(nv.ParticleEngine).getEmitter(2)
 
   fireBullet: () ->
-    @scene.addEntity entities.Bullet, @model.path()[0], @model.rotation
+    @scene.addEntity entities.Bullet, @model.points()[0], @model.rotation
 
   update: (dt) ->
-    state = @scene.gamepad.getState()
+    state = @scene.get('gamepad').getState()
     if state.left then @model.rotate -0.1
     if state.right then @model.rotate 0.1
     if state.up
@@ -122,7 +122,7 @@ class entities.Ship extends WrappingEntity
     @model.translate @model.thrustVector.x, @model.thrustVector.y
     @scene.fire "entity:thrust:Ship" if @model.thrusters
 
-    anchor = @model.path("thrusters")[0]
+    anchor = @model.points("thrusters")[0]
     @emitter.set 'position', new nv.Point(anchor.x, anchor.y)
     if @model.thrusters
       @emitter.set 'on', true

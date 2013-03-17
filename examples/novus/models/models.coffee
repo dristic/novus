@@ -8,28 +8,40 @@ class models.Background extends nv.Model
       width: 500
       height: 500
 
-class models.Ship extends nv.Model
-  constructor: () ->
-    super
-      thrustVector: new nv.Point(0,0)
-      velocity: 0
-      health: 100
-      shootDelay: 10
-      x: 30
-      y: 30
-      width: 16
-      height: 24
-      rotation: 0
-      thrusters: false
-      type: 'both'
-      color: '#FFF'
-      strokeColor: '#FFF'
-      strokeWidth: 2
-      thrustersColor: 'orange'
-      thrustersWidth: 2
-      thrustersFill: 'yellow'
+class models.PathObject extends nv.Model
+  constructor: (options, @defaultShape) ->
+    @modelShapes = options.shapes
+    delete options.shapes
+    super options
 
-    @buildWireframes()
+  preparePath: () ->
+    points: []
+
+  shouldDrawShape: (shapeName) ->
+    false
+
+  points: (shapeName = @defaultShape) ->
+    shape = @prepareShape @modelShapes[shapeName]
+    shape.points
+
+  shapes: () ->
+    shapes = []
+    for shapeName of @modelShapes
+      shapes.push @prepareShape(@modelShapes[shapeName]) if @shouldDrawShape shapeName
+    shapes
+
+  translate: (dx,dy) ->
+    @x += dx
+    @y += dy
+    this
+
+  rotate: (dr) ->
+    @rotation += dr
+    this
+
+class models.Ship extends models.PathObject
+  constructor: (options) ->
+    super options, "ship"
 
   reset: () ->
     @x = 30
@@ -39,29 +51,14 @@ class models.Ship extends nv.Model
     @health = 100
     @rotation = 0
 
-  buildWireframes: () ->
-    @shipWF =
-      strokeColor: @strokeColor
-      strokeWidth: @strokeWidth
-      points: [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
-    @thrustersWF =
-      strokeColor: @thrustersColor
-      strokeWidth: @thrustersWidth
-      fillStyle: @thrustersFill
-      points: [ new nv.Point(0, @height*0.4+4), new nv.Point((@width/2)-4, (@height/2)+4), new nv.Point(0, @height*1.3), new nv.Point((-@width/2)+4, (@height/2)+4) ]
+  shouldDrawShape: (shapeName) ->
+    switch shapeName
+      when "ship" then true
+      when "thrusters" then @thrusters
+      else false
 
-  shapes: () ->
-    shapes = []
-    shapes.push @prepareShape(@shipWF)
-    shapes.push @prepareShape(@thrustersWF) if @thrusters
-    shapes
-
-  path: (which = "ship") ->
-    shape = @prepareShape @[which + "WF"]
-    shape.points
-
-  prepareShape: (wf) ->
-    shape = $.extend({},wf)
+  prepareShape: (object) ->
+    shape = $.extend({},object)
     model = this
 
     cosine = Math.cos(@rotation)
@@ -73,14 +70,6 @@ class models.Ship extends nv.Model
     shape.points = path
     shape
 
-  translate: (dx,dy) ->
-    @x += dx
-    @y += dy
-    this
-
-  rotate: (r) ->
-    @rotation += r
-    this
 
 class models.Asteroid extends nv.Model
   constructor: (x, y, scale = 1, direction = null) ->
@@ -119,7 +108,7 @@ class models.Asteroid extends nv.Model
       strokeWidth: @strokeWidth
     ]
 
-  path: () ->
+  points: () ->
     cosine = Math.cos(@rotation)
     sine = Math.sin(@rotation)
     path = []

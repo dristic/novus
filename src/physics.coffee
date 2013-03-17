@@ -92,7 +92,7 @@ class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
 
   updateBounds: () ->
     x1 = x2 = y1 = y2 = null
-    $.each @entity.model.path(), () ->
+    $.each @entity.model.points(), () ->
       x1 = this.x if x1 == null || this.x < x1
       x2 = this.x if x2 == null || this.x > x2
       y1 = this.y if y1 == null || this.y < y1

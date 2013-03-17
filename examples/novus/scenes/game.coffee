@@ -1,14 +1,8 @@
 class scenes.Game extends nv.Scene
-  constructor: (game, @glcanvas) ->
-    super game,
-      canvas: @glcanvas
-      keys:
-        left: nv.Key.A
-        right: nv.Key.D
-        up: nv.Key.W
-        down: nv.Key.S
-        shoot: nv.Key.Spacebar
+  constructor: (name, game, rootModel) ->
+    super name, game, rootModel
 
+    ###
     @useEngine "TimingEngine"
     @useEngine "RenderingEngine"
     @useEngine "GamepadEngine"
@@ -63,6 +57,8 @@ class scenes.Game extends nv.Scene
     @camera.follow ship.model, 250, 250
     @camera.zoom 0.5
     @camera.zoom 1, 2000
+
+    ###
 
     @on "entity:destroyed:Ship", () =>
       console.log "ship destroyed"

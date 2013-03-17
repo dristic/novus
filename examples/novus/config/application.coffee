@@ -14,5 +14,5 @@ class @Application extends nv.Game
 
     # Start the game on a new thread
     start = () =>
-      @start('Main')
+      @start('Game')
     setTimeout start, 0
