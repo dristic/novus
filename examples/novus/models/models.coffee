@@ -89,7 +89,7 @@ class models.Asteroid extends models.PathObject
       size: scale
     ###
 
-    @wireframe = @buildWireframe(scale * .5)
+    @wireframe = @buildWireframe(@scale * .5)
 
   buildWireframe: (scalar) ->
     pt = new nv.Point(0, -@height)

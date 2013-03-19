@@ -5,7 +5,7 @@ nv.gameConfig =
     fullscreen: true
     css:
       background: '#000'
-      margin: '30px auto 0 auto'
+      margin: '0 auto 0 auto'
       display: 'block'
 
   enginesToLoad: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine, nv.SoundEngine, nv.ParticleEngine ]
@@ -70,11 +70,24 @@ nv.gameConfig =
         asteroids:
           entity: entities.Asteroid
           plugins: [ nv.PathRenderingPlugin, nv.PathPhysicsPlugin ]
-          models:
-            count: 9
-            model:
-              options:
-                scale: () -> Math.ceil(Math.random() * 4)
+          count: 9
+          model:
+            klass: models.Asteroid
+            initializers:
+              scale: () -> Math.ceil(Math.random() * 4)
+              x: (scene) -> scene.get('canvas').getSize().width * Math.random()
+              y: (scene) -> scene.get('canvas').getSize().width * Math.random()
+              size: (scene, idx) -> @scale
+              width: (scene, idx) -> @scale * 12
+              height: (scene, idx) -> @scale * 12
+            options:
+              direction: (Math.random() * Math.PI) - (Math.PI / 2)
+              speed: Math.random() + 0.3
+              rotation: 0
+              rotationSpeed: ((Math.random() / 10) - 0.05) / 8
+              physicsObjectType: 'passive'
+              strokeColor: '#FFF'
+              strokeWidth: 2
 
     game:
       config:
@@ -151,28 +164,21 @@ nv.gameConfig =
         asteroids:
           entity: entities.Asteroid
           plugins: [ nv.PathRenderingPlugin, nv.PathPhysicsPlugin ]
-          models:
-            count: 20
-            model:
-              variables:
-                scale: () -> Math.ceil(Math.random() * 4)
-              options:
-                x: (scene) -> scene.get('canvas').getSize().width * Math.random()
-                y: (scene) -> scene.get('canvas').getSize().width * Math.random()
-                size: (scene, idx, vars) -> vars.scale
-                width: (scene, idx, vars) -> vars.scale * 12
-                height: (scene, idx, vars) -> vars.scale * 12
-                direction: (Math.random() * Math.PI) - (Math.PI / 2)
-                speed: Math.random() + 0.3
-                rotation: 0
-                rotationSpeed: ((Math.random() / 10) - 0.05) / 8
-                physicsObjectType: 'passive'
-                strokeColor: '#FFF'
-                strokeWidth: 2
-
-
-
-
-
-
-
+          count: 20
+          model:
+            klass: models.Asteroid
+            initializers:
+              scale: () -> Math.ceil(Math.random() * 4)
+              x: (scene) -> scene.get('canvas').getSize().width * Math.random()
+              y: (scene) -> scene.get('canvas').getSize().width * Math.random()
+              size: (scene, idx) -> @scale
+              width: (scene, idx) -> @scale * 12
+              height: (scene, idx) -> @scale * 12
+              direction: () -> (Math.random() * Math.PI) - (Math.PI / 2)
+              speed: () -> Math.random() + 0.3
+              rotationSpeed: () -> ((Math.random() / 10) - 0.05) / 8
+            options:
+              rotation: 0
+              physicsObjectType: 'passive'
+              strokeColor: '#FFF'
+              strokeWidth: 2

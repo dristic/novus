@@ -54,20 +54,40 @@ class nv.Scene extends nv.EventDispatcher
   createEntity: (config) ->
     models = []
     if config.model?
-      if config.model.klass?
-        models.push new config.model.klass(config.model.options)
+      if config.count?
+        # If we are loading more than one entity generate a model
+        # for each entity
+        index = config.count + 1
+        while index -= 1
+          models.push @loadModelFromConfig config, index
       else
-        models.push new nv.Model(config.model.options)
-    else if config.models?
-      index = config.models.count + 1
-      while index -= 1
-        model = $.extend {}, config.models.model.options
-        for property, value of model
-          if $.isFunction value
-            model[property] = value(this, index-1)
-        models.push model
+        # Else just one instance from the entity config
+        models.push @loadModelFromConfig config, index
+      @addEntity config.entity, config.plugins, model for model in models
+    else
+      # If no model is passed in instance the entity without a model
+      @addEntity config.entity, config.plugins, null
 
-    @addEntity config.entity, config.plugins, model for model in models
+  loadModelFromConfig: (config, index = 0) ->
+    model = {}
+
+    # Load the initializers up in order and add their results
+    # as properties on the model
+    if config.model.initializers?
+      for key of config.model.initializers
+        initializer = config.model.initializers[key]
+        model[key] = nv.bind(model, initializer)(this, index)
+
+    # Extend the initialized values onto the model
+    model = nv.extend model, config.model.options
+
+    # Load the model class if given
+    if config.model.klass?
+      model = new config.model.klass(model)
+    else
+      model = new nv.Model(model)
+
+    model
 
   addEntities: (entities...) ->
     @addEntity entity for entity in entities
