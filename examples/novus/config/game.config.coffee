@@ -123,16 +123,17 @@ nv.gameConfig =
           entity: entities.Hud
           plugins: [ renderers.Hud ]
           model:
+            initializers:
+              width: (scene) -> scene.get('canvas').width
+              height: (scene) -> scene.get('canvas').height
             options:
               color: '#FFF'
               font: "40px sans-serif"
               x: 0
               y: 0
-              width: (scene) -> scene.get('canvas').width
-              height: (scene) -> scene.get('canvas').height
               ships: [  ]
               lives: 4
-              score: 0           
+              score: 0
         ship:
           entity: entities.Ship
           plugins: [ renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin ]

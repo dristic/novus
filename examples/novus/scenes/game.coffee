@@ -60,6 +60,11 @@ class scenes.Game extends nv.Scene
 
     ###
 
+    @camera = @getEngine(nv.RenderingEngine).camera
+    @camera.follow @getEntity(entities.Ship).model, 250, 250
+    @camera.zoom 0.5
+    @camera.zoom 1, 2000
+
     @on "entity:destroyed:Ship", (ship) =>
       ship.model.reset()
       # remaining = hud.shipDestroyed()

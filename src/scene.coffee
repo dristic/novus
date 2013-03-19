@@ -106,6 +106,12 @@ class nv.Scene extends nv.EventDispatcher
     @entities.push entity
     entity
 
+  getEntity: (type) ->
+    for entity in @entities
+      if entity instanceof type
+        return entity
+    null
+
   removeEntity: (entity) ->
     unless @entities.indexOf(entity) is -1
       entity.destroy() unless not entity.destroy
