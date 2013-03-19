@@ -201,20 +201,8 @@ class entities.Hud extends nv.Entity
     super scene, plugins, model
     ###
     canvas = scene.canvas
-
-    ships = [ new models.Ship, (new models.Ship).translate(25,0), (new models.Ship).translate(50,0) ]
-
-    super scene, [renderers.Hud],
-      color: '#FFF'
-      font: "40px sans-serif"
-      x: 0
-      y: 0
-      width: canvas.width
-      height: canvas.height
-      ships: ships
-      lives: ships.length + 1
-      score: 0
     ###
+
     @scene.on "entity:destroyed:Asteroid", (data) =>
       @model.score += [500, 300, 200, 100][data.model.size - 1]
 

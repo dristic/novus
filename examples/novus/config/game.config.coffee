@@ -124,6 +124,7 @@ nv.gameConfig =
           plugins: [ renderers.Hud ]
           model:
             initializers:
+              #ships: () -> [ new models.PathObject(@points), (new models.PathObject(@points)).translate(25,0), (new models.PathObject(@points)).translate(50,0) ]
               width: (scene) -> scene.get('canvas').width
               height: (scene) -> scene.get('canvas').height
             options:
@@ -131,9 +132,11 @@ nv.gameConfig =
               font: "40px sans-serif"
               x: 0
               y: 0
-              ships: [  ]
               lives: 4
               score: 0
+              ships: []
+              points:
+                points: [ new nv.Point(0, -12), new nv.Point(8,12), new nv.Point(0, 9.6), new nv.Point(-8,12) ]
         ship:
           entity: entities.Ship
           plugins: [ renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin ]

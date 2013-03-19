@@ -67,12 +67,12 @@ class renderers.Hud extends nv.RenderingPlugin
     score = @entity.model.score.toString()
     textWidth = context.measureText(score).width
     context.strokeText score, @entity.model.width - textWidth - 20 ,  50
-
+    
     $.each @entity.model.ships, () ->
       data = []
-      points = this.path()
+      points = this.points
       $.each points, () ->
-        data.push this.x, this.y
+        data.push this.x + self.x, this.y + self.y
       data.push points[0].x, points[0].y
       context.setStrokeStyle this.strokeColor
       context.setStrokeWidth this.strokeWidth

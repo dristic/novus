@@ -8,3 +8,5 @@ dist/**/*
 dist-debug/**/*
 .grunt
 dotcloud.yml
+.dotcloud
+.dotcloud/**/*
