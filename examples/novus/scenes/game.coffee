@@ -61,14 +61,12 @@ class scenes.Game extends nv.Scene
     ###
 
     @on "entity:destroyed:Ship", () =>
-      console.log "ship destroyed"
-      remaining = hud.shipDestroyed()
-      if remaining
-        ship.model.reset()
-      else
-        console.log "game over"
-        @game.closeScene "Game"
-        @game.openScene 'GameOver', @canvas
+      # remaining = hud.shipDestroyed()
+      # if remaining
+      #   ship.model.reset()
+      # else
+      #   @game.closeScene "Game"
+      #   @game.openScene 'GameOver', @canvas
 
     # Start the scene
     @send "engine:timing:start"

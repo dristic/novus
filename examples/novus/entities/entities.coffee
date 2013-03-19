@@ -145,7 +145,7 @@ class entities.Asteroid extends WrappingEntity
       @handleCollision data if data.target is this
 
   handleCollision: (data) ->
-    @scene.fire "entity:destroyed:Asteroid", data.target 
+    @scene.fire "entity:destroyed:Asteroid", data.target
     @scene.fire "entity:remove", data.target
 
     size = data.target.model.get('size') - 1 

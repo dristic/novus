@@ -79,7 +79,7 @@ __objectId = 0
 class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
   constructor: (scene, entity) ->
     @id = __objectId++
-    @type = entity.model.type
+    @type = entity.model.physicsObjectType
     @boundingRect = new nv.Rect 0, 0, 0, 0
 
     super scene, entity
@@ -102,7 +102,7 @@ class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
 class nv.RectanglePhysicsPlugin extends nv.PhysicsPlugin
   constructor: (scene, entity) ->
     @id = __objectId++
-    @type = entity.model.type
+    @type = entity.model.physicsObjectType
     @boundingRect = new nv.Rect 0, 0, 0, 0
 
     super scene, entity
