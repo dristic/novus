@@ -137,7 +137,7 @@ class models.Bullet extends nv.Model
       alive: true
       life: 100
       angle: angle
-      type: 'active'
+      physicsObjectType: 'active'
 
     @wireframe = @buildWireframe()
 

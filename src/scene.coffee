@@ -18,8 +18,15 @@ class nv.Scene extends nv.EventDispatcher
     @on "entity:remove", (entity) =>
       @removeEntity entity
 
-    @on "entity:add", (options) =>
-      @addEntity options.entity, options
+    @on "entity:add", (entity) =>
+      @addEntity entity
+
+    @on "entity:create", (options) =>
+      entityName = options.entity
+      config = nv.gameConfig.scenes[@sceneName].entities[entityName]
+      config.count = 1 # Ensure we only create one this time
+      unless not config
+        @createEntity config, options
 
     @on "scene:destroy", (options) =>
       @destruct()
@@ -51,32 +58,35 @@ class nv.Scene extends nv.EventDispatcher
     for entity, config of nv.gameConfig.scenes[@sceneName].entities
       @createEntity config
 
-  createEntity: (config) ->
-    models = []
+  createEntity: (config, options) ->
+    entities = []
     if config.model?
       if config.count?
         # If we are loading more than one entity generate a model
         # for each entity
         index = config.count + 1
         while index -= 1
-          models.push @loadModelFromConfig config, index
+          entities.push new config.entity this, config.plugins, @loadModelFromConfig(config, options, index)
       else
         # Else just one instance from the entity config
-        models.push @loadModelFromConfig config, index
-      @addEntity config.entity, config.plugins, model for model in models
+        entities.push new config.entity this, config.plugins, @loadModelFromConfig(config, options)
     else
       # If no model is passed in instance the entity without a model
-      @addEntity config.entity, config.plugins, null
+      entities.push new config.entity this, config.plugins
+    @addEntity entity for entity in entities
 
-  loadModelFromConfig: (config, index = 0) ->
+  loadModelFromConfig: (config, options, index = 0) ->
     model = {}
+
+    # Extend the extra options onto the model
+    model = nv.extend model, options
 
     # Load the initializers up in order and add their results
     # as properties on the model
     if config.model.initializers?
       for key of config.model.initializers
         initializer = config.model.initializers[key]
-        model[key] = nv.bind(model, initializer)(this, index)
+        model[key] = nv.bind(model, initializer)(this, index) unless model[key] isnt undefined
 
     # Extend the initialized values onto the model
     model = nv.extend model, config.model.options
@@ -92,8 +102,7 @@ class nv.Scene extends nv.EventDispatcher
   addEntities: (entities...) ->
     @addEntity entity for entity in entities
 
-  addEntity: (entity, args...) ->
-    entity = new entity this, args...
+  addEntity: (entity) ->
     @entities.push entity
     entity
 

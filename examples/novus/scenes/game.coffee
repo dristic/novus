@@ -60,7 +60,8 @@ class scenes.Game extends nv.Scene
 
     ###
 
-    @on "entity:destroyed:Ship", () =>
+    @on "entity:destroyed:Ship", (ship) =>
+      ship.model.reset()
       # remaining = hud.shipDestroyed()
       # if remaining
       #   ship.model.reset()

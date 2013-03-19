@@ -107,7 +107,8 @@ class entities.Ship extends WrappingEntity
     @emitter = @scene.getEngine(nv.ParticleEngine).getEmitter(2)
 
   fireBullet: () ->
-    @scene.addEntity entities.Bullet, @model.points()[0], @model.rotation
+    bullet = new entities.Bullet @scene, @model.points()[0], @model.rotation
+    @scene.addEntity bullet
 
   update: (dt) ->
     state = @scene.get('gamepad').getState()
@@ -145,20 +146,22 @@ class entities.Asteroid extends WrappingEntity
       @handleCollision data if data.target is this
 
   handleCollision: (data) ->
-    @scene.fire "entity:destroyed:Asteroid", data.target
-    @scene.fire "entity:remove", data.target
+    unless data.target.model.get('dead') is true
+      @scene.fire "entity:destroyed:Asteroid", data.target
+      @scene.fire "entity:remove", data.target
 
-    size = data.target.model.get('size') - 1 
-    unless size is 0
-      options = 
-        entity: entities.Asteroid
-        x: data.target.model.get('x')
-        y: data.target.model.get('y')
-        scale: size
-        direction: data.target.model.get('direction') - 0.3
-      @scene.fire 'entity:add', options
-      options.direction += 0.6
-      @scene.fire 'entity:add', options
+      size = data.target.model.get('size') - 1
+      unless size is 0
+        options = 
+          entity: "asteroid"
+          x: data.target.model.get('x')
+          y: data.target.model.get('y')
+          scale: size
+          direction: data.target.model.get('direction') - 0.3
+        @scene.fire 'entity:create', options
+        options.direction += 0.6
+        @scene.fire 'entity:create', options
+    data.target.model.set('dead', true)
 
   update: (dt) ->
     @model.rotation += @model.rotationSpeed

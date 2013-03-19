@@ -161,7 +161,7 @@ nv.gameConfig =
                   strokeWidth: 2
                   fillStyle: 'yellow'
                   points: [ new nv.Point(0,13.6), new nv.Point(4,16), new nv.Point(0,31.2), new nv.Point(-4,16) ]
-        asteroids:
+        asteroid:
           entity: entities.Asteroid
           plugins: [ nv.PathRenderingPlugin, nv.PathPhysicsPlugin ]
           count: 20
