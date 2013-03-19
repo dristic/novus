@@ -78,6 +78,9 @@ class nv.Scene extends nv.EventDispatcher
   loadModelFromConfig: (config, options, index = 0) ->
     model = {}
 
+    # Extend the initialized values onto the model
+    model = nv.extend model, config.model.options
+
     # Extend the extra options onto the model
     model = nv.extend model, options
 
@@ -87,9 +90,6 @@ class nv.Scene extends nv.EventDispatcher
       for key of config.model.initializers
         initializer = config.model.initializers[key]
         model[key] = nv.bind(model, initializer)(this, index) unless model[key] isnt undefined
-
-    # Extend the initialized values onto the model
-    model = nv.extend model, config.model.options
 
     # Load the model class if given
     if config.model.klass?

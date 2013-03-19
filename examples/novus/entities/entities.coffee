@@ -77,8 +77,8 @@ class WrappingEntity extends nv.Entity
     else if @model.y > dimensions.height then @model.y = 0
 
 class entities.Ship extends WrappingEntity
-  constructor: (scene, plugins, options) ->
-    super scene, plugins, new models.Ship(options)
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       @scene.fire "entity:destroyed:Ship", this
@@ -107,8 +107,13 @@ class entities.Ship extends WrappingEntity
     @emitter = @scene.getEngine(nv.ParticleEngine).getEmitter(2)
 
   fireBullet: () ->
-    bullet = new entities.Bullet @scene, @model.points()[0], @model.rotation
-    @scene.addEntity bullet
+    options =
+      entity: "bullet"
+      x: @model.points()[0].x
+      y: @model.points()[0].y
+      angle: @model.rotation
+
+    @scene.fire "entity:create", options
 
   update: (dt) ->
     state = @scene.get('gamepad').getState()
@@ -170,12 +175,11 @@ class entities.Asteroid extends WrappingEntity
     @wrap()
 
 class entities.Bullet extends WrappingEntity
-  constructor: (scene, point, rotation) ->
-    super scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet point, rotation
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
     @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
       @scene.fire "entity:remove", data.actor if data.actor is this
-
 
   update: (dt) ->
     @model.translate @model.speed * Math.sin(@model.angle) * dt, -1 * @model.speed * Math.cos(@model.angle) * dt

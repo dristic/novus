@@ -182,3 +182,19 @@ nv.gameConfig =
               physicsObjectType: 'passive'
               strokeColor: '#FFF'
               strokeWidth: 2
+        bullet:
+          entity: entities.Bullet
+          plugins: [ renderers.Bullet, nv.PathPhysicsPlugin ]
+          count: 0
+          model:
+            klass: models.Bullet
+            options:
+              x: 0
+              y: 0
+              color: "#FF7600"
+              speed: 400
+              radius: 3
+              alive: true
+              life: 100
+              angle: 0
+              physicsObjectType: "active"

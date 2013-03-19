@@ -1,13 +1,5 @@
 window.models = models = {}
 
-class models.Background extends nv.Model
-  constructor: () ->
-    super 
-      x: 0
-      y: 0
-      width: 500
-      height: 500
-
 class models.PathObject extends nv.Model
   constructor: (options, @defaultShape = "") ->
     @modelShapes = options.shapes if options.shapes?
@@ -127,17 +119,8 @@ class models.Asteroid extends models.PathObject
     @rotation += dr
 
 class models.Bullet extends nv.Model
-  constructor: (pt, angle) ->
-    super
-      x: pt.x
-      y: pt.y
-      color: "#ff7600"
-      speed: 400
-      radius: 3
-      alive: true
-      life: 100
-      angle: angle
-      physicsObjectType: 'active'
+  constructor: (options) ->
+    super options
 
     @wireframe = @buildWireframe()
 
