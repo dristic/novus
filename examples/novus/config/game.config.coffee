@@ -69,7 +69,7 @@ nv.gameConfig =
               fadeSpeed: 0.02
         asteroids:
           entity: entities.Asteroid
-          plugins: [ nv.PathRenderingPlugin, nv.PathPhysicsPlugin ]
+          plugins: [ nv.PathRenderingPlugin ]
           count: 9
           model:
             klass: models.Asteroid
@@ -80,11 +80,11 @@ nv.gameConfig =
               size: (scene, idx) -> @scale
               width: (scene, idx) -> @scale * 12
               height: (scene, idx) -> @scale * 12
+              direction: () -> (Math.random() * Math.PI) - (Math.PI / 2)
+              speed: () -> Math.random() + 0.3
+              rotationSpeed: () -> ((Math.random() / 10) - 0.05) / 8
             options:
-              direction: (Math.random() * Math.PI) - (Math.PI / 2)
-              speed: Math.random() + 0.3
               rotation: 0
-              rotationSpeed: ((Math.random() / 10) - 0.05) / 8
               physicsObjectType: 'passive'
               strokeColor: '#FFF'
               strokeWidth: 2

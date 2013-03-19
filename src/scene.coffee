@@ -15,8 +15,8 @@ class nv.Scene extends nv.EventDispatcher
     @prepareEngines()
     @createEntities()
 
-    @on "entity:remove", () =>
-      @removeEntity.call this, arguments...
+    @on "entity:remove", (entity) =>
+      @removeEntity entity
 
     @on "entity:add", (options) =>
       @addEntity options.entity, options
