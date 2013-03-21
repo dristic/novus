@@ -84,6 +84,20 @@ if (args[0] === undefined) {
 
   log("Navigate to http://localhost:" + config.port + " to see your game");
   log("Press CTRL + C to stop the server.");
+} else if (args[0] == "build") {
+  log("Building into build/ folder");
+
+  // Create build folder
+  if(!fs.existsSync('build')) {
+    fs.mkdirSync('build');
+  }
+
+  // Get game javascript
+  var data = new snockets().getConcatenation('game.coffee', { minify: false, async: false });
+  fs.writeFileSync('build/game.js', data);
+
+  // Copy in index file
+  fs.createReadStream(__dirname + '/index.html').pipe(fs.createWriteStream('build/index.html'));
 } else {
   /////////////////////////
   // novus {unknown_argument}
