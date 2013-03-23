@@ -82,7 +82,7 @@ class entities.Ship extends WrappingEntity
 
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       @scene.fire "entity:destroyed:Ship", this
-      #@scene.fire "entity:remove", this
+      @scene.fire "entity:remove", this
 
     @scene.on 'engine:gamepad:press:shoot', () =>
       @fireBullet.call this

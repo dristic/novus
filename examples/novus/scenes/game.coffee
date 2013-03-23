@@ -2,42 +2,6 @@ class scenes.Game extends nv.Scene
   constructor: (name, game, rootModel) ->
     super name, game, rootModel
 
-    ###
-    @useEngine "TimingEngine"
-    @useEngine "RenderingEngine"
-    @useEngine "GamepadEngine"
-    @useEngine "SoundEngine"
-    @useEngine "ParticleEngine"
-    @useEngine "DebugEngine"
-    @useEngine "PhysicsEngine"
-
-    @canvas = @getEngine(nv.RenderingEngine).canvas
-
-    ship = @addEntity entities.Ship
-    @addEntity entities.Background, ship, 0.05
-    @addEntity entities.Background, ship, 0.01
-
-    hud = @addEntity entities.Hud
-    @addEntities entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid
-
     sdoc = []
     sdoc.push
       path: "/assets/sounds/pew_pew.wav"
@@ -53,26 +17,21 @@ class scenes.Game extends nv.Scene
 
     new nv.SoundFactory(this).wire sdoc
 
+    ship = @getEntity(entities.Ship)
+    hud = @getEntity(entities.Hud)
+    ###
     @camera = @getEngine(nv.RenderingEngine).camera
     @camera.follow ship.model, 250, 250
     @camera.zoom 0.5
     @camera.zoom 1, 2000
-
     ###
-
-    @camera = @getEngine(nv.RenderingEngine).camera
-    @camera.follow @getEntity(entities.Ship).model, 250, 250
-    @camera.zoom 0.5
-    @camera.zoom 1, 2000
-
     @on "entity:destroyed:Ship", (ship) =>
-      ship.model.reset()
-      # remaining = hud.shipDestroyed()
-      # if remaining
-      #   ship.model.reset()
-      # else
-      #   @game.closeScene "Game"
-      #   @game.openScene 'GameOver', @canvas
+      remaining = hud.shipDestroyed()
+      if remaining
+        @createEntity nv.gameConfig.scenes.game.entities.ship
+      else
+        @game.closeScene "Game"
+        @game.openScene 'Gameover', @canvas
 
     # Start the scene
     @send "engine:timing:start"

@@ -35,13 +35,26 @@ class models.Ship extends models.PathObject
   constructor: (options) ->
     super options, "ship"
 
+    @resetProps =
+      x: @x
+      y: @y
+      thrusters: @thrusters
+      health: @health
+      rotation: @rotation
+      thrustVector: new nv.Point(0,0)
+
   reset: () ->
+    @setMany @resetProps
+    ###
     @x = 30
     @y = 30
     @thrusters = false
     @velocity = 0
     @health = 100
     @rotation = 0
+    @thrustVector = new nv.Point(0,0)
+    ###
+
 
   shouldDrawShape: (shapeName) ->
     switch shapeName

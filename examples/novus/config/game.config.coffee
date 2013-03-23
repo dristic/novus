@@ -61,7 +61,7 @@ nv.gameConfig =
               color: "#0F0"
               x: "center"
               y: 400
-              font: "bold 20px sans-serif"
+              font: "20px sans-serif"
               text: "Press <Space> to Start"
               strokeWidth: 0
               shadowBlur: 0
@@ -124,7 +124,16 @@ nv.gameConfig =
           plugins: [ renderers.Hud ]
           model:
             initializers:
-              #ships: () -> [ new models.PathObject(@points), (new models.PathObject(@points)).translate(25,0), (new models.PathObject(@points)).translate(50,0) ]
+              ship: () -> new models.Ship
+                x: 20
+                y: 20
+                rotation: 0
+                strokeColor: '#FFF'
+                strokeWidth: 2
+                shapes:
+                  ship:
+                    points: [ new nv.Point(0, -12), new nv.Point(8,12), new nv.Point(0, 9.6), new nv.Point(-8,12) ]
+              ships: () -> [ ($.extend({},@ship)), ($.extend({},@ship)).translate(20,0), ($.extend({},@ship)).translate(40,0) ]
               width: (scene) -> scene.get('canvas').width
               height: (scene) -> scene.get('canvas').height
             options:
@@ -134,21 +143,19 @@ nv.gameConfig =
               y: 0
               lives: 4
               score: 0
-              ships: []
-              points:
-                points: [ new nv.Point(0, -12), new nv.Point(8,12), new nv.Point(0, 9.6), new nv.Point(-8,12) ]
         ship:
           entity: entities.Ship
           plugins: [ renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin ]
           model:
             klass: models.Ship
+            initializers:
+              thrustVector: () -> new nv.Point(0,0)
+              x: (scene) -> scene.get('canvas').getSize().width / 2
+              y: (scene) -> scene.get('canvas').getSize().height / 2
             options:
-              thrustVector: new nv.Point(0,0)
               velocity: 0
               health: 100
               shootDelay: 10
-              x: 30
-              y: 30
               width: 16
               height: 24
               rotation: 0
@@ -175,9 +182,9 @@ nv.gameConfig =
               scale: () -> Math.ceil(Math.random() * 4)
               x: (scene) -> scene.get('canvas').getSize().width * Math.random()
               y: (scene) -> scene.get('canvas').getSize().width * Math.random()
-              size: (scene, idx) -> @scale
-              width: (scene, idx) -> @scale * 12
-              height: (scene, idx) -> @scale * 12
+              size: () -> @scale
+              width: () -> @scale * 12
+              height: () -> @scale * 12
               direction: () -> (Math.random() * Math.PI) - (Math.PI / 2)
               speed: () -> Math.random() + 0.3
               rotationSpeed: () -> ((Math.random() / 10) - 0.05) / 8
@@ -202,3 +209,102 @@ nv.gameConfig =
               life: 100
               angle: 0
               physicsObjectType: "active"
+
+    gameover:
+      config:
+        gamepad:
+          keys:
+            shoot: nv.Key.Spacebar
+          trackMouse: false
+      enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
+      entities:
+        background_layer1:
+          entity: nv.Entity
+          plugins: [ renderers.Background ]
+          model:
+            options:
+              x: 0
+              y: 0
+              width: 500
+              height: 500
+        background_layer2:
+          entity: nv.Entity
+          plugins: [ renderers.Background ]
+          model:
+            options:
+              x: 0
+              y: 0
+              width: 500
+              height: 500
+        title:
+          entity: nv.Entity
+          plugins: [ renderers.StrokeText ]
+          later: "effects.ShadowBlurAnimator"
+          model:
+            options:
+              color: "#000"
+              strokeColor: "#0F0"
+              x: "center"
+              y: 320
+              font: "bold italic 50px sans-serif"
+              text: "High Scores"
+              strokeWidth: 2
+              shadowBlur: 20
+              shadowBlurIncrement: 0.2
+        highscores:
+          entity: nv.Entity
+          plugins: [ renderers.StrokeText ]
+          later: "effects.ShadowBlurAnimator"
+          model:
+            options:
+              color: "#000"
+              strokeColor: "#0F0"
+              x: "center"
+              y: 420
+              font: "30px sans-serif"
+              text: ["STV        10,000\n", 
+                    "DAN         7,400\n",
+                    "ARN         5,000\n",
+                    "BEN         3,200\n",
+                    "DAN         3,000\n",
+                    "DKO         2,550"]
+              lineHeight: 40
+              strokeWidth: 2
+              shadowBlur: 20
+              shadowBlurIncrement: 0.2
+        action_text:
+          entity: nv.Entity
+          plugins: [ renderers.StrokeText ]
+          later: "effects.GlobalAlphaAnimator"
+          model:
+            options:
+              color: "#0F0"
+              x: "center"
+              y: 800
+              font: "20px sans-serif"
+              text: "Press <Space> to Play Again"
+              strokeWidth: 0
+              shadowBlur: 0
+              fade: true
+              fadeSpeed: 0.02
+        asteroids:
+          entity: entities.Asteroid
+          plugins: [ nv.PathRenderingPlugin ]
+          count: 9
+          model:
+            klass: models.Asteroid
+            initializers:
+              scale: () -> Math.ceil(Math.random() * 4)
+              x: (scene) -> scene.get('canvas').getSize().width * Math.random()
+              y: (scene) -> scene.get('canvas').getSize().width * Math.random()
+              size: (scene, idx) -> @scale
+              width: (scene, idx) -> @scale * 12
+              height: (scene, idx) -> @scale * 12
+              direction: () -> (Math.random() * Math.PI) - (Math.PI / 2)
+              speed: () -> Math.random() + 0.3
+              rotationSpeed: () -> ((Math.random() / 10) - 0.05) / 8
+            options:
+              rotation: 0
+              physicsObjectType: 'passive'
+              strokeColor: '#FFF'
+              strokeWidth: 2

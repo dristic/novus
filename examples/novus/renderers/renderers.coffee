@@ -18,23 +18,30 @@ class renderers.StrokeText extends nv.RenderingPlugin
     x = @entity.model.x
     y = @entity.model.y
 
-    unless typeof(x) is "number"
-      size = context.canvas.getSize()
-      switch x
-        when "left" then x = 0
-        when "right", "center" 
-          textWidth = context.measureText(@entity.model.text).width
-          switch x
-            when "right" then x = size.width - textWidth
-            when "center" then x = (size.width * 0.5) - (textWidth * 0.5)
-        else
-          x = size.width * (parseFloat(x) / 100)
-
-
     context.setFillStyle "#00000000"
     context.globalAlpha = @alpha
-    context.fillText @entity.model.text, x, y
-    context.strokeText @entity.model.text, x, y
+    segments = if $.isArray(@entity.model.text)
+      @entity.model.text
+    else
+      [ @entity.model.text ]
+
+    model = @entity.model
+    $.each segments, () ->
+      unless typeof(x) is "number"
+        size = context.canvas.getSize()
+        switch x
+          when "left" then x = 0
+          when "right", "center" 
+            textWidth = context.measureText(this).width
+            switch x
+              when "right" then x = size.width - textWidth
+              when "center" then x = (size.width * 0.5) - (textWidth * 0.5)
+          else
+            x = size.width * (parseFloat(x) / 100)
+
+      context.fillText this, x, y
+      context.strokeText this, x, y
+      y += model.lineHeight if model.lineHeight
     context.restore()
 
   update: (dt) ->
@@ -70,10 +77,11 @@ class renderers.Hud extends nv.RenderingPlugin
     
     $.each @entity.model.ships, () ->
       data = []
-      points = this.points
+      self = this
+      points = this.points('ship')
       $.each points, () ->
         data.push this.x + self.x, this.y + self.y
-      data.push points[0].x, points[0].y
+      data.push points[0].x + this.x, points[0].y + this.y
       context.setStrokeStyle this.strokeColor
       context.setStrokeWidth this.strokeWidth
       context.path.apply(context, data)

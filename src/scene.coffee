@@ -23,8 +23,8 @@ class nv.Scene extends nv.EventDispatcher
 
     @on "entity:create", (options) =>
       entityName = options.entity
+      # Ensure we only create one this time
       config = nv.gameConfig.scenes[@sceneName].entities[entityName]
-      config.count = 1 # Ensure we only create one this time
       unless not config
         @createEntity config, options
 
@@ -56,24 +56,20 @@ class nv.Scene extends nv.EventDispatcher
 
   createEntities: () ->
     for entity, config of nv.gameConfig.scenes[@sceneName].entities
-      @createEntity config
-
-  createEntity: (config, options) ->
-    entities = []
-    if config.model?
       if config.count?
-        # If we are loading more than one entity generate a model
-        # for each entity
         index = config.count + 1
         while index -= 1
-          entities.push new config.entity this, config.plugins, @loadModelFromConfig(config, options, index)
+          @createEntity config
       else
-        # Else just one instance from the entity config
-        entities.push new config.entity this, config.plugins, @loadModelFromConfig(config, options)
+        @createEntity config
+
+  createEntity: (config, options) ->
+    if config.model?
+      # Else just one instance from the entity config
+      @addEntity new config.entity this, config.plugins, @loadModelFromConfig(config, options)
     else
       # If no model is passed in instance the entity without a model
-      entities.push new config.entity this, config.plugins
-    @addEntity entity for entity in entities
+      @addEntity new config.entity this, config.plugins
 
   loadModelFromConfig: (config, options, index = 0) ->
     model = {}
