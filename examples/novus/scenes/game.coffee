@@ -25,7 +25,6 @@ class scenes.Game extends nv.Scene
         @fire "entity:create",
           entity: "ship"
       else if remaining is 0
-        console.log "Remaining: #{remaining}"
         @game.closeScene "Game"
         @game.openScene 'Gameover', @canvas
 
