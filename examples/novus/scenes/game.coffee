@@ -21,10 +21,11 @@ class scenes.Game extends nv.Scene
 
     @on "entity:destroyed:Ship", (ship) =>
       remaining = hud.shipDestroyed()
-      if remaining
-        @fire "entity:create", 
+      if remaining > 0
+        @fire "entity:create",
           entity: "ship"
-      else
+      else if remaining is 0
+        console.log "Remaining: #{remaining}"
         @game.closeScene "Game"
         @game.openScene 'Gameover', @canvas
 

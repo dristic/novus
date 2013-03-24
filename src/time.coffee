@@ -20,6 +20,7 @@ class nv.TimingEngine extends nv.Engine
   start: () ->
     lastTime = Date.now()
     @updating = true
+    console.log "Starting"
 
     update = () =>
       now = Date.now()
@@ -44,6 +45,7 @@ class nv.TimingEngine extends nv.Engine
     @updating = false
 
   destroy: () ->
+    @stop()
     delete @updating
 
     super
