@@ -48,7 +48,7 @@ nv.gameConfig =
               x: "center"
               y: 320
               font: "bold italic 50px sans-serif"
-              text: "Asteroids"
+              text: "Novus"
               strokeWidth: 2
               shadowBlur: 20
               shadowBlurIncrement: 0.2
