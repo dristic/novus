@@ -17,18 +17,13 @@ class scenes.Game extends nv.Scene
 
     new nv.SoundFactory(this).wire sdoc
 
-    ship = @getEntity(entities.Ship)
     hud = @getEntity(entities.Hud)
-    ###
-    @camera = @getEngine(nv.RenderingEngine).camera
-    @camera.follow ship.model, 250, 250
-    @camera.zoom 0.5
-    @camera.zoom 1, 2000
-    ###
+
     @on "entity:destroyed:Ship", (ship) =>
       remaining = hud.shipDestroyed()
       if remaining
-        @createEntity nv.gameConfig.scenes.game.entities.ship
+        @fire "entity:create", 
+          entity: "ship"
       else
         @game.closeScene "Game"
         @game.openScene 'Gameover', @canvas
