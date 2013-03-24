@@ -90,11 +90,11 @@ class entities.Ship extends WrappingEntity
         angle: ship.model.rotation
       ship.scene.fire "entity:create", options
 
-    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
+    @on 'engine:collision:Ship:Asteroid', (data) =>
       @scene.fire "entity:destroyed:Ship", this
       @scene.fire "entity:remove", this
 
-    @scene.on "engine:gamepad:press:shoot", () =>
+    @on "engine:gamepad:press:shoot", () =>
       fireBullet this
 
     @maxVelocity = 3
