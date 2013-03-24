@@ -100,7 +100,7 @@ class entities.Ship extends WrappingEntity
 
     @emitter = @scene.getEngine(nv.ParticleEngine).getEmitter(2)
 
-  "on:engine:gamepad:press:shoot": () ->
+  "event(engine:gamepad:press:shoot)": () ->
     options =
       entity: "bullet"
       x: this.model.points()[0].x
@@ -108,7 +108,7 @@ class entities.Ship extends WrappingEntity
       angle: this.model.rotation
     this.scene.fire "entity:create", options
 
-  "on:engine:collision:Ship:Asteroid": (data) ->
+  "event(engine:collision:Ship:Asteroid)": (data) ->
     @scene.fire "entity:destroyed:Ship", this
     @scene.fire "entity:remove", this
 

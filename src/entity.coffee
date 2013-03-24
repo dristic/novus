@@ -11,9 +11,8 @@ class nv.Entity
     # If any functions are defined using the prefix "on:"
     # then we auto add it as an event listener
     for key of this
-      console.log key[0..2]
-      if key[0..2] is "on:"
-        @on key[3..], nv.bind(this, this[key])
+      if /event\(.*\)/.test(key)
+        @on key[6..-2], nv.bind(this, this[key])
 
   on: (name, callback) ->
     @scene.on name, callback
