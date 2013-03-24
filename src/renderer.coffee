@@ -1,4 +1,10 @@
 class nv.RenderingEngine extends nv.Engine
+  initializer: (config, rootModel) ->
+    nv.extend config,
+      canvas: rootModel.canvas
+      width: rootModel.canvas.width
+      height: rootModel.canvas.height
+
   constructor: (scene, config) ->
     super scene, config
 
@@ -13,10 +19,11 @@ class nv.RenderingEngine extends nv.Engine
 
     scene.on "engine:rendering:destroy", (drawable) =>
       @drawables.splice @drawables.indexOf(drawable), 1
+    
+  prepare: () ->
+    @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
 
-    scene.fire "engine:timing:register:after", nv.bind(this, @draw)
-
-    scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
+    @scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
     
   draw: (dt) ->
     @context.save()

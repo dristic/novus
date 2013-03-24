@@ -1,17 +1,32 @@
 class nv.Scene extends nv.EventDispatcher
-  constructor: (@game, @options) ->
+  constructor: (name, @game, @rootModel, @options) ->
     super
 
+    @sceneName = name.toLowerCase()
+    @engines = []
     @entities = []
     @deletedEntities = []
+ 
     @options = @options ? {}
-    @engines = []
+    if nv.gameConfig.scenes[@sceneName].config.scene?
+      @options = $.extend @options, nv.gameConfig.scenes[@sceneName].config.scene
+    @options = $.extend @options, @rootModel
 
-    @on "entity:remove", () =>
-      @removeEntity.call this, arguments...
+    @prepareEngines()
+    @createEntities()
 
-    @on "entity:add", (options) =>
-      @addEntity options.entity, options
+    @on "entity:remove", (entity) =>
+      @removeEntity entity
+
+    @on "entity:add", (entity) =>
+      @addEntity entity
+
+    @on "entity:create", (options) =>
+      entityName = options.entity
+      # Ensure we only create one this time
+      config = nv.gameConfig.scenes[@sceneName].entities[entityName]
+      unless not config
+        @createEntity config, options
 
     @on "scene:destroy", (options) =>
       @destruct()
@@ -22,25 +37,76 @@ class nv.Scene extends nv.EventDispatcher
   set: (key, value) ->
     @options[key] = value
 
-  useEngine: (name, initializer) ->
-    engineObj = @game.engines[name]
-    config = {}
+  prepareEngines: () ->
+    @useEngine klass.name for klass in nv.gameConfig.scenes[@sceneName].enginesUsed
+    engine.prepare() for engine in @engines
 
-    if engineObj.initializer?
-      engineObj.initializer config, @game.model()
+  useEngine: (engineName, initializer) ->
+    engineObj = @game.engines[engineName]
+    configKey = engineName.replace("nv.","").replace("Engine","").toLowerCase()
+    config = nv.gameConfig.scenes[@sceneName].config[configKey] ? {}
+
+    if engineObj.klass.prototype.initializer?
+      engineObj.klass.prototype.initializer config, @game.model()
 
     if initializer?
       initializer config, @game.model()
 
-    @engines.push new engineObj.klass this, config
+    @engines.push new engineObj.klass this, config  
+
+  createEntities: () ->
+    for entity, config of nv.gameConfig.scenes[@sceneName].entities
+      if config.count?
+        index = config.count + 1
+        while index -= 1
+          @createEntity config
+      else
+        @createEntity config
+
+  createEntity: (config, options) ->
+    if config.model?
+      # Else just one instance from the entity config
+      @addEntity new config.entity this, config.plugins, @loadModelFromConfig(config, options)
+    else
+      # If no model is passed in instance the entity without a model
+      @addEntity new config.entity this, config.plugins
+
+  loadModelFromConfig: (config, options, index = 0) ->
+    model = {}
+
+    # Extend the initialized values onto the model
+    model = nv.extend model, config.model.options
+
+    # Extend the extra options onto the model
+    model = nv.extend model, options
+
+    # Load the initializers up in order and add their results
+    # as properties on the model
+    if config.model.initializers?
+      for key of config.model.initializers
+        initializer = config.model.initializers[key]
+        model[key] = nv.bind(model, initializer)(this, index) unless model[key] isnt undefined
+
+    # Load the model class if given
+    if config.model.klass?
+      model = new config.model.klass(model)
+    else
+      model = new nv.Model(model)
+
+    model
 
   addEntities: (entities...) ->
     @addEntity entity for entity in entities
 
-  addEntity: (entity, args...) ->
-    entity = new entity this, args...
+  addEntity: (entity) ->
     @entities.push entity
     entity
+
+  getEntity: (type) ->
+    for entity in @entities
+      if entity instanceof type
+        return entity
+    null
 
   removeEntity: (entity) ->
     unless @entities.indexOf(entity) is -1

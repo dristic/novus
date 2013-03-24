@@ -12,6 +12,9 @@ class nv.Model
   set: (key, value) ->
     this[key] = value
 
+  reset: () ->
+    # specific classes must implement
+
   persist: () ->
     data = {}
     for key of this

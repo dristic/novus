@@ -34,7 +34,7 @@ class nv.EventDispatcher
     if not @event_listeners[event] instanceof Array
       # Do nothing
     else
-      if @event_listeners[event].indexOf func not 0
+      if @event_listeners[event].indexOf(func) isnt -1
         @event_listeners[event].splice @event_listeners[event].indexOf(func), 1
     this
 

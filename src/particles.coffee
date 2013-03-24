@@ -5,6 +5,12 @@ randVariation = (center, variation) ->
   center + (variation * randRange(-0.5, 0.5))
 
 class nv.ParticleEngine extends nv.Engine
+  initializer: (config, rootModel) ->
+    nv.extend config,
+      canvas: rootModel.canvas
+      width: rootModel.canvas.width
+      height: rootModel.canvas.height
+
   constructor: (scene, config) ->
     super scene
 

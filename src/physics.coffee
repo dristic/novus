@@ -14,6 +14,7 @@ class nv.PhysicsEngine extends nv.Engine
     @scene.on "engine:physics:register", (obj) =>
       @physicsObjects.push obj
 
+  prepare: () ->
     if @config.debug is true
       @canvas = @scene.getEngine(nv.RenderingEngine).canvas
       @scene.fire "engine:timing:register:after", nv.bind(this, @drawObjects)
@@ -78,7 +79,7 @@ __objectId = 0
 class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
   constructor: (scene, entity) ->
     @id = __objectId++
-    @type = entity.model.type
+    @type = entity.model.physicsObjectType
     @boundingRect = new nv.Rect 0, 0, 0, 0
 
     super scene, entity
@@ -91,7 +92,7 @@ class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
 
   updateBounds: () ->
     x1 = x2 = y1 = y2 = null
-    $.each @entity.model.path(), () ->
+    $.each @entity.model.points(), () ->
       x1 = this.x if x1 == null || this.x < x1
       x2 = this.x if x2 == null || this.x > x2
       y1 = this.y if y1 == null || this.y < y1
@@ -101,7 +102,7 @@ class nv.PathPhysicsPlugin extends nv.PhysicsPlugin
 class nv.RectanglePhysicsPlugin extends nv.PhysicsPlugin
   constructor: (scene, entity) ->
     @id = __objectId++
-    @type = entity.model.type
+    @type = entity.model.physicsObjectType
     @boundingRect = new nv.Rect 0, 0, 0, 0
 
     super scene, entity
@@ -115,8 +116,6 @@ class nv.GravityPhysicsPlugin extends nv.PhysicsPlugin
     @gravity = 0.003
 
     super scene, entity
-
-    @scene.fire "engine:physics:register", this
 
   update: (dt) ->
     model = @entity.model

@@ -1,48 +1,6 @@
 class scenes.Game extends nv.Scene
-  constructor: (game, @glcanvas) ->
-    super game,
-      canvas: @glcanvas
-      keys:
-        left: nv.Key.A
-        right: nv.Key.D
-        up: nv.Key.W
-        down: nv.Key.S
-        shoot: nv.Key.Spacebar
-
-    @useEngine "TimingEngine"
-    @useEngine "RenderingEngine"
-    @useEngine "GamepadEngine"
-    @useEngine "SoundEngine"
-    @useEngine "ParticleEngine"
-    @useEngine "DebugEngine"
-    @useEngine "PhysicsEngine"
-
-    @canvas = @getEngine(nv.RenderingEngine).canvas
-
-    ship = @addEntity entities.Ship
-    @addEntity entities.Background, ship, 0.05
-    @addEntity entities.Background, ship, 0.01
-
-    hud = @addEntity entities.Hud
-    @addEntities entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid,
-      entities.Asteroid
+  constructor: (name, game, rootModel) ->
+    super name, game, rootModel
 
     sdoc = []
     sdoc.push
@@ -59,20 +17,16 @@ class scenes.Game extends nv.Scene
 
     new nv.SoundFactory(this).wire sdoc
 
-    @camera = @getEngine(nv.RenderingEngine).camera
-    @camera.follow ship.model, 250, 250
-    @camera.zoom 0.5
-    @camera.zoom 1, 2000
+    hud = @getEntity(entities.Hud)
 
-    @on "entity:destroyed:Ship", () =>
-      console.log "ship destroyed"
+    @on "entity:destroyed:Ship", (ship) =>
       remaining = hud.shipDestroyed()
-      if remaining
-        ship.model.reset()
-      else
-        console.log "game over"
+      if remaining > 0
+        @fire "entity:create",
+          entity: "ship"
+      else if remaining is 0
         @game.closeScene "Game"
-        @game.openScene 'GameOver', @canvas
+        @game.openScene 'Gameover', @canvas
 
     # Start the scene
     @send "engine:timing:start"

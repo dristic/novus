@@ -1,18 +1,6 @@
 class entities.Ball extends nv.Entity
-  constructor: (scene) ->
-    super scene, [nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin],
-      drawable: new gleam.Square
-        width: 20
-        height: 20
-        color: "#FFF"
-      type: 'active'
-      width: 20
-      height: 20
-      x: 150
-      y: 250
-      speed: 2
-      speedIncrement: 0.2
-      direction: new nv.Point(1, 1)
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
     @startDelay = 5
     @started = false
