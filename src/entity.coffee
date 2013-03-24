@@ -19,4 +19,4 @@ class nv.Entity
     plugin.destroy() for plugin in @plugins
     delete @model
     delete @plugins
-    delete @scene
+    #delete @scene

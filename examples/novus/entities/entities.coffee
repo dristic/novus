@@ -80,12 +80,21 @@ class entities.Ship extends WrappingEntity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
+    ship = this
+    fireBullet = () ->
+      options =
+        entity: "bullet"
+        x: ship.model.points()[0].x
+        y: ship.model.points()[0].y
+        angle: ship.model.rotation
+      ship.scene.fire "entity:create", options
+
     @scene.on 'engine:collision:Ship:Asteroid', (data) =>
       @scene.fire "entity:destroyed:Ship", this
       @scene.fire "entity:remove", this
 
-    @scene.on 'engine:gamepad:press:shoot', () =>
-      @fireBullet.call this
+    @scene.on "engine:gamepad:press:shoot", () =>
+      fireBullet this
 
     @maxVelocity = 3
 
@@ -105,15 +114,6 @@ class entities.Ship extends WrappingEntity
       id: 2
 
     @emitter = @scene.getEngine(nv.ParticleEngine).getEmitter(2)
-
-  fireBullet: () ->
-    options =
-      entity: "bullet"
-      x: @model.points()[0].x
-      y: @model.points()[0].y
-      angle: @model.rotation
-
-    @scene.fire "entity:create", options
 
   update: (dt) ->
     state = @scene.get('gamepad').getState()

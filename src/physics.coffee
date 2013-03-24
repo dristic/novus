@@ -117,8 +117,6 @@ class nv.GravityPhysicsPlugin extends nv.PhysicsPlugin
 
     super scene, entity
 
-    @scene.fire "engine:physics:register", this
-
   update: (dt) ->
     model = @entity.model
     unless model.thrusters

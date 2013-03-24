@@ -113,6 +113,7 @@ class models.Asteroid extends models.PathObject
       points: @points()
       strokeColor: @strokeColor
       strokeWidth: @strokeWidth
+      fillStyle: @fillStyle
     ]
 
   points: () ->

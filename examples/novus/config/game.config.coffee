@@ -88,6 +88,7 @@ nv.gameConfig =
               physicsObjectType: 'passive'
               strokeColor: '#FFF'
               strokeWidth: 2
+              fillStyle: 'rgba(0,0,0,0.8)'
 
     game:
       config:

@@ -52,7 +52,7 @@ class nv.Scene extends nv.EventDispatcher
     if initializer?
       initializer config, @game.model()
 
-    @engines.push new engineObj.klass this, config    
+    @engines.push new engineObj.klass this, config  
 
   createEntities: () ->
     for entity, config of nv.gameConfig.scenes[@sceneName].entities
