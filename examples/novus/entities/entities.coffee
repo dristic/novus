@@ -83,7 +83,7 @@ class entities.Ship extends WrappingEntity
 
     @maxVelocity = 3
 
-    @scene.send "engine:particle:create_emitter",
+    @emitter = @scene.getEngine(nv.ParticleEngine).createEmitter
       position: new nv.Point(450, 300)
       particlesPerSecond: 200
       colors: new nv.Gradient([
@@ -96,9 +96,6 @@ class entities.Ship extends WrappingEntity
       angleVariation: 0.75
       minVelocity: 700
       maxVelocity: 700
-      id: 2
-
-    @emitter = @scene.getEngine(nv.ParticleEngine).getEmitter(2)
 
   "event(engine:gamepad:press:shoot)": () ->
     options =
@@ -136,6 +133,7 @@ class entities.Ship extends WrappingEntity
     @wrap()
 
   destroy: () ->
+    @scene.getEngine(nv.ParticleEngine).destroyEmitter @emitter
     super
 
 class entities.Asteroid extends WrappingEntity
@@ -154,13 +152,17 @@ class entities.Asteroid extends WrappingEntity
 
       size = data.target.model.get('size') - 1
       unless size is 0
+        bounds = data.target.model.bounds()
+        offset = (bounds.x2 - bounds.x) / (6 - data.target.model.get('size'))
         options = 
           entity: "asteroid"
-          x: data.target.model.get('x')
+          x: data.target.model.get('x') - offset
           y: data.target.model.get('y')
           scale: size
           direction: data.target.model.get('direction') - 0.3
         @scene.fire 'entity:create', options
+        options = $.extend {}, options
+        options.x += offset * 2
         options.direction += 0.6
         @scene.fire 'entity:create', options
     data.target.model.set('dead', true)

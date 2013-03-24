@@ -18,9 +18,8 @@ class nv.ParticleEngine extends nv.Engine
     @context = @canvas.context
     @emitters = []
 
-    scene.on "engine:particle:create_emitter", (options) =>
-      emitter = @createEmitter options
-
+    scene.on "engine:particle:register_emitter", (emitter) =>
+      @emitters.push emitter
       @scene.fire "engine:rendering:create", emitter
 
     scene.on "engine:particle:destroy_emitter", (id) =>
@@ -30,6 +29,7 @@ class nv.ParticleEngine extends nv.Engine
   createEmitter: (options) ->
     emitter = new nv.ParticleEmitter(options)
     @emitters.push emitter
+    @scene.fire "engine:rendering:create", emitter
     emitter
 
   getEmitter: (id) ->
@@ -39,8 +39,9 @@ class nv.ParticleEngine extends nv.Engine
     null
 
   destroyEmitter: (id) ->
+    id = id.options.id if typeof(id) is "object"
     for emitter, index in @emitters
-      if emitter.id is id
+      if emitter.options.id is id
         emitter.destroy()
         @emitters.splice index, 1
 
@@ -53,6 +54,7 @@ class nv.ParticleEngine extends nv.Engine
       emitter.destroy
     delete @emitters
 
+__particle_emitter_id = 1;
 class nv.ParticleEmitter
   defaults:
     position: new nv.Point(0, 0)
@@ -67,14 +69,18 @@ class nv.ParticleEmitter
     gravity: new nv.Point(0, 30.8)
     collider: null
     bounceDamper: 0.5
-    on: true
-    id: -1
+    on: false
+    id: __particle_emitter_id++
 
   constructor: (options) ->
     @options = nv.clone(@defaults)
+    delete options.id if options.id?
     @options = nv.extend(@options, options)
     @particles = []
-    @id = @options.id
+    #@id = @options.id
+
+  destroy: () ->
+    @options.on = false
 
   set: (key, value) ->
     @options[key] = value

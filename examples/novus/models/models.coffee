@@ -31,6 +31,16 @@ class models.PathObject extends nv.Model
     @rotation += dr
     this
 
+  bounds: () ->
+    x1 = x2 = y1 = y2 = null
+    $.each @points(), () ->
+      x1 = this.x if x1 == null || this.x < x1
+      x2 = this.x if x2 == null || this.x > x2
+      y1 = this.y if y1 == null || this.y < y1
+      y2 = this.y if y2 == null || this.y > y2
+    new nv.Rect x1, y1, x2, y2
+
+
 class models.Ship extends models.PathObject
   constructor: (options) ->
     super options, "ship"
@@ -45,16 +55,6 @@ class models.Ship extends models.PathObject
 
   reset: () ->
     @setMany @resetProps
-    ###
-    @x = 30
-    @y = 30
-    @thrusters = false
-    @velocity = 0
-    @health = 100
-    @rotation = 0
-    @thrustVector = new nv.Point(0,0)
-    ###
-
 
   shouldDrawShape: (shapeName) ->
     switch shapeName
@@ -79,21 +79,6 @@ class models.Ship extends models.PathObject
 class models.Asteroid extends models.PathObject
   constructor: (options) ->
     super options
-    ###
-      x: x
-      y: y
-      width: 12 * scale
-      height: 12 * scale
-      speed: Math.random() + 0.3
-      rotation: 0
-      rotationSpeed: ((Math.random() / 10) - 0.05) / 8
-      direction: direction || (Math.random() * Math.PI) - (Math.PI / 2)
-      type: 'passive'
-      strokeColor: '#FFF'
-      strokeWidth: 2
-      size: scale
-    ###
-
     @wireframe = @buildWireframe(@scale * .5)
 
   buildWireframe: (scalar) ->
