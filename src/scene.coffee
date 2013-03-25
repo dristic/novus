@@ -25,6 +25,8 @@ class nv.Scene extends nv.EventDispatcher
       entityName = options.entity
       # Ensure we only create one this time
       config = nv.gameConfig.scenes[@sceneName].entities[entityName]
+      if config.include?
+        config = nv.gameConfig.entities[entityName]
       unless not config
         @createEntity config, options
 
@@ -64,6 +66,9 @@ class nv.Scene extends nv.EventDispatcher
         @createEntity config
 
   createEntity: (config, options) ->
+    # If a reference to a common entity exists, get config from there
+    if config.include?
+      config = nv.gameConfig.entities[config.include]
     if config.model?
       # Else just one instance from the entity config
       @addEntity new config.entity this, config.plugins, @loadModelFromConfig(config, options)

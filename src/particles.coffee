@@ -47,7 +47,6 @@ class nv.ParticleEngine extends nv.Engine
         break
 
   update: (dt) ->
-    console.log "emitters", @emitters.length
     emitter.update dt for emitter in @emitters
     @emitters = @emitters.filter (emitter) ->
       return !emitter.complete
