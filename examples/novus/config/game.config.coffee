@@ -163,7 +163,7 @@ nv.gameConfig =
             options:
               color: "#0F0"
               x: "center"
-              y: 800
+              y: 700
               font: "20px sans-serif"
               text: "Press <Space> to Play Again"
               strokeWidth: 0
