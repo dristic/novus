@@ -1,5 +1,5 @@
 #= Require the novus version you are using here.
-#= require path/to/novus-1.0.0-min
+#= require ../../src/novus
 
 #= Require any other libraries you need here.
 

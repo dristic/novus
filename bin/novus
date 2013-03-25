@@ -59,6 +59,10 @@ if (args[0] === undefined) {
   // Copy over configuration file
   log("Copying in config.coffee");
   fs.createReadStream(__dirname + '/config.coffee').pipe(fs.createWriteStream(directory + '/config/config.coffee'));
+
+  // Copy over application file
+  log("Copying in application.coffee");
+  fs.createReadStream(__dirname + '/application.coffee').pipe(fs.createWriteStream(directory + '/config/application.coffee'));
 } else if (args[0] == "server") {
   /////////////////////////
   // novus server

@@ -30,8 +30,8 @@ nv.gameConfig =
       # Include what engines you are using
       enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
 
-      entities:
+      # entities:
         # Include your scene entities here
 
-  entities:
+  # entities:
     # Create your entities here
