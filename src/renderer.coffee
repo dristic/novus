@@ -44,9 +44,9 @@ class nv.RenderingEngine extends nv.Engine
             @scene.fire "engine:rendering:clicked:#{drawable.entity.constructor.name}", drawable.entity
 
   destroy: () ->
-    #i = @drawables.length
-    #while i--
-    #  @drawables[i].destroy()
+    delete @drawables
+
+    super
 
 class nv.RenderingPlugin extends nv.Plugin
   constructor: (scene, entity) ->
