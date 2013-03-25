@@ -140,13 +140,14 @@ class entities.Asteroid extends WrappingEntity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
-    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
-      @handleCollision data if data.target is this
-    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
-      @handleCollision data if data.target is this
+  "event(engine:collision:Ship:Asteroid)": (data) =>
+    @handleCollision data if data.target is this
+
+  "event(engine:collision:Bullet:Asteroid)": (data) =>
+    @handleCollision data if data.target is this
 
   handleCollision: (data) ->
-    unless data.target.model.get('dead') is true
+    unless data.target.model.get("dead") is true
       @scene.fire "entity:destroyed:Asteroid", data.target
       @scene.fire "entity:remove", data.target
 
@@ -165,8 +166,6 @@ class entities.Asteroid extends WrappingEntity
         minVelocity: 50
         maxVelocity: 400
         on: true
-
-      console.log "emitter:", @emitter.id
 
       size = data.target.model.get('size') - 1
       unless size is 0
@@ -188,15 +187,14 @@ class entities.Asteroid extends WrappingEntity
   update: (dt) ->
     @model.rotation += @model.rotationSpeed
     @model.translate Math.sin(@model.direction) * @model.speed, Math.cos(@model.direction) * @model.speed
-
     @wrap()
 
 class entities.Bullet extends WrappingEntity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
-    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
-      @scene.fire "entity:remove", data.actor if data.actor is this
+  "event(engine:collision:Bullet:Asteroid)": (data) =>
+    @scene.fire "entity:remove", data.actor if data.actor is this
 
   update: (dt) ->
     @model.translate @model.speed * Math.sin(@model.angle) * dt, -1 * @model.speed * Math.cos(@model.angle) * dt
@@ -216,12 +214,9 @@ class entities.Bullet extends WrappingEntity
 class entities.Hud extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
-    ###
-    canvas = scene.canvas
-    ###
 
-    @scene.on "entity:destroyed:Asteroid", (data) =>
-      @model.score += [500, 300, 200, 100][data.model.size - 1] unless not data.model
+  "event(entity:destroyed:Asteroid)": (data) =>
+    @model.score += [500, 300, 200, 100][data.model.size - 1] unless not data.model
 
   shipDestroyed: () ->
     @model.ships.pop()

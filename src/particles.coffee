@@ -47,7 +47,10 @@ class nv.ParticleEngine extends nv.Engine
         break
 
   update: (dt) ->
+    console.log "emitters", @emitters.length
     emitter.update dt for emitter in @emitters
+    @emitters = @emitters.filter (emitter) ->
+      return !emitter.complete
 
   destroy: () ->
     for emitter in @emitters
@@ -60,6 +63,7 @@ class nv.ParticleEmitter
   defaults:
     position: new nv.Point(0, 0)
     particlesPerSecond: 100
+    maxParticles: 1024000
     particleLife: 0.5
     lifeVariation: 0.52
     colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(0, 0, 0, 0)])
@@ -79,6 +83,7 @@ class nv.ParticleEmitter
     @particles = []
     @particleCounter = 0
     @id = __particle_emitter_id++
+    @complete = false
 
   destroy: () ->
     @options.on = false
@@ -101,7 +106,6 @@ class nv.ParticleEmitter
     @particles.push new nv.Particle(@options, position, velocity, life)
 
     @particleCounter++
-    @options.on = false if @particleCounter > @options.maxParticles
 
   update: (dt) ->
     dead = []
@@ -120,6 +124,11 @@ class nv.ParticleEmitter
       particlesToSpawn = @options.particlesPerSecond * dt
       for i in [0..particlesToSpawn] by 1
         @spawnParticle (1.0 + i) / particlesToSpawn * dt
+
+    if @options.maxParticles isnt undefined and @particleCounter > @options.maxParticles
+      @options.on = false
+      @complete = @particles.length is 0
+
 
 class nv.Particle
   constructor: (@options, @position, @velocity, @life) ->

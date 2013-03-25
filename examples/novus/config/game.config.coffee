@@ -193,7 +193,8 @@ nv.gameConfig =
               rotation: 0
               physicsObjectType: 'passive'
               strokeColor: '#FFF'
-              strokeWidth: 2
+              strokeWidth: 3
+              fillStyle: 'rgba(0,0,0,0.8)'
         bullet:
           entity: entities.Bullet
           plugins: [ renderers.Bullet, nv.PathPhysicsPlugin ]
