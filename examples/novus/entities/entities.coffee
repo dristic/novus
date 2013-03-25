@@ -84,7 +84,7 @@ class entities.Ship extends WrappingEntity
     @maxVelocity = 3
 
     @emitter = @scene.getEngine(nv.ParticleEngine).createEmitter
-      position: new nv.Point(450, 300)
+      position: new nv.Point(-100,-100)
       particlesPerSecond: 200
       colors: new nv.Gradient([
         new nv.Color(255, 100, 100, 1),
@@ -133,7 +133,7 @@ class entities.Ship extends WrappingEntity
     @wrap()
 
   destroy: () ->
-    @scene.getEngine(nv.ParticleEngine).destroyEmitter @emitter
+    @scene.getEngine(nv.ParticleEngine).destroyEmitter @emitter if @emitter
     super
 
 class entities.Asteroid extends WrappingEntity
@@ -149,6 +149,24 @@ class entities.Asteroid extends WrappingEntity
     unless data.target.model.get('dead') is true
       @scene.fire "entity:destroyed:Asteroid", data.target
       @scene.fire "entity:remove", data.target
+
+      @emitter = @scene.getEngine(nv.ParticleEngine).createEmitter
+        position: new nv.Point(data.target.model.get('x'), data.target.model.get('y'))
+        particlesPerSecond: 700
+        maxParticles: 100
+        colors: new nv.Gradient([
+          new nv.Color(255, 255, 255, 1),
+          new nv.Color(125, 125, 125, 0.7),
+          new nv.Color(0, 0, 0, 0)
+        ])
+        #gravity: new nv.Point(0, 0)
+        particleLife: 0.1
+        angleVariation: 6.28
+        minVelocity: 50
+        maxVelocity: 400
+        on: true
+
+      console.log "emitter:", @emitter.id
 
       size = data.target.model.get('size') - 1
       unless size is 0

@@ -39,11 +39,12 @@ class nv.ParticleEngine extends nv.Engine
     null
 
   destroyEmitter: (id) ->
-    id = id.options.id if typeof(id) is "object"
+    id = id.id if typeof(id) is "object"
     for emitter, index in @emitters
-      if emitter.options.id is id
+      if emitter.id is id
         emitter.destroy()
         @emitters.splice index, 1
+        break
 
   update: (dt) ->
     emitter.update dt for emitter in @emitters
@@ -70,14 +71,14 @@ class nv.ParticleEmitter
     collider: null
     bounceDamper: 0.5
     on: false
-    id: __particle_emitter_id++
 
   constructor: (options) ->
     @options = nv.clone(@defaults)
     delete options.id if options.id?
     @options = nv.extend(@options, options)
     @particles = []
-    #@id = @options.id
+    @particleCounter = 0
+    @id = __particle_emitter_id++
 
   destroy: () ->
     @options.on = false
@@ -95,12 +96,12 @@ class nv.ParticleEmitter
     angle = randVariation @options.angle, @options.angleVariation
     speed = randRange @options.minVelocity, @options.maxVelocity
     life = randVariation @options.particleLife, @options.particleLife * @options.lifeVariation
-
     velocity = new nv.Point().fromPolar angle, speed
-
     position = @options.position.clone().add velocity.times(offset)
-
     @particles.push new nv.Particle(@options, position, velocity, life)
+
+    @particleCounter++
+    @options.on = false if @particleCounter > @options.maxParticles
 
   update: (dt) ->
     dead = []
