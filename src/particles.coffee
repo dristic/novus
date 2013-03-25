@@ -18,13 +18,13 @@ class nv.ParticleEngine extends nv.Engine
     @context = @canvas.context
     @emitters = []
 
-    @on "engine:particle:register:emitter", (emitter) =>
-      @emitters.push emitter
-      @scene.fire "engine:rendering:create", emitter
+  "event(engine:particle:register:emitter)": (emitter) ->
+    @emitters.push emitter
+    @scene.fire "engine:rendering:create", emitter
 
-    @on "engine:particle:destroy:emitter", (emitter) =>
-      @scene.fire "engine:rendering:destroy", emitter
-      @emitters.splice @emitters.indexOf(emitter), 1
+  "event(engine:particle:destroy:emitter)": (emitter) ->
+    @scene.fire "engine:rendering:destroy", emitter
+    @emitters.splice @emitters.indexOf(emitter), 1
 
   update: (dt) ->
     emitter.update dt for emitter in @emitters

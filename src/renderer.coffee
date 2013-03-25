@@ -14,12 +14,12 @@ class nv.RenderingEngine extends nv.Engine
 
     @camera = new gleam.Camera
 
-    scene.on "engine:rendering:create", (drawable) =>
-      @drawables.push drawable
+  "event(engine:rendering:create)": (drawable) ->
+    @drawables.push drawable
 
-    scene.on "engine:rendering:destroy", (drawable) =>
-      @drawables.splice @drawables.indexOf(drawable), 1
-    
+  "event(engine:rendering:destroy)": (drawable) ->
+    @drawables.splice @drawables.indexOf(drawable), 1
+
   prepare: () ->
     @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
 

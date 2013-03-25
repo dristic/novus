@@ -4,6 +4,12 @@ class nv.Engine
   constructor: (@scene, @config) ->
     @config = @config ? {}
     @listeners = []
+    
+    # If any functions are defined using the prefix "on:"
+    # then we auto add it as an event listener
+    for key of this
+      if /event\(.*\)/.test(key)
+        @on key[6..-2], nv.bind(this, this[key])
 
   on: (name, callback) ->
     @scene.on name, callback

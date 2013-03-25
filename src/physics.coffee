@@ -5,14 +5,14 @@ class nv.PhysicsEngine extends nv.Engine
     @activeObjects = {}
     @physicsObjects = []
 
-    @scene.on "engine:physics:create", (collidable) =>
-      @trackObject collidable
+  "event(engine:physics:create)": (collidable) ->
+    @trackObject collidable
 
-    @scene.on "engine:physics:delete", (collidable) =>
-      @removeObject collidable
+  "event(engine:physics:delete)": (collidable) ->
+    @removeObject collidable
 
-    @scene.on "engine:physics:register", (obj) =>
-      @physicsObjects.push obj
+  "event(engine:physics:register)": (obj) ->
+    @physicsObjects.push obj
 
   prepare: () ->
     if @config.debug is true
