@@ -43,15 +43,24 @@ nv.gameConfig =
               text: "Runnus"
         image:
           entity: nv.Entity
-          plugins: [ nv.SpriteRenderingPlugin ]
+          plugins: [ nv.AnimatedSpriteRenderingPlugin ]
           model:
             options:
+              width: 64
+              height: 64
+              currentAnimation: 'run'
+              frameWidth: 64
+              frameHeight: 64
+              animations:
+                run:
+                  frames: [8, 9, 10, 11, 12]
+                  framesPerSecond: 10
               src: '/assets/player.png'
               frame:
                 x: 0
                 y: 0
-                width: 41
-                height: 36
+                width: 64
+                height: 64
 
   # entities:
     # Create your entities here

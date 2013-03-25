@@ -24,6 +24,10 @@ class nv.RenderingEngine extends nv.Engine
     @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
 
     @scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
+
+  update: (dt) ->
+    for drawable in @drawables
+      drawable.update dt unless not drawable.update
     
   draw: (dt) ->
     @context.save()
@@ -96,6 +100,19 @@ class nv.SpriteRenderingPlugin extends nv.RenderingPlugin
     super scene, entity
 
     @sprite = new gleam.Sprite entity.model
+
+  draw: (context, canvas) ->
+    @sprite.draw context, canvas
+
+class nv.AnimatedSpriteRenderingPlugin extends nv.RenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+    @sprite = new gleam.AnimatedSprite entity.model
+    @sprite.play entity.model.currentAnimation
+
+  update: (dt) ->
+    @sprite.update dt
 
   draw: (context, canvas) ->
     @sprite.draw context, canvas
