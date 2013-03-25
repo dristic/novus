@@ -95,7 +95,7 @@ class nv.TextRenderingPlugin extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
 
-    @text = new gl.text entity.model
+    @text = new gleam.Text entity.model
 
   draw: (context, canvas) ->
     @text.draw context, canvas

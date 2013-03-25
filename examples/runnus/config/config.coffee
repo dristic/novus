@@ -3,9 +3,9 @@ nv.gameConfig =
   canvas:
     height: 500
     width: 500
-    fullscreen: true
+    fullscreen: false
     css:
-      background: '#000'
+      background: '#333'
       margin: '0 auto 0 auto'
       display: 'block'
 
@@ -30,8 +30,17 @@ nv.gameConfig =
       # Include what engines you are using
       enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
 
-      # entities:
-        # Include your scene entities here
+      entities:
+        title:
+          entity: nv.Entity
+          plugins: [ nv.TextRenderingPlugin ]
+          model:
+            options:
+              color: "#FFF"
+              x: 200
+              y: 250
+              font: "30px sans-serif"
+              text: "Runnus"
 
   # entities:
     # Create your entities here
