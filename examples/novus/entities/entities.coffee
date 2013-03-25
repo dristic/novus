@@ -83,7 +83,7 @@ class entities.Ship extends WrappingEntity
 
     @maxVelocity = 3
 
-    @emitter = @scene.getEngine(nv.ParticleEngine).createEmitter
+    @emitter = new nv.ParticleEmitter @scene,
       position: new nv.Point(-100,-100)
       particlesPerSecond: 200
       colors: new nv.Gradient([
@@ -133,7 +133,7 @@ class entities.Ship extends WrappingEntity
     @wrap()
 
   destroy: () ->
-    @scene.getEngine(nv.ParticleEngine).destroyEmitter @emitter if @emitter
+    @emitter.destroy()
     super
 
 class entities.Asteroid extends WrappingEntity
@@ -151,7 +151,7 @@ class entities.Asteroid extends WrappingEntity
       @scene.fire "entity:destroyed:Asteroid", data.target
       @scene.fire "entity:remove", data.target
 
-      @emitter = @scene.getEngine(nv.ParticleEngine).createEmitter
+      @emitter = new nv.ParticleEmitter @scene,
         position: new nv.Point(data.target.model.get('x'), data.target.model.get('y'))
         particlesPerSecond: 700
         maxParticles: 100

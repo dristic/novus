@@ -16,13 +16,10 @@ class nv.EventDispatcher
     this
 
   fire: (event, data) ->
-    event_listeners = @event_listeners[event]
-    if event_listeners instanceof Array
-      for listener in event_listeners
-        @event_async_queue.push
-          event: event
-          callback: listener
-          data: data ? {}
+    if @event_listeners[event] instanceof Array
+      @event_async_queue.push
+        event: event
+        data: data ? {}
 
   send: (event, data) ->
     event_listeners = @event_listeners[event]
@@ -46,5 +43,8 @@ class nv.EventDispatcher
       events = @event_async_queue.slice(0)
       @event_async_queue = []
       for event in events
-        event.callback event.data
+        eventListeners = @event_listeners[event.event]
+        for listener in eventListeners
+          listener event.data
+    null
 

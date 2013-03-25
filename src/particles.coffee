@@ -18,33 +18,13 @@ class nv.ParticleEngine extends nv.Engine
     @context = @canvas.context
     @emitters = []
 
-    scene.on "engine:particle:register_emitter", (emitter) =>
+    @on "engine:particle:register:emitter", (emitter) =>
       @emitters.push emitter
       @scene.fire "engine:rendering:create", emitter
 
-    scene.on "engine:particle:destroy_emitter", (id) =>
-      @scene.fire "engine:rendering:destroy", @getEmitter(id)
-      @destroyEmitter id
-
-  createEmitter: (options) ->
-    emitter = new nv.ParticleEmitter(options)
-    @emitters.push emitter
-    @scene.fire "engine:rendering:create", emitter
-    emitter
-
-  getEmitter: (id) ->
-    for emitter in @emitters
-      if emitter.id is id
-        return emitter
-    null
-
-  destroyEmitter: (id) ->
-    id = id.id if typeof(id) is "object"
-    for emitter, index in @emitters
-      if emitter.id is id
-        emitter.destroy()
-        @emitters.splice index, 1
-        break
+    @on "engine:particle:destroy:emitter", (emitter) =>
+      @scene.fire "engine:rendering:destroy", emitter
+      @emitters.splice @emitters.indexOf(emitter), 1
 
   update: (dt) ->
     emitter.update dt for emitter in @emitters
@@ -56,8 +36,9 @@ class nv.ParticleEngine extends nv.Engine
       @scene.fire "engine:rendering:destroy", emitter
       emitter.destroy
     delete @emitters
+    
+    super
 
-__particle_emitter_id = 1;
 class nv.ParticleEmitter
   defaults:
     position: new nv.Point(0, 0)
@@ -75,17 +56,18 @@ class nv.ParticleEmitter
     bounceDamper: 0.5
     on: false
 
-  constructor: (options) ->
+  constructor: (@scene, options) ->
     @options = nv.clone(@defaults)
-    delete options.id if options.id?
     @options = nv.extend(@options, options)
     @particles = []
     @particleCounter = 0
-    @id = __particle_emitter_id++
     @complete = false
+    @scene.fire "engine:particle:register:emitter", this
 
   destroy: () ->
     @options.on = false
+    @scene.fire "engine:particle:destroy:emitter", this
+    delete @scene
 
   set: (key, value) ->
     @options[key] = value
