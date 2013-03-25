@@ -41,6 +41,17 @@ nv.gameConfig =
               y: 250
               font: "30px sans-serif"
               text: "Runnus"
+        image:
+          entity: nv.Entity
+          plugins: [ nv.SpriteRenderingPlugin ]
+          model:
+            options:
+              src: '/assets/player.png'
+              frame:
+                x: 0
+                y: 0
+                width: 41
+                height: 36
 
   # entities:
     # Create your entities here

@@ -91,6 +91,15 @@ class nv.DrawableRenderingPlugin extends nv.RenderingPlugin
     @drawable.y = @entity.model.y
     @drawable.draw context, canvas
 
+class nv.SpriteRenderingPlugin extends nv.RenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+    @sprite = new gleam.Sprite entity.model
+
+  draw: (context, canvas) ->
+    @sprite.draw context, canvas
+
 class nv.TextRenderingPlugin extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
