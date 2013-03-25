@@ -36,7 +36,7 @@ class nv.ParticleEngine extends nv.Engine
       @scene.fire "engine:rendering:destroy", emitter
       emitter.destroy
     delete @emitters
-    
+
     super
 
 class nv.ParticleEmitter
@@ -62,6 +62,7 @@ class nv.ParticleEmitter
     @particles = []
     @particleCounter = 0
     @complete = false
+    @particlesThisFrame = 0
     @scene.fire "engine:particle:register:emitter", this
 
   destroy: () ->
@@ -102,8 +103,12 @@ class nv.ParticleEmitter
 
     # Only spawn new particles if on
     if @options.on
-      particlesToSpawn = @options.particlesPerSecond * dt
-      for i in [0..particlesToSpawn] by 1
+      @particlesThisFrame += @options.particlesPerSecond * dt
+      i = 0
+      particlesToSpawn = @particlesThisFrame
+      while @particlesThisFrame > 1
+        i++
+        @particlesThisFrame--
         @spawnParticle (1.0 + i) / particlesToSpawn * dt
 
     if @options.maxParticles isnt undefined and @particleCounter > @options.maxParticles

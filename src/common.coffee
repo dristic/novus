@@ -20,12 +20,13 @@ nv.implement
 
   clone: (object) ->
     obj = {}
-    nv.extend obj, object
+    nv.extend obj, object, true
     obj
 
-  extend: (object, other) ->
+  extend: (object, other, deep = false) ->
     for key of other
-      if object[key] instanceof Object and other[key] instanceof Object
+      if other[key] instanceof Object and deep is true
+        object[key] = {}
         nv.extend(object[key], other[key])
       else
         object[key] = other[key]

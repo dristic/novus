@@ -85,17 +85,18 @@ class entities.Ship extends WrappingEntity
 
     @emitter = new nv.ParticleEmitter @scene,
       position: new nv.Point(-100,-100)
-      particlesPerSecond: 200
+      particlesPerSecond: 100
       colors: new nv.Gradient([
         new nv.Color(255, 100, 100, 1),
-        new nv.Color(150, 50, 50, 1),
+        new nv.Color(170, 50, 50, 1),
         new nv.Color(0, 0, 0, 0)
       ])
       gravity: new nv.Point(0, 0)
-      particleLife: 0.1
+      particleLife: 0.3
+      lifeVariance: 0.4
       angleVariation: 0.75
-      minVelocity: 700
-      maxVelocity: 700
+      minVelocity: 100
+      maxVelocity: 100
 
   "event(engine:gamepad:press:shoot)": () ->
     options =
@@ -153,18 +154,17 @@ class entities.Asteroid extends WrappingEntity
 
       @emitter = new nv.ParticleEmitter @scene,
         position: new nv.Point(data.target.model.get('x'), data.target.model.get('y'))
-        particlesPerSecond: 700
-        maxParticles: 100
+        particlesPerSecond: 100
+        maxParticles: 10
         colors: new nv.Gradient([
           new nv.Color(255, 255, 255, 1),
           new nv.Color(125, 125, 125, 0.7),
           new nv.Color(0, 0, 0, 0)
         ])
-        #gravity: new nv.Point(0, 0)
-        particleLife: 0.1
+        particleLife: 3
         angleVariation: 6.28
-        minVelocity: 50
-        maxVelocity: 400
+        minVelocity: 10
+        maxVelocity: 50
         on: true
 
       size = data.target.model.get('size') - 1
