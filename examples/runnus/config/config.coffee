@@ -22,6 +22,7 @@ nv.gameConfig =
             left: nv.Key.A
             down: nv.Key.S
             right: nv.Key.D
+            attack: nv.Key.Spacebar
 
           # Tracking the mouse is expensive
           # Only enable when you need mouse/touch events
@@ -42,18 +43,24 @@ nv.gameConfig =
               font: "30px sans-serif"
               text: "Runnus"
         image:
-          entity: nv.Entity
+          entity: entities.Player
           plugins: [ nv.AnimatedSpriteRenderingPlugin ]
           model:
             options:
               width: 64
               height: 64
-              currentAnimation: 'run'
+              currentAnimation: 'attack'
               frameWidth: 64
               frameHeight: 64
               animations:
+                idle:
+                  frames: [0, 1, 2, 3]
+                  framesPerSecond: 10
                 run:
                   frames: [8, 9, 10, 11, 12]
+                  framesPerSecond: 10
+                attack:
+                  frames: [16, 17, 18, 19, 20, 21, "idle"]
                   framesPerSecond: 10
               src: '/assets/player.png'
               frame:
