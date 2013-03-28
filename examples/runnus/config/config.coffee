@@ -47,6 +47,9 @@ nv.gameConfig =
           plugins: [ nv.AnimatedSpriteRenderingPlugin ]
           model:
             options:
+              x: 200
+              y: 300
+              speed: 3
               width: 64
               height: 64
               currentAnimation: 'attack'

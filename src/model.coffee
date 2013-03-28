@@ -1,6 +1,17 @@
-class nv.Model
+###
+# nv.Model
+# The model class is responsible for data storage and also notifying
+# listeners when data changes
+###
+class nv.Model extends nv.EventDispatcher
   constructor: (data) ->
     @setMany data
+
+  fire: (args...) ->
+    super args...
+
+    # We do not want async events so just process them syncronously
+    @processQueuedEvents()
 
   setMany: (object) ->
     for key of object
@@ -10,7 +21,9 @@ class nv.Model
     this[key]
 
   set: (key, value) ->
-    this[key] = value
+    unless this[key] is value
+      this[key] = value
+      @fire "changed:#{key}", value
 
   reset: () ->
     # specific classes must implement

@@ -23,13 +23,14 @@ class gleam.AnimatedSprite extends gleam.Sprite
     @frameTime = 0
     @currentMs = 0
 
-  play: (animation) ->
-    @playing = true
-    @currentAnimationName = animation
-    @currentAnimation = @animations[animation]
-    @currentFps = @currentAnimation.framesPerSecond ? 60
-    @currentDelta = 1 / @currentFps
-    @currentIndex = 0
+  play: (animation, override = false) ->
+    if @currentAnimationName isnt animation or override is true
+      @playing = true
+      @currentAnimationName = animation
+      @currentAnimation = @animations[animation]
+      @currentFps = @currentAnimation.framesPerSecond ? 60
+      @currentDelta = 1 / @currentFps
+      @currentIndex = 0
 
   stop: () ->
     @playing = false
