@@ -122,6 +122,15 @@ class nv.AnimatedSpriteRenderingPlugin extends nv.SpriteRenderingPlugin
     @sprite.y = @entity.model.y
     @sprite.draw context, canvas
 
+class nv.SpriteMapRenderingPlugin extends nv.SpriteRenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+    @map = @entity.model.map
+
+  draw: (context, canvas) ->
+    @sprite.draw context, canvas
+
 class nv.TextRenderingPlugin extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
