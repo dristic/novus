@@ -91,7 +91,6 @@ class entities.Ship extends WrappingEntity
         new nv.Color(170, 50, 50, 1),
         new nv.Color(0, 0, 0, 0)
       ])
-      gravity: new nv.Point(0, 0)
       particleLife: 0.3
       lifeVariance: 0.4
       angleVariation: 0.75
@@ -155,7 +154,7 @@ class entities.Asteroid extends WrappingEntity
       @emitter = new nv.ParticleEmitter @scene,
         position: new nv.Point(data.target.model.get('x'), data.target.model.get('y'))
         particlesPerSecond: 100
-        maxParticles: 10
+        maxParticles: 20
         colors: new nv.Gradient([
           new nv.Color(255, 255, 255, 1),
           new nv.Color(125, 125, 125, 0.7),

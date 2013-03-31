@@ -40,7 +40,10 @@ class nv.Rect
     @_checkPt pt.x, pt.y
 
   intersects: (rect) ->
-    @_checkPt(rect.x, rect.y) || @_checkPt(rect.x, rect.y2) || @_checkPt(rect.x2, rect.y2) || @_checkPt(rect.x2, rect.y)
+    return false if @x2 < rect.x || @y2 < rect.y || @x > rect.x2 || @y > rect.y2
+    true
+
+    # //@_checkPt(rect.x, rect.y) || @_checkPt(rect.x, rect.y2) || @_checkPt(rect.x2, rect.y2) || @_checkPt(rect.x2, rect.y)
 
   translate: (dx,dy) ->
     @x += dx

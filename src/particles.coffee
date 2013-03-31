@@ -50,7 +50,7 @@ class nv.ParticleEmitter
     angleVariation: Math.PI * 2
     minVelocity: 20
     maxVelocity: 50
-    gravity: new nv.Point(0, 30.8)
+    gravity: new nv.Point(0, 0)
     collider: null
     bounceDamper: 0.5
     on: false
