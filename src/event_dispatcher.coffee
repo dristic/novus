@@ -45,6 +45,6 @@ class nv.EventDispatcher
       for event in events
         eventListeners = @event_listeners[event.event]
         for listener in eventListeners
-          listener event.data
+          listener event.data if listener
     null
 

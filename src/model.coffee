@@ -24,8 +24,6 @@ class nv.Model
   load: () ->
     @setMany window.localStorage[@constructor.name]
 
-
 class nv.Collection extends nv.Model
   constructor: (arr) ->
     @items = arr ? []
-

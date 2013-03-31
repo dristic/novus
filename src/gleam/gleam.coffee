@@ -5,3 +5,5 @@
 #= require text
 #= require sprite
 #= require camera
+#= require circle
+#= require rectangle

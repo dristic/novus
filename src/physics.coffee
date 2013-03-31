@@ -55,14 +55,33 @@ class nv.PhysicsEngine extends nv.Engine
       objaBounds = obja.bounds()
       for idp, objp of @passiveObjects
         continue if ida is idp
-        if objp.bounds().intersects(objaBounds)
+        objpBounds = objp.bounds()
+        if objpBounds.intersects(objaBounds)
           @scene.fire "engine:collision:#{obja.entity.constructor.name}:#{objp.entity.constructor.name}",
             actor: obja.entity
             target: objp.entity
+            impactVector: @impactVector objaBounds, objpBounds
           break
 
     for obj in @physicsObjects
       obj.update(dt)
+
+  impactVector: (colliderBounds, collideeBounds) ->
+    iVec = new nv.Point(0,0)
+    left = (collideeBounds.x - colliderBounds.x2);
+    right = (collideeBounds.x2 - colliderBounds.x);
+    top = (collideeBounds.y - colliderBounds.y2);
+    bottom = (collideeBounds.y2 - colliderBounds.y);
+
+    # // box intersect. work out the mtd on both x and y axes.
+    iVec.x = if Math.abs(left) < right then left else right
+    iVec.y = if Math.abs(top) < bottom then top else bottom
+    # // 0 the axis with the largest mtd value.
+    if Math.abs(iVec.x) < Math.abs(iVec.y)
+      iVec.y = 0
+    else
+      iVec.x = 0 
+    iVec
 
 class nv.PhysicsPlugin extends nv.Plugin
   constructor: (scene, entity) ->
