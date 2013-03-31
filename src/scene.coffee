@@ -59,21 +59,21 @@ class nv.Scene extends nv.EventDispatcher
   createEntities: () ->
     for entity, config of nv.gameConfig.scenes[@sceneName].entities
       if config.count?
-        index = config.count + 1
-        while index -= 1
-          @createEntity config
+        index = config.count
+        while (index -= 1) >= 0
+          @createEntity config, {}, index
       else
         @createEntity config
 
-  createEntity: (config, options) ->
+  createEntity: (config, options = {}, index = 0) ->
     # If a reference to a common entity exists, get config from there
     if config.include?
       config = nv.gameConfig.entities[config.include]
     if config.model?
       # Else just one instance from the entity config
-      @addEntity new config.entity this, config.plugins, @loadModelFromConfig(config, options)
+      @addEntity new config.entity this, config.plugins, @loadModelFromConfig(config, options, index)
     else
-      # If no model is passed in instance the entity without a model
+      # If no model is passed in, instance the entity without a model
       @addEntity new config.entity this, config.plugins
 
   loadModelFromConfig: (config, options, index = 0) ->
