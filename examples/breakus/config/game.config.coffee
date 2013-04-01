@@ -1,7 +1,7 @@
 nv.gameConfig =
   canvas:
-    height: 20 * 26
-    width: 20 * 20
+    height: 30 * 26
+    width: 30 * 20
     fullscreen: false
     css:
       background: '#444'
@@ -17,11 +17,11 @@ nv.gameConfig =
       model:
         options:
           drawable: new gleam.Square
-            width: 20
-            height: 20 * 22
+            width: 30
+            height: 30 * 22
             color: "darkBlue"
-          width: 20
-          height: 20 * 22
+          width: 30
+          height: 30 * 22
           x: 0
           y: 0
           physicsObjectType: "passive"
@@ -31,12 +31,12 @@ nv.gameConfig =
       model:
         options:
           drawable: new gleam.Square
-            width: 20 * 18
-            height: 20
+            width: 30 * 18
+            height: 30
             color: "darkBlue"
-          width: 20 * 18
-          height: 20
-          x: 20
+          width: 30 * 18
+          height: 30
+          x: 30
           y: 0
           physicsObjectType: "passive"
     rightwall:
@@ -45,12 +45,12 @@ nv.gameConfig =
       model:
         options:
           drawable: new gleam.Square
-            width: 20
-            height: 20 * 22
+            width: 30
+            height: 30 * 22
             color: "darkBlue"
-          width: 20
-          height: 20 * 22
-          x: 20 * 19
+          width: 30
+          height: 30 * 22
+          x: 30 * 19
           y: 0
           physicsObjectType: "passive"
 
@@ -67,7 +67,7 @@ nv.gameConfig =
           width: 100
           height: 15
           x: 250
-          y: 450
+          y: 665
           speed: 3
           physicsObjectType: "passive"
     ball:
@@ -94,8 +94,8 @@ nv.gameConfig =
       model:
         klass: nv.Model
         initializers:
-          x: (scene, index) -> [40, 150, 260, 40, 150, 260, 40, 150, 260][index]
-          y: (scene, index) -> [40, 40, 40, 70, 70, 70, 100, 100, 100][index]
+          x: (scene, index) -> [40, 145, 250, 355, 460][index % 5]
+          y: (scene, index) -> [60, 90, 120, 150][Math.floor(index / 5)]
         options:
           drawable: new gleam.Rectangle
             width: 100
@@ -143,6 +143,6 @@ nv.gameConfig =
           include: "ball"
         brick:
           include: "brick"
-          count: 9
+          count: 20
 
 
