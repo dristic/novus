@@ -69,6 +69,21 @@ nv.gameConfig =
             shoot: nv.Key.Spacebar
           trackMouse: false
       enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine, nv.SoundEngine, nv.ParticleEngine ]
+      soundfx:
+        shoot:
+          asset: "/assets/sounds/pew_pew.wav"
+          event: "engine:gamepad:press:shoot"
+          action: "play"
+        collision:
+          asset: "/assets/sounds/depth_charge.wav"
+          event: "engine:collision:Bullet:Asteroid"
+          action: "play"
+        thrusters:
+          asset: "/assets/sounds/bullet_whizzing.wav"
+          event: "entity:thrust:Ship"
+          action: "play"
+          maxPlayTime: 350
+          startTime: 0.15
       entities:
         background_layer1:
           include: "background_layer1"

@@ -121,7 +121,7 @@ nv.gameConfig =
       entities: ""
 
 
-    main:
+    game:
       config:
         gamepad:
           keys:
@@ -129,6 +129,12 @@ nv.gameConfig =
             right: nv.Key.D
 
       enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine]
+
+      soundfx:
+        brick_collision:
+          asset: "/assets/sounds/brickDeath.wav"
+          event: "engine:collision:Ball:Brick"
+          action: "play"
 
       entities:
         leftwall:

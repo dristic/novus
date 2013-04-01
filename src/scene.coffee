@@ -14,6 +14,7 @@ class nv.Scene extends nv.EventDispatcher
 
     @prepareEngines()
     @createEntities()
+    @createSoundFxs()
 
     @on "entity:remove", (entity) =>
       @removeEntity entity
@@ -106,6 +107,10 @@ class nv.Scene extends nv.EventDispatcher
   addEntity: (entity) ->
     @entities.push entity
     entity
+
+  createSoundFxs: () ->
+    return if nv.gameConfig.scenes[@sceneName].soundfx is undefined
+    new nv.SoundFactory().wire this, nv.gameConfig.scenes[@sceneName].soundfx
 
   getEntity: (type) ->
     for entity in @entities
