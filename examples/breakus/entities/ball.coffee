@@ -4,30 +4,51 @@ class entities.Ball extends nv.Entity
 
     @startDelay = 5
     @started = false
+    @pendingCollision = false
 
     # Get dependencies
     @canvas = @scene.getEngine(nv.RenderingEngine).canvas
 
-  "event(engine:collision:Ball:Player)": (data) =>
-    if data.target.model.y > @model.y
-      @model.direction.y = -@model.direction.y
-      @model.y -= @model.speed * 2
-    else
-      @model.direction.y = -@model.direction.y
-      @model.y += @model.speed * 2
+  "event(engine:collision:queued)": (data) ->
+    return unless data.actor is this
+    @pendingCollision = true
 
-  "event(engine:collision:Ball:Brick)": (data) =>
-    @model.direction.y = -@model.direction.y
-    @model.speed += @model.speedIncrement
-
-  "event(engine:collision:Ball:Wall)": (data) =>
-    dimensions = @canvas.getSize()
-    if data.impactVector.x isnt 0
+  "event(engine:collision:Ball:Player)": (data) ->
+    if Math.abs(data.impactVector.y) > Math.abs(data.impactVector.x)
+      @model.x -= data.impactVector.x + @model.direction.x
       @model.direction.x = -@model.direction.x
-      @model.x += if data.impactVector.x < 0 then -@model.speed * 2 else @model.speed * 2
-    else if data.impactVector.y isnt 0
+    else if Math.abs(data.impactVector.y) < Math.abs(data.impactVector.x)
+      @model.y -= data.impactVector.y + @model.direction.y
       @model.direction.y = -@model.direction.y
-      @model.y += if data.impactVector.y < 0 then -@model.speed * 2 else @model.speed * 2
+    @pendingCollision = false
+
+  "event(engine:collision:Ball:Brick)": (data) ->
+    # @model.direction.y = -@model.direction.y unless data.impactVector.y is 0
+    # @model.direction.x = -@model.direction.x unless data.impactVector.x is 0
+    if Math.abs(data.impactVector.y) > Math.abs(data.impactVector.x)
+      @model.x -= data.impactVector.x + @model.direction.x
+      @model.direction.x = -@model.direction.x
+    else if Math.abs(data.impactVector.y) < Math.abs(data.impactVector.x)
+      @model.y -= data.impactVector.y + @model.direction.y
+      @model.direction.y = -@model.direction.y
+    @pendingCollision = false
+
+    @model.speed += @model.speedIncrement
+    @pendingCollision = false
+
+  "event(engine:collision:Ball:Wall)": (data) ->
+    dimensions = @canvas.getSize()
+    if Math.abs(data.impactVector.y) > Math.abs(data.impactVector.x)
+      # console.log "x-impact", @model.direction, @model.x
+      @model.x -= data.impactVector.x + @model.direction.x
+      @model.direction.x = -@model.direction.x
+      # console.log "x-impact", @model.direction, @model.x
+    else if Math.abs(data.impactVector.y) < Math.abs(data.impactVector.x)
+      #console.log "y-impact", @model.direction, @model.y
+      @model.y -= data.impactVector.y + @model.direction.y
+      @model.direction.y = -@model.direction.y
+      #console.log "y-impact", @model.direction, @model.y
+    @pendingCollision = false
 
   restart: () ->
     @started = false
@@ -39,7 +60,7 @@ class entities.Ball extends nv.Entity
     if @started is false
       @startDelay -= dt
       @started = true unless @startDelay > 0
-    else
+    else if @pendingCollision isnt true
       dimensions = @canvas.getSize()
       @model.x += @model.speed * @model.direction.x
       @model.y += @model.speed * @model.direction.y

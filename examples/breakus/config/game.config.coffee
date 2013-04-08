@@ -68,7 +68,7 @@ nv.gameConfig =
           height: 15
           x: 250
           y: 665
-          speed: 3
+          speed: 5
           physicsObjectType: "passive"
     ball:
       entity: entities.Ball
@@ -84,7 +84,7 @@ nv.gameConfig =
           height: 20
           x: 150
           y: 250
-          speed: 2
+          speed: 5
           speedIncrement: 0.2
           direction: new nv.Point(1, 1)
           physicsObjectType: "active"

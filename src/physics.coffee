@@ -57,10 +57,14 @@ class nv.PhysicsEngine extends nv.Engine
         continue if ida is idp
         objpBounds = objp.bounds()
         if objpBounds.intersects(objaBounds)
+          ivec = @impactVector objaBounds, objpBounds
+          @scene.send "engine:collision:queued",
+            actor: obja.entity
+            target: objp.entity
           @scene.fire "engine:collision:#{obja.entity.constructor.name}:#{objp.entity.constructor.name}",
             actor: obja.entity
             target: objp.entity
-            impactVector: @impactVector objaBounds, objpBounds
+            impactVector: ivec
           break
 
     for obj in @physicsObjects
@@ -74,13 +78,15 @@ class nv.PhysicsEngine extends nv.Engine
     bottom = (collideeBounds.y2 - colliderBounds.y);
 
     # // box intersect. work out the mtd on both x and y axes.
-    iVec.x = if Math.abs(left) < right then left else right
-    iVec.y = if Math.abs(top) < bottom then top else bottom
+    iVec.x = -1 * if Math.abs(left) <= right then left else right
+    iVec.y = -1 * if Math.abs(top) <= bottom then top else bottom
+
     # // 0 the axis with the largest mtd value.
-    if Math.abs(iVec.x) < Math.abs(iVec.y)
-      iVec.y = 0
-    else
-      iVec.x = 0 
+    # if Math.abs(iVec.x) < Math.abs(iVec.y)
+    #   iVec.y = 0
+    # else
+    #   iVec.x = 0  
+    # console.log "PECalc", iVec
     iVec
 
 class nv.PhysicsPlugin extends nv.Plugin

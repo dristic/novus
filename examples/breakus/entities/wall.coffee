@@ -2,9 +2,9 @@ class entities.Wall extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
     
-  "event(engine:collision:Ball:Wall)": (data) =>
+  "event(engine:collision:Ball:Wall)": (data) ->
     return if data.target isnt this
-    @flash = true
+    @flash = false #true
 
   update: (dt) ->
     return unless @flash or @restore

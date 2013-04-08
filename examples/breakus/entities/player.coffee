@@ -4,13 +4,13 @@ class entities.Player extends nv.Entity
 
     @gameWidth = @scene.get('canvas').getSize().width
 
-  "event(engine:gamepad:press:left)": () =>
+  "event(engine:gamepad:press:left)": () ->
     @left = true
-  "event(engine:gamepad:release:left)": () =>
+  "event(engine:gamepad:release:left)": () ->
     @left = false
-  "event(engine:gamepad:press:right)": () =>
+  "event(engine:gamepad:press:right)": () ->
     @right = true
-  "event(engine:gamepad:release:right)": () =>
+  "event(engine:gamepad:release:right)": () ->
     @right = false
 
   update: (dt) ->
