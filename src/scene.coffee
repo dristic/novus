@@ -13,7 +13,7 @@ class nv.Scene extends nv.EventDispatcher
     @options = $.extend @options, @rootModel
 
     @prepareEngines()
-    @createEntities()
+    @createEntities nv.gameConfig.scenes[@sceneName].entities
     @createSoundFxs()
 
     @on "entity:remove", (entity) =>
@@ -57,8 +57,8 @@ class nv.Scene extends nv.EventDispatcher
 
     @engines.push new engineObj.klass this, config  
 
-  createEntities: () ->
-    for entity, config of nv.gameConfig.scenes[@sceneName].entities
+  createEntities: (entities) ->
+    for entity, config of entities
       if config.count?
         index = config.count
         while (index -= 1) >= 0

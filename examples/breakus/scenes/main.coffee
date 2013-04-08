@@ -1,4 +1,4 @@
-class scenes.Game extends nv.Scene
+class scenes.Main extends nv.Scene
   constructor: (name, game, rootModel) ->
     super name, game, rootModel
 

@@ -3,4 +3,7 @@ class entities.Brick extends nv.Entity
     super scene, plugins, model
     
   "event(engine:collision:Ball:Brick)": (data) ->
-    @destroy() unless data.target isnt this
+    return unless data.target is this
+    @scene.fire "game:score",
+      score: data.target.model.get('value')
+    @destroy() 

@@ -104,10 +104,43 @@ nv.gameConfig =
             strokeStyle: "darkRed"
             strokeWidth: 5
             cornerRadius: 8            
-          type: "passive" 
           width: 100
           height: 20
           physicsObjectType: "passive"
+
+    scoreboard:
+      entity: entities.Scoreboard
+      plugins: [ nv.DrawableRenderingPlugin ]
+      model:
+        klass: nv.Model
+        options:
+          drawable: new gleam.Text
+            color: '#CCC'
+            font: 'bold 40px courier'
+            textBaseline: 'bottom'
+            text: 'SCORE: 100'
+          x: 36
+          y: 760
+          width: 400
+          height: 40
+          score: 0
+
+    lives:
+      entity: entities.Lives
+      plugins: [ nv.DrawableRenderingPlugin ]
+      model:
+        klass: nv.Model
+        options:
+          drawable: new gleam.Text
+            color: '#CCC'
+            font: 'bold 60px courier'
+            textBaseline: 'bottom'
+            text: '***'
+          x: 450
+          y: 773
+          width: 400
+          height: 40
+          lives: 4
 
   scenes:
     main:
@@ -147,8 +180,37 @@ nv.gameConfig =
           include: "player"
         ball:
           include: "ball"
-        brick:
-          include: "brick"
-          count: 20
+        # brick:
+        #   include: "brick"
+        #   count: 20
+        scoreboard:
+          include: "scoreboard"
+        lives:
+          include: "lives"
+
+  levels:
+      level1:
+        entities:
+          brick:
+            count: 20
+            entity: entities.Brick
+            plugins: [ nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin ]
+            model:
+              klass: nv.Model
+              initializers:
+                x: (scene, index) -> [40, 145, 250, 355, 460][index % 5] + 1
+                y: (scene, index) -> [60, 90, 120, 150][Math.floor(index / 5)]
+              options:
+                drawable: new gleam.Rectangle
+                  width: 98
+                  height: 20
+                  fillStyle: "darkOrange"
+                  strokeStyle: "darkRed"
+                  strokeWidth: 5
+                  cornerRadius: 8            
+                width: 98
+                height: 20
+                physicsObjectType: "passive"
+                value: 50
 
 

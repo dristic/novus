@@ -23,8 +23,6 @@ class entities.Ball extends nv.Entity
     @pendingCollision = false
 
   "event(engine:collision:Ball:Brick)": (data) ->
-    # @model.direction.y = -@model.direction.y unless data.impactVector.y is 0
-    # @model.direction.x = -@model.direction.x unless data.impactVector.x is 0
     if Math.abs(data.impactVector.y) > Math.abs(data.impactVector.x)
       @model.x -= data.impactVector.x + @model.direction.x
       @model.direction.x = -@model.direction.x
@@ -39,15 +37,11 @@ class entities.Ball extends nv.Entity
   "event(engine:collision:Ball:Wall)": (data) ->
     dimensions = @canvas.getSize()
     if Math.abs(data.impactVector.y) > Math.abs(data.impactVector.x)
-      # console.log "x-impact", @model.direction, @model.x
       @model.x -= data.impactVector.x + @model.direction.x
       @model.direction.x = -@model.direction.x
-      # console.log "x-impact", @model.direction, @model.x
     else if Math.abs(data.impactVector.y) < Math.abs(data.impactVector.x)
-      #console.log "y-impact", @model.direction, @model.y
       @model.y -= data.impactVector.y + @model.direction.y
       @model.direction.y = -@model.direction.y
-      #console.log "y-impact", @model.direction, @model.y
     @pendingCollision = false
 
   restart: () ->
@@ -68,4 +62,5 @@ class entities.Ball extends nv.Entity
       if @model.y > dimensions.height
         # Add in for god mode
         # @model.direction.y = -@model.direction.y
+        @scene.fire "game:ball:destroyed"
         @restart()
