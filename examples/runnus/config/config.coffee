@@ -42,6 +42,16 @@ nv.gameConfig =
               y: 250
               font: "30px sans-serif"
               text: "Runnus"
+        level:
+          entity: nv.Entity
+          plugins: []
+          model:
+            options:
+              src: '/assets/plates.png'
+              data: [
+                [0, 1, 1, 1],
+                [1, 3, 2, 2]
+              ]
         image:
           entity: entities.Player
           plugins: [ nv.AnimatedSpriteRenderingPlugin ]
