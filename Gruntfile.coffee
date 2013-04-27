@@ -6,6 +6,7 @@ module.exports = (grunt) ->
   # Configure grunt tasks.
   grunt.initConfig
     meta:
+      name: 'novus'
       version: '0.1.0'
 
     lint:
@@ -28,6 +29,13 @@ module.exports = (grunt) ->
           'Dan Ristic; Licensed MIT */'
       dist:
         src: ['lib/vendor/zepto.min.js', 'dist/novus-<%= meta.version %>.js']
+        dest: 'dist/novus-<%= meta.version %>.min.js'
+
+    uglify:
+      options:
+        banner: '/*! <%= meta.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
+      dist:
+        src: ['dist/novus-<%= meta.version %>.min.js']
         dest: 'dist/novus-<%= meta.version %>.min.js'
 
     watch:
@@ -75,13 +83,14 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-jasmine'
   grunt.loadNpmTasks 'grunt-contrib-concat'
+  grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-dox'
 
   # Default task lints, tests, and builds everything.
   grunt.registerTask 'default', ['test']
 
   # Build task builds and tests.
-  grunt.registerTask 'build', ['generate', 'concat']
+  grunt.registerTask 'build', ['generate', 'concat', 'uglify']
 
   # Builds and tests the engine.
   grunt.registerTask 'test', ['build', 'coffee', 'jasmine']
@@ -90,5 +99,5 @@ module.exports = (grunt) ->
   grunt.registerTask 'generate', 'Compiles coffeescript into js files', () ->
     options = this.options({})
 
-    js = new snockets().getConcatenation(options.src, { minify: true, async: false })
+    js = new snockets().getConcatenation(options.src, { minify: false, async: false })
     fs.writeFileSync options.output, js
