@@ -27,7 +27,7 @@ module.exports = (grunt) ->
           '* Copyright (c) <%= grunt.template.today("yyyy") %> ' +
           'Dan Ristic; Licensed MIT */'
       dist:
-        src: ['lib/vendor/zepto.min.js', 'dist/novus.js']
+        src: ['lib/vendor/zepto.min.js', 'dist/novus-<%= meta.version %>.js']
         dest: 'dist/novus-<%= meta.version %>.min.js'
 
     watch:
