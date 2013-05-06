@@ -12,10 +12,6 @@ class nv.Scene extends nv.EventDispatcher
       @options = $.extend @options, nv.gameConfig.scenes[@sceneName].config.scene
     @options = $.extend @options, @rootModel
 
-    @prepareEngines()
-    @createEntities nv.gameConfig.scenes[@sceneName].entities
-    @createSoundFxs()
-
     @on "entity:remove", (entity) =>
       @removeEntity entity
 
@@ -33,6 +29,17 @@ class nv.Scene extends nv.EventDispatcher
 
     @on "scene:destroy", (options) =>
       @destruct()
+
+    # If any functions are defined using the prefix "event()"
+    # then we auto add it as an event listener
+    for key of this
+      if /event\(.*\)/.test(key)
+        @on key[6..-2], nv.bind(this, this[key])
+
+    @prepareEngines()
+    @createEntities nv.gameConfig.scenes[@sceneName].entities
+    @createSoundFxs()
+
 
   get: (key) ->
     @options[key]
