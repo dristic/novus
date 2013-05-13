@@ -8,6 +8,9 @@ class entities.Map extends nv.Entity
   refreshMap: () ->
     @renderer.draw @canvas.context, @canvas
 
+  "event(asset:loaded)": (data) ->
+    @renderer.assetsLoadingComplete()
+
   "event(refresh:map)": () ->
     @refreshMap()
 
@@ -18,12 +21,17 @@ class entities.Map extends nv.Entity
 
   "event(player:moved)": (data) ->
     spot = @model.spot data.location
-    if spot is " "
+    if spot is "free"
       @model.updateObject @player, 1
       @adjustMap data.location
       @refreshMap()
-    else
+    else if spot is "collision"
       @scene.fire "player:collision"
+    else
+      # transition to different map
+      entryPt = @model.jump(spot)
+      @player.moveTo entryPt
+      @refreshMap()
 
   # "event(engine:gamepad:release:up)": () ->    
   #   @refreshMap() if @model.shiftMap 0, -1

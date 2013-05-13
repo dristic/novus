@@ -17,7 +17,7 @@ nv.gameConfig =
       model:
         klass: models.Map
         options:
-          startLocation: "glade1"
+          startMap: "meadow1"
           tileWidth: 101
           tileHeight: 171
           tileVOffset: 84
@@ -26,8 +26,8 @@ nv.gameConfig =
       entity: entities.Player
       model:
         options:
-          currentLocation: new nv.Point(5,5)
-          previousLocation: new nv.Point(5,5)
+          currentLocation: new nv.Point(4,4)
+          previousLocation: new nv.Point(4,4)
           symbol: 'z'
 
   scenes:
@@ -70,6 +70,7 @@ nv.gameConfig =
     W: 'assets/images/Wall Block Tall.png'
     a: 'assets/images/Water Block.png'
     o: 'assets/images/Wood Block.png'
+    J: 'assets/images/Jump Block.png'
 
     C: 'assets/images/Chest Closed.png'
     N: 'assets/images/Chest Open.png'
@@ -93,30 +94,56 @@ nv.gameConfig =
 
 
   map:
-    glade1:
-      start: new nv.Point(5,5)
+    meadow1:
       size: new nv.Point(20,10)
       tiles:
         layer0: [ "dddddddddddddddddddd", 
                   "ggdggggdggggdggggdgg", 
                   "gggggggggggggggggggg",
                   "gggggggggggggggggggg",
-                  "ggggggddgggggggggggg",
-                  "ggdggggdggggdggggdgg", 
+                  "Jgggggddgggggggggggg",
+                  "Jgdggggdggggdggggdgg", 
                   "gggggggggggggggggggg",
                   "gggggggggggggggggggg",
                   "ggggggddgggggggggggg",
                   "ddddddddddgggggggggg" ]
         layer1: [ "WssssssssssssssssssW", 
-                  "                    ",
-                  "                    ",
-                  "        T  H  U     ",
-                  "                    ",
-                  "            R       ",
-                  "     E              ",
-                  "                    ",
-                  "                    ",
+                  "s                  s",
+                  "s                  s",
+                  "s       T  H  U    s",
+                  "                   s",
+                  "            R      s",
+                  "s    E             s",
+                  "s                  s",
+                  "s                  s",
                   "WssssssssssssssssssW" ]
+      paths:
+        forest1:
+          exits: [ new nv.Point(0,4), new nv.Point(0,5) ],
+
+        garden1:
+          exits: []
+
+    forest1:
+      size: new nv.Point(30,6)
+      tiles:
+        layer0: [ "dddddddddddddddddddddddddddddd", 
+                  "gggggggggggggggggggggggggggggg",
+                  "gggggggggggggggggggggggggggggg",
+                  "ggggggddgggggggggggggJ  gggggg",
+                  "ggggggddgggggggggggggg   ggggg",
+                  "dddddddddddddddddddddd      dd" ]
+        layer1: [ "TTHTTHHHTTTTHHTHHTTHTHTHHTTHHH", 
+                  "R       R      T T          HT",
+                  "R   T            HH U UR     U",
+                  "R      T TH             T    T",
+                  "R         T          T   HTT T",
+                  "THTHHTTTHTTHRTHHTHHTTH      TT" ]
+      paths: 
+        meadow1:
+          exits: [ new nv.Point(21,3) ]
+
+
 
 
 

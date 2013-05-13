@@ -32,5 +32,8 @@ class entities.Player extends nv.Entity
     @scene.fire "player:moved",
       location: @model.currentLocation
 
+  moveTo: (pt) ->
+    @model.currentLocation = pt.clone()
+    @model.previousLocation = pt.clone()
 
   update: (dt) ->
