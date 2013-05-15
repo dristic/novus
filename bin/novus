@@ -85,6 +85,9 @@ if (args[0] === undefined) {
   log("Navigate to http://localhost:" + config.port + " to see your game");
   log("Press CTRL + C to stop the server.");
 } else if (args[0] == "build") {
+  //////////////
+  // Novus Build
+  //////////////////
   log("Building into build/ folder");
 
   // Create build folder
@@ -98,6 +101,27 @@ if (args[0] === undefined) {
 
   // Copy in index file
   fs.createReadStream(__dirname + '/index.html').pipe(fs.createWriteStream('build/index.html'));
+} else if (args[0] === "watch") {
+  //////////////
+  // Novus Watch
+  /////////////////////
+  log("Watching for file changes...");
+
+  var io = require('socket.io').listen(8888),
+      sockets = [];
+
+  io.on('connection', function (socket) {
+    sockets.push(socket);
+  });
+
+  fs.watch(args[1], function (event, filename) {
+    for(var i = 0; i < sockets.length; i++) {
+      var socket = sockets[i];
+      socket.emit('change', {
+        filename: args[1]
+      });
+    }
+  });
 } else {
   /////////////////////////
   // novus {unknown_argument}

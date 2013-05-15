@@ -8,7 +8,13 @@ nv.gameConfig =
       margin: '30px auto 0 auto'
       display: 'block'
 
-  enginesToLoad: [ nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine]
+  enginesToLoad: [
+    nv.GamepadEngine,
+    nv.PhysicsEngine,
+    nv.TimingEngine,
+    nv.DebugEngine,
+    nv.LiveEditEngine
+  ]
 
   entities:
     map:
@@ -51,7 +57,13 @@ nv.gameConfig =
             up: nv.Key.W
             down: nv.Key.S
 
-      enginesUsed: [ nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine]
+      enginesUsed: [
+        nv.GamepadEngine,
+        nv.PhysicsEngine,
+        nv.TimingEngine,
+        nv.DebugEngine,
+        nv.LiveEditEngine
+      ]
 
       entities:
         map:

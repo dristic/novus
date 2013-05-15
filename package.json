@@ -11,7 +11,8 @@
     "snockets": "*",
     "nib": "*",
     "stylus": "*",
-    "connect": "*"
+    "connect": "*",
+    "socket.io": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.0rc7",
