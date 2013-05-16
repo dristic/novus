@@ -31,19 +31,8 @@ class entities.Map extends nv.Entity
       # transition to different map
       entryPt = @model.jump(spot)
       @player.moveTo entryPt
+      @model.updateObject @player, 1
       @refreshMap()
-
-  # "event(engine:gamepad:release:up)": () ->    
-  #   @refreshMap() if @model.shiftMap 0, -1
-
-  # "event(engine:gamepad:release:left)": () ->    
-  #   @refreshMap() if @model.shiftMap -1, 0
-    
-  # "event(engine:gamepad:release:right)": () ->
-  #   @refreshMap() if @model.shiftMap 1, 0
-    
-  # "event(engine:gamepad:release:down)": () ->
-  #   @refreshMap() if @model.shiftMap 0, 1
     
   adjustMap: (playerLoc) ->
     @model.shiftMap 0, -1 if playerLoc.y - @model.top() is 0

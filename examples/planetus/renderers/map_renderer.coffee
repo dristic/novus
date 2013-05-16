@@ -37,18 +37,19 @@ class renderers.MapRenderer extends nv.RenderingPlugin
 
     context.clearRect()
 
-    $.each @entity.model.layers, (i, layer) =>
-      idx = 0
+    $.each @entity.model.layers, (layerIdx, layer) =>
+      # idx = 0
       width = vs.x
 
-      for row in [vo.y .. vo.y + dsy - 1]
-        for col in [vo.x .. vo.x + dsx - 1]
-          xpos = col - vo.x
-          ypos = row - vo.y
+      for i in [vo.y .. vo.y + dsy - 1]
+        row = layer[i]
+        for j in [vo.x .. vo.x + dsx - 1]
+          key = row[j]
+          xpos = j - vo.x
+          ypos = i - vo.y
           x = (xpos % width) * @tileWidth
-          y = (i*-43) + (ypos * @tileVOffset) + 100 
+          y = (layerIdx * -40) + (ypos * @tileVOffset) + 100 # (i*-43) + 
 
-          key = layer[row * ms.x + col]
+          # key = layer[i * ms.x + col]
           context.drawImage @tiles[key], x, y if key isnt " "
-          idx++
-
+          # idx++

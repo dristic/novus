@@ -27,6 +27,7 @@ nv.gameConfig =
           tileWidth: 101
           tileHeight: 171
           tileVOffset: 84
+          emptySpace: " "
     player:
       plugins: [ nv.DrawableRenderingPlugin ] # plugins.MapCollisionDetector
       entity: entities.Player
