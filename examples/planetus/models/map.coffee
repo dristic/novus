@@ -18,26 +18,6 @@ class models.Map extends nv.Model
   right: () ->
     @viewOrigin.x + @viewSize.x - 1
 
-  # findReplace: (find, replace, layer = 1) ->
-  #   fr = -1
-  #   fc = -1
-  #   for row, i in @layers[layer]
-  #     break unless fc is -1
-  #     for col, j in row
-  #       break unless fc is -1
-  #       if col is find
-  #         fr = i
-  #         fc = j
-
-  #   @replace fr, fc, replace, layer
-
-  #   idx = @layers[layer].indexOf(find)
-  #   @replace idx, replace, layer
-
-  # replace: (row, col, replace, layer = 1) ->
-  #   @layers[layer][row][col] = replace
-  #   @layers[layer] = @layers[layer].substr(0,idx) + replace + @layers[layer].substr(idx+1)
-
   changeLocation: (location) ->
     @mapName = location
 
@@ -48,7 +28,6 @@ class models.Map extends nv.Model
         grid.push row.split("")
       @layers.push grid
 
-    #@layers = [nv.gameConfig.map[location].tiles.layer0.join(""), nv.gameConfig.map[location].tiles.layer1.join("")]
     @mapSize = nv.gameConfig.map[location].size
 
     @exitPoints = {}
@@ -75,16 +54,16 @@ class models.Map extends nv.Model
   placeObject: (object, layer) ->
     location = object.location()
     @layers[layer][location.y][location.x] = object.symbol()
-    @objects[object.symbol()].location = location.clone()
+    # @objects[object.symbol()].location = location.clone()
 
   moveObject: (object, layer) ->
-    oldLocation = @objects[object.symbol()].location
+    oldLocation = object.previousLocation()
     @layers[layer][oldLocation.y][oldLocation.x] = @emptySpace
     @placeObject object, layer
 
   addObject: (object, layer = 1) ->
-    @objects[object.symbol()] = 
-      object: object
+    @objects[object.symbol()] = object
+    # object: object
     @placeObject object, layer
 
   updateObject: (object, layer = 1) ->
@@ -109,8 +88,8 @@ class models.Map extends nv.Model
     true
 
   shiftMapTo: (pt) ->
-    x = pt.x - @viewSize.x
-    y = pt.y - @viewSize.y
+    x = pt.x - @viewSize.x + 1
+    y = pt.y - @viewSize.y + 1
 
     x = 0 if x < 0
     y = 0 if y < 0

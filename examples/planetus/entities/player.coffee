@@ -23,6 +23,9 @@ class entities.Player extends nv.Entity
   location: () ->
     @model.currentLocation
 
+  previousLocation: () ->
+    @model.previousLocation
+
   symbol: () ->
     @model.symbol
 

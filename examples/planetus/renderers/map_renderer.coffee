@@ -41,8 +41,10 @@ class renderers.MapRenderer extends nv.RenderingPlugin
       # idx = 0
       width = vs.x
 
-      for row, i in layer[vo.y .. vo.y + dsy - 1]
-        for key, j in row[vo.x .. vo.x + dsx - 1]
+      for i in [vo.y .. vo.y + dsy - 1]
+        row = layer[i]
+        for j in [vo.x .. vo.x + dsx - 1]
+          key = row[j]
           xpos = j - vo.x
           ypos = i - vo.y
           x = (xpos % width) * @tileWidth
@@ -51,4 +53,3 @@ class renderers.MapRenderer extends nv.RenderingPlugin
           # key = layer[i * ms.x + col]
           context.drawImage @tiles[key], x, y if key isnt " "
           # idx++
-
