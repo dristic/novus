@@ -13,7 +13,8 @@ nv.gameConfig =
     nv.PhysicsEngine,
     nv.TimingEngine,
     nv.DebugEngine,
-    nv.LiveEditEngine
+    nv.LiveEditEngine,
+    nv.EditorEngine
   ]
 
   entities:
@@ -63,7 +64,8 @@ nv.gameConfig =
         nv.PhysicsEngine,
         nv.TimingEngine,
         nv.DebugEngine,
-        nv.LiveEditEngine
+        nv.LiveEditEngine,
+        nv.EditorEngine
       ]
 
       entities:
