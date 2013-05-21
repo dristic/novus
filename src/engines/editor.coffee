@@ -2,11 +2,10 @@ class nv.EditorEngine extends nv.Engine
   initializer: (config, rootModel) ->
     window.addEventListener 'message', nv.bind(this, this.handleMessage)
 
-    document.querySelector('canvas').addEventListener 'click', (event) =>
-      @sendMessage 
-
   constructor: (scene, config) ->
     console.log 'INIT'
+
+    @sendMessage 'load', ''
 
   handleMessage: (event) ->
     console.log "MESSAGE: ", event
@@ -20,6 +19,7 @@ class nv.EditorEngine extends nv.Engine
       console.log "Map update: ", event.data.map
 
   sendMessage: (type, message) ->
+    console.log 'posting', type, message
     window.parent.postMessage {
       type: type
       message: message
