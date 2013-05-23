@@ -38,6 +38,12 @@ nv.implement
     $(document).on 'keydown', func
     func
 
+  keypress: (key, callback) ->
+    func = (event) ->
+      if event.keyCode is key then callback()
+    $(document).on 'keypress', func
+    func
+
   keyup: (key, callback) ->
     func = (event) ->
       if event.keyCode is key then callback()

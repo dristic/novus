@@ -15,14 +15,20 @@ class nv.Point
     this
 
   times: (num) ->
-    new nv.Point @x * num, @y * num 
-
-  clone: () ->
-    new nv.Point @x, @y
+    new nv.Point @x * num, @y * num
+    this
 
   fromPolar: (ang, rad) ->
     @x = Math.cos(ang) * rad
     @y = Math.sin(ang) * rad
+    this
+
+  constrain: (rect) ->
+    unless rect.contains this
+      @x = 0 if @x < rect.x
+      @x = rect.x2 if @x > rect.x2
+      @y = 0 if @y < rect.y
+      @y = rect.y2 if @y > rect.y2
     this
 
 class nv.Rect

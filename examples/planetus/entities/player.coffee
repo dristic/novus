@@ -5,8 +5,14 @@ class entities.Player extends nv.Entity
     @scene.fire "player:created",
       player: this
 
+  # enableKeyRepeat: (enabled) ->
+  #   @scene.get('rootModel').gamepad.track
+
   "event(engine:gamepad:press:up)": () ->
     @move 0, -1
+
+  "event(engine:gamepad:repeat:up)": () ->
+    # @move 0, -1
 
   "event(engine:gamepad:press:left)": () ->    
     @move -1, 0
@@ -16,6 +22,9 @@ class entities.Player extends nv.Entity
     
   "event(engine:gamepad:press:down)": () ->
     @move 0, 1
+
+  "event(engine:gamepad:press:open)": () ->
+    @scene.fire "player:open"
 
   "event(player:collision)": (data) ->
     @model.currentLocation = @model.previousLocation.clone()

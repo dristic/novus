@@ -1,10 +1,10 @@
 nv.gameConfig =
   canvas:
-    height: 800
-    width: 1010
+    height: 900
+    width: 17*101
     fullscreen: false
     css:
-      background: '#000'
+      background: '#333'
       margin: '30px auto 0 auto'
       display: 'block'
 
@@ -23,11 +23,20 @@ nv.gameConfig =
       model:
         klass: models.Map
         options:
-          startMap: "meadow1"
+          startMap: "town1"
           tileWidth: 101
           tileHeight: 171
           tileVOffset: 84
           emptySpace: " "
+          viewOrigin: new nv.Point(0,0)
+          viewSize: new nv.Point(17,8)
+          openableItems:
+            door:
+              closed: 'c'
+              open: 'e'
+            chest:
+              closed: 'C'
+              open: 'N'
     player:
       plugins: [ nv.DrawableRenderingPlugin ] # plugins.MapCollisionDetector
       entity: entities.Player
@@ -36,6 +45,17 @@ nv.gameConfig =
           currentLocation: new nv.Point(4,4)
           previousLocation: new nv.Point(4,4)
           symbol: 'z'
+    statboard:
+      plugins: [ renderers.StatBoard ]
+      entity: entities.StatBoard
+      model:
+        options:
+          hearts: 4
+          keys: 0
+          stars: 0
+          blueGems: 0
+          greenGems: 0
+          orangeGems: 0
 
   scenes:
     # main:
@@ -57,6 +77,7 @@ nv.gameConfig =
             right: nv.Key.D
             up: nv.Key.W
             down: nv.Key.S
+            open: nv.Key.E
 
       enginesUsed: [
         nv.GamepadEngine,
@@ -85,6 +106,19 @@ nv.gameConfig =
     o: 'assets/images/Wood Block.png'
     J: 'assets/images/Jump Block.png'
 
+    c: 'assets/images/Door Tall Closed.png'
+    e: 'assets/images/Door Tall Open.png'
+    f: 'assets/images/Window Tall.png'
+
+    h: 'assets/images/Roof East.png'
+    i: 'assets/images/Roof North East.png'
+    j: 'assets/images/Roof North West.png'
+    k: 'assets/images/Roof North.png'
+    l: 'assets/images/Roof South East.png'
+    m: 'assets/images/Roof South West.png'
+    n: 'assets/images/Roof South.png'
+    q: 'assets/images/Roof West.png'
+
     C: 'assets/images/Chest Closed.png'
     N: 'assets/images/Chest Open.png'
 
@@ -107,6 +141,54 @@ nv.gameConfig =
 
 
   map:
+    town1:
+      size: new nv.Point(20,10)
+      tiles:
+        layer0: [ "dddddddddddddddddddd",
+                  "dggggggggggggggggggd",
+                  "dsosggsosgsosggsossd",
+                  "ddpddddpdddpddddpddd",
+                  "dddddddddddddddddddd",
+                  "dddgggggdggddddddddd",
+                  "dgdddddgdggddddddddd",
+                  "dgdddddddgggpggddddd",
+                  "dgddpddddddddddddddd",
+                  "dddddddddddddddddddd" ]
+        layer1: [ "ssssssssssssssssssss",
+                  "s  o  o o o o  o   s",
+                  "sfcf  fcf fcf  fcfos",
+                  "s                  s",
+                  "                   s",
+                  "           ooooooo s",
+                  "s  oooo   Tfcof  o s",
+                  "s  fcof        ofo s",
+                  "sU                 s",
+                  "ssssssssssssssssssss"]
+        layer2: [ "                    ",
+                  "                  o ",
+                  "                    ",
+                  "                    ",
+                  "                    ",
+                  "                    ",
+                  "             o      ",
+                  "     o         o o  ",
+                  "                    ",
+                  "                    "]
+        layer3: [ "                    ",
+                  " kkk  kkk kkk  kkkk ",
+                  " nnn  nnn nnn  nnnn ",
+                  "                    ",
+                  "                    ",
+                  "           kkkkkki  ",
+                  "   kkkk    nnnnqoh  ",
+                  "   nnnn        mnl  ",
+                  "                    ",
+                  "                    "]
+      paths:
+        meadow1:
+          exits: [ new nv.Point(0,4), new nv.Point(0,5) ]
+
+
     meadow1:
       size: new nv.Point(20,10)
       tiles:
@@ -114,12 +196,12 @@ nv.gameConfig =
                   "ggdggggdggggdggggdgg", 
                   "gggggggggggggggggggg",
                   "gggggggggggggggggggg",
-                  "Jgggggddgggggggggggg",
-                  "Jgdggggdggggdggggdgg", 
+                  "ggggggddgggggggggggg",
+                  "ggdggggdggggdggggdgg", 
                   "gggggggggggggggggggg",
                   "gggggggggggggggggggg",
                   "ggggggddgggggggggggg",
-                  "ddddddddddgggggggggg" ]
+                  "ddddddddddgggggddggg" ]
         layer1: [ "WssssssssssssssssssW", 
                   "s                  s",
                   "s                  s",
@@ -127,12 +209,15 @@ nv.gameConfig =
                   "                   s",
                   "            R      s",
                   "s    E             s",
-                  "s                  s",
-                  "s                  s",
+                  "s                   ",
+                  "s                   ",
                   "WssssssssssssssssssW" ]
       paths:
+        town1:
+          exits: [ new nv.Point(19,7), new nv.Point(19,8)]
+
         forest1:
-          exits: [ new nv.Point(0,4), new nv.Point(0,5) ],
+          exits: [ new nv.Point(0,4), new nv.Point(0,5) ]
 
         garden1:
           exits: []
