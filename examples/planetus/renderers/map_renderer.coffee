@@ -37,6 +37,9 @@ class renderers.MapRenderer extends nv.RenderingPlugin
 
     context.clearRect()
 
+    horzOffset = Math.floor((vs.x - ms.x) / 2)
+    horzOffset = 0 if horzOffset < 0
+
     $.each @entity.model.layers, (layerIdx, layer) =>
       # idx = 0
       width = vs.x
@@ -45,7 +48,7 @@ class renderers.MapRenderer extends nv.RenderingPlugin
         row = layer[i]
         for j in [vo.x .. vo.x + dsx - 1]
           key = row[j]
-          xpos = j - vo.x
+          xpos = j - vo.x + horzOffset
           ypos = i - vo.y
           x = (xpos % width) * @tileWidth
           y = (layerIdx * -40) + (ypos * @tileVOffset) + 100 # (i*-43) + 
