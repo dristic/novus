@@ -5,8 +5,8 @@ class models.Map extends nv.Model
 
     @changeLocation @startMap if nv.gameConfig.map[@startMap]
 
-    @viewOrigin = new nv.Point(0,0)
-    @viewSize = new nv.Point(10,7)
+    # @viewOrigin = new nv.Point(0,0)
+    # @viewSize = new nv.Point(10,7)
     @objects = {}
 
   top: () ->
@@ -22,9 +22,11 @@ class models.Map extends nv.Model
     @mapName = location
 
     @layers = []
-    $.each ["layer0","layer1"], (layer) =>
+    $.each ["layer0","layer1","layer2","layer3"], (layer) =>
+      layerRows = nv.gameConfig.map[location].tiles["layer#{layer}"]
+      return unless layerRows?
       grid = []
-      $.each nv.gameConfig.map[location].tiles["layer#{layer}"], (idx, row) ->
+      $.each layerRows, (idx, row) ->
         grid.push row.split("")
       @layers.push grid
 
@@ -47,7 +49,6 @@ class models.Map extends nv.Model
   jump: (toMap) ->
     start = nv.gameConfig.map[toMap].paths[@mapName].exits[0]
     @changeLocation toMap
-    # start = @findPathEntrance next
     @shiftMapTo start
     start
 
@@ -69,10 +70,13 @@ class models.Map extends nv.Model
   updateObject: (object, layer = 1) ->
     @moveObject object, layer
 
+  swapTile: (location, tile, layer = 1) ->
+    @layers[layer][location.y][location.x] = tile
+
   locationToExitPointId: (location) ->
     "xp#{location.x}x#{location.y}".replace(/-/g,"N")
 
-  spot: (location, layer = 1) ->
+  testSpot: (location, layer = 1) ->
     exitPt = @locationToExitPointId(location)
     if @exitPoints[exitPt] isnt undefined
       return @exitPoints[exitPt]
@@ -81,6 +85,9 @@ class models.Map extends nv.Model
     # idx = location.y * @mapSize.x + location.x
     # if @layers[layer].charAt(idx) is " " then "free" else "collision"
     if @layers[layer][location.y][location.x] is " " then "free" else "collision"
+
+  spot: (location, layer = 1) ->
+    @layers[layer][location.y][location.x]
 
   shiftMap: (dx, dy) ->
     return false if (dx < 0 && @viewOrigin.x == 0) || (dx > 0 && @viewOrigin.x + @viewSize.x > @mapSize.x - 1) || (dy < 0 && @viewOrigin.y == 0) || (dy > 0 && @viewOrigin.y + @viewSize.y > @mapSize.y - 1)

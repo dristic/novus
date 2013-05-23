@@ -7,6 +7,7 @@ class nv.GamepadEngine extends nv.Engine
     @options.setMany config
 
     @gamepad.trackMouse() if @options.trackMouse?
+    @gamepad.keyRepeatEvents = true if @options.keyRepeatEvents
 
     for key of @options.keys
       @gamepad.aliasKey key, @options.keys[key]
@@ -16,11 +17,13 @@ class nv.GamepadEngine extends nv.Engine
 
     @buttonPressFunction = nv.bind(this, @onButtonPress)
     @buttonReleaseFunction = nv.bind(this, @onButtonRelease)
+    @buttonRepeatFunction = nv.bind(this, @onButtonRepeat)
     @mouseDownFunction = nv.bind(this, @onMouseDown)
     @mouseUpFunction = nv.bind(this, @onMouseUp)
 
     @gamepad.on "press", @buttonPressFunction
     @gamepad.on "release", @buttonReleaseFunction
+    @gamepad.on "repeat", @buttonRepeatFunction
     @gamepad.on "gamepad:connected", () =>
       @scene.fire "engine:gamepad:controller:connected"
     @gamepad.on "mousedown", @mouseDownFunction
@@ -31,6 +34,9 @@ class nv.GamepadEngine extends nv.Engine
 
   onButtonRelease: (button) ->
     @scene.fire "engine:gamepad:release:#{button}"
+
+  onButtonRepeat: (button) ->
+    @scene.fire "engine:gamepad:repeat:#{button}"
 
   onMouseDown: (data) ->
     @scene.fire "engine:gamepad:mouse:down", data unless not @config.trackMouse
@@ -44,10 +50,12 @@ class nv.GamepadEngine extends nv.Engine
   destroy: () ->
     @gamepad.off "press", @buttonPressFunction
     @gamepad.off "release", @buttonReleaseFunction
+    @gamepad.off "repeat", @buttonRepeatFunction
     @gamepad.off "mousedown", @mouseDownFunction
     @gamepad.off "mouseup", @mouseUpFunction
     delete @buttonPressFunction
     delete @buttonReleaseFunction
+    delete @buttonRepeatFunction
     delete @gamepad
     delete @config
 
@@ -63,6 +71,7 @@ class nv.Gamepad extends nv.EventDispatcher
     @gamepadAliases = {}
     @previousGamepadState = undefined
     @trackGamepad = false
+    @keyRepeatEvents = false
 
   trackMouse: () ->
     @state.mouse =
@@ -92,6 +101,10 @@ class nv.Gamepad extends nv.EventDispatcher
       unless @state[button]
         @fireButton(button, "press")
         @state[button] = true
+    if @keyRepeatEvents
+      @trackers[button].push nv.keypress key + 32, () =>
+        return unless @state[button]
+        @fireButton(button, "repeat")
     @trackers[button].push nv.keyup key, () =>
       @state[button] = false
       @fireButton(button, "release")
