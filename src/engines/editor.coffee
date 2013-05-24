@@ -3,9 +3,9 @@ class nv.EditorEngine extends nv.Engine
 
   constructor: (scene, config) ->
     super scene, config
-
     window.addEventListener 'message', nv.bind(this, this.handleMessage)
 
+  "event(game:start)": () ->
     @sendMessage 'load', ''
 
   handleMessage: (event) ->
