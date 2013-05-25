@@ -33,7 +33,7 @@
             openableItems:
               door:
                 closed: 'c'
-                open: 'e'
+                open: ' '
               chest:
                 closed: 'C'
                 open: 'N'
