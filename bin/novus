@@ -73,7 +73,7 @@ if (args[0] === undefined) {
         var data = new snockets().getConcatenation('game.coffee', { minify: false, async: false });
         res.setHeader('Content-Type', 'application/javascript');
         res.end(data);
-      } else if (req.url === '/' || req.url === '/index.html') {
+      } else if (req.url === '/' || req.url === '/index.html' || req.url === '/game') {
         var fileStream = fs.createReadStream('assets/index.html');
         fileStream.pipe(res);
       } else {
