@@ -10,18 +10,24 @@ class entities.Map extends nv.Entity
     @openableItems = {}
     for name, item of @model.openableItems
       @openableItems[item.closed] = item
+      @openableItems[item.open] = item
+
+    @fetchableItems = {}
+    for name, item of @model.fetchableItems
+      @fetchableItems[item.tile] = item
 
   upateMovementConstraints: () ->
     @viewSizeConstraints = new nv.Rect 0, 0, @model.mapSize.x-1, @model.mapSize.y-1
 
   refreshMap: () ->
-    @renderer.draw @canvas.context, @canvas
+    # @renderer.draw @canvas.context, @canvas
+    @scene.fire "engine:rendering:draw"
 
   "event(asset:loaded)": (data) ->
     @renderer.assetsLoadingComplete()
 
-  "event(refresh:map)": () ->
-    @refreshMap()
+  # "event(refresh:map)": () ->
+  #   @refreshMap()
 
   "event(player:created)": (data) ->
     @player = data.player
@@ -54,11 +60,37 @@ class entities.Map extends nv.Entity
     $.each @adjacentPositions, (idx, pos) =>
       testLoc = playerLoc.clone().add(pos)
       spot = @model.spot testLoc
-      next unless @openableItems[spot]?
+      return unless @openableItems[spot]?
       @model.swapTile testLoc, @openableItems[spot].open
+      type = @openableItems[spot].type + "s"
+      if @model.mapConfig[type]?
+        for id, container of @model.mapConfig[type]
+          if testLoc.eq container.location
+            @model.swapTile container.reveal[0], container.tile, container.reveal[1]
+            break
       somethingOpened = true
       false
     @refreshMap() if somethingOpened
+
+  "event(player:fetch)": () ->
+    playerLoc = @player.location()
+    somethingOpened = false
+    $.each @adjacentPositions, (idx, pos) =>
+      testLoc = playerLoc.clone().add(pos)
+      spot = @model.spot testLoc, 1
+      if @fetchableItems[spot]?
+        @model.swapTile testLoc, @model.emptySpace, 1
+        @scene.fire "player:acquired", 
+          itemCode: spot
+        @refreshMap()
+        return false
+      spot = @model.spot testLoc, 2
+      if @fetchableItems[spot]?
+        @model.swapTile testLoc, @model.emptySpace, 2
+        @scene.fire "player:acquired",
+          itemCode: spot
+        @refreshMap()
+        return false
 
     
   adjustMap: (playerLoc) ->

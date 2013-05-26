@@ -26,6 +26,12 @@ class entities.Player extends nv.Entity
   "event(engine:gamepad:press:open)": () ->
     @scene.fire "player:open"
 
+  "event(engine:gamepad:press:fetch)": () ->
+    @scene.fire "player:fetch"
+
+  "event(engine:gamepad:press:jump)": () ->
+    @scene.fire "player:jump"
+
   "event(player:collision)": (data) ->
     @model.currentLocation = @model.previousLocation.clone()
 

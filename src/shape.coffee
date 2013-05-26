@@ -31,6 +31,9 @@ class nv.Point
       @y = rect.y2 if @y > rect.y2
     this
 
+  eq: (pt) ->
+    this.x is pt.x and this.y is pt.y
+
 class nv.Rect
   constructor: (@x,@y,@x2,@y2) ->
 

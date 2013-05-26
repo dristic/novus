@@ -12,11 +12,13 @@ class scenes.Game extends nv.Scene
 
   "event(asset:loaded)": (data) ->
     @assetLoadCount -= data.count
+    console.log "asset: ", @assetLoadCount
     @fire "game:start" if @assetLoadCount is 0
 
   "event(game:start)": () ->
     console.log "game start"
-    @fire "refresh:map"
+    # @fire "refresh:map"
+    @fire "engine:rendering:draw"
 
   "event(game:over)": () ->
     console.log "game over"

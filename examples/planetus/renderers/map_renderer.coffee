@@ -51,7 +51,7 @@ class renderers.MapRenderer extends nv.RenderingPlugin
           xpos = j - vo.x + horzOffset
           ypos = i - vo.y
           x = (xpos % width) * @tileWidth
-          y = (layerIdx * -40) + (ypos * @tileVOffset) + 100 # (i*-43) + 
+          y = (layerIdx * -40) + (ypos * @tileVOffset) + 150 # (i*-43) + 
 
           # key = layer[i * ms.x + col]
           context.drawImage @tiles[key], x, y if key isnt " "

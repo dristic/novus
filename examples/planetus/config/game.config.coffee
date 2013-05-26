@@ -3,8 +3,9 @@ nv.gameConfig =
     height: 900
     width: 17*101
     fullscreen: false
+    autoRendering: false
     css:
-      background: '#333'
+      background: '#222'
       margin: '30px auto 0 auto'
       display: 'block'
 
@@ -12,6 +13,7 @@ nv.gameConfig =
     nv.GamepadEngine,
     nv.PhysicsEngine,
     nv.TimingEngine,
+    nv.RenderingEngine,
     nv.DebugEngine,
     nv.LiveEditEngine,
     nv.EditorEngine
@@ -33,13 +35,35 @@ nv.gameConfig =
           viewSize: new nv.Point(17,8)
           openableItems:
             door:
+              type: 'door'
               closed: 'c'
               open: ' '
             chest:
+              type: 'chest'
               closed: 'C'
               open: 'N'
+          fetchableItems:
+            key:
+              type: 'key'
+              tile: 'K'
+            heart:
+              type: 'heart'
+              tile: 'H'
+            star:
+              type: 'star'
+              tile: 'A'
+            blueGem:
+              type: 'blue'
+              tile: 'B'
+            greenGem:
+              type: 'green'
+              tile: 'G'
+            orangeGem:
+              type: 'orange'
+              tile: 'O'
+
     player:
-      plugins: [ nv.DrawableRenderingPlugin ] # plugins.MapCollisionDetector
+      plugins: [ ] # plugins.MapCollisionDetector
       entity: entities.Player
       model:
         options:
@@ -50,6 +74,7 @@ nv.gameConfig =
       plugins: [ renderers.StatBoard ]
       entity: entities.StatBoard
       model:
+        klass: models.StatBoard
         options:
           hearts: 4
           keys: 0
@@ -79,11 +104,14 @@ nv.gameConfig =
             up: nv.Key.W
             down: nv.Key.S
             open: nv.Key.E
+            fetch: nv.Key.F
+            jump: nv.Key.Space
 
       enginesUsed: [
         nv.GamepadEngine,
         nv.PhysicsEngine,
         nv.TimingEngine,
+        nv.RenderingEngine,
         nv.DebugEngine,
         nv.LiveEditEngine,
         nv.EditorEngine
@@ -94,6 +122,8 @@ nv.gameConfig =
           include: "map"
         player:
          include: "player"
+        statboard:
+          include: "statboard"
 
   tiles:
     b: 'assets/images/Brown Block.png'
@@ -135,12 +165,12 @@ nv.gameConfig =
 
     H: 'assets/images/Heart.png'
     K: 'assets/images/Key.png'
+    A: 'assets/images/Star.png'
 
-    E: 'assets/images/Enemy Bug.png'
+    Y: 'assets/images/Enemy Bug.png'
 
     R: 'assets/images/Rock.png'
-    A: 'assets/images/Star.png'
-    H: 'assets/images/Tree Short.png'
+    E: 'assets/images/Tree Short.png'
     T: 'assets/images/Tree Tall.png'
     U: 'assets/images/Tree Ugly.png'
 
@@ -201,12 +231,16 @@ nv.gameConfig =
       size: new nv.Point(5,5)
       tiles:
         layer0: ["sssss","sttts","sttts","sttts","sspss"]
-        layer1: ["srsrs","s   s","s   s","s   s","sr rs"]
+        layer1: ["srsrs","s  Cs","s   s","s   s","sr rs"]
         layer2: ["s s s","s   s","s   s","s   s","s   s"]
       paths:
         town1:
           exits: [ new nv.Point(2,4) ]
-
+      chests:
+        chest0:
+          location: new nv.Point(3,1)
+          tile: 'K'
+          reveal: [ new nv.Point(3,1), 2 ]
 
     meadow1:
       size: new nv.Point(20,10)
@@ -224,11 +258,11 @@ nv.gameConfig =
         layer1: [ "WssssssssssssssssssW", 
                   "s                  s",
                   "s                  s",
-                  "s       T  H  U    s",
+                  "s       T  E  U    s",
                   "                   s",
                   "            R      s",
-                  "s    E             s",
-                  "s                   ",
+                  "s    Y             s",
+                  "s          Y        ",
                   "s                   ",
                   "WssssssssssssssssssW" ]
       paths:
@@ -250,12 +284,12 @@ nv.gameConfig =
                   "ggggggddgggggggggggggJ  gggggg",
                   "ggggggddgggggggggggggg   ggggg",
                   "dddddddddddddddddddddd      dd" ]
-        layer1: [ "TTHTTHHHTTTTHHTHHTTHTHTHHTTHHH", 
-                  "R       R      T T          HT",
-                  "R   T            HH U UR     U",
-                  "R      T TH             T    T",
-                  "R         T          T   HTT T",
-                  "THTHHTTTHTTHRTHHTHHTTH      TT" ]
+        layer1: [ "TTETTEEETTTTEETEETTETETEETTEEE", 
+                  "R       R      T T          ET",
+                  "R   T            EE U UR     U",
+                  "R      T TE             T    T",
+                  "R         T          T   ETT T",
+                  "TETEETTTETTERTEETEETTE      TT" ]
       paths: 
         meadow1:
           exits: [ new nv.Point(21,3) ]
