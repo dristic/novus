@@ -1,22 +1,18 @@
 class nv.EditorEngine extends nv.Engine
   initializer: (config, rootModel) ->
-    window.addEventListener 'message', nv.bind(this, this.handleMessage)
 
   constructor: (scene, config) ->
-    console.log 'INIT'
+    super scene, config
+
+    window.addEventListener 'message', nv.bind(this, this.handleMessage)
 
     @sendMessage 'load', ''
 
   handleMessage: (event) ->
     console.log "MESSAGE: ", event
-
-    if event.data.type is 'load'
-      postBack = () =>
-        @sendMessage 'hello', 'world'
-
-      setTimeout postBack, 1000
-    else if event.data.type is 'update'
-      console.log "Map update: ", event.data.map
+    message = event.data
+    
+    @scene.fire "engine:editor:#{message.type}", message.data
 
   sendMessage: (type, message) ->
     console.log 'posting', type, message
