@@ -12,16 +12,26 @@ class scenes.Game extends nv.Scene
 
   "event(asset:loaded)": (data) ->
     @assetLoadCount -= data.count
-    console.log "asset: ", @assetLoadCount
     @fire "game:start" if @assetLoadCount is 0
 
   "event(game:start)": () ->
     console.log "game start"
-    # @fire "refresh:map"
-    @fire "engine:rendering:draw"
+    @refreshMap()
 
   "event(game:over)": () ->
     console.log "game over"
+
+  refreshMap: () ->
+    @fire "engine:rendering:draw"
+
+  getCurrentMapEntity: () ->
+    @getEntity(entities.Map)
+
+  getCurrentMapRenderer: () ->
+    @getCurrentMapEntity().renderer
+
+  getCurrentMapModel: () ->
+    @getCurrentMapEntity().model
 
   "event(entity:create:Map)": () ->
 
@@ -35,18 +45,22 @@ class scenes.Game extends nv.Scene
 
   "event(engine:editor:map:delete)": (data) ->
 
-  getCurrentMapEntity: () ->
-    @getEntity(entities.Map)
-
-  getCurrentMapRenderer: () ->
-    @getCurrentMapEntity().renderer
-
-  getCurrentMapModel: () ->
-    @getCurrentMapEntity().model
-
   "event(engine:editor:map:get)": () ->
     @getEngine(nv.EditorEngine).sendMessage 'map:name', @getCurrentMapModel().currentMapName()
 
   "event(engine:editor:tile:put)": (data) ->
+    # debugger
     location = @getCurrentMapRenderer().mapCoordsToLocation data.x, data.y, data.layer
+    console.log location.x, location.y
     @getCurrentMapModel().swapTile location, data.tile, data.layer
+    @refreshMap()
+
+  "event(engine:editor:map:grid": (data) ->
+    @getCurrentMapRenderer().showGrid data.grid
+    @refreshMap()
+
+  "event(engine:editor:map:limitlevel": (data) ->
+    @getCurrentMapRenderer().levelLimit data.level
+    @refreshMap()
+
+

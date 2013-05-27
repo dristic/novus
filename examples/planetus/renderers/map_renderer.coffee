@@ -6,6 +6,7 @@ class renderers.MapRenderer extends nv.RenderingPlugin
     @tiles = {}
     @objects = {}
     @assetsLoaded = false
+    # @showGrid = true
 
     @scene.fire "asset:loading",
       count: Object.keys(nv.gameConfig.tiles).length
@@ -24,6 +25,12 @@ class renderers.MapRenderer extends nv.RenderingPlugin
   assetsLoadingComplete: () ->
     @assetsLoaded = true
 
+  showGrid: (show) ->
+    @showGrid = show
+
+  editLayer: (layer) ->
+    @editLayer = layer
+
   mapCoordsToLocation: (x, y, layer) ->
     vo = @entity.model.viewOrigin
     vs = @entity.model.viewSize
@@ -33,7 +40,7 @@ class renderers.MapRenderer extends nv.RenderingPlugin
     horzOffset = 0 if horzOffset < 0
 
     left = Math.floor(x / @tileWidth) - horzOffset
-    top = Math.floor((y - 150 - layer*40) / @tileVOffset)
+    top = Math.floor((y - 150 - (layer+1)*40) / @tileVOffset)
     new nv.Point(left,top)
 
   draw: (context, canvas) ->
@@ -67,4 +74,8 @@ class renderers.MapRenderer extends nv.RenderingPlugin
 
           # key = layer[i * ms.x + col]
           context.drawImage @tiles[key], x, y if key isnt " "
+          if @showGrid
+            context.setStrokeStyle "red"
+            context.setStrokeWidth "2px"
+            context.strokeRect x, y, @tileWidth, @tileVOffset 
           # idx++
