@@ -6,13 +6,14 @@ class renderers.MapRenderer extends nv.RenderingPlugin
     @tiles = {}
     @objects = {}
     @assetsLoaded = false
-    # @showGrid = true
+    @showGrid = false
 
     @scene.fire "asset:loading",
       count: Object.keys(nv.gameConfig.tiles).length
     @loadImage code, tile for code, tile of nv.gameConfig.tiles
 
     @tileWidth = entity.model.tileWidth
+    @tileHeight = entity.model.tileHeight
     @tileVOffset = entity.model.tileVOffset
 
   loadImage: (code, tile) ->
@@ -40,7 +41,8 @@ class renderers.MapRenderer extends nv.RenderingPlugin
     horzOffset = 0 if horzOffset < 0
 
     left = Math.floor(x / @tileWidth) - horzOffset
-    top = Math.floor((y - 150 - (layer+1)*40) / @tileVOffset)
+    top = Math.floor((y - 150 - @tileHeight + @tileVOffset) / @tileVOffset)
+    console.log "test", x, y, (y-150-@tileHeight+@tileVOffset)/@tileVOffset
     new nv.Point(left,top)
 
   draw: (context, canvas) ->
@@ -71,6 +73,7 @@ class renderers.MapRenderer extends nv.RenderingPlugin
           ypos = i - vo.y
           x = (xpos % width) * @tileWidth
           y = (layerIdx * -40) + (ypos * @tileVOffset) + 150 # (i*-43) + 
+          console.log y
 
           # key = layer[i * ms.x + col]
           context.drawImage @tiles[key], x, y if key isnt " "
