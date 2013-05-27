@@ -18,6 +18,9 @@ class models.Map extends nv.Model
   right: () ->
     @viewOrigin.x + @viewSize.x - 1
 
+  currentMapName: () ->
+    @mapName
+
   changeLocation: (location) ->
     @mapName = location
     @mapConfig = nv.gameConfig.map[location]

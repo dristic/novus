@@ -24,6 +24,18 @@ class renderers.MapRenderer extends nv.RenderingPlugin
   assetsLoadingComplete: () ->
     @assetsLoaded = true
 
+  mapCoordsToLocation: (x, y, layer) ->
+    vo = @entity.model.viewOrigin
+    vs = @entity.model.viewSize
+    ms = @entity.model.mapSize
+
+    horzOffset = Math.floor((vs.x - ms.x) / 2)
+    horzOffset = 0 if horzOffset < 0
+
+    left = Math.floor(x / @tileWidth) - horzOffset
+    top = Math.floor((y - 150 - layer*40) / @tileVOffset)
+    new nv.Point(left,top)
+
   draw: (context, canvas) ->
     return unless @assetsLoaded
     

@@ -23,9 +23,30 @@ class scenes.Game extends nv.Scene
   "event(game:over)": () ->
     console.log "game over"
 
-
   "event(entity:create:Map)": () ->
 
   "event(entity:create:Player)": () ->
 
   "event(engine:rendering:create)": () ->
+
+  "event(engine:editor:map:create)": (data) ->
+
+  "event(engine:editor:map:update)": (data) ->
+
+  "event(engine:editor:map:delete)": (data) ->
+
+  getCurrentMapEntity: () ->
+    @getEntity(entities.Map)
+
+  getCurrentMapRenderer: () ->
+    @getCurrentMapEntity().renderer
+
+  getCurrentMapModel: () ->
+    @getCurrentMapEntity().model
+
+  "event(engine:editor:map:get)": () ->
+    @getEngine(nv.EditorEngine).sendMessage 'map:name', @getCurrentMapModel().currentMapName()
+
+  "event(engine:editor:tile:put)": (data) ->
+    location = @getCurrentMapRenderer().mapCoordsToLocation data.x, data.y, data.layer
+    @getCurrentMapModel().swapTile location, data.tile, data.layer
