@@ -25,6 +25,11 @@ class models.Map extends nv.Model
     @mapName = location
     @mapConfig = nv.gameConfig.map[location]
 
+    if typeof @mapConfig.tiles is 'string'
+      nv.ajax @mapConfig.tiles, (data) =>
+        @mapConfig.tiles = JSON.parse(data).tiles
+        nv.gameConfig.map[location] = JSON.parse(data).tiles
+
     @layers = []
     $.each ["layer0","layer1","layer2","layer3"], (layer) =>
       layerRows = @mapConfig.tiles["layer#{layer}"]

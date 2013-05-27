@@ -2,6 +2,7 @@
 #= require gleam/gleam
 
 #= require base
+#= require ajax
 #= require common
 #= require plugin
 #= require entity

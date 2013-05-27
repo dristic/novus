@@ -229,10 +229,7 @@ nv.gameConfig =
 
     house1:
       size: new nv.Point(5,5)
-      tiles:
-        layer0: ["sssss","sttts","sttts","sttts","sspss"]
-        layer1: ["srsrs","s  Cs","s   s","s   s","sr rs"]
-        layer2: ["s s s","s   s","s   s","s   s","s   s"]
+      tiles: 'assets/maps/house1.json'
       paths:
         town1:
           exits: [ new nv.Point(2,4) ]
