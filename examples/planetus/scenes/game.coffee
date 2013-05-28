@@ -42,6 +42,21 @@ class scenes.Game extends nv.Scene
   "event(engine:editor:map:create)": (data) ->
 
   "event(engine:editor:map:update)": (data) ->
+    model = @getCurrentMapModel()
+    data =
+      tiles: {}
+
+    for index, layer in model.layers
+      name = "layer#{index}"
+      layerData = []
+      for rowData in layer
+        layerData.push rowData.join('')
+      data.tiles[name] = layerData
+
+    data = JSON.stringify data
+
+    nv.ajax '/editor/update', 'PUT', data, () ->
+      console.log 'Success!'
 
   "event(engine:editor:map:delete)": (data) ->
 

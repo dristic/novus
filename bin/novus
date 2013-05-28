@@ -76,6 +76,9 @@ if (args[0] === undefined) {
       } else if (req.url === '/' || req.url === '/index.html' || req.url === '/game') {
         var fileStream = fs.createReadStream('assets/index.html');
         fileStream.pipe(res);
+      } else if (req.url === '/editor/update') {
+        var fileStream = fs.createWriteStream('assets/map/house1.json');
+        fileStream.pipe(req);
       } else {
         next();
       }

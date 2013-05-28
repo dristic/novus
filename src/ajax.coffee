@@ -1,8 +1,10 @@
-nv.ajax = (url, method, callback) ->
+nv.ajax = (url, method, data, callback) ->
   callback = callback ? method
 
   if typeof method is "function"
     method = 'GET'
+
+  data = data ? ""
 
   if typeof XMLHttpRequest isnt 'undefined'
     xhr = new XMLHttpRequest()
@@ -30,5 +32,5 @@ nv.ajax = (url, method, callback) ->
       callback xhr.responseText
 
   xhr.onreadystatechange = onReadyStateChange
-  xhr.open 'GET', url, false # should be true after we implement pre-loader
-  xhr.send ''
+  xhr.open method, url, false # should be true after we implement pre-loader
+  xhr.send data
