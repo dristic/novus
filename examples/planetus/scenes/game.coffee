@@ -46,7 +46,7 @@ class scenes.Game extends nv.Scene
     data =
       tiles: {}
 
-    for index, layer in model.layers
+    for layer, index in model.layers
       name = "layer#{index}"
       layerData = []
       for rowData in layer
