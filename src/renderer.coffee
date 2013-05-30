@@ -30,7 +30,7 @@ class nv.RenderingEngine extends nv.Engine
     @scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
     
   draw: (dt) ->
-    return unless @autoRendering
+    return unless @config.autoRendering
     @_render dt
 
   _render: (dt) ->
