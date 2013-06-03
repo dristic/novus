@@ -1,5 +1,14 @@
 class nv.RenderingEngine extends nv.Engine
   initializer: (config, rootModel) ->
+    unless rootModel.get 'canvas'
+      rootConfig = rootModel.config
+      canvas = new gleam.Canvas
+      canvas.setSize rootConfig.canvas.width, rootConfig.canvas.height
+      canvas.setStyle property, value for property, value of rootConfig.canvas.css
+      canvas.setFullscreen rootConfig.canvas.fullscreen if rootConfig.canvas.fullscreen?
+      document.body.appendChild canvas.source
+      rootModel.set 'canvas', canvas
+
     nv.extend config,
       canvas: rootModel.canvas
       width: rootModel.canvas.width

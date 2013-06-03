@@ -2,6 +2,7 @@ nv.gameConfig =
   canvas:
     height: 500
     width: 500
+    maxWidth: 500
     fullscreen: true
     css:
       background: '#000'
@@ -104,8 +105,8 @@ nv.gameConfig =
                   ship:
                     points: [ new nv.Point(0, -12), new nv.Point(8,12), new nv.Point(0, 9.6), new nv.Point(-8,12) ]
               ships: () -> [ ($.extend({},@ship)), ($.extend({},@ship)).translate(20,0), ($.extend({},@ship)).translate(40,0) ]
-              width: (scene) -> scene.get('canvas').width
-              height: (scene) -> scene.get('canvas').height
+              width: (scene) -> scene.rootModel.get('canvas').width
+              height: (scene) -> scene.rootModel.get('canvas').height
             options:
               color: '#FFF'
               font: "40px sans-serif"
@@ -215,8 +216,8 @@ nv.gameConfig =
         klass: models.Asteroid
         initializers:
           scale: () -> Math.ceil(Math.random() * 4)
-          x: (scene) -> scene.get('canvas').getSize().width * Math.random()
-          y: (scene) -> scene.get('canvas').getSize().width * Math.random()
+          x: (scene) -> scene.rootModel.get('canvas').getSize().width * Math.random()
+          y: (scene) -> scene.rootModel.get('canvas').getSize().width * Math.random()
           size: () -> @scale
           width: () -> @scale * 12
           height: () -> @scale * 12
@@ -236,8 +237,8 @@ nv.gameConfig =
         klass: models.Ship
         initializers:
           thrustVector: () -> new nv.Point(0,0)
-          x: (scene) -> scene.get('canvas').getSize().width / 2
-          y: (scene) -> scene.get('canvas').getSize().height / 2
+          x: (scene) -> scene.rootModel.get('canvas').getSize().width / 2
+          y: (scene) -> scene.rootModel.get('canvas').getSize().height / 2
         options:
           velocity: 0
           health: 100
