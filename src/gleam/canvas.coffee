@@ -19,6 +19,11 @@ class gleam.Canvas
 
   # Alias for setting the size easily
   setSize: (width, height) ->
+    if @maxWidth and width > @maxWidth
+      width = @maxWidth
+    if @maxHeight and height > @maxHeight
+      height = @maxHeight
+
     @source.width = width
     @source.height = height
 
@@ -26,6 +31,13 @@ class gleam.Canvas
     @height = @source.height
     @halfWidth = @source.width / 2
     @halfHeight = @source.height / 2
+
+  # Sets the max size for the canvas
+  setMaxSize: (width, height) ->
+    @maxWidth = width
+    @maxHeight = height
+
+    @setSize @width, @height
 
   # Gets the dimensions in one shot
   getSize: () ->

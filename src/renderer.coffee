@@ -4,6 +4,7 @@ class nv.RenderingEngine extends nv.Engine
       rootConfig = rootModel.config
       canvas = new gleam.Canvas
       canvas.setSize rootConfig.canvas.width, rootConfig.canvas.height
+      canvas.setMaxSize rootConfig.canvas.maxWidth, rootConfig.canvas.maxHeight
       canvas.setStyle property, value for property, value of rootConfig.canvas.css
       canvas.setFullscreen rootConfig.canvas.fullscreen if rootConfig.canvas.fullscreen?
       document.body.appendChild canvas.source

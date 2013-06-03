@@ -3,6 +3,7 @@ nv.gameConfig =
     height: 500
     width: 500
     maxWidth: 500
+    maxHeight: 900
     fullscreen: true
     css:
       background: '#000'
