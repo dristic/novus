@@ -1,10 +1,11 @@
 nv.gameConfig =
   canvas:
-    height: 500
+    height: 745
     width: 500
-    maxWidth: 500
-    maxHeight: 900
-    fullscreen: true
+    responsive: true
+    # maxWidth: 500
+    # maxHeight: 900
+    # fullscreen: true
     css:
       background: '000'
       margin: '0 auto 0 auto'

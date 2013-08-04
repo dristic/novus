@@ -6,7 +6,8 @@ class nv.RenderingEngine extends nv.Engine
       canvas.setSize rootConfig.canvas.width, rootConfig.canvas.height
       canvas.setMaxSize rootConfig.canvas.maxWidth, rootConfig.canvas.maxHeight
       canvas.setStyle property, value for property, value of rootConfig.canvas.css
-      canvas.setFullscreen rootConfig.canvas.fullscreen if rootConfig.canvas.fullscreen?
+      canvas.setFullscreen rootConfig.canvas.fullscreen
+      canvas.setResponsive rootConfig.canvas.responsive
       document.body.appendChild canvas.source
       rootModel.set 'canvas', canvas
 

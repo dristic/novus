@@ -10,6 +10,7 @@ class gleam.Canvas
     @halfWidth = @source.width / 2
     @halfHeight = @source.height / 2
     @fullscreened = false
+    @responsive = false
 
     this
 
@@ -61,6 +62,30 @@ class gleam.Canvas
     else
       @fullscreened = false
       window.removeEventListener 'resize', @fullscreenListener
+
+  # Responsive body scaling
+  setResponsive: (isOn) ->
+    if isOn
+      @responsive = true
+      @calculateResponsive()
+      @responsiveListener = (event) =>
+        @calculateResponsive()
+      window.addEventListener 'resize', @responsiveListener
+    else
+      @responsive = false
+      window.removeEventListener 'resize', @responsiveListener
+
+  # Scale body based on width/height ratio
+  calculateResponsive: () ->
+    @source.style.webkitTransformOrigin = "top"
+    width = document.body.clientWidth
+    height = document.body.clientHeight
+
+    if height < @height
+      ratio = height / @height
+      @source.style.webkitTransform = "scale(#{ratio})"
+    else
+      @source.style.webkitTransform = ""
 
   # Draws the objects given with the camera on this canvas
   draw: (objects, camera) ->
