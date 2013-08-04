@@ -24,6 +24,7 @@ class gleam.Canvas
     if @maxHeight and height > @maxHeight
       height = @maxHeight
 
+    console.log @source
     @source.width = width
     @source.height = height
 
@@ -50,12 +51,12 @@ class gleam.Canvas
   setFullscreen: (isOn) ->
     if isOn
       @fullscreened = true
-      @setSize document.width, document.height
+      @setSize document.body.clientWidth, document.body.clientHeight
 
       document.body.style.overflow = "hidden"
 
       @fullscreenListener = (event) =>
-        @setSize document.width, document.height
+        @setSize document.body.clientWidth, document.body.clientHeight
       window.addEventListener 'resize', @fullscreenListener
     else
       @fullscreened = false

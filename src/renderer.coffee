@@ -124,7 +124,7 @@ class nv.PathRenderingPlugin extends nv.RenderingPlugin
 
   draw: (context, canvas) ->
     for shape in @entity.model.shapes()
-      context.setStrokeColor shape.strokeColor if shape.strokeColor
+      context.setStrokeStyle shape.strokeColor if shape.strokeColor
       context.setStrokeWidth shape.strokeWidth if shape.strokeWidth
       context.setFillStyle shape.fillStyle if shape.fillStyle
 

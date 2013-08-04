@@ -6,7 +6,7 @@ nv.gameConfig =
     maxHeight: 900
     fullscreen: true
     css:
-      background: '#000'
+      background: '000'
       margin: '0 auto 0 auto'
       display: 'block'
 
@@ -119,7 +119,7 @@ nv.gameConfig =
           include: "ship"
         asteroid:
           include: "asteroid"
-          count: 20
+          count: 2
         bullet:
           include: "bullet"
           count: 0 # dont create any at init time

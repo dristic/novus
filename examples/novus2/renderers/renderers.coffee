@@ -18,7 +18,7 @@ class renderers.StrokeText extends nv.RenderingPlugin
     x = @entity.model.x
     y = @entity.model.y
 
-    context.setFillStyle "#00000000"
+    context.setFillStyle "rgba(0, 0, 0, 0)"
     context.globalAlpha = @alpha
     segments = if $.isArray(@entity.model.text)
       @entity.model.text

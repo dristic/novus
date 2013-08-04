@@ -101,8 +101,8 @@ class entities.Asteroid extends entities.WrappingEntity
         ])
         particleLife: 3
         angleVariation: 6.28
-        minVelocity: 10
-        maxVelocity: 50
+        minVelocity: 1
+        maxVelocity: 3
         on: true
 
       size = data.target.model.get('size') - 1

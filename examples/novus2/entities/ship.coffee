@@ -15,8 +15,8 @@ class entities.Ship extends entities.WrappingEntity
       particleLife: 0.3
       lifeVariance: 0.4
       angleVariation: 0.75
-      minVelocity: 100
-      maxVelocity: 100
+      minVelocity: 1
+      maxVelocity: 1
 
   "event(engine:gamepad:press:shoot)": () ->
     options =
