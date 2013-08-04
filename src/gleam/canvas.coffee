@@ -81,7 +81,7 @@ class gleam.Canvas
     width = document.body.clientWidth
     height = document.body.clientHeight
 
-    if height < @height
+    if height < @height or height > (@height + 50)
       ratio = height / @height
       @source.style.webkitTransform = "scale(#{ratio})"
     else
