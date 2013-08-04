@@ -61,6 +61,22 @@ class nv.GamepadEngine extends nv.Engine
 
     super
 
+class nv.TouchTargetPlugin extends nv.Plugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+    @pressed = false
+
+    @scene.on "engine:gamepad:mouse:down", (event) =>
+      if @entity.model.bounds.contains new nv.Point(event.x, event.y)
+        @pressed = true
+        @scene.fire "engine:gamepad:press:#{@entity.model.action}"
+
+    @scene.on "engine:gamepad:mouse:up", (event) =>
+      if @pressed
+        @pressed = false
+        @scene.fire "engine:gamepad:release:#{@entity.model.action}"
+
 class nv.Gamepad extends nv.EventDispatcher
   constructor: () ->
     super

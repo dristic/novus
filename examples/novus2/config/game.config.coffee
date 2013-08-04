@@ -3,9 +3,6 @@ nv.gameConfig =
     height: 745
     width: 500
     responsive: true
-    # maxWidth: 500
-    # maxHeight: 900
-    # fullscreen: true
     css:
       background: '000'
       margin: '0 auto 0 auto'
@@ -19,7 +16,7 @@ nv.gameConfig =
         gamepad:
           keys:
             shoot: nv.Key.Spacebar
-          trackMouse: false
+          trackMouse: true
       enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
 
       entities:
@@ -60,6 +57,14 @@ nv.gameConfig =
         asteroid:
           include: "asteroid"
           count: 9
+        start_button:
+          entity: nv.Entity
+          plugins: [ nv.TouchTargetPlugin ]
+          model:
+            initializers:
+              bounds: () -> new nv.Rect 10, 10, 100, 100
+            options:
+              action: "shoot"
 
     game:
       config:
