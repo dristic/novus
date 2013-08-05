@@ -132,8 +132,8 @@ class nv.PathRenderingPlugin extends nv.RenderingPlugin
       context.beginPath()
       context.moveTo shape.points[0].x, shape.points[0].y
 
-      $.each shape.points.slice(1), () ->
-        context.lineTo this.x, this.y
+      for point in shape.points.slice(1)
+        context.lineTo point.x, point.y
 
       context.lineTo shape.points[0].x, shape.points[0].y
 

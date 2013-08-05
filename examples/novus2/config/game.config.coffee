@@ -111,7 +111,7 @@ nv.gameConfig =
                 shapes:
                   ship:
                     points: [ new nv.Point(0, -12), new nv.Point(8,12), new nv.Point(0, 9.6), new nv.Point(-8,12) ]
-              ships: () -> [ ($.extend({},@ship)), ($.extend({},@ship)).translate(20,0), ($.extend({},@ship)).translate(40,0) ]
+              ships: () -> [ (nv.extend({},@ship)), (nv.extend({},@ship)).translate(20,0), (nv.extend({},@ship)).translate(40,0) ]
               width: (scene) -> scene.rootModel.get('canvas').width
               height: (scene) -> scene.rootModel.get('canvas').height
             options:

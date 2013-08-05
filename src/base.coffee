@@ -6,8 +6,8 @@
 
 @getClass = (name) ->
   klass = window
-  $.each name.split("."), () ->
-    klass = klass[this]
+  for part in name.split(".")
+    klass = klass[part]
   klass
 
 @shallowClone = (obj) ->

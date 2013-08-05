@@ -20,19 +20,19 @@ class renderers.StrokeText extends nv.RenderingPlugin
 
     context.setFillStyle "rgba(0, 0, 0, 0)"
     context.globalAlpha = @alpha
-    segments = if $.isArray(@entity.model.text)
+    segments = if nv.isArray(@entity.model.text)
       @entity.model.text
     else
       [ @entity.model.text ]
 
     model = @entity.model
-    $.each segments, () ->
+    for segment in segments
       unless typeof(x) is "number"
         size = context.canvas.getSize()
         switch x
           when "left" then x = 0
           when "right", "center" 
-            textWidth = context.measureText(this).width
+            textWidth = context.measureText(segment).width
             switch x
               when "right" then x = size.width - textWidth
               when "center" then x = (size.width * 0.5) - (textWidth * 0.5)
@@ -74,16 +74,16 @@ class renderers.Hud extends nv.RenderingPlugin
     score = @entity.model.score.toString()
     textWidth = context.measureText(score).width
     context.strokeText score, @entity.model.width - textWidth - 20 ,  50
-    
-    $.each @entity.model.ships, () ->
+
+    for ship in @entity.model.ships
       data = []
-      self = this
-      points = this.points('ship')
-      $.each points, () ->
-        data.push this.x + self.x, this.y + self.y
-      data.push points[0].x + this.x, points[0].y + this.y
-      context.setStrokeStyle this.strokeColor
-      context.setStrokeWidth this.strokeWidth
+      self = ship
+      points = ship.points('ship')
+      for point in points
+        data.push point.x + self.x, point.y + self.y
+      data.push points[0].x + ship.x, points[0].y + ship.y
+      context.setStrokeStyle ship.strokeColor
+      context.setStrokeWidth ship.strokeWidth
       context.path.apply(context, data)
     context.restore()
 

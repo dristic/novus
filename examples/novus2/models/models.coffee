@@ -33,11 +33,11 @@ class models.PathObject extends nv.Model
 
   bounds: () ->
     x1 = x2 = y1 = y2 = null
-    $.each @points(), () ->
-      x1 = this.x if x1 == null || this.x < x1
-      x2 = this.x if x2 == null || this.x > x2
-      y1 = this.y if y1 == null || this.y < y1
-      y2 = this.y if y2 == null || this.y > y2
+    for point in @points()
+      x1 = point.x if x1 == null || point.x < x1
+      x2 = point.x if x2 == null || point.x > x2
+      y1 = point.y if y1 == null || point.y < y1
+      y2 = point.y if y2 == null || point.y > y2
     new nv.Rect x1, y1, x2, y2
 
 
@@ -63,15 +63,15 @@ class models.Ship extends models.PathObject
       else false
 
   prepareShape: (object) ->
-    shape = $.extend({},object)
+    shape = nv.extend({},object)
     model = this
 
     cosine = Math.cos(@rotation)
     sine = Math.sin(@rotation)
 
     path = []
-    $.each shape.points, () ->
-      path.push new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y)
+    for point in shape.points
+      path.push new nv.Point(point.x * cosine - point.y * sine + model.x, point.x * sine + point.y * cosine + model.y)
     shape.points = path
     shape
 
@@ -106,8 +106,8 @@ class models.Asteroid extends models.PathObject
     sine = Math.sin(@rotation)
     path = []
     model = this
-    $.each @wireframe, () ->
-      path.push new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y)
+    for point in @wireframe
+      path.push new nv.Point(point.x * cosine - point.y * sine + model.x, point.x * sine + point.y * cosine + model.y)
     path
 
   translate: (dx,dy) ->
@@ -126,7 +126,7 @@ class models.Bullet extends nv.Model
   points: () ->
     path = []
     model = this
-    $.each @wireframe, () ->
+    for point in @wireframe
       path.push new nv.Point(model.x, model.y)
     path
 

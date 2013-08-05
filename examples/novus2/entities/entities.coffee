@@ -116,7 +116,7 @@ class entities.Asteroid extends entities.WrappingEntity
           scale: size
           direction: data.target.model.get('direction') - 0.3
         @scene.fire 'entity:create', options
-        options = $.extend {}, options
+        options = nv.extend {}, options
         options.x += offset * 2
         options.direction += 0.6
         @scene.fire 'entity:create', options

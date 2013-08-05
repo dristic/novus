@@ -35,32 +35,32 @@ nv.implement
   keydown: (key, callback) ->
     func = (event) ->
       if event.keyCode is key then callback()
-    $(document).on 'keydown', func
+    document.addEventListener 'keydown', func
     func
 
   keypress: (key, callback) ->
     func = (event) ->
       if event.keyCode is key then callback()
-    $(document).on 'keypress', func
+    document.addEventListener 'keypress', func
     func
 
   keyup: (key, callback) ->
     func = (event) ->
       if event.keyCode is key then callback()
-    $(document).on 'keyup', func
+    document.addEventListener 'keyup', func
     func
 
   mousedown: (callback) ->
-    $(document).on 'mousedown', callback
-    $(document).on 'touchstart', callback
+    document.addEventListener 'mousedown', callback
+    document.addEventListener 'touchstart', callback
 
   mouseup: (callback) ->
-    $(document).on 'mouseup', callback
-    $(document).on 'touchend', callback
+    document.addEventListener 'mouseup', callback
+    document.addEventListener 'touchend', callback
 
   mousemove: (callback) ->
-    $(document).on 'mousemove', callback
-    $(document).on 'touchmove', callback
+    document.addEventListener 'mousemove', callback
+    document.addEventListener 'touchmove', callback
 
   isMobile: () ->
     agent = navigator.userAgent.toLowerCase()
@@ -71,6 +71,8 @@ nv.implement
     agent.match(/ipod/i) or
     agent.match(/blackberry/i) or
     agent.match(/windows phone/i)) isnt null
+
+  isArray: Array.isArray
 
   ready: (func) ->
     return func() unless not @isReady

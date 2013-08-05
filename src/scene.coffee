@@ -9,8 +9,8 @@ class nv.Scene extends nv.EventDispatcher
  
     @options = @options ? {}
     if nv.gameConfig.scenes[@sceneName].config.scene?
-      @options = $.extend @options, nv.gameConfig.scenes[@sceneName].config.scene
-    @options = $.extend @options, @rootModel
+      @options = nv.extend @options, nv.gameConfig.scenes[@sceneName].config.scene
+    @options = nv.extend @options, @rootModel
 
     @on "entity:remove", (entity) =>
       @removeEntity entity
