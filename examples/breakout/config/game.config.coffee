@@ -2,8 +2,8 @@
 
 breakout.gameConfig =
   canvas:
-    height: 745
-    width: 500
+    width: 320
+    height: 416
     responsive: true
     css:
       background: '000'
@@ -20,8 +20,9 @@ breakout.gameConfig =
             shoot: nv.Key.Spacebar
           trackMouse: false
       enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
-
       entities:
+        background:
+          include: "background"
         title:
           entity: nv.Entity
           plugins: [ renderers.StrokeText ]
@@ -31,7 +32,7 @@ breakout.gameConfig =
               color: "#000"
               strokeColor: "#0F0"
               x: "center"
-              y: 320
+              y: 200
               font: "bold italic 50px sans-serif"
               text: "Breakout"
               strokeWidth: 2
@@ -45,7 +46,7 @@ breakout.gameConfig =
             options:
               color: "#0F0"
               x: "center"
-              y: 400
+              y: 250
               font: "20px sans-serif"
               text: "Press <Space> to Start"
               strokeWidth: 0

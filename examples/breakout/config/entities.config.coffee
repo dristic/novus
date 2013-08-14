@@ -1,4 +1,12 @@
 breakout.entities =
+  background:
+    entity: nv.Entity
+    plugins: [ nv.SpriteRenderingPlugin ]
+    model:
+      options:
+        src: '/assets/bg_prerendered.png'
+        x: 0
+        y: 0
   leftwall:
     plugins: [ nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin ]
     entity: entities.Wall

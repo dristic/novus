@@ -81,11 +81,9 @@ class gleam.Canvas
     width = document.body.clientWidth
     height = document.body.clientHeight
 
-    if height < @height or height > (@height + 50)
-      ratio = height / @height
-      @source.style.webkitTransform = "scale(#{ratio})"
-    else
-      @source.style.webkitTransform = ""
+    # Calculate the best scaling ratio
+    ratio = Math.min(width / @width, height / @height)
+    @source.style.webkitTransform = "scale(#{ratio})"
 
   # Draws the objects given with the camera on this canvas
   draw: (objects, camera) ->
