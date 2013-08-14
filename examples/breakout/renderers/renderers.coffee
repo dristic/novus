@@ -39,8 +39,8 @@ class renderers.StrokeText extends nv.RenderingPlugin
           else
             x = size.width * (parseFloat(x) / 100)
 
-      context.fillText this, x, y
-      context.strokeText this, x, y
+      context.fillText segment, x, y
+      context.strokeText segment, x, y
       y += model.lineHeight if model.lineHeight
     context.restore()
 

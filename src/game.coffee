@@ -5,8 +5,8 @@ class nv.Game
     @sceneClasses = {}
     @engines = {}
     
-    if config.enginesToLoad?
-      for engine in config.enginesToLoad
+    if config.engines?
+      for engine in config.engines
         @registerEngine engine
 
     if config.scenes?
