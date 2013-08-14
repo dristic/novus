@@ -4,7 +4,8 @@
 
 var fs = require('fs'),
     connect = require('connect'),
-    snockets = require('snockets');
+    snockets = require('snockets'),
+    exec = require('child_process').exec;
 
 var config = {
   version: '0.1.0',
@@ -100,6 +101,8 @@ if (args[0] === undefined) {
 
   log("Navigate to http://localhost:" + config.port + " to see your game");
   log("Press CTRL + C to stop the server.");
+
+  exec("open http://localhost:" + config.port);
 } else if (args[0] == "build") {
   //////////////
   // Novus Build
