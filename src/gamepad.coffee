@@ -68,6 +68,7 @@ class nv.TouchTargetPlugin extends nv.Plugin
     @pressed = false
 
     @scene.on "engine:gamepad:mouse:down", (event) =>
+      console.log "Mouse event #{event.x} #{event.y}"
       if @entity.model.bounds.contains new nv.Point(event.x, event.y)
         @pressed = true
         @scene.fire "engine:gamepad:press:#{@entity.model.action}"
@@ -96,20 +97,41 @@ class nv.Gamepad extends nv.EventDispatcher
       down: false
 
     nv.mousedown (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
+      x = event.clientX
+      y = event.clientY
+
+      if event.touches? and event.touches[0]
+        x = event.touches[0].clientX
+        y = event.touches[0].clientY
+
+      @state.mouse.x = x
+      @state.mouse.y = y
       @state.mouse.down = true
       @send "mousedown", @state.mouse
 
     nv.mouseup (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
+      x = event.clientX
+      y = event.clientY
+
+      if event.touches? and event.touches[0]
+        x = event.touches[0].clientX
+        y = event.touches[0].clientY
+
+      @state.mouse.x = x
+      @state.mouse.y = y
       @state.mouse.down = false
       @send "mouseup", @state.mouse
 
     nv.mousemove (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
+      x = event.clientX
+      y = event.clientY
+
+      if event.touches? and event.touches[0]
+        x = event.touches[0].clientX
+        y = event.touches[0].clientY
+
+      @state.mouse.x = x
+      @state.mouse.y = y
 
   aliasKey: (button, key) ->
     @trackers[button] = [] unless @trackers[button]

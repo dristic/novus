@@ -75,7 +75,7 @@ nv.gameConfig =
             up: nv.Key.W
             down: nv.Key.S
             shoot: nv.Key.Spacebar
-          trackMouse: false
+          trackMouse: true
       enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine, nv.SoundEngine, nv.ParticleEngine ]
       soundfx:
         shoot:
@@ -129,6 +129,30 @@ nv.gameConfig =
         bullet:
           include: "bullet"
           count: 0 # dont create any at init time
+        left_button:
+          entity: nv.Entity
+          plugins: [ nv.TouchTargetPlugin ]
+          model:
+            initializers:
+              bounds: () -> new nv.Rect 0, 650, 100, 750
+            options:
+              action: "left"
+        right_button:
+          entity: nv.Entity
+          plugins: [ nv.TouchTargetPlugin ]
+          model:
+            initializers:
+              bounds: () -> new nv.Rect 400, 650, 500, 750
+            options:
+              action: "right"
+        shoot_button:
+          entity: nv.Entity
+          plugins: [ nv.TouchTargetPlugin ]
+          model:
+            initializers:
+              bounds: () -> new nv.Rect 0, 0, 500, 500
+            options:
+              action: "shoot"
 
     gameover:
       config:

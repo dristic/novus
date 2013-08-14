@@ -10,6 +10,7 @@ class nv.RenderingEngine extends nv.Engine
       canvas.setResponsive rootConfig.canvas.responsive
       document.body.appendChild canvas.source
       rootModel.set 'canvas', canvas
+      window.source = canvas.source
 
     nv.extend config,
       canvas: rootModel.canvas
