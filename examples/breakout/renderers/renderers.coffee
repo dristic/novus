@@ -1,58 +1,5 @@
 window.renderers = renderers = {}
 
-class renderers.StrokeText extends nv.RenderingPlugin
-  constructor: (scene, entity) ->
-    @alpha = 1
-    @direction = "out"
-    super scene, entity
-
-  draw: (context, canvas) ->
-    context.save()
-    context.setFillStyle @entity.model.color
-    context.setStrokeStyle @entity.model.strokeColor ? @entity.model.color
-    context.setFont @entity.model.font
-    context.setStrokeWidth @entity.model.strokeWidth
-    context.shadowColor = @entity.model.strokeColor ? @entity.model.color
-    context.shadowBlur = @entity.model.shadowBlur
-
-    x = @entity.model.x
-    y = @entity.model.y
-
-    context.setFillStyle "rgba(0, 0, 0, 0)"
-    context.globalAlpha = @alpha
-    segments = if nv.isArray(@entity.model.text)
-      @entity.model.text
-    else
-      [ @entity.model.text ]
-
-    model = @entity.model
-    for segment in segments
-      unless typeof(x) is "number"
-        size = context.canvas.getSize()
-        switch x
-          when "left" then x = 0
-          when "right", "center" 
-            textWidth = context.measureText(segment).width
-            switch x
-              when "right" then x = size.width - textWidth
-              when "center" then x = (size.width * 0.5) - (textWidth * 0.5)
-          else
-            x = size.width * (parseFloat(x) / 100)
-
-      context.fillText segment, x, y
-      context.strokeText segment, x, y
-      y += model.lineHeight if model.lineHeight
-    context.restore()
-
-  update: (dt) ->
-    if @entity.model.fade is true
-      if @direction is "out"
-        @alpha -= @entity.model.fadeSpeed
-        @direction = "in" unless @alpha > 0 + @entity.model.fadeSpeed
-      else if @direction is "in"
-        @alpha += @entity.model.fadeSpeed
-        @direction = "out" unless @alpha < 1
-
 class renderers.Hud extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity

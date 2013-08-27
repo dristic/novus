@@ -6,6 +6,7 @@ class gleam.Sprite
       y: 10
       width: null
       height: null
+      origin: null
     gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
@@ -18,4 +19,8 @@ class gleam.Sprite
     @image.src = @src
 
   draw: (context, canvas) ->
-    context.drawImage @image, @x, @y, @width, @height unless not @loaded
+    unless not @loaded
+      unless @origin
+        context.drawImage @image, @x, @y, @width, @height
+      else
+        context.drawImage @image, @origin.x, @origin.y, @origin.width, @origin.height, @x, @y, @width, @height

@@ -48,7 +48,7 @@ class nv.Scene extends nv.EventDispatcher
     @options[key] = value
 
   prepareEngines: () ->
-    @useEngine klass.name for klass in @rootModel.config.scenes[@sceneName].enginesUsed
+    @useEngine klass.name for klass in @rootModel.config.scenes[@sceneName].engines
     engine.prepare() for engine in @engines
 
   useEngine: (engineName, initializer) ->

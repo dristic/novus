@@ -1,4 +1,5 @@
 #= require entities.config
+#= require levels.config
 
 breakout.gameConfig =
   canvas:
@@ -19,40 +20,30 @@ breakout.gameConfig =
           keys:
             shoot: nv.Key.Spacebar
           trackMouse: false
-      enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
+      engines: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
       entities:
         background:
           include: "background"
+        logo:
+          entity: nv.Entity
+          plugins: [ nv.SpriteRenderingPlugin ]
+          model:
+            options:
+              src: 'assets/logo.png'
+              width: 131
+              height: 200
+              x: 20
+              y: 20
         title:
           entity: nv.Entity
-          plugins: [ renderers.StrokeText ]
-          later: "effects.ShadowBlurAnimator"
+          plugins: [ nv.TextRenderingPlugin ]
           model:
             options:
               color: "#000"
-              strokeColor: "#0F0"
-              x: "center"
-              y: 200
-              font: "bold italic 50px sans-serif"
-              text: "Breakout"
-              strokeWidth: 2
-              shadowBlur: 20
-              shadowBlurIncrement: 0.2
-        action_text:
-          entity: nv.Entity
-          plugins: [ renderers.StrokeText ]
-          later: "effects.GlobalAlphaAnimator"
-          model:
-            options:
-              color: "#0F0"
-              x: "center"
-              y: 250
-              font: "20px sans-serif"
-              text: "Press <Space> to Start"
-              strokeWidth: 0
-              shadowBlur: 0
-              fade: true
-              fadeSpeed: 0.02
+              x: 20
+              y: 300
+              font: "bold 25px sans-serif"
+              text: "Press <Space> to start"
         start_button:
           entity: nv.Entity
           plugins: [ nv.TouchTargetPlugin ]
@@ -69,7 +60,7 @@ breakout.gameConfig =
             left: nv.Key.A
             right: nv.Key.D
 
-      enginesUsed: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine]
+      engines: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine]
 
       soundfx:
         brick_collision:
@@ -78,6 +69,8 @@ breakout.gameConfig =
           action: "play"
 
       entities:
+        background:
+          include: "background"
         leftwall:
           include: "leftwall"
         topwall:
@@ -88,37 +81,10 @@ breakout.gameConfig =
           include: "player"
         ball:
           include: "ball"
-        # brick:
-        #   include: "brick"
-        #   count: 20
         scoreboard:
           include: "scoreboard"
         lives:
           include: "lives"
 
-  levels:
-      level1:
-        entities:
-          brick:
-            count: 20
-            entity: entities.Brick
-            plugins: [ nv.DrawableRenderingPlugin, nv.RectanglePhysicsPlugin ]
-            model:
-              klass: nv.Model
-              initializers:
-                x: (scene, index) -> [40, 145, 250, 355, 460][index % 5] + 1
-                y: (scene, index) -> [60, 90, 120, 150][Math.floor(index / 5)]
-              options:
-                drawable: new gleam.Rectangle
-                  width: 98
-                  height: 20
-                  fillStyle: "darkOrange"
-                  strokeStyle: "darkRed"
-                  strokeWidth: 5
-                  cornerRadius: 8            
-                width: 98
-                height: 20
-                physicsObjectType: "passive"
-                value: 50
-
+  levels: breakout.levels
   entities: breakout.entities

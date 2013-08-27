@@ -13,10 +13,10 @@ breakout.entities =
     model:
       options:
         drawable: new gleam.Square
-          width: 30
+          width: 20
           height: 30 * 22
           color: "darkBlue"
-        width: 30
+        width: 20
         height: 30 * 22
         x: 0
         y: 0
@@ -28,11 +28,11 @@ breakout.entities =
       options:
         drawable: new gleam.Square
           width: 30 * 18
-          height: 30
+          height: 20
           color: "darkBlue"
         width: 30 * 18
-        height: 30
-        x: 30
+        height: 20
+        x: 20
         y: 0
         physicsObjectType: "passive"
   rightwall:
@@ -41,12 +41,12 @@ breakout.entities =
     model:
       options:
         drawable: new gleam.Square
-          width: 30
+          width: 20
           height: 30 * 22
           color: "darkBlue"
-        width: 30
+        width: 20
         height: 30 * 22
-        x: 30 * 19
+        x: 300
         y: 0
         physicsObjectType: "passive"
 
@@ -62,8 +62,8 @@ breakout.entities =
         type: 'passive'
         width: 100
         height: 15
-        x: 250
-        y: 665
+        x: 100
+        y: 400
         speed: 5
         physicsObjectType: "passive"
   ball:
