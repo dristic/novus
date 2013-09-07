@@ -11,12 +11,10 @@ class gleam.Sprite
     gleam.extend this, defaults
 
     @loaded = false
-    @image = new Image
-    @image.onload = () =>
-      @width = @image.width unless @width
-      @height = @image.height unless @height
+    @image = gleam.image.get @src, (width, height) =>
+      @width = width unless @width
+      @height = height unless @height
       @loaded = true
-    @image.src = @src
 
   draw: (context, canvas) ->
     unless not @loaded

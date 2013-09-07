@@ -2,9 +2,16 @@ class nv.GamepadEngine extends nv.Engine
   constructor: (scene, config) ->
     super scene, config
 
-    @gamepad = scene.get 'gamepad'
+    @gamepad = new nv.Gamepad()
     @options = scene.options
     @options.setMany config
+
+    scene.set 'gamepad', @gamepad
+
+    # Try to get a canvas object to set as the origin object
+    origin = scene.get 'origin'
+    if origin
+      @gamepad.setOrigin origin
 
     @gamepad.trackMouse() if @options.trackMouse?
     @gamepad.keyRepeatEvents = true if @options.keyRepeatEvents
@@ -88,6 +95,11 @@ class nv.Gamepad extends nv.EventDispatcher
     @previousGamepadState = undefined
     @trackGamepad = false
     @keyRepeatEvents = false
+    @origin = document
+
+  # Sets the element that we use to calculate mouse position offset
+  setOrigin: (origin) ->
+    @origin = origin
 
   trackMouse: () ->
     @state.mouse =
@@ -95,21 +107,25 @@ class nv.Gamepad extends nv.EventDispatcher
       y: -1
       down: false
 
-    nv.mousedown (event) =>
+    nv.mousedown @origin, (event) =>
       @state.mouse.x = event.clientX
       @state.mouse.y = event.clientY
       @state.mouse.down = true
       @send "mousedown", @state.mouse
 
-    nv.mouseup (event) =>
+    nv.mouseup @origin, (event) =>
       @state.mouse.x = event.clientX
       @state.mouse.y = event.clientY
       @state.mouse.down = false
       @send "mouseup", @state.mouse
 
-    nv.mousemove (event) =>
+    nv.mousemove @origin, (event) =>
       @state.mouse.x = event.clientX
       @state.mouse.y = event.clientY
+
+      if @origin.offsetLeft? and @origin.offsetTop?
+        @state.mouse.x -= @origin.offsetLeft
+        @state.mouse.y -= @origin.offsetTop
 
   aliasKey: (button, key) ->
     @trackers[button] = [] unless @trackers[button]
@@ -156,6 +172,3 @@ class nv.Gamepad extends nv.EventDispatcher
 
   destroy: () ->
     # Nothing Yet
-
-nv.gamepad = () ->
-  new nv.Gamepad

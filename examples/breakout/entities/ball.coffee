@@ -2,7 +2,7 @@ class entities.Ball extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
-    @startDelay = 5
+    @startDelay = model.startDelay
     @started = false
     @pendingCollision = false
 
@@ -46,9 +46,10 @@ class entities.Ball extends nv.Entity
 
   restart: () ->
     @started = false
-    @startDelay = 5
+    @startDelay = @model.startDelay
     @model.x = 150
     @model.y = 250
+    @model.direction = new nv.Point(1, 1)
 
   update: (dt) ->
     if @started is false

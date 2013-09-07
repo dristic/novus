@@ -3,13 +3,19 @@
 
 breakout.gameConfig =
   canvas:
+    id: '#game-canvas'
     width: 320
     height: 416
-    responsive: true
+    responsive: false
     css:
       background: '000'
       margin: '0 auto 0 auto'
       display: 'block'
+      
+  preload: [
+    'assets/logo.png',
+    'assets/tiles.png'
+  ]
 
   engines: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine, nv.SoundEngine, nv.ParticleEngine ]
 
@@ -19,7 +25,7 @@ breakout.gameConfig =
         gamepad:
           keys:
             shoot: nv.Key.Spacebar
-          trackMouse: false
+          trackMouse: true
       engines: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
       entities:
         background:
@@ -43,7 +49,7 @@ breakout.gameConfig =
               x: 20
               y: 300
               font: "bold 25px sans-serif"
-              text: "Press <Space> to start"
+              text: "Click to Start"
         start_button:
           entity: nv.Entity
           plugins: [ nv.TouchTargetPlugin ]
@@ -59,12 +65,13 @@ breakout.gameConfig =
           keys:
             left: nv.Key.A
             right: nv.Key.D
+          trackMouse: true
 
       engines: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine]
 
       soundfx:
         brick_collision:
-          asset: "/assets/sounds/brickDeath.wav"
+          asset: "/assets/sfx/brickDeath.wav"
           event: "engine:collision:Ball:Brick"
           action: "play"
 
@@ -85,6 +92,8 @@ breakout.gameConfig =
           include: "scoreboard"
         lives:
           include: "lives"
+        countdown:
+          include: "countdown"
 
   levels: breakout.levels
   entities: breakout.entities

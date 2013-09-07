@@ -5,7 +5,7 @@ breakout.levels =
       brick:
         count: 20
         entity: entities.Brick
-        plugins: [ nv.SpriteRenderingPlugin, nv.RectanglePhysicsPlugin ]
+        plugins: [ nv.AnimatedSpriteRenderingPlugin, nv.RectanglePhysicsPlugin ]
         model:
           klass: nv.Model
           initializers:
@@ -15,6 +15,20 @@ breakout.levels =
             src: 'assets/tiles.png'
             width: 32
             height: 16
+            frameWidth: 32
+            frameHeight: 16
+            animations:
+              die:
+                frames: [0, 1, 2, 3, "dead"]
+              dead:
+                frames: [3]
+              spawn:
+                frames: [3, 2, 1, 0, "idle"]
+              idle:
+                frames: [0]
+            currentAnimation: 'spawn'
+            framesPerSecond: 10
+            playing: true
             origin:
               x: 0
               y: 0

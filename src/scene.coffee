@@ -42,7 +42,7 @@ class nv.Scene extends nv.EventDispatcher
 
 
   get: (key) ->
-    @options[key]
+    @options[key] ? @rootModel[key]
 
   set: (key, value) ->
     @options[key] = value

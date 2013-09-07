@@ -2,6 +2,7 @@ class nv.Entity
   constructor: (@scene, pluginClasses, @model) ->
     @plugins = []
     @listeners = []
+    @destroyed = false
     @model = @model ? new nv.Model
 
     @plugins.push new klass(@scene, this) for klass in pluginClasses
@@ -37,11 +38,13 @@ class nv.Entity
   update: (dt) ->
 
   destroy: () ->
-    plugin.destroy() for plugin in @plugins
-    i = @listeners.length
-    while i--
-      listener = @listeners[i]
-      @off listener.name, listener.callback
-    delete @model
-    delete @plugins
-    #delete @scene
+    unless @destroyed
+      @destroyed = true
+      plugin.destroy() for plugin in @plugins
+      i = @listeners.length
+      while i--
+        listener = @listeners[i]
+        @off listener.name, listener.callback
+      delete @model
+      delete @plugins
+      delete @scene

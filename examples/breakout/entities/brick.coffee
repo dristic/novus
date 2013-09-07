@@ -6,4 +6,11 @@ class entities.Brick extends nv.Entity
     return unless data.target is this
     @scene.fire "game:score",
       score: data.target.model.get('value')
-    @destroy() 
+
+    physicsPlugin = @getPlugin(nv.RectanglePhysicsPlugin)
+    physicsPlugin.destroy()
+    @plugins.splice(@plugins.indexOf(physicsPlugin), 1)
+    @getPlugin(nv.AnimatedSpriteRenderingPlugin).play('die')
+    kill = () =>
+      @destroy()
+    setTimeout kill, 500

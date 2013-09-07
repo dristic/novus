@@ -2,20 +2,29 @@ class nv.RenderingEngine extends nv.Engine
   initializer: (config, rootModel) ->
     unless rootModel.get 'canvas'
       rootConfig = rootModel.config
-      canvas = new gleam.Canvas
+      canvas = new gleam.Canvas rootConfig.canvas.id
       canvas.setSize rootConfig.canvas.width, rootConfig.canvas.height
       canvas.setMaxSize rootConfig.canvas.maxWidth, rootConfig.canvas.maxHeight
       canvas.setStyle property, value for property, value of rootConfig.canvas.css
       canvas.setFullscreen rootConfig.canvas.fullscreen
       canvas.setResponsive rootConfig.canvas.responsive
-      document.body.appendChild canvas.source
+
+      # Do not re-add the canvas if it is already on the screen
+      unless document.contains and document.contains(canvas.source)
+        document.body.appendChild canvas.source
+
       rootModel.set 'canvas', canvas
+      rootModel.set 'origin', canvas.source
 
     nv.extend config,
       canvas: rootModel.canvas
       width: rootModel.canvas.width
       height: rootModel.canvas.height
       autoRendering: true
+
+    if rootModel.config.preload
+      for src in rootModel.config.preload
+        gleam.image.get src
 
   constructor: (scene, config) ->
     super scene, config
@@ -120,6 +129,8 @@ class nv.SpriteRenderingPlugin extends nv.RenderingPlugin
     @sprite = new gleam.Sprite entity.model
 
   draw: (context, canvas) ->
+    @sprite.x = @entity.model.x
+    @sprite.y = @entity.model.y
     @sprite.draw context, canvas
 
 class nv.AnimatedSpriteRenderingPlugin extends nv.SpriteRenderingPlugin
@@ -127,7 +138,8 @@ class nv.AnimatedSpriteRenderingPlugin extends nv.SpriteRenderingPlugin
     super scene, entity
 
     @sprite = new gleam.AnimatedSprite entity.model
-    @sprite.play entity.model.currentAnimation
+    if entity.model.currentAnimation
+      @sprite.play entity.model.currentAnimation
 
   play: (animation) ->
     @sprite.play animation

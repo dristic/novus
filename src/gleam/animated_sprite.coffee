@@ -5,6 +5,7 @@ class gleam.AnimatedSprite extends gleam.Sprite
     defaults =
       frameWidth: 32
       frameHeight: 32
+      framesPerSecond: 60
       animations:
         run:
           frames: [0, 1, 2]
@@ -28,9 +29,10 @@ class gleam.AnimatedSprite extends gleam.Sprite
       @playing = true
       @currentAnimationName = animation
       @currentAnimation = @animations[animation]
-      @currentFps = @currentAnimation.framesPerSecond ? 60
+      @currentFps = @currentAnimation.framesPerSecond ? @framesPerSecond
       @currentDelta = 1 / @currentFps
       @currentIndex = 0
+      @goTo @currentAnimation.frames[0]
 
   stop: () ->
     @playing = false
@@ -54,15 +56,18 @@ class gleam.AnimatedSprite extends gleam.Sprite
     if typeof frame is "string"
       @play frame
     else
-      # Move our frame rect to the current frame
-      framesInARow = @image.width / @frameWidth
-      x = (frame % framesInARow) * @frameWidth
-      y = Math.floor(frame / framesInARow) * @frameHeight
-      @frame =
-        x: x
-        y: y
-        width: @frameWidth
-        height: @frameHeight
+      @goTo frame
+
+  goTo: (frame) ->
+    # Move our frame rect to the current frame
+    framesInARow = @image.width / @frameWidth
+    x = (frame % framesInARow) * @frameWidth
+    y = Math.floor(frame / framesInARow) * @frameHeight
+    @origin =
+      x: x
+      y: y
+      width: @frameWidth
+      height: @frameHeight
 
   draw: (context, canvas) ->
     super

@@ -17,7 +17,6 @@ class nv.Game
 
     @rootModel.setMany
       config: config
-      gamepad: nv.gamepad()
 
   model: () ->
     @rootModel
