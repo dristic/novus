@@ -6,12 +6,12 @@ breakout.gameConfig =
     id: '#game-canvas'
     width: 320
     height: 416
-    responsive: false
+    responsive: true
     css:
       background: '000'
       margin: '0 auto 0 auto'
       display: 'block'
-      
+
   preload: [
     'assets/logo.png',
     'assets/tiles.png'
@@ -38,16 +38,16 @@ breakout.gameConfig =
               src: 'assets/logo.png'
               width: 131
               height: 200
-              x: 20
-              y: 20
+              x: 94.5
+              y: 50
         title:
           entity: nv.Entity
           plugins: [ nv.TextRenderingPlugin ]
           model:
             options:
               color: "#000"
-              x: 20
-              y: 300
+              x: 85
+              y: 350
               font: "bold 25px sans-serif"
               text: "Click to Start"
         start_button:

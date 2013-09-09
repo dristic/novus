@@ -14,12 +14,28 @@ class entities.Ball extends nv.Entity
     @pendingCollision = true
 
   "event(engine:collision:Ball:Player)": (data) ->
+    ball = data.actor.model
+    paddle = data.target.model
+    impactVector = data.impactVector
+
     if Math.abs(data.impactVector.y) > Math.abs(data.impactVector.x)
       @model.x -= data.impactVector.x + @model.direction.x
       @model.direction.x = -@model.direction.x
     else if Math.abs(data.impactVector.y) < Math.abs(data.impactVector.x)
       @model.y -= data.impactVector.y + @model.direction.y
       @model.direction.y = -@model.direction.y
+
+      relativeX = (ball.x + (ball.width / 2)) - (paddle.x + (paddle.width / 2))
+      normalizedRelativeX = relativeX / (paddle.width / 2)
+      bounceAngle = normalizedRelativeX * (5 * Math.PI / 12)
+
+      ballVx = Math.sin(bounceAngle)
+      ballVy = -Math.cos(bounceAngle)
+
+      console.log ballVx, ballVy
+
+      @model.direction.x = ballVx
+      @model.direction.y = ballVy
     @pendingCollision = false
 
   "event(engine:collision:Ball:Brick)": (data) ->

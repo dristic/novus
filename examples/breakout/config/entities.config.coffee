@@ -68,18 +68,21 @@ breakout.entities =
         y: 368
         speed: 5
         physicsObjectType: "passive"
+
   ball:
     entity: entities.Ball
-    plugins: [ nv.SpriteRenderingPlugin, nv.RectanglePhysicsPlugin ]
+    plugins: [ nv.AnimatedSpriteRenderingPlugin, nv.RectanglePhysicsPlugin ]
     model:
       options:
         startDelay: 3
         src: 'assets/tiles.png'
-        origin:
-          x: 48
-          y: 64
-          width: 16
-          height: 16
+        frameWidth: 16
+        frameHeight: 16
+        animations:
+          move:
+            frames: [51, 52, 53, 54, 55]
+        currentAnimation: 'move'
+        framesPerSecond: 10
         type: 'active'
         width: 16
         height: 16

@@ -110,12 +110,22 @@ class nv.Gamepad extends nv.EventDispatcher
     nv.mousedown @origin, (event) =>
       @state.mouse.x = event.clientX
       @state.mouse.y = event.clientY
+
+      if @origin.offsetLeft? and @origin.offsetTop?
+        @state.mouse.x -= @origin.offsetLeft
+        @state.mouse.y -= @origin.offsetTop
+        
       @state.mouse.down = true
       @send "mousedown", @state.mouse
 
     nv.mouseup @origin, (event) =>
       @state.mouse.x = event.clientX
       @state.mouse.y = event.clientY
+
+      if @origin.offsetLeft? and @origin.offsetTop?
+        @state.mouse.x -= @origin.offsetLeft
+        @state.mouse.y -= @origin.offsetTop
+
       @state.mouse.down = false
       @send "mouseup", @state.mouse
 
