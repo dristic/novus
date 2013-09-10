@@ -149,3 +149,107 @@ breakout.entities =
         currentAnimation: 'count'
         framesPerSecond: 1
         playing: true
+
+  blueBrick:
+    entity: entities.Brick
+    plugins: [ nv.AnimatedSpriteRenderingPlugin, nv.RectanglePhysicsPlugin ]
+    model:
+      klass: nv.Model
+      options:
+        src: 'assets/tiles.png'
+        width: 32
+        height: 16
+        frameWidth: 32
+        frameHeight: 16
+        animations:
+          die:
+            frames: [0, 1, 2, 3, 4, "dead"]
+          dead:
+            frames: [4]
+          spawn:
+            frames: [4, 3, 2, 1, 0, "idle"]
+          idle:
+            frames: [0]
+        currentAnimation: 'spawn'
+        framesPerSecond: 10
+        playing: true
+        physicsObjectType: "passive"
+        value: 50
+
+  orangeBrick:
+    entity: entities.Brick
+    plugins: [ nv.AnimatedSpriteRenderingPlugin, nv.RectanglePhysicsPlugin ]
+    model:
+      klass: nv.Model
+      options:
+        src: 'assets/tiles.png'
+        width: 32
+        height: 16
+        frameWidth: 32
+        frameHeight: 16
+        animations:
+          die:
+            frames: [6, 7, 8, 9, 10, "dead"]
+          dead:
+            frames: [10]
+          spawn:
+            frames: [10, 9, 8, 7, 6, "idle"]
+          idle:
+            frames: [6]
+        currentAnimation: 'spawn'
+        framesPerSecond: 10
+        playing: true
+        physicsObjectType: "passive"
+        value: 50
+
+  redBrick:
+    entity: entities.Brick
+    plugins: [ nv.AnimatedSpriteRenderingPlugin, nv.RectanglePhysicsPlugin ]
+    model:
+      klass: nv.Model
+      options:
+        src: 'assets/tiles.png'
+        width: 32
+        height: 16
+        frameWidth: 32
+        frameHeight: 16
+        animations:
+          die:
+            frames: [12, 13, 14, 15, 16, "dead"]
+          dead:
+            frames: [16]
+          spawn:
+            frames: [16, 15, 14, 13, 12, "idle"]
+          idle:
+            frames: [12]
+        currentAnimation: 'spawn'
+        framesPerSecond: 10
+        playing: true
+        physicsObjectType: "passive"
+        value: 50
+
+  greenBrick:
+    entity: entities.Brick
+    plugins: [ nv.AnimatedSpriteRenderingPlugin, nv.RectanglePhysicsPlugin ]
+    model:
+      klass: nv.Model
+      options:
+        src: 'assets/tiles.png'
+        width: 32
+        height: 16
+        frameWidth: 32
+        frameHeight: 16
+        animations:
+          die:
+            frames: [18, 19, 20, 21, 22, "dead"]
+          dead:
+            frames: [22]
+          spawn:
+            frames: [22, 21, 20, 19, 18, "idle"]
+          idle:
+            frames: [18]
+        currentAnimation: 'spawn'
+        framesPerSecond: 10
+        playing: true
+        physicsObjectType: "passive"
+        value: 50

@@ -32,8 +32,6 @@ class entities.Ball extends nv.Entity
       ballVx = Math.sin(bounceAngle)
       ballVy = -Math.cos(bounceAngle)
 
-      console.log ballVx, ballVy
-
       @model.direction.x = ballVx
       @model.direction.y = ballVy
     @pendingCollision = false
