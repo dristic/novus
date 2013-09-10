@@ -4,8 +4,8 @@
 breakout.gameConfig =
   canvas:
     id: '#game-canvas'
-    width: 320
-    height: 416
+    width: 640
+    height: 480
     responsive: true
     css:
       background: '000'
@@ -38,7 +38,7 @@ breakout.gameConfig =
               src: 'assets/logo.png'
               width: 131
               height: 200
-              x: 94.5
+              x: 254.5
               y: 50
         title:
           entity: nv.Entity
@@ -46,7 +46,7 @@ breakout.gameConfig =
           model:
             options:
               color: "#000"
-              x: 85
+              x: 245
               y: 350
               font: "bold 25px sans-serif"
               text: "Click to Start"
