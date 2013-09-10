@@ -156,9 +156,11 @@ class nv.SpriteMapRenderingPlugin extends nv.SpriteRenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
 
-    @map = @entity.model.map
+    @sprite = new gleam.SpriteMap entity.model
 
   draw: (context, canvas) ->
+    @sprite.x = @entity.model.x
+    @sprite.y = @entity.model.y
     @sprite.draw context, canvas
 
 class nv.TextRenderingPlugin extends nv.RenderingPlugin

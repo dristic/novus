@@ -29,7 +29,7 @@ breakout.gameConfig =
       engines: [ nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine ]
       entities:
         background:
-          include: "background"
+          include: "backgroundTiled"
         logo:
           entity: nv.Entity
           plugins: [ nv.SpriteRenderingPlugin ]

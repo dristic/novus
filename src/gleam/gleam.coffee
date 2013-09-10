@@ -9,3 +9,4 @@
 #= require camera
 #= require circle
 #= require rectangle
+#= require sprite_map
