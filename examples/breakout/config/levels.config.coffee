@@ -1,8 +1,4 @@
-# [X,X,g,o,g,X,X],
-# [o,b,g,g,g,b,o],
-# [X,b,b,b,b,b,X]
-
-breakout.levels = 
+breakout.levels =
   level1:
     entities:
       spawner:
