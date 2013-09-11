@@ -133,7 +133,7 @@ class nv.SpriteRenderingPlugin extends nv.RenderingPlugin
     @sprite.y = @entity.model.y
     @sprite.draw context, canvas
 
-class nv.AnimatedSpriteRenderingPlugin extends nv.SpriteRenderingPlugin
+class nv.AnimatedSpriteRenderingPlugin extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
 
@@ -152,7 +152,7 @@ class nv.AnimatedSpriteRenderingPlugin extends nv.SpriteRenderingPlugin
     @sprite.y = @entity.model.y
     @sprite.draw context, canvas
 
-class nv.SpriteMapRenderingPlugin extends nv.SpriteRenderingPlugin
+class nv.SpriteMapRenderingPlugin extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
 

@@ -8,7 +8,7 @@ breakout.entities =
         x: 0
         y: 0
   backgroundTiled:
-    entity: nv.Entity
+    entity: entities.Map
     plugins: [ nv.SpriteMapRenderingPlugin ]
     model:
       options:
