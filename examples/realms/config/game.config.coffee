@@ -30,6 +30,8 @@ breakout.gameConfig =
       entities:
         background:
           include: "background"
+        food:
+          include: "food"
 
   levels: breakout.levels
   entities: breakout.entities
