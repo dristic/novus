@@ -13,19 +13,19 @@ class gleam.SpriteMap extends gleam.Sprite
 
   draw: (context, canvas) ->
     unless not @loaded
-      x = @x
-      y = @y
+      x = 0
+      y = 0
       index = -1
 
-      while y < @height + @y
-        while x < @width + @x
+      while y < @height
+        while x < @width
           cell = @data[++index]
           framesInARow = @image.width / @tileWidth
           tileX = (cell % framesInARow) * @tileWidth - @tileWidth
           tileY = Math.floor(cell / framesInARow) * @tileHeight
 
-          context.drawImage @image, tileX, tileY, @tileWidth, @tileHeight, x, y, @tileWidth, @tileHeight
+          context.drawImage @image, tileX, tileY, @tileWidth, @tileHeight, Math.floor(x + @x), Math.floor(y + @y), @tileWidth, @tileHeight
 
           x += @tileWidth
         y += @tileHeight
-        x = @x
+        x = 0

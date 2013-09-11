@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" width="20" height="15" tilewidth="32" tileheight="32">
+<map version="1.0" orientation="orthogonal" width="30" height="30" tilewidth="32" tileheight="32">
  <tileset firstgid="1" name="Terrain" tilewidth="32" tileheight="32">
   <image source="../terrain_atlas.png" width="1024" height="1024"/>
  </tileset>
- <layer name="Tile Layer 1" width="20" height="15">
+ <layer name="Tile Layer 1" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJw7ycjAcJLK+BgBeQ0gXoEDa5JhXycQqzEBzQXiHQwQvA2ItwNxO5Fu0EQzLw1oVgbUvO0MCHNxmQfSU86AwO1ocjD3pAPZGUjYkwzzPND0nwDiFCBOBbkbh3keBOw9DqWPQukWIG4F4jYiwv84DnGYm0DYjQTzcGGYm5AxPc07isY/QUX3YQtDavt3CRAvRcPLyDCHUP6mJQYAWIXQrA==
+   eJzt1NsNgkAQheHRWoyRPojRPrzQgQ2IxD7UWIFYgAh05dmwGzYTCQ978cF5+MIt2Z8BQjshaoUQ0bwiNN4j1xdwH5AEvMczzKfow5M6DyihcFybz5Sw7g7NTHdL6vuuXbX2gXoFu2bm22M/s6wDdles08AGtuo5OHbttfkcM6j1fqW3R8jh5PE7qgfOmxmVJeumHvucmdHmc97Y3YodNz+Y137HacTuNxe4MreAvbH/d8hvWQjxnz5INKf8
   </data>
  </layer>
 </map>
