@@ -47,6 +47,8 @@ breakout.gameConfig =
       entities:
         background:
           include: "background"
+        land:
+          include: "land"
         button:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
@@ -72,7 +74,7 @@ breakout.gameConfig =
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: "Cows: {{population}}"
+              text: "Population: {{population}}"
               bind: entities.ResourceManager
               x: 36
               y: 36

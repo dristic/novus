@@ -24,6 +24,14 @@ class gleam.AnimatedSprite extends gleam.Sprite
     @frameTime = 0
     @currentMs = 0
 
+  onLoad: (width, height) ->
+    super width, height
+
+    # Small hack to put an image at the correct frame if it is
+    # not playing but was created before its image loaded
+    if @currentAnimation? and @currentIndex? and @playing is false
+      @goTo @currentAnimation.frames[@currentIndex]
+
   play: (animation, override = false) ->
     if @currentAnimationName isnt animation or override is true
       @playing = true

@@ -141,6 +141,8 @@ class nv.AnimatedSpriteRenderingPlugin extends nv.RenderingPlugin
     @sprite = new gleam.AnimatedSprite entity.model
     if entity.model.currentAnimation
       @sprite.play entity.model.currentAnimation
+    if entity.model.playing is false
+      @sprite.stop()
 
   play: (animation) ->
     @sprite.play animation
