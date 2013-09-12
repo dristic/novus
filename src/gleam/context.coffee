@@ -23,6 +23,9 @@ class gleam.Context
   setTextBaseline: (baseline) ->
     @source.textBaseline = baseline
 
+  setTextAlign: (alignment) ->
+    @source.textAlign = alignment
+
   fillPath: (func) ->
     @beginPath()
     func(this)
