@@ -11,6 +11,7 @@ class gleam.Canvas
     @halfHeight = @source.height / 2
     @fullscreened = false
     @responsive = false
+    @ratio = 1
 
     this
 
@@ -24,8 +25,7 @@ class gleam.Canvas
       width = @maxWidth
     if @maxHeight and height > @maxHeight
       height = @maxHeight
-
-    console.log @source
+      
     @source.width = width
     @source.height = height
 
@@ -82,8 +82,8 @@ class gleam.Canvas
     height = document.body.clientHeight
 
     # Calculate the best scaling ratio
-    ratio = Math.min(width / @width, height / @height)
-    @source.style.webkitTransform = "scale(#{ratio})"
+    @ratio = Math.min(width / @width, height / @height)
+    @source.style.webkitTransform = "scale(#{@ratio})"
 
   # Draws the objects given with the camera on this canvas
   draw: (objects, camera) ->

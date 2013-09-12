@@ -18,5 +18,6 @@
 #= require physics
 #= require sound
 #= require particles
+#= require ui/ui
 
 #= require_tree engines/

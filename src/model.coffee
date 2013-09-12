@@ -1,5 +1,7 @@
-class nv.Model
+class nv.Model extends nv.EventDispatcher
   constructor: (data) ->
+    super
+
     @setMany data
 
   setMany: (object) ->
@@ -11,6 +13,7 @@ class nv.Model
 
   set: (key, value) ->
     this[key] = value
+    @fire "change:#{key}", value
 
   reset: () ->
     # specific classes must implement

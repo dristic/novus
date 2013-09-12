@@ -1,10 +1,20 @@
 class nv.GamepadEngine extends nv.Engine
+  initializer: (config, rootModel) ->
+    # We need access to the game width and height to calculate what the user clicks on
+    nv.extend config,
+      width: rootModel.canvas.width
+      height: rootModel.canvas.height
+
   constructor: (scene, config) ->
     super scene, config
 
     @gamepad = new nv.Gamepad()
     @options = scene.options
     @options.setMany config
+
+    # Grab values here to calculate the current ratio of the screen
+    @originalWidth = config.width
+    @originalHeight = config.height
 
     scene.set 'gamepad', @gamepad
 
@@ -52,6 +62,12 @@ class nv.GamepadEngine extends nv.Engine
     @scene.fire "engine:gamepad:mouse:up", data unless not @config.trackMouse
 
   update: (dt) ->
+    # Calculate the current ratio of the screen
+    width = document.body.clientWidth
+    height = document.body.clientHeight
+    ratio = Math.min(width / @originalWidth, height / @originalHeight)
+    @gamepad.setRatio ratio
+
     @gamepad.update dt
 
   destroy: () ->
@@ -96,10 +112,28 @@ class nv.Gamepad extends nv.EventDispatcher
     @trackGamepad = false
     @keyRepeatEvents = false
     @origin = document
+    @ratio = 1 # Current screen ratio to convert screen units into game units
+
+  setRatio: (ratio) ->
+    @ratio = ratio
 
   # Sets the element that we use to calculate mouse position offset
   setOrigin: (origin) ->
     @origin = origin
+
+  toGameCoords: (x, y) ->
+    if @origin.getBoundingClientRect
+      rect = @origin.getBoundingClientRect()
+      x -= rect.left
+      y -= rect.top
+
+    x /= @ratio
+    y /= @ratio
+
+    {
+      x: x
+      y: y
+    }
 
   trackMouse: () ->
     @state.mouse =
@@ -107,35 +141,18 @@ class nv.Gamepad extends nv.EventDispatcher
       y: -1
       down: false
 
-    nv.mousedown @origin, (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
-
-      if @origin.offsetLeft? and @origin.offsetTop?
-        @state.mouse.x -= @origin.offsetLeft
-        @state.mouse.y -= @origin.offsetTop
-        
+    nv.mousedown document, (event) =>
+      @state.mouse = @toGameCoords event.clientX, event.clientY
       @state.mouse.down = true
       @send "mousedown", @state.mouse
 
-    nv.mouseup @origin, (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
-
-      if @origin.offsetLeft? and @origin.offsetTop?
-        @state.mouse.x -= @origin.offsetLeft
-        @state.mouse.y -= @origin.offsetTop
-
+    nv.mouseup document, (event) =>
+      @state.mouse = @toGameCoords event.clientX, event.clientY
       @state.mouse.down = false
       @send "mouseup", @state.mouse
 
-    nv.mousemove @origin, (event) =>
-      @state.mouse.x = event.clientX
-      @state.mouse.y = event.clientY
-
-      if @origin.offsetLeft? and @origin.offsetTop?
-        @state.mouse.x -= @origin.offsetLeft
-        @state.mouse.y -= @origin.offsetTop
+    nv.mousemove document, (event) =>
+      @state.mouse = @toGameCoords event.clientX, event.clientY
 
   aliasKey: (button, key) ->
     @trackers[button] = [] unless @trackers[button]
