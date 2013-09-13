@@ -38,10 +38,17 @@ class nv.UIPlugin extends nv.Plugin
   constructor: (scene, entity) ->
     super scene, entity
 
+    @hidden = entity.model.hidden
     @scene.fire "engine:ui:create", this
 
+  hide: () ->
+    @hidden = true
+
+  show: () ->
+    @hidden = false
+
   draw: (context, canvas) ->
-    # Do nothing
+    # Nothing
 
   destroy: () ->
     @scene.fire "engine:ui:destroy", this

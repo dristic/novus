@@ -124,6 +124,12 @@ class nv.Scene extends nv.EventDispatcher
         return entity
     null
 
+  getEntityById: (id) ->
+    for entity in @entities
+      if entity.model? and entity.model.id? and entity.model.id is id
+        return entity
+    null
+
   removeEntity: (entity) ->
     unless @entities.indexOf(entity) is -1
       entity.destroy() unless not entity.destroy

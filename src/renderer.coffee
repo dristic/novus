@@ -15,9 +15,11 @@ class nv.RenderingEngine extends nv.Engine
 
       rootModel.set 'canvas', canvas
       rootModel.set 'origin', canvas.source
+      rootModel.set 'camera', new gleam.Camera
 
     nv.extend config,
       canvas: rootModel.canvas
+      camera: rootModel.camera
       width: rootModel.canvas.width
       height: rootModel.canvas.height
       autoRendering: true
@@ -33,7 +35,7 @@ class nv.RenderingEngine extends nv.Engine
     @context = @canvas.context
     @drawables = []
 
-    @camera = new gleam.Camera
+    @camera = config.camera ? new gleam.Camera
 
   "event(engine:rendering:create)": (drawable) ->
     @drawables.push drawable
@@ -67,11 +69,16 @@ class nv.RenderingEngine extends nv.Engine
     @context.restore()
 
   onMouseDown: (data) ->
+    # Use the camera to convert to "in-game" coordinates
+    coords = nv.clone data
+    coords.x -= @camera.x
+    coords.y -= @camera.y
+
     for drawable in @drawables
       if drawable.clickable is true
         if drawable.bounds
           bounds = drawable.bounds()
-          if bounds.contains new nv.Point(data.x, data.y)
+          if bounds.contains new nv.Point(coords.x, coords.y)
             @scene.fire "engine:rendering:clicked:#{drawable.entity.constructor.name}", drawable.entity
 
   destroy: () ->
@@ -129,12 +136,15 @@ class nv.SpriteRenderingPlugin extends nv.RenderingPlugin
 
     @sprite = new gleam.Sprite entity.model
 
+  bounds: () ->
+    new nv.Rect @sprite.x, @sprite.y, @sprite.x + @sprite.width, @sprite.y + @sprite.height
+
   draw: (context, canvas) ->
     @sprite.x = @entity.model.x
     @sprite.y = @entity.model.y
     @sprite.draw context, canvas
 
-class nv.AnimatedSpriteRenderingPlugin extends nv.RenderingPlugin
+class nv.AnimatedSpriteRenderingPlugin extends nv.SpriteRenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
 
@@ -146,6 +156,9 @@ class nv.AnimatedSpriteRenderingPlugin extends nv.RenderingPlugin
 
   play: (animation) ->
     @sprite.play animation
+
+  stop: () ->
+    @sprite.stop()
 
   update: (dt) ->
     @sprite.update dt

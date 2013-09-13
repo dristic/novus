@@ -28,6 +28,7 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
     new nv.Rect @drawable.x, @drawable.y, @drawable.x + @drawable.width, @drawable.y + @drawable.height
 
   draw: (context, canvas) ->
+    return if @hidden is true
     @drawable.x = @entity.model.x
     @drawable.y = @entity.model.y
 

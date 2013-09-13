@@ -5,7 +5,7 @@ breakout.entities =
     model:
       options:
         src: '/assets/terrain_atlas.png'
-        speed: 2
+        speed: 1.5
         x: 0
         y: 0
         width: 960
@@ -22,11 +22,14 @@ breakout.entities =
         frameWidth: 32
         frameHeight: 32
         animations:
-          idle:
-            frames: [10, 11, 12, 13, 14]
-        currentAnimation: 'idle'
+          field:
+            frames: [805]
+          grain:
+            frames: [833]
+        currentAnimation: 'field'
         playing: false
         width: 32
         height: 32
-        x: 20
-        y: 20
+        x: 576
+        y: 320
+        clickable: true
