@@ -49,16 +49,13 @@ breakout.gameConfig =
           include: "background"
         land:
           include: "land"
-        selectGrain:
-          entity: nv.Entity
-          plugins: [ nv.ButtonUIPlugin ]
+        landSelectionScreen:
+          entity: entities.LandSelector
+          plugins: [ ]
           model:
             options:
-              text: "Grain"
-              id: "select-grain-button"
-              x: 100
-              y: 100
-              hidden: true
+              x: 70
+              y: 200
         button:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
