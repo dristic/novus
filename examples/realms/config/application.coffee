@@ -4,11 +4,11 @@
 @models = {}
 @renderers = {}
 
-@breakout = {}
+@realms = {}
 
 class @Application extends nv.Game
   constructor: () ->
-    super breakout.gameConfig
+    super realms.gameConfig
 
     # Configure global novus settings
     nv.configure

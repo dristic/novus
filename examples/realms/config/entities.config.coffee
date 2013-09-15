@@ -1,4 +1,4 @@
-breakout.entities =
+realms.entities =
   background:
     entity: entities.Map
     plugins: [ nv.SpriteMapRenderingPlugin ]

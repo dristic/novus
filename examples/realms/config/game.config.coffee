@@ -1,7 +1,7 @@
 #= require entities.config
 #= require levels.config
 
-breakout.gameConfig =
+realms.gameConfig =
   canvas:
     id: '#game-canvas'
     width: 640
@@ -13,8 +13,7 @@ breakout.gameConfig =
       display: 'block'
 
   preload: [
-    'assets/logo.png',
-    'assets/tiles.png'
+    'assets/terrain_atlas.png'
   ]
 
   engines: [
@@ -86,5 +85,5 @@ breakout.gameConfig =
               x: 36
               y: 36
 
-  levels: breakout.levels
-  entities: breakout.entities
+  levels: realms.levels
+  entities: realms.entities

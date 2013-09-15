@@ -13,5 +13,8 @@ class entities.Land extends nv.Entity
       @renderer.play 'cows'
     @renderer.stop()
 
+  "event(game:turn:resourceproduction)": () ->
+    @scene.fire "game:resource:produce", 20
+
   update: (dt) ->
     # Nothing yet
