@@ -13,5 +13,7 @@ class entities.Land extends nv.Entity
       @renderer.play 'cows'
     @renderer.stop()
 
+    @scene.fire "game:land:change", this
+
   update: (dt) ->
     # Nothing yet
