@@ -23,7 +23,7 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
     @down = false
 
   "event(engine:gamepad:mouse:down)": (data) ->
-    if @hidden is false
+    unless @hidden is true
       if @bounds().contains new nv.Point(data.x, data.y)
         @down = true
   
