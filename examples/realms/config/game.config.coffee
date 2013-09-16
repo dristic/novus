@@ -48,6 +48,8 @@ realms.gameConfig =
           include: "background"
         land:
           include: "land"
+        landTwo:
+          include: "landTwo"
         landSelectionScreen:
           entity: entities.LandSelector
           plugins: [ ]

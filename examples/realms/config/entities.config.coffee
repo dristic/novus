@@ -35,6 +35,28 @@ realms.entities =
         x: 576
         y: 320
         clickable: true
+  landTwo:
+    entity: entities.Land
+    plugins: [ nv.AnimatedSpriteRenderingPlugin ]
+    model:
+      options:
+        src: '/assets/terrain_atlas.png'
+        frameWidth: 32
+        frameHeight: 32
+        animations:
+          field:
+            frames: [805]
+          grain:
+            frames: [833]
+          cows:
+            frames: [775]
+        currentAnimation: 'field'
+        playing: false
+        width: 32
+        height: 32
+        x: 576
+        y: 352
+        clickable: true
   landSelector:
     grain:
       entity: nv.Entity

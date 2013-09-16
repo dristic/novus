@@ -20,9 +20,18 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
       x: 10
       y: 10
 
+    @down = false
+
   "event(engine:gamepad:mouse:down)": (data) ->
-    if @bounds().contains new nv.Point(data.x, data.y)
-      @scene.fire "engine:ui:clicked", this
+    if @hidden is false
+      if @bounds().contains new nv.Point(data.x, data.y)
+        @down = true
+  
+  "event(engine:gamepad:mouse:up)": (data) ->
+    if @down is true
+      if @bounds().contains new nv.Point(data.x, data.y)
+        @down = false
+        @scene.fire "engine:ui:clicked", this
 
   bounds: () ->
     new nv.Rect @drawable.x, @drawable.y, @drawable.x + @drawable.width, @drawable.y + @drawable.height
