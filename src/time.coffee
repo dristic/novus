@@ -44,6 +44,7 @@ class nv.TimingEngine extends nv.Engine
     @updating = false
 
   destroy: () ->
+    @stop()
     delete @updating
 
     super

@@ -15,15 +15,24 @@ class nv.Point
     this
 
   times: (num) ->
-    new nv.Point @x * num, @y * num 
-
-  clone: () ->
-    new nv.Point @x, @y
+    new nv.Point @x * num, @y * num
+    this
 
   fromPolar: (ang, rad) ->
     @x = Math.cos(ang) * rad
     @y = Math.sin(ang) * rad
     this
+
+  constrain: (rect) ->
+    unless rect.contains this
+      @x = 0 if @x < rect.x
+      @x = rect.x2 if @x > rect.x2
+      @y = 0 if @y < rect.y
+      @y = rect.y2 if @y > rect.y2
+    this
+
+  eq: (pt) ->
+    this.x is pt.x and this.y is pt.y
 
 class nv.Rect
   constructor: (@x,@y,@x2,@y2) ->
@@ -34,13 +43,16 @@ class nv.Rect
   reset: (@x,@y,@x2,@y2) ->
 
   _checkPt: (tx,ty) ->
-    (tx >= @x and tx <= @x2) and  (ty >= @y and ty <= @y2)
+    (tx >= @x and tx <= @x2) and (ty >= @y and ty <= @y2)
 
   contains: (pt) ->
     @_checkPt pt.x, pt.y
 
   intersects: (rect) ->
-    @_checkPt(rect.x, rect.y) || @_checkPt(rect.x, rect.y2) || @_checkPt(rect.x2, rect.y2) || @_checkPt(rect.x2, rect.y)
+    return false if @x2 < rect.x || @y2 < rect.y || @x > rect.x2 || @y > rect.y2
+    true
+
+    # //@_checkPt(rect.x, rect.y) || @_checkPt(rect.x, rect.y2) || @_checkPt(rect.x2, rect.y2) || @_checkPt(rect.x2, rect.y)
 
   translate: (dx,dy) ->
     @x += dx

@@ -23,6 +23,9 @@ class gleam.Context
   setTextBaseline: (baseline) ->
     @source.textBaseline = baseline
 
+  setTextAlign: (alignment) ->
+    @source.textAlign = alignment
+
   fillPath: (func) ->
     @beginPath()
     func(this)
@@ -77,5 +80,7 @@ gleam.Context.addContextAlias = (key) ->
       @source[key](args...)
 
 # Extend the base context class
-for key of CanvasRenderingContext2D.prototype
-  gleam.Context.addContextAlias(key)
+context = document.createElement('canvas').getContext('2d')
+for key of context
+  if typeof context[key] is "function"
+    gleam.Context.addContextAlias(key)

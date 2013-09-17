@@ -6,6 +6,7 @@ class gleam.Text
       y: 10
       font: 'bold 20px sans-serif'
       textBaseline: 'bottom'
+      textAlign: 'start'
       text: 'Lorem Ipsum'
     gleam.extend defaults, options unless not options
     gleam.extend this, defaults
@@ -14,5 +15,6 @@ class gleam.Text
     context.setFillStyle @color
     context.setFont @font
     context.setTextBaseline @textBaseline
+    context.setTextAlign @textAlign
 
     context.fillText @text, @x, @y

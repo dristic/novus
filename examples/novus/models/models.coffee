@@ -1,67 +1,69 @@
 window.models = models = {}
 
-class models.Background extends nv.Model
-  constructor: () ->
-    super 
-      x: 0
-      y: 0
-      width: 500
-      height: 500
+class models.PathObject extends nv.Model
+  constructor: (options, @defaultShape = "") ->
+    @modelShapes = options.shapes if options.shapes?
+    delete options.shapes
+    super options
 
-class models.Ship extends nv.Model
-  constructor: () ->
-    super
-      thrustVector: new nv.Point(0,0)
-      velocity: 0
-      health: 100
-      shootDelay: 10
-      x: 30
-      y: 30
-      width: 16
-      height: 24
-      rotation: 0
-      thrusters: false
-      type: 'both'
-      color: '#FFF'
-      strokeColor: '#FFF'
-      strokeWidth: 2
-      thrustersColor: 'orange'
-      thrustersWidth: 2
-      thrustersFill: 'yellow'
+  preparePath: () ->
+    points: []
 
-    @buildWireframes()
+  shouldDrawShape: (shapeName) ->
+    false
 
-  reset: () ->
-    @x = 30
-    @y = 30
-    @thrusters = false
-    @velocity = 0
-    @health = 100
-    @rotation = 0
-
-  buildWireframes: () ->
-    @shipWF =
-      strokeColor: @strokeColor
-      strokeWidth: @strokeWidth
-      points: [ new nv.Point(0, -@height/2), new nv.Point(@width/2, @height/2), new nv.Point(0, @height*0.4), new nv.Point(-@width/2, @height/2) ]
-    @thrustersWF =
-      strokeColor: @thrustersColor
-      strokeWidth: @thrustersWidth
-      fillStyle: @thrustersFill
-      points: [ new nv.Point(0, @height*0.4+4), new nv.Point((@width/2)-4, (@height/2)+4), new nv.Point(0, @height*1.3), new nv.Point((-@width/2)+4, (@height/2)+4) ]
+  points: (shapeName = @defaultShape) ->
+    shape = @prepareShape @modelShapes[shapeName]
+    shape.points
 
   shapes: () ->
     shapes = []
-    shapes.push @prepareShape(@shipWF)
-    shapes.push @prepareShape(@thrustersWF) if @thrusters
+    for shapeName of @modelShapes
+      shapes.push @prepareShape(@modelShapes[shapeName]) if @shouldDrawShape shapeName
     shapes
 
-  path: (which = "ship") ->
-    shape = @prepareShape @[which + "WF"]
-    shape.points
+  translate: (dx,dy) ->
+    @x += dx
+    @y += dy
+    this
 
-  prepareShape: (wf) ->
-    shape = $.extend({},wf)
+  rotate: (dr) ->
+    @rotation += dr
+    this
+
+  bounds: () ->
+    x1 = x2 = y1 = y2 = null
+    $.each @points(), () ->
+      x1 = this.x if x1 == null || this.x < x1
+      x2 = this.x if x2 == null || this.x > x2
+      y1 = this.y if y1 == null || this.y < y1
+      y2 = this.y if y2 == null || this.y > y2
+    new nv.Rect x1, y1, x2, y2
+
+
+class models.Ship extends models.PathObject
+  constructor: (options) ->
+    super options, "ship"
+
+    @resetProps =
+      x: @x
+      y: @y
+      thrusters: @thrusters
+      health: @health
+      rotation: @rotation
+      thrustVector: new nv.Point(0,0)
+
+  reset: () ->
+    @setMany @resetProps
+
+  shouldDrawShape: (shapeName) ->
+    switch shapeName
+      when "ship" then true
+      when "thrusters" then @thrusters
+      else false
+
+  prepareShape: (object) ->
+    shape = $.extend({},object)
     model = this
 
     cosine = Math.cos(@rotation)
@@ -73,32 +75,11 @@ class models.Ship extends nv.Model
     shape.points = path
     shape
 
-  translate: (dx,dy) ->
-    @x += dx
-    @y += dy
-    this
 
-  rotate: (r) ->
-    @rotation += r
-    this
-
-class models.Asteroid extends nv.Model
-  constructor: (x, y, scale = 1, direction = null) ->
-    super 
-      x: x
-      y: y
-      width: 12 * scale
-      height: 12 * scale
-      speed: Math.random() + 0.3
-      rotation: 0
-      rotationSpeed: ((Math.random() / 10) - 0.05) / 8
-      direction: direction || (Math.random() * Math.PI) - (Math.PI / 2)
-      type: 'passive'
-      strokeColor: '#FFF'
-      strokeWidth: 2
-      size: scale
-
-    @points = @buildWireframe(scale * .5)
+class models.Asteroid extends models.PathObject
+  constructor: (options) ->
+    super options
+    @wireframe = @buildWireframe(@scale * .5)
 
   buildWireframe: (scalar) ->
     pt = new nv.Point(0, -@height)
@@ -114,17 +95,18 @@ class models.Asteroid extends nv.Model
 
   shapes: () ->
     [ 
-      points: @path()
+      points: @points()
       strokeColor: @strokeColor
       strokeWidth: @strokeWidth
+      fillStyle: @fillStyle
     ]
 
-  path: () ->
+  points: () ->
     cosine = Math.cos(@rotation)
     sine = Math.sin(@rotation)
     path = []
     model = this
-    $.each @points, () ->
+    $.each @wireframe, () ->
       path.push new nv.Point(this.x * cosine - this.y * sine + model.x, this.x * sine + this.y * cosine + model.y)
     path
 
@@ -136,24 +118,15 @@ class models.Asteroid extends nv.Model
     @rotation += dr
 
 class models.Bullet extends nv.Model
-  constructor: (pt, angle) ->
-    super
-      x: pt.x
-      y: pt.y
-      color: "#ff7600"
-      speed: 400
-      radius: 3
-      alive: true
-      life: 100
-      angle: angle
-      type: 'active'
+  constructor: (options) ->
+    super options
 
-    @points = @buildWireframe()
+    @wireframe = @buildWireframe()
 
-  path: () ->
+  points: () ->
     path = []
     model = this
-    $.each @points, () ->
+    $.each @wireframe, () ->
       path.push new nv.Point(model.x, model.y)
     path
 

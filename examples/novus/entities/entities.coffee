@@ -20,6 +20,7 @@ class entities.Title extends nv.Entity
       text: "Novus"
       strokeWidth: 2
       shadowBlur: 20
+      clickable: true
 
     @direction = "out"
 
@@ -61,8 +62,8 @@ class entities.Cursor extends nv.Entity
     @model.drawable.y = state.mouse.y
 
 class WrappingEntity extends nv.Entity
-  constructor: (scene, pluginClasses, model) ->
-    super scene, pluginClasses, model
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
     @canvas = @scene.getEngine(nv.RenderingEngine).canvas
 
@@ -77,40 +78,39 @@ class WrappingEntity extends nv.Entity
     else if @model.y > dimensions.height then @model.y = 0
 
 class entities.Ship extends WrappingEntity
-  constructor: (scene) ->
-    super scene, [renderers.Ship, nv.PathPhysicsPlugin, nv.GravityPhysicsPlugin], new models.Ship
-
-    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
-      @scene.fire "entity:destroyed:Ship", this
-      #@scene.fire "entity:remove", this
-
-    @scene.on 'engine:gamepad:press:shoot', () =>
-      @fireBullet.call this
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
     @maxVelocity = 3
 
-    @scene.send "engine:particle:create_emitter",
-      position: new nv.Point(450, 300)
-      particlesPerSecond: 200
+    @emitter = new nv.ParticleEmitter @scene,
+      position: new nv.Point(-100,-100)
+      particlesPerSecond: 100
       colors: new nv.Gradient([
         new nv.Color(255, 100, 100, 1),
-        new nv.Color(150, 50, 50, 1),
+        new nv.Color(170, 50, 50, 1),
         new nv.Color(0, 0, 0, 0)
       ])
-      gravity: new nv.Point(0, 0)
-      particleLife: 0.1
+      particleLife: 0.3
+      lifeVariance: 0.4
       angleVariation: 0.75
-      minVelocity: 700
-      maxVelocity: 700
-      id: 2
+      minVelocity: 100
+      maxVelocity: 100
 
-    @emitter = @scene.getEngine(nv.ParticleEngine).getEmitter(2)
+  "event(engine:gamepad:press:shoot)": () ->
+    options =
+      entity: "bullet"
+      x: this.model.points()[0].x
+      y: this.model.points()[0].y
+      angle: this.model.rotation
+    this.scene.fire "entity:create", options
 
-  fireBullet: () ->
-    @scene.addEntity entities.Bullet, @model.path()[0], @model.rotation
+  "event(engine:collision:Ship:Asteroid)": (data) ->
+    @scene.fire "entity:destroyed:Ship", this
+    @scene.fire "entity:remove", this
 
   update: (dt) ->
-    state = @scene.gamepad.getState()
+    state = @scene.get('gamepad').getState()
     if state.left then @model.rotate -0.1
     if state.right then @model.rotate 0.1
     if state.up
@@ -122,7 +122,7 @@ class entities.Ship extends WrappingEntity
     @model.translate @model.thrustVector.x, @model.thrustVector.y
     @scene.fire "entity:thrust:Ship" if @model.thrusters
 
-    anchor = @model.path("thrusters")[0]
+    anchor = @model.points("thrusters")[0]
     @emitter.set 'position', new nv.Point(anchor.x, anchor.y)
     if @model.thrusters
       @emitter.set 'on', true
@@ -133,47 +133,67 @@ class entities.Ship extends WrappingEntity
     @wrap()
 
   destroy: () ->
+    @emitter.destroy()
     super
 
 class entities.Asteroid extends WrappingEntity
-  constructor: (scene, options = {}) ->
-    scale = options.scale ? Math.ceil(Math.random() * 4)
-    super scene, [nv.PathRenderingPlugin, nv.PathPhysicsPlugin], new models.Asteroid options.x || 500 * Math.random(), options.y || 500 * Math.random(), scale, options.direction
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
-    @scene.on 'engine:collision:Ship:Asteroid', (data) =>
-      @handleCollision data if data.target is this
-    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
-      @handleCollision data if data.target is this
+  "event(engine:collision:Ship:Asteroid)": (data) =>
+    @handleCollision data if data.target is this
+
+  "event(engine:collision:Bullet:Asteroid)": (data) =>
+    @handleCollision data if data.target is this
 
   handleCollision: (data) ->
-    @scene.fire "entity:destroyed:Asteroid", data.target 
-    @scene.fire "entity:remove", data.target
+    unless data.target.model.get("dead") is true
+      @scene.fire "entity:destroyed:Asteroid", data.target
+      @scene.fire "entity:remove", data.target
 
-    size = data.target.model.get('size') - 1 
-    unless size is 0
-      options = 
-        entity: entities.Asteroid
-        x: data.target.model.get('x')
-        y: data.target.model.get('y')
-        scale: size
-        direction: data.target.model.get('direction') - 0.3
-      @scene.fire 'entity:add', options
-      options.direction += 0.6
-      @scene.fire 'entity:add', options
+      @emitter = new nv.ParticleEmitter @scene,
+        position: new nv.Point(data.target.model.get('x'), data.target.model.get('y'))
+        particlesPerSecond: 100
+        maxParticles: 20
+        colors: new nv.Gradient([
+          new nv.Color(255, 255, 255, 1),
+          new nv.Color(125, 125, 125, 0.7),
+          new nv.Color(0, 0, 0, 0)
+        ])
+        particleLife: 3
+        angleVariation: 6.28
+        minVelocity: 10
+        maxVelocity: 50
+        on: true
+
+      size = data.target.model.get('size') - 1
+      unless size is 0
+        bounds = data.target.model.bounds()
+        offset = (bounds.x2 - bounds.x) / (6 - data.target.model.get('size'))
+        options = 
+          entity: "asteroid"
+          x: data.target.model.get('x') - offset
+          y: data.target.model.get('y')
+          scale: size
+          direction: data.target.model.get('direction') - 0.3
+        @scene.fire 'entity:create', options
+        options = $.extend {}, options
+        options.x += offset * 2
+        options.direction += 0.6
+        @scene.fire 'entity:create', options
+    data.target.model.set('dead', true)
 
   update: (dt) ->
     @model.rotation += @model.rotationSpeed
     @model.translate Math.sin(@model.direction) * @model.speed, Math.cos(@model.direction) * @model.speed
-
     @wrap()
 
 class entities.Bullet extends WrappingEntity
-  constructor: (scene, point, rotation) ->
-    super scene, [renderers.Bullet, nv.PathPhysicsPlugin], new models.Bullet point, rotation
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
-    @scene.on 'engine:collision:Bullet:Asteroid', (data) =>
-      @scene.fire "entity:remove", data.actor if data.actor is this
-
+  "event(engine:collision:Bullet:Asteroid)": (data) =>
+    @scene.fire "entity:remove", data.actor if data.actor is this
 
   update: (dt) ->
     @model.translate @model.speed * Math.sin(@model.angle) * dt, -1 * @model.speed * Math.cos(@model.angle) * dt
@@ -191,24 +211,11 @@ class entities.Bullet extends WrappingEntity
       @wrap()
 
 class entities.Hud extends nv.Entity
-  constructor: (scene) ->
-    canvas = scene.canvas
+  constructor: (scene, plugins, model) ->
+    super scene, plugins, model
 
-    ships = [ new models.Ship, (new models.Ship).translate(25,0), (new models.Ship).translate(50,0) ]
-
-    super scene, [renderers.Hud],
-      color: '#FFF'
-      font: "40px sans-serif"
-      x: 0
-      y: 0
-      width: canvas.width
-      height: canvas.height
-      ships: ships
-      lives: ships.length + 1
-      score: 0
-
-    @scene.on "entity:destroyed:Asteroid", (data) =>
-      @model.score += [500, 300, 200, 100][data.model.size - 1]
+  "event(entity:destroyed:Asteroid)": (data) =>
+    @model.score += [500, 300, 200, 100][data.model.size - 1] unless not data.model
 
   shipDestroyed: () ->
     @model.ships.pop()

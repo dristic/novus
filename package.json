@@ -6,13 +6,13 @@
     "start": "node app"
   },
   "dependencies": {
-    "connect-coffee-script": "*",
     "connect-compiler": "*",
     "coffee-script": "*",
     "snockets": "*",
     "nib": "*",
     "stylus": "*",
-    "connect": "*"
+    "connect": "*",
+    "socket.io": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.0rc7",
@@ -20,6 +20,8 @@
     "grunt-contrib-nodeunit": "0.1.2rc6",
     "grunt-contrib-jasmine": "*",
     "grunt-contrib-coffee": "*",
-    "grunt-contrib-concat": "~0.1.1"
+    "grunt-contrib-concat": "~0.1.1",
+    "grunt-contrib-uglify": "*",
+    "grunt-dox": "*"
   }
 }

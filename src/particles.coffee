@@ -5,6 +5,12 @@ randVariation = (center, variation) ->
   center + (variation * randRange(-0.5, 0.5))
 
 class nv.ParticleEngine extends nv.Engine
+  initializer: (config, rootModel) ->
+    nv.extend config,
+      canvas: rootModel.canvas
+      width: rootModel.canvas.width
+      height: rootModel.canvas.height
+
   constructor: (scene, config) ->
     super scene
 
@@ -12,45 +18,31 @@ class nv.ParticleEngine extends nv.Engine
     @context = @canvas.context
     @emitters = []
 
-    scene.on "engine:particle:create_emitter", (options) =>
-      emitter = @createEmitter options
-
-      @scene.fire "engine:rendering:create", emitter
-
-    scene.on "engine:particle:destroy_emitter", (id) =>
-      @scene.fire "engine:rendering:destroy", @getEmitter(id)
-      @destroyEmitter id
-
-  createEmitter: (options) ->
-    emitter = new nv.ParticleEmitter(options)
+  "event(engine:particle:register:emitter)": (emitter) ->
     @emitters.push emitter
-    emitter
+    @scene.fire "engine:rendering:create", emitter
 
-  getEmitter: (id) ->
-    for emitter in @emitters
-      if emitter.id is id
-        return emitter
-    null
-
-  destroyEmitter: (id) ->
-    for emitter, index in @emitters
-      if emitter.id is id
-        emitter.destroy()
-        @emitters.splice index, 1
+  "event(engine:particle:destroy:emitter)": (emitter) ->
+    @scene.fire "engine:rendering:destroy", emitter
+    @emitters.splice @emitters.indexOf(emitter), 1
 
   update: (dt) ->
     emitter.update dt for emitter in @emitters
+    @emitters = @emitters.filter (emitter) ->
+      return !emitter.complete
 
   destroy: () ->
     for emitter in @emitters
-      @scene.fire "engine:rendering:destroy", emitter
       emitter.destroy
+
     delete @emitters
+    super
 
 class nv.ParticleEmitter
   defaults:
     position: new nv.Point(0, 0)
     particlesPerSecond: 100
+    maxParticles: 1024000
     particleLife: 0.5
     lifeVariation: 0.52
     colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(0, 0, 0, 0)])
@@ -58,17 +50,24 @@ class nv.ParticleEmitter
     angleVariation: Math.PI * 2
     minVelocity: 20
     maxVelocity: 50
-    gravity: new nv.Point(0, 30.8)
+    gravity: new nv.Point(0, 0)
     collider: null
     bounceDamper: 0.5
-    on: true
-    id: -1
+    on: false
 
-  constructor: (options) ->
+  constructor: (@scene, options) ->
     @options = nv.clone(@defaults)
     @options = nv.extend(@options, options)
     @particles = []
-    @id = @options.id
+    @particleCounter = 0
+    @complete = false
+    @particlesThisFrame = 0
+    @scene.fire "engine:particle:register:emitter", this
+
+  destroy: () ->
+    @options.on = false
+    @scene.fire "engine:particle:destroy:emitter", this
+    delete @scene
 
   set: (key, value) ->
     @options[key] = value
@@ -83,12 +82,11 @@ class nv.ParticleEmitter
     angle = randVariation @options.angle, @options.angleVariation
     speed = randRange @options.minVelocity, @options.maxVelocity
     life = randVariation @options.particleLife, @options.particleLife * @options.lifeVariation
-
     velocity = new nv.Point().fromPolar angle, speed
-
     position = @options.position.clone().add velocity.times(offset)
-
     @particles.push new nv.Particle(@options, position, velocity, life)
+
+    @particleCounter++
 
   update: (dt) ->
     dead = []
@@ -104,9 +102,18 @@ class nv.ParticleEmitter
 
     # Only spawn new particles if on
     if @options.on
-      particlesToSpawn = @options.particlesPerSecond * dt
-      for i in [0..particlesToSpawn] by 1
+      @particlesThisFrame += @options.particlesPerSecond * dt
+      i = 0
+      particlesToSpawn = @particlesThisFrame
+      while @particlesThisFrame > 1
+        i++
+        @particlesThisFrame--
         @spawnParticle (1.0 + i) / particlesToSpawn * dt
+
+    if @options.maxParticles isnt undefined and @particleCounter > @options.maxParticles
+      @options.on = false
+      @complete = @particles.length is 0
+
 
 class nv.Particle
   constructor: (@options, @position, @velocity, @life) ->

@@ -1,7 +1,7 @@
-#= require ../lib/vendor/zepto.min
 #= require gleam/gleam
 
 #= require base
+#= require ajax
 #= require common
 #= require plugin
 #= require entity
@@ -18,3 +18,6 @@
 #= require physics
 #= require sound
 #= require particles
+#= require ui/ui
+
+#= require_tree engines/

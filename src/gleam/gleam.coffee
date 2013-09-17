@@ -3,5 +3,10 @@
 #= require context
 #= require square
 #= require text
+#= require image_loader
 #= require sprite
+#= require animated_sprite
 #= require camera
+#= require circle
+#= require rectangle
+#= require sprite_map

@@ -1,9 +1,22 @@
 class nv.Game
-  constructor: () ->
+  constructor: (config) ->
     @rootModel = new nv.Model
     @scenes = []
     @sceneClasses = {}
     @engines = {}
+    
+    if config.engines?
+      for engine in config.engines
+        @registerEngine engine
+
+    if config.scenes?
+      for name of config.scenes
+        scene = name[0].toUpperCase() + name.toLowerCase().slice(1)
+        klass = "scenes." + scene
+        @registerScene scene, getClass(klass)
+
+    @rootModel.setMany
+      config: config
 
   model: () ->
     @rootModel
@@ -22,7 +35,9 @@ class nv.Game
     @sceneClasses[name] = klass
 
   openScene: (name, args...) ->
-    @scenes.push new @sceneClasses[name] this, args...
+    @scenes.push new @sceneClasses[name] name, this, @rootModel, args...
+    @scenes[@scenes.length - 1].on "scene:close", () =>
+      @closeScene name
 
   closeScene: (name) ->
     name = name ? @scenes[@scenes.length - 1].constructor.name

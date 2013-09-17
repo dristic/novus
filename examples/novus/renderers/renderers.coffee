@@ -15,10 +15,33 @@ class renderers.StrokeText extends nv.RenderingPlugin
     context.shadowColor = @entity.model.strokeColor ? @entity.model.color
     context.shadowBlur = @entity.model.shadowBlur
 
+    x = @entity.model.x
+    y = @entity.model.y
+
     context.setFillStyle "#00000000"
     context.globalAlpha = @alpha
-    context.fillText @entity.model.text, @entity.model.x, @entity.model.y
-    context.strokeText @entity.model.text, @entity.model.x, @entity.model.y
+    segments = if $.isArray(@entity.model.text)
+      @entity.model.text
+    else
+      [ @entity.model.text ]
+
+    model = @entity.model
+    $.each segments, () ->
+      unless typeof(x) is "number"
+        size = context.canvas.getSize()
+        switch x
+          when "left" then x = 0
+          when "right", "center" 
+            textWidth = context.measureText(this).width
+            switch x
+              when "right" then x = size.width - textWidth
+              when "center" then x = (size.width * 0.5) - (textWidth * 0.5)
+          else
+            x = size.width * (parseFloat(x) / 100)
+
+      context.fillText this, x, y
+      context.strokeText this, x, y
+      y += model.lineHeight if model.lineHeight
     context.restore()
 
   update: (dt) ->
@@ -51,13 +74,14 @@ class renderers.Hud extends nv.RenderingPlugin
     score = @entity.model.score.toString()
     textWidth = context.measureText(score).width
     context.strokeText score, @entity.model.width - textWidth - 20 ,  50
-
+    
     $.each @entity.model.ships, () ->
       data = []
-      points = this.path()
+      self = this
+      points = this.points('ship')
       $.each points, () ->
-        data.push this.x, this.y
-      data.push points[0].x, points[0].y
+        data.push this.x + self.x, this.y + self.y
+      data.push points[0].x + this.x, points[0].y + this.y
       context.setStrokeStyle this.strokeColor
       context.setStrokeWidth this.strokeWidth
       context.path.apply(context, data)

@@ -19,7 +19,7 @@ class nv.SoundPlugin extends nv.Plugin
     super scene, entity
 
     @state = "stopped"
-    @sound = new Audio(@options.path)
+    @sound = new Audio(@options.asset)
     @sound.onended = () ->
       @sound.currentTime = 0
       @state = "stopped"
@@ -32,8 +32,7 @@ class nv.SoundPlugin extends nv.Plugin
         when "stop" then self.stop()
         when "pause" then self.pause()
 
-    for obj in @options.events
-      @scene.on obj.event, dispatch.bind(obj)
+    @scene.on @options.event, dispatch.bind(@options)
 
     @play() if @options.autoplay
 
@@ -62,10 +61,10 @@ class nv.SoundPlugin extends nv.Plugin
 
 
 class nv.SoundFactory
-  constructor: (@scene) ->
+  constructor: () ->
 
-  wire: (sounds) ->
-    @_add sound for sound in sounds
+  wire: (@scene, sounds) ->
+    @_add sound for name, sound of sounds
 
   _add: (sound) ->
     @scene.fire 'sound:plugin:create', new nv.SoundPlugin @scene, null, sound

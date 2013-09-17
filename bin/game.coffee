@@ -9,11 +9,5 @@
 #= require_tree entities
 #= require_tree scenes
 
-class Game extends nv.Game
-  constructor: () ->
-    super
-
-    # Start game logic here.
-
 nv.ready ->
-  new Game
+  @app = new @Application
