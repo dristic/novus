@@ -1,8 +1,6 @@
 .sass-cache
 .DS_Store
 Gemfile.lock
-build/**/*
-build
 node_modules/
 dist/**/*
 dist-debug/**/*
