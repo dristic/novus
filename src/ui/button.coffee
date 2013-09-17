@@ -7,8 +7,8 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
 
     @drawable = new gleam.Square
       color: "#FFF"
-      width: 150
-      height: 50
+      width: @entity.model.width ? 150
+      height: @entity.model.height ? 50
       x: 10
       y: 10
 

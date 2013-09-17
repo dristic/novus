@@ -2,6 +2,8 @@ class nv.SliderUIPlugin extends nv.UIPlugin
   constructor: (scene, entity) ->
     super scene, entity
 
+    entity.model.value = entity.model.value ? 1
+
     @upButton = new nv.ButtonUIPlugin scene,
       model:
         text: "Up"
@@ -19,11 +21,11 @@ class nv.SliderUIPlugin extends nv.UIPlugin
         color: "#CCC"
         text: "{{value}}"
         bind: entity
-        x: entity.model.x
-        y: entity.model.y
+        x: entity.model.x + 75
+        y: entity.model.y + 50
         textAlign: 'center'
+        textBaseline: 'bottom'
 
-    entity.model.value = entity.model.value ? 1
     @value = entity.model.value
     @max = 100
 
