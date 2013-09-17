@@ -79,8 +79,15 @@ realms.gameConfig =
           model:
             options:
               food: 100
-              population: 100
-              cows: 10
+              population: 50
+              gold: 0
+        sliderControl:
+          entity: nv.Entity
+          plugins: [ nv.SliderUIPlugin ]
+          model:
+            options:
+              x: 200
+              y: 200
         population:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -93,6 +100,30 @@ realms.gameConfig =
               bind: entities.ResourceManager
               x: 36
               y: 36
+        foodText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Food {{food}}'
+              bind: entities.ResourceManager
+              x: 36
+              y: 66
+        goldText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Gold {{gold}}'
+              bind: entities.ResourceManager
+              x: 36
+              y: 96
         turn:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

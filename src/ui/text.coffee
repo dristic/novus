@@ -8,7 +8,10 @@ class nv.TextUIPlugin extends nv.UIPlugin
     @text = new gleam.Text @entity.model
 
     if @entity.model.bind
-      binding = @scene.getEntity @entity.model.bind
+      if typeof @entity.model.bind is "function"
+        binding = @scene.getEntity @entity.model.bind
+      else
+        binding = @entity.model.bind
       for match in @entity.model.text.match /\{{([\s\S]+?)}}/g
         match = match.replace '{{', ''
         match = match.replace '}}', ''
