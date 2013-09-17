@@ -66,6 +66,13 @@ realms.gameConfig =
               id: "next-turn-button"
               x: 480
               y: 420
+        turnManager:
+          entity: entities.TurnManager
+          plugins: []
+          model:
+            options:
+              players: 2
+              turn: 1
         resourceManager:
           entity: entities.ResourceManager
           plugins: []
@@ -85,6 +92,18 @@ realms.gameConfig =
               text: "Population: {{population}}"
               bind: entities.ResourceManager
               x: 36
+              y: 36
+        turn:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: "Turn: {{turn}}"
+              bind: entities.TurnManager
+              x: 500
               y: 36
 
   levels: realms.levels
