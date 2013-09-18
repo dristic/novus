@@ -4,15 +4,9 @@ class nv.Game
     @scenes = []
     @sceneClasses = {}
     @engines = {}
-
-    canvas = new gleam.Canvas
-    canvas.setSize config.canvas.width, config.canvas.height
-    canvas.setStyle property, value for property, value of config.canvas.css
-    canvas.setFullscreen config.canvas.fullscreen if config.canvas.fullscreen?
-    document.body.appendChild canvas.source
     
-    if config.enginesToLoad?
-      for engine in config.enginesToLoad
+    if config.engines?
+      for engine in config.engines
         @registerEngine engine
 
     if config.scenes?
@@ -22,8 +16,7 @@ class nv.Game
         @registerScene scene, getClass(klass)
 
     @rootModel.setMany
-      canvas: canvas
-      gamepad: nv.gamepad()
+      config: config
 
   model: () ->
     @rootModel

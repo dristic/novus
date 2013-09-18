@@ -18,23 +18,31 @@ class models.Map extends nv.Model
   right: () ->
     @viewOrigin.x + @viewSize.x - 1
 
+  currentMapName: () ->
+    @mapName
+
   changeLocation: (location) ->
     @mapName = location
+    @mapConfig = nv.gameConfig.map[location]
+
+    if typeof @mapConfig.tiles is 'string'
+      nv.ajax @mapConfig.tiles, (data) =>
+        @mapConfig.tiles = JSON.parse(data).tiles
 
     @layers = []
     $.each ["layer0","layer1","layer2","layer3"], (layer) =>
-      layerRows = nv.gameConfig.map[location].tiles["layer#{layer}"]
+      layerRows = @mapConfig.tiles["layer#{layer}"]
       return unless layerRows?
       grid = []
       $.each layerRows, (idx, row) ->
         grid.push row.split("")
       @layers.push grid
 
-    @mapSize = nv.gameConfig.map[location].size
+    @mapSize = @mapConfig.size
 
     @exitPoints = {}
     self = this
-    for name, path of nv.gameConfig.map[location].paths
+    for name, path of @mapConfig.paths
       $.each path.exits, (idx, exit) ->
         self.exitPoints[ self.locationToExitPointId(exit) ] = name
 

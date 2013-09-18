@@ -8,9 +8,9 @@ class nv.Scene extends nv.EventDispatcher
     @deletedEntities = []
  
     @options = @options ? {}
-    if nv.gameConfig.scenes[@sceneName].config.scene?
-      @options = $.extend @options, nv.gameConfig.scenes[@sceneName].config.scene
-    @options = $.extend @options, @rootModel
+    if @rootModel.config.scenes[@sceneName].config.scene?
+      @options = nv.extend @options, @rootModel.config.scenes[@sceneName].config.scene
+    @options = nv.extend @options, @rootModel
 
     @on "entity:remove", (entity) =>
       @removeEntity entity
@@ -21,9 +21,9 @@ class nv.Scene extends nv.EventDispatcher
     @on "entity:create", (options) =>
       entityName = options.entity
       # Ensure we only create one this time
-      config = nv.gameConfig.scenes[@sceneName].entities[entityName]
+      config = @rootModel.config.scenes[@sceneName].entities[entityName]
       if config.include?
-        config = nv.gameConfig.entities[entityName]
+        config = @rootModel.config.entities[entityName]
       unless not config
         @createEntity config, options
 
@@ -37,24 +37,23 @@ class nv.Scene extends nv.EventDispatcher
         @on key[6..-2], nv.bind(this, this[key])
 
     @prepareEngines()
-    @createEntities nv.gameConfig.scenes[@sceneName].entities
+    @createEntities @rootModel.config.scenes[@sceneName].entities
     @createSoundFxs()
 
-
   get: (key) ->
-    @options[key]
+    @options[key] ? @rootModel[key]
 
   set: (key, value) ->
     @options[key] = value
 
   prepareEngines: () ->
-    @useEngine klass.name for klass in nv.gameConfig.scenes[@sceneName].enginesUsed
+    @useEngine klass.name for klass in @rootModel.config.scenes[@sceneName].engines
     engine.prepare() for engine in @engines
 
   useEngine: (engineName, initializer) ->
     engineObj = @game.engines[engineName]
     configKey = engineName.replace("nv.","").replace("Engine","").toLowerCase()
-    config = nv.gameConfig.scenes[@sceneName].config[configKey] ? {}
+    config = @rootModel.config.scenes[@sceneName].config[configKey] ? {}
 
     if engineObj.klass.prototype.initializer?
       engineObj.klass.prototype.initializer config, @game.model()
@@ -76,7 +75,7 @@ class nv.Scene extends nv.EventDispatcher
   createEntity: (config, options = {}, index = 0) ->
     # If a reference to a common entity exists, get config from there
     if config.include?
-      config = nv.gameConfig.entities[config.include]
+      config = @rootModel.config.entities[config.include]
     if config.model?
       # Else just one instance from the entity config
       @addEntity new config.entity this, config.plugins, @loadModelFromConfig(config, options, index)
@@ -116,12 +115,18 @@ class nv.Scene extends nv.EventDispatcher
     entity
 
   createSoundFxs: () ->
-    return if nv.gameConfig.scenes[@sceneName].soundfx is undefined
-    new nv.SoundFactory().wire this, nv.gameConfig.scenes[@sceneName].soundfx
+    return if @rootModel.config.scenes[@sceneName].soundfx is undefined
+    new nv.SoundFactory().wire this, @rootModel.config.scenes[@sceneName].soundfx
 
   getEntity: (type) ->
     for entity in @entities
       if entity instanceof type
+        return entity
+    null
+
+  getEntityById: (id) ->
+    for entity in @entities
+      if entity.model? and entity.model.id? and entity.model.id is id
         return entity
     null
 
