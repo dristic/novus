@@ -86,7 +86,7 @@ realms.gameConfig =
           plugins: [ nv.SliderUIPlugin ]
           model:
             options:
-              x: 200
+              x: 460
               y: 200
         population:
           entity: nv.Entity
