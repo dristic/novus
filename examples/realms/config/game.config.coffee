@@ -66,6 +66,15 @@ realms.gameConfig =
               id: "next-turn-button"
               x: 480
               y: 420
+        createArmy:
+          entity: nv.Entity
+          plugins: [ nv.ButtonUIPlugin ]
+          model:
+            options:
+              text: "Create Army"
+              id: "create-army-button"
+              x: 480
+              y: 360
         turnManager:
           entity: entities.TurnManager
           plugins: []
