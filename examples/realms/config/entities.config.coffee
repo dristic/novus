@@ -26,8 +26,8 @@ realms.entities =
             frames: [805]
           grain:
             frames: [833]
-          cows:
-            frames: [775]
+          gold:
+            frames: [24]
         currentAnimation: 'field'
         playing: false
         width: 32
@@ -48,8 +48,8 @@ realms.entities =
             frames: [805]
           grain:
             frames: [833]
-          cows:
-            frames: [775]
+          gold:
+            frames: [24]
         currentAnimation: 'field'
         playing: false
         width: 32
@@ -80,13 +80,13 @@ realms.entities =
           y: 10
           width: 150
           height: 50
-    cows:
+    gold:
       entity: nv.Entity
       plugins: [ nv.ButtonUIPlugin ]
       model:
         options:
-          id: "select-cows"
-          text: "Cows"
+          id: "select-gold"
+          text: "Gold"
           x: 330
           y: 10
           width: 150

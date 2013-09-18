@@ -9,8 +9,8 @@ class entities.Land extends nv.Entity
       @renderer.play 'grain'
     else if type is 'field'
       @renderer.play 'field'
-    else if type is 'cows'
-      @renderer.play 'cows'
+    else if type is 'gold'
+      @renderer.play 'gold'
     @renderer.stop()
 
     @scene.fire "game:land:change", this

@@ -31,8 +31,8 @@ class entities.LandSelector extends nv.Entity
           @land.changeType 'grain'
         else if type is 'select-field'
           @land.changeType 'field'
-        else if type is 'select-cows'
-          @land.changeType 'cows'
+        else if type is 'select-gold'
+          @land.changeType 'gold'
         @selecting = false
         @hide()
 

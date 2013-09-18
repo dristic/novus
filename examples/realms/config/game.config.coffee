@@ -132,7 +132,7 @@ realms.gameConfig =
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: "Turn: {{turn}}"
+              text: "Player: {{turn}}"
               bind: entities.TurnManager
               x: 500
               y: 36
