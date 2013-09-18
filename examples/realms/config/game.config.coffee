@@ -75,6 +75,12 @@ realms.gameConfig =
               id: "create-army-button"
               x: 480
               y: 360
+        armyManager:
+          entity: entities.ArmyManager
+          plugins: []
+          model:
+            options:
+              army: 0
         turnManager:
           entity: entities.TurnManager
           plugins: []
@@ -133,6 +139,18 @@ realms.gameConfig =
               bind: entities.ResourceManager
               x: 36
               y: 96
+        armyText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Army {{army}}'
+              bind: entities.ArmyManager
+              x: 36
+              y: 126
         turn:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
