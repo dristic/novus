@@ -3,9 +3,17 @@
  <tileset firstgid="1" name="Terrain" tilewidth="32" tileheight="32">
   <image source="../terrain_atlas.png" width="1024" height="1024"/>
  </tileset>
- <layer name="Tile Layer 1" width="30" height="30">
+ <tileset firstgid="1025" name="players" tilewidth="32" tileheight="32">
+  <image source="players.png" width="160" height="32"/>
+ </tileset>
+ <layer name="Map Data" width="30" height="30">
   <data encoding="base64" compression="zlib">
    eJzlls0RgjAQRhOsxIOM9OFBG3GwAWnAn8E61NEGlAJUoCuXITtgzCKQgIiHN2S4vP2yG0jMGYv/lBvx/t6B2rrGowM1NMEYcFp2JnM3BWYt9SsEIkXuE4HD6bOhiw/YFviBgKVcgCuwNdBLKtMZmIPTFd6dlRIY8CaZPJHDkzLhejhIn+j0uDkvOtEXCJ9cB1LVK5+RZHYXwJJnexmwd9b8lU1Fr+qM+DzLJXtln+ydaO41eoucOFd18pb1Ujmb8H5y6vSX6rmb4wDYir3V8RZ928LcekXkHIm6jgbyojMq4c3n1Jllir3IJWMq56+g+l/qzlZf7099oG5vmrojfZMn7SebTw==
+  </data>
+ </layer>
+ <layer name="Players" width="30" height="30" opacity="0.43">
+  <data encoding="base64" compression="zlib">
+   eJztzVEKACAIBFGp7n/mLiBahKU0A/u7T4SIfqsNexVd7xv3rtuVnbbrRbuWGeV6ZoS7YlZ2tTK6kb1yiShHEwpSBD8=
   </data>
  </layer>
 </map>

@@ -10,6 +10,16 @@ class entities.Map extends nv.Entity
     @canvas = scene.get 'canvas'
     @camera = scene.get 'camera'
 
+    @playerData = new nv.SpriteMapRenderingPlugin scene,
+      model:
+        x: model.x
+        y: model.y
+        width: model.width
+        height: model.height
+        tileWidth: model.tileWidth
+        tileHeight: model.tileHeight
+        data: model.playerData
+
     cache = () =>
       @getPlugin(nv.SpriteMapRenderingPlugin).cache(@model.width, @model.height)
     setTimeout cache, 1000
@@ -38,3 +48,7 @@ class entities.Map extends nv.Entity
 
   "event(engine:gamepad:mouse:up)": (data) ->
     @down = false
+
+    tile = @playerData.getTileFromScreenXY(data.x - @camera.x, data.y - @camera.y)
+    if tile isnt 0
+      @scene.fire "game:clicked:county", tile

@@ -75,6 +75,15 @@ realms.gameConfig =
               id: "create-army-button"
               x: 480
               y: 360
+        attackButton:
+          entity: nv.Entity
+          plugins: [ nv.ButtonUIPlugin ]
+          model:
+            options:
+              text: "Attack"
+              id: "attack-button"
+              x: 480
+              y: 300
         armyManager:
           entity: entities.ArmyManager
           plugins: []

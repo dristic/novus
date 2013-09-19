@@ -174,6 +174,9 @@ class nv.SpriteMapRenderingPlugin extends nv.RenderingPlugin
 
     @sprite = new gleam.SpriteMap entity.model
 
+  getTileFromScreenXY: (x, y) ->
+    @sprite.getTileFromScreenXY(x, y)
+
   draw: (context, canvas) ->
     @sprite.x = @entity.model.x
     @sprite.y = @entity.model.y

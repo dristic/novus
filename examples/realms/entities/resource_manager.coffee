@@ -7,3 +7,6 @@ class entities.ResourceManager extends nv.Entity
       population = @model.get 'population'
       population += 100
       @model.set 'population', population
+
+  "event(game:army:created)": (value) ->
+    @model.set 'population', @model.get('population') - value
