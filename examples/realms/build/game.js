@@ -709,6 +709,8 @@
         tileHeight: 10,
         width: 640,
         height: 480,
+        x: 0,
+        y: 0,
         data: [0, 1, 1, 0]
       };
       if (!!options) {
@@ -716,6 +718,18 @@
       }
       gleam.extend(this, defaults);
     }
+
+    SpriteMap.prototype.getTileFromScreenXY = function(x, y) {
+      var framesInARow, tile, tileIndex, tileX, tileY;
+      x = x - this.x;
+      y = y - this.y;
+      framesInARow = this.width / this.tileWidth;
+      tileX = Math.floor(x / this.tileWidth);
+      tileY = Math.floor(y / this.tileHeight);
+      tileIndex = tileX + (tileY * framesInARow);
+      tile = this.data[tileIndex];
+      return tile;
+    };
 
     SpriteMap.prototype.draw = function(context, canvas) {
       var cell, framesInARow, index, tileX, tileY, x, y, _results;
@@ -2370,6 +2384,10 @@
       this.sprite = new gleam.SpriteMap(entity.model);
     }
 
+    SpriteMapRenderingPlugin.prototype.getTileFromScreenXY = function(x, y) {
+      return this.sprite.getTileFromScreenXY(x, y);
+    };
+
     SpriteMapRenderingPlugin.prototype.draw = function(context, canvas) {
       this.sprite.x = this.entity.model.x;
       this.sprite.y = this.entity.model.y;
@@ -3563,49 +3581,95 @@
     function SliderUIPlugin(scene, entity) {
       var _ref;
       SliderUIPlugin.__super__.constructor.call(this, scene, entity);
+      this.gamepad = scene.get('gamepad');
       entity.model.value = (_ref = entity.model.value) != null ? _ref : 1;
+      this.value = entity.model.value;
+      this.max = 100;
       this.upButton = new nv.ButtonUIPlugin(scene, {
         model: {
           text: "Up",
-          x: entity.model.x + 150,
-          y: entity.model.y
+          x: entity.model.x + 110,
+          y: entity.model.y,
+          width: 50,
+          height: 30
         }
       });
       this.downButton = new nv.ButtonUIPlugin(scene, {
         model: {
           text: "Down",
-          x: entity.model.x - 150,
-          y: entity.model.y
+          x: entity.model.x - 60,
+          y: entity.model.y,
+          width: 50,
+          height: 30
         }
       });
-      this.value = new nv.TextUIPlugin(scene, {
-        model: {
-          color: "#CCC",
-          text: "{{value}}",
-          bind: entity,
-          x: entity.model.x + 75,
-          y: entity.model.y + 50,
-          textAlign: 'center',
-          textBaseline: 'bottom'
-        }
+      this.box = new gleam.Square({
+        color: "#CCC",
+        width: 5,
+        height: 30,
+        x: entity.model.x + 1,
+        y: entity.model.y
       });
-      this.value = entity.model.value;
-      this.max = 100;
+      this.minBox = new gleam.Square({
+        color: "#000",
+        width: 1,
+        height: 30,
+        x: entity.model.x,
+        y: entity.model.y
+      });
+      this.maxBox = new gleam.Square({
+        color: "#000",
+        width: 1,
+        height: 30,
+        x: entity.model.x + this.max + 5,
+        y: entity.model.y
+      });
     }
+
+    SliderUIPlugin.prototype.getBoxBounds = function() {
+      return new nv.Rect(this.box.x, this.box.y, this.box.x + this.box.width, this.box.y + this.box.height);
+    };
+
+    SliderUIPlugin.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
+      if (this.getBoxBounds().contains(new nv.Point(data.x, data.y))) {
+        return this.dragging = true;
+      }
+    };
+
+    SliderUIPlugin.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
+      return this.dragging = false;
+    };
 
     SliderUIPlugin.prototype["event(engine:ui:clicked)"] = function(element) {
       if (element === this.upButton) {
         this.value += 1;
-        this.value = Math.min(this.value, this.max);
       } else if (element === this.downButton) {
         this.value -= 1;
-        this.value = Math.max(this.value, 0);
       }
+      this.clamp();
       return this.entity.model.set('value', this.value);
     };
 
     SliderUIPlugin.prototype.getValue = function() {
       return this.value / this.max;
+    };
+
+    SliderUIPlugin.prototype.clamp = function() {
+      this.value = Math.min(this.value, this.max);
+      return this.value = Math.max(this.value, 0);
+    };
+
+    SliderUIPlugin.prototype.draw = function(context, canvas) {
+      var mouseX;
+      if (this.dragging === true) {
+        mouseX = this.gamepad.getState().mouse.x;
+        this.value = mouseX - this.minBox.x;
+        this.clamp();
+      }
+      this.box.x = this.entity.model.x + ((1 * this.max) * this.getValue());
+      this.box.draw(context, canvas);
+      this.minBox.draw(context, canvas);
+      return this.maxBox.draw(context, canvas);
     };
 
     return SliderUIPlugin;
@@ -3761,6 +3825,46 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  entities.ArmyManager = (function(_super) {
+
+    __extends(ArmyManager, _super);
+
+    function ArmyManager(scene, plugins, model) {
+      ArmyManager.__super__.constructor.call(this, scene, plugins, model);
+      this.attacking = false;
+    }
+
+    ArmyManager.prototype["event(engine:ui:clicked)"] = function(element) {
+      var army;
+      if (element.id === "create-army-button") {
+        army = this.model.get('army');
+        army += 10;
+        this.model.set('army', army);
+        return this.scene.fire("game:army:created", 10);
+      } else if (element.id === "attack-button") {
+        return this.attacking = true;
+      }
+    };
+
+    ArmyManager.prototype["event(game:clicked:county)"] = function(county) {
+      if (this.attacking === true) {
+        if (county !== 1026) {
+          this.attacking = false;
+          return this.model.set('army', this.model.get('army') - 50);
+        }
+      }
+    };
+
+    return ArmyManager;
+
+  })(nv.Entity);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   entities.Land = (function(_super) {
 
     __extends(Land, _super);
@@ -3775,8 +3879,8 @@
         this.renderer.play('grain');
       } else if (type === 'field') {
         this.renderer.play('field');
-      } else if (type === 'cows') {
-        this.renderer.play('cows');
+      } else if (type === 'gold') {
+        this.renderer.play('gold');
       }
       this.renderer.stop();
       return this.scene.fire("game:land:change", this);
@@ -3846,8 +3950,8 @@
             this.land.changeType('grain');
           } else if (type === 'select-field') {
             this.land.changeType('field');
-          } else if (type === 'select-cows') {
-            this.land.changeType('cows');
+          } else if (type === 'select-gold') {
+            this.land.changeType('gold');
           }
           this.selecting = false;
           return this.hide();
@@ -3889,6 +3993,17 @@
       this.gamepad = scene.get('gamepad');
       this.canvas = scene.get('canvas');
       this.camera = scene.get('camera');
+      this.playerData = new nv.SpriteMapRenderingPlugin(scene, {
+        model: {
+          x: model.x,
+          y: model.y,
+          width: model.width,
+          height: model.height,
+          tileWidth: model.tileWidth,
+          tileHeight: model.tileHeight,
+          data: model.playerData
+        }
+      });
       cache = function() {
         return _this.getPlugin(nv.SpriteMapRenderingPlugin).cache(_this.model.width, _this.model.height);
       };
@@ -3924,7 +4039,12 @@
     };
 
     Map.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
-      return this.down = false;
+      var tile;
+      this.down = false;
+      tile = this.playerData.getTileFromScreenXY(data.x - this.camera.x, data.y - this.camera.y);
+      if (tile !== 0) {
+        return this.scene.fire("game:clicked:county", tile);
+      }
     };
 
     return Map;
@@ -3978,6 +4098,10 @@
         population += 100;
         return this.model.set('population', population);
       }
+    };
+
+    ResourceManager.prototype["event(game:army:created)"] = function(value) {
+      return this.model.set('population', this.model.get('population') - value);
     };
 
     return ResourceManager;
@@ -4058,7 +4182,8 @@
           height: 960,
           tileWidth: 32,
           tileHeight: 32,
-          data: [457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 453, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 328, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 455, 456, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 297, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 550, 552, 184, 184, 182, 183, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 425, 614, 616, 184, 650, 650, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 182, 119, 184, 182, 183, 184, 182, 801, 182, 650, 184, 375, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 119, 184, 183, 184, 184, 801, 184, 182, 183, 184, 184, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 328, 361, 374, 184, 650, 184, 184, 184, 184, 184, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 329, 457, 457, 457, 393, 184, 182, 650, 184, 184, 184, 389, 389, 389, 389, 389, 389, 390, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 184, 389, 389, 389, 389, 650, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 389, 389, 389, 389, 389, 389, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 184, 184, 389, 389, 389, 389, 389, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 421, 294, 389, 650, 650, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 455, 457, 457, 388, 389, 389, 389, 389, 389, 293, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 388, 389, 389, 389, 389, 389, 390, 457, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 420, 421, 421, 421, 421, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457]
+          data: [457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 453, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 328, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 455, 456, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 297, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 550, 552, 184, 184, 182, 183, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 425, 614, 616, 184, 650, 650, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 182, 119, 184, 182, 183, 184, 182, 801, 182, 650, 184, 375, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 119, 184, 183, 184, 184, 801, 184, 182, 183, 184, 184, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 328, 361, 374, 184, 650, 184, 184, 184, 184, 184, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 329, 457, 457, 457, 393, 184, 182, 650, 184, 184, 184, 389, 389, 389, 389, 389, 389, 390, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 184, 389, 389, 389, 389, 650, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 389, 389, 389, 389, 389, 389, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 184, 184, 389, 389, 389, 389, 389, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 421, 294, 389, 650, 650, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 455, 457, 457, 388, 389, 389, 389, 389, 389, 293, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 388, 389, 389, 389, 389, 389, 390, 457, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 420, 421, 421, 421, 421, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457],
+          playerData: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         }
       }
     },
@@ -4077,8 +4202,8 @@
             grain: {
               frames: [833]
             },
-            cows: {
-              frames: [775]
+            gold: {
+              frames: [24]
             }
           },
           currentAnimation: 'field',
@@ -4106,8 +4231,8 @@
             grain: {
               frames: [833]
             },
-            cows: {
-              frames: [775]
+            gold: {
+              frames: [24]
             }
           },
           currentAnimation: 'field',
@@ -4149,13 +4274,13 @@
           }
         }
       },
-      cows: {
+      gold: {
         entity: nv.Entity,
         plugins: [nv.ButtonUIPlugin],
         model: {
           options: {
-            id: "select-cows",
-            text: "Cows",
+            id: "select-gold",
+            text: "Gold",
             x: 330,
             y: 10,
             width: 150,
@@ -4235,6 +4360,39 @@
               }
             }
           },
+          createArmy: {
+            entity: nv.Entity,
+            plugins: [nv.ButtonUIPlugin],
+            model: {
+              options: {
+                text: "Create Army",
+                id: "create-army-button",
+                x: 480,
+                y: 360
+              }
+            }
+          },
+          attackButton: {
+            entity: nv.Entity,
+            plugins: [nv.ButtonUIPlugin],
+            model: {
+              options: {
+                text: "Attack",
+                id: "attack-button",
+                x: 480,
+                y: 300
+              }
+            }
+          },
+          armyManager: {
+            entity: entities.ArmyManager,
+            plugins: [],
+            model: {
+              options: {
+                army: 0
+              }
+            }
+          },
           turnManager: {
             entity: entities.TurnManager,
             plugins: [],
@@ -4261,7 +4419,7 @@
             plugins: [nv.SliderUIPlugin],
             model: {
               options: {
-                x: 200,
+                x: 460,
                 y: 200
               }
             }
@@ -4311,6 +4469,21 @@
               }
             }
           },
+          armyText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Army {{army}}',
+                bind: entities.ArmyManager,
+                x: 36,
+                y: 126
+              }
+            }
+          },
           turn: {
             entity: nv.Entity,
             plugins: [nv.TextUIPlugin],
@@ -4319,7 +4492,7 @@
                 color: '#CCC',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
-                text: "Turn: {{turn}}",
+                text: "Player: {{turn}}",
                 bind: entities.TurnManager,
                 x: 500,
                 y: 36
