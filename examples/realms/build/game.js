@@ -29,7 +29,6 @@
   var __slice = [].slice;
 
   gleam.Canvas = (function() {
-
     function Canvas(canvas) {
       if (typeof canvas === 'string') {
         canvas = document.querySelector(canvas);
@@ -152,7 +151,6 @@
     __slice = [].slice;
 
   gleam.Context = (function() {
-
     function Context(source, canvas) {
       this.source = source;
       this.canvas = canvas;
@@ -263,9 +261,7 @@
 }).call(this);
 
 (function() {
-
   gleam.Square = (function() {
-
     function Square(options) {
       var defaults;
       defaults = {
@@ -294,9 +290,7 @@
 }).call(this);
 
 (function() {
-
   gleam.Text = (function() {
-
     function Text(options) {
       var defaults;
       defaults = {
@@ -329,9 +323,7 @@
 }).call(this);
 
 (function() {
-
   gleam.ImageLoader = (function() {
-
     function ImageLoader() {
       this.images = {};
       this.callbacks = {};
@@ -388,9 +380,7 @@
 }).call(this);
 
 (function() {
-
   gleam.Sprite = (function() {
-
     function Sprite(options) {
       var defaults;
       defaults = {
@@ -440,7 +430,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   gleam.AnimatedSprite = (function(_super) {
-
     __extends(AnimatedSprite, _super);
 
     function AnimatedSprite(options) {
@@ -548,9 +537,7 @@
 }).call(this);
 
 (function() {
-
   gleam.Camera = (function() {
-
     function Camera() {
       this.following = null;
       this.x = 0;
@@ -610,7 +597,6 @@
 }).call(this);
 
 (function() {
-
   gleam.Circle = function(options) {
     var defaults;
     defaults = {
@@ -639,7 +625,6 @@
 }).call(this);
 
 (function() {
-
   gleam.Rectangle = function(options) {
     var defaults;
     defaults = {
@@ -698,7 +683,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   gleam.SpriteMap = (function(_super) {
-
     __extends(SpriteMap, _super);
 
     function SpriteMap(options) {
@@ -763,7 +747,6 @@
 (function() {
 
 
-
 }).call(this);
 
 (function() {
@@ -802,9 +785,8 @@
 }).call(this);
 
 (function() {
-
   nv.ajax = function(url, method, data, callback) {
-    var onReadyStateChange, version, versions, xhr, _i, _len;
+    var e, onReadyStateChange, version, versions, xhr, _i, _len;
     callback = callback != null ? callback : method;
     if (typeof method === "function") {
       method = 'GET';
@@ -818,8 +800,8 @@
         version = versions[_i];
         try {
           xhr = new ActiveXObject(version);
-        } catch (e) {
-
+        } catch (_error) {
+          e = _error;
         }
       }
     }
@@ -1098,7 +1080,6 @@
   });
 
   nv.Color = (function() {
-
     function Color(r, b, g, a) {
       this.r = r;
       this.b = b;
@@ -1119,7 +1100,6 @@
   })();
 
   nv.Gradient = (function() {
-
     function Gradient(colorStops) {
       this.colorStops = colorStops;
     }
@@ -1139,9 +1119,7 @@
 }).call(this);
 
 (function() {
-
   nv.Plugin = (function() {
-
     function Plugin(scene, entity) {
       var key;
       this.scene = scene;
@@ -1201,9 +1179,7 @@
 }).call(this);
 
 (function() {
-
   nv.Entity = (function() {
-
     function Entity(scene, pluginClasses, model) {
       var key, klass, _i, _len, _ref;
       this.scene = scene;
@@ -1290,9 +1266,7 @@
 }).call(this);
 
 (function() {
-
   nv.EventDispatcher = (function() {
-
     function EventDispatcher() {
       this.event_listeners = {};
       this.event_async_queue = [];
@@ -1323,13 +1297,24 @@
     };
 
     EventDispatcher.prototype.send = function(event, data) {
-      var event_listeners, listener, _i, _len, _results;
+      var ev, event_listeners, listener, stop, _i, _len, _results;
+      stop = false;
+      ev = {
+        stopPropagation: function() {
+          return stop = true;
+        }
+      };
       event_listeners = this.event_listeners[event];
       if (event_listeners instanceof Array) {
         _results = [];
         for (_i = 0, _len = event_listeners.length; _i < _len; _i++) {
           listener = event_listeners[_i];
-          _results.push(listener(data != null ? data : {}));
+          listener(data != null ? data : {}, ev);
+          if (stop === true) {
+            break;
+          } else {
+            _results.push(void 0);
+          }
         }
         return _results;
       }
@@ -1351,19 +1336,13 @@
     };
 
     EventDispatcher.prototype.processQueuedEvents = function() {
-      var event, eventListeners, events, listener, _i, _j, _len, _len1;
+      var event, events, _i, _len;
       while (this.event_async_queue.length) {
         events = this.event_async_queue.slice(0);
         this.event_async_queue = [];
         for (_i = 0, _len = events.length; _i < _len; _i++) {
           event = events[_i];
-          eventListeners = this.event_listeners[event.event];
-          for (_j = 0, _len1 = eventListeners.length; _j < _len1; _j++) {
-            listener = eventListeners[_j];
-            if (listener) {
-              listener(event.data);
-            }
-          }
+          this.send(event.event, event.data);
         }
       }
       return null;
@@ -1380,7 +1359,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.Model = (function(_super) {
-
     __extends(Model, _super);
 
     function Model(data) {
@@ -1426,7 +1404,6 @@
   })(nv.EventDispatcher);
 
   nv.Collection = (function(_super) {
-
     __extends(Collection, _super);
 
     function Collection(arr) {
@@ -1445,7 +1422,6 @@
     __slice = [].slice;
 
   nv.Scene = (function(_super) {
-
     __extends(Scene, _super);
 
     function Scene(name, game, rootModel, options) {
@@ -1492,6 +1468,7 @@
       this.prepareEngines();
       this.createEntities(this.rootModel.config.scenes[this.sceneName].entities);
       this.createSoundFxs();
+      this.fire("scene:initialized");
     }
 
     Scene.prototype.get = function(key) {
@@ -1631,6 +1608,19 @@
       return null;
     };
 
+    Scene.prototype.getEntities = function(type) {
+      var entities, entity, _i, _len, _ref;
+      entities = [];
+      _ref = this.entities;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        entity = _ref[_i];
+        if (entity instanceof type) {
+          entities.push(entity);
+        }
+      }
+      return entities;
+    };
+
     Scene.prototype.getEntityById = function(id) {
       var entity, _i, _len, _ref;
       _ref = this.entities;
@@ -1714,9 +1704,7 @@
 }).call(this);
 
 (function() {
-
   nv.Point = (function() {
-
     function Point(x, y) {
       this.x = x;
       this.y = y;
@@ -1776,7 +1764,6 @@
   })();
 
   nv.Rect = (function() {
-
     function Rect(x, y, x2, y2) {
       this.x = x;
       this.y = y;
@@ -1825,7 +1812,6 @@
   var __slice = [].slice;
 
   nv.Game = (function() {
-
     function Game(config) {
       var engine, klass, name, scene, _i, _len, _ref;
       this.rootModel = new nv.Model;
@@ -1919,9 +1905,7 @@
 }).call(this);
 
 (function() {
-
   nv.Engine = (function() {
-
     Engine.prototype.initializer = function() {};
 
     function Engine(scene, config) {
@@ -1996,7 +1980,6 @@
   cancelFrame = (_ref5 = (_ref6 = (_ref7 = (_ref8 = (_ref9 = (_ref10 = window.cancelRequestAnimationFrame) != null ? _ref10 : window.webkitCancelAnimationFrame) != null ? _ref9 : window.webkitCancelRequestAnimationFrame) != null ? _ref8 : window.mozCancelRequestAnimationFrame) != null ? _ref7 : window.oCancelRequestAnimationFrame) != null ? _ref6 : window.msCancelRequestAnimationFrame) != null ? _ref5 : clearTimeout;
 
   nv.TimingEngine = (function(_super) {
-
     __extends(TimingEngine, _super);
 
     function TimingEngine(scene, config) {
@@ -2067,7 +2050,6 @@
     __slice = [].slice;
 
   nv.DebugEngine = (function(_super) {
-
     __extends(DebugEngine, _super);
 
     function DebugEngine(scene) {
@@ -2114,7 +2096,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.RenderingEngine = (function(_super) {
-
     __extends(RenderingEngine, _super);
 
     RenderingEngine.prototype.initializer = function(config, rootModel) {
@@ -2254,7 +2235,6 @@
   })(nv.Engine);
 
   nv.RenderingPlugin = (function(_super) {
-
     __extends(RenderingPlugin, _super);
 
     function RenderingPlugin(scene, entity) {
@@ -2293,7 +2273,6 @@
   })(nv.Plugin);
 
   nv.DrawableRenderingPlugin = (function(_super) {
-
     __extends(DrawableRenderingPlugin, _super);
 
     function DrawableRenderingPlugin(scene, entity) {
@@ -2316,7 +2295,6 @@
   })(nv.RenderingPlugin);
 
   nv.SpriteRenderingPlugin = (function(_super) {
-
     __extends(SpriteRenderingPlugin, _super);
 
     function SpriteRenderingPlugin(scene, entity) {
@@ -2339,7 +2317,6 @@
   })(nv.RenderingPlugin);
 
   nv.AnimatedSpriteRenderingPlugin = (function(_super) {
-
     __extends(AnimatedSpriteRenderingPlugin, _super);
 
     function AnimatedSpriteRenderingPlugin(scene, entity) {
@@ -2376,7 +2353,6 @@
   })(nv.SpriteRenderingPlugin);
 
   nv.SpriteMapRenderingPlugin = (function(_super) {
-
     __extends(SpriteMapRenderingPlugin, _super);
 
     function SpriteMapRenderingPlugin(scene, entity) {
@@ -2399,7 +2375,6 @@
   })(nv.RenderingPlugin);
 
   nv.TextRenderingPlugin = (function(_super) {
-
     __extends(TextRenderingPlugin, _super);
 
     function TextRenderingPlugin(scene, entity) {
@@ -2416,7 +2391,6 @@
   })(nv.RenderingPlugin);
 
   nv.PathRenderingPlugin = (function(_super) {
-
     __extends(PathRenderingPlugin, _super);
 
     function PathRenderingPlugin(scene, entity) {
@@ -2466,7 +2440,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.GamepadEngine = (function(_super) {
-
     __extends(GamepadEngine, _super);
 
     GamepadEngine.prototype.initializer = function(config, rootModel) {
@@ -2569,7 +2542,6 @@
   })(nv.Engine);
 
   nv.TouchTargetPlugin = (function(_super) {
-
     __extends(TouchTargetPlugin, _super);
 
     function TouchTargetPlugin(scene, entity) {
@@ -2595,7 +2567,6 @@
   })(nv.Plugin);
 
   nv.Gamepad = (function(_super) {
-
     __extends(Gamepad, _super);
 
     function Gamepad() {
@@ -2751,7 +2722,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.PhysicsEngine = (function(_super) {
-
     __extends(PhysicsEngine, _super);
 
     function PhysicsEngine(scene, config) {
@@ -2890,7 +2860,6 @@
   })(nv.Engine);
 
   nv.PhysicsPlugin = (function(_super) {
-
     __extends(PhysicsPlugin, _super);
 
     function PhysicsPlugin(scene, entity) {
@@ -2910,7 +2879,6 @@
   __objectId = 0;
 
   nv.PathPhysicsPlugin = (function(_super) {
-
     __extends(PathPhysicsPlugin, _super);
 
     function PathPhysicsPlugin(scene, entity) {
@@ -2953,7 +2921,6 @@
   })(nv.PhysicsPlugin);
 
   nv.RectanglePhysicsPlugin = (function(_super) {
-
     __extends(RectanglePhysicsPlugin, _super);
 
     function RectanglePhysicsPlugin(scene, entity) {
@@ -2974,7 +2941,6 @@
   })(nv.PhysicsPlugin);
 
   nv.GravityPhysicsPlugin = (function(_super) {
-
     __extends(GravityPhysicsPlugin, _super);
 
     function GravityPhysicsPlugin(scene, entity) {
@@ -3003,7 +2969,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.SoundEngine = (function(_super) {
-
     __extends(SoundEngine, _super);
 
     function SoundEngine(scene) {
@@ -3036,7 +3001,6 @@
   })(nv.Engine);
 
   nv.SoundPlugin = (function(_super) {
-
     __extends(SoundPlugin, _super);
 
     function SoundPlugin(scene, entity, options) {
@@ -3110,7 +3074,6 @@
   })(nv.Plugin);
 
   nv.SoundFactory = (function() {
-
     function SoundFactory() {}
 
     SoundFactory.prototype.wire = function(scene, sounds) {
@@ -3148,7 +3111,6 @@
   };
 
   nv.ParticleEngine = (function(_super) {
-
     __extends(ParticleEngine, _super);
 
     ParticleEngine.prototype.initializer = function(config, rootModel) {
@@ -3204,7 +3166,6 @@
   })(nv.Engine);
 
   nv.ParticleEmitter = (function() {
-
     ParticleEmitter.prototype.defaults = {
       position: new nv.Point(0, 0),
       particlesPerSecond: 100,
@@ -3307,7 +3268,6 @@
   })();
 
   nv.Particle = (function() {
-
     function Particle(options, position, velocity, life) {
       this.options = options;
       this.position = position;
@@ -3359,7 +3319,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.UIEngine = (function(_super) {
-
     __extends(UIEngine, _super);
 
     UIEngine.prototype.initializer = function(config, rootModel) {
@@ -3389,6 +3348,46 @@
       return this.elements.splice(this.elements.indexOf(element), 1);
     };
 
+    UIEngine.prototype["event(engine:gamepad:mouse:down)"] = function(data, event) {
+      var element, _i, _len, _ref, _results;
+      _ref = this.elements;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        element = _ref[_i];
+        if (element.hidden !== true) {
+          if ((element.bounds != null) && element.bounds().contains(new nv.Point(data.x, data.y))) {
+            this.scene.fire("engine:ui:mouse:down", data);
+            _results.push(event.stopPropagation());
+          } else {
+            _results.push(void 0);
+          }
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
+    UIEngine.prototype["event(engine:gamepad:mouse:up)"] = function(data, event) {
+      var element, _i, _len, _ref, _results;
+      _ref = this.elements;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        element = _ref[_i];
+        if (element.hidden !== true) {
+          if ((element.bounds != null) && element.bounds().contains(new nv.Point(data.x, data.y))) {
+            this.scene.fire("engine:ui:mouse:up", data);
+            _results.push(event.stopPropagation());
+          } else {
+            _results.push(void 0);
+          }
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
     UIEngine.prototype.update = function(dt) {
       var element, _i, _len, _ref, _results;
       _ref = this.elements;
@@ -3415,6 +3414,26 @@
       return this.context.restore();
     };
 
+    UIEngine.prototype.drawBounds = function() {
+      var bounds, element, _i, _len, _ref, _results;
+      _ref = this.elements;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        element = _ref[_i];
+        if (element.bounds) {
+          bounds = element.bounds();
+          this.context.beginPath();
+          this.context.rect(bounds.x, bounds.y, bounds.x2 - bounds.x, bounds.y2 - bounds.y);
+          this.context.setLineWidth(1);
+          this.context.setStrokeStyle('red');
+          _results.push(this.context.stroke());
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
     UIEngine.prototype.destroy = function() {
       delete this.elements;
       return UIEngine.__super__.destroy.apply(this, arguments);
@@ -3425,7 +3444,6 @@
   })(nv.Engine);
 
   nv.UIPlugin = (function(_super) {
-
     __extends(UIPlugin, _super);
 
     function UIPlugin(scene, entity) {
@@ -3460,7 +3478,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.TextUIPlugin = (function(_super) {
-
     __extends(TextUIPlugin, _super);
 
     function TextUIPlugin(scene, entity) {
@@ -3490,9 +3507,11 @@
     }
 
     TextUIPlugin.prototype.draw = function(context, canvas) {
-      this.text.x = this.entity.model.x;
-      this.text.y = this.entity.model.y;
-      return this.text.draw(context, canvas);
+      if (this.hidden !== true) {
+        this.text.x = this.entity.model.x;
+        this.text.y = this.entity.model.y;
+        return this.text.draw(context, canvas);
+      }
     };
 
     return TextUIPlugin;
@@ -3506,7 +3525,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.ButtonUIPlugin = (function(_super) {
-
     __extends(ButtonUIPlugin, _super);
 
     function ButtonUIPlugin(scene, entity) {
@@ -3531,7 +3549,7 @@
       this.down = false;
     }
 
-    ButtonUIPlugin.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
+    ButtonUIPlugin.prototype["event(engine:ui:mouse:down)"] = function(data) {
       if (this.hidden !== true) {
         if (this.bounds().contains(new nv.Point(data.x, data.y))) {
           return this.down = true;
@@ -3539,7 +3557,7 @@
       }
     };
 
-    ButtonUIPlugin.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
+    ButtonUIPlugin.prototype["event(engine:ui:mouse:up)"] = function(data) {
       if (this.down === true) {
         if (this.bounds().contains(new nv.Point(data.x, data.y))) {
           this.down = false;
@@ -3575,7 +3593,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.SliderUIPlugin = (function(_super) {
-
     __extends(SliderUIPlugin, _super);
 
     function SliderUIPlugin(scene, entity) {
@@ -3626,17 +3643,21 @@
       });
     }
 
+    SliderUIPlugin.prototype.bounds = function() {
+      return new nv.Rect(this.downButton.entity.model.x, this.downButton.entity.model.y, this.upButton.entity.model.x + this.upButton.entity.model.width, this.upButton.entity.model.y + this.upButton.entity.model.height);
+    };
+
     SliderUIPlugin.prototype.getBoxBounds = function() {
       return new nv.Rect(this.box.x, this.box.y, this.box.x + this.box.width, this.box.y + this.box.height);
     };
 
-    SliderUIPlugin.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
+    SliderUIPlugin.prototype["event(engine:ui:mouse:down)"] = function(data) {
       if (this.getBoxBounds().contains(new nv.Point(data.x, data.y))) {
         return this.dragging = true;
       }
     };
 
-    SliderUIPlugin.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
+    SliderUIPlugin.prototype["event(engine:ui:mouse:up)"] = function(data) {
       return this.dragging = false;
     };
 
@@ -3681,7 +3702,6 @@
 (function() {
 
 
-
 }).call(this);
 
 (function() {
@@ -3689,7 +3709,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.EditorEngine = (function(_super) {
-
     __extends(EditorEngine, _super);
 
     EditorEngine.prototype.initializer = function(config, rootModel) {};
@@ -3729,7 +3748,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   nv.LiveEditEngine = (function(_super) {
-
     __extends(LiveEditEngine, _super);
 
     LiveEditEngine.prototype.initializer = function(config, rootModel) {
@@ -3769,7 +3787,6 @@
 (function() {
 
 
-
 }).call(this);
 
 (function() {
@@ -3787,7 +3804,6 @@
   this.realms = {};
 
   this.Application = (function(_super) {
-
     __extends(Application, _super);
 
     function Application() {
@@ -3812,11 +3828,9 @@
 (function() {
 
 
-
 }).call(this);
 
 (function() {
-
 
 
 }).call(this);
@@ -3826,13 +3840,16 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   entities.ArmyManager = (function(_super) {
-
     __extends(ArmyManager, _super);
 
     function ArmyManager(scene, plugins, model) {
       ArmyManager.__super__.constructor.call(this, scene, plugins, model);
       this.attacking = false;
     }
+
+    ArmyManager.prototype["event(scene:initialized)"] = function() {
+      return this.attackText = this.scene.getEntityById('attack-text').getPlugin(nv.TextUIPlugin);
+    };
 
     ArmyManager.prototype["event(engine:ui:clicked)"] = function(element) {
       var army;
@@ -3842,7 +3859,8 @@
         this.model.set('army', army);
         return this.scene.fire("game:army:created", 10);
       } else if (element.id === "attack-button") {
-        return this.attacking = true;
+        this.attacking = true;
+        return this.attackText.show();
       }
     };
 
@@ -3850,6 +3868,7 @@
       if (this.attacking === true) {
         if (county !== 1026) {
           this.attacking = false;
+          this.attackText.hide();
           return this.model.set('army', this.model.get('army') - 50);
         }
       }
@@ -3865,8 +3884,33 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  entities.Land = (function(_super) {
+  entities.Country = (function(_super) {
+    __extends(Country, _super);
 
+    function Country(scene, plugins, model) {
+      var data, entityConfigs, rootModel, scenario;
+      Country.__super__.constructor.call(this, scene, plugins, model);
+      rootModel = this.scene.rootModel;
+      scenario = rootModel.get('scenario');
+      entityConfigs = rootModel.config.entities;
+      data = {
+        current: scenario.resources,
+        future: scenario.resources
+      };
+      this.model.resourceManager = this.scene.createEntity(entityConfigs.resourceManager, data);
+    }
+
+    return Country;
+
+  })(nv.Entity);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  entities.Land = (function(_super) {
     __extends(Land, _super);
 
     function Land(scene, plugins, model) {
@@ -3899,7 +3943,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   entities.LandSelector = (function(_super) {
-
     __extends(LandSelector, _super);
 
     function LandSelector(scene, plugins, model) {
@@ -3978,12 +4021,12 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   entities.Map = (function(_super) {
-
     __extends(Map, _super);
 
     function Map(scene, plugins, model) {
       var cache,
         _this = this;
+      model.data = scene.get('scenario').map;
       Map.__super__.constructor.call(this, scene, plugins, model);
       this.down = false;
       this.origin = {
@@ -4058,14 +4101,20 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   entities.Player = (function(_super) {
-
     __extends(Player, _super);
 
     function Player(scene, plugins, model) {
       Player.__super__.constructor.call(this, scene, plugins, model);
       this.gamepad = scene.get('gamepad');
-      this.gameWidth = this.scene.get('canvas').getSize().width;
+      this.gameWidth = scene.get('canvas').getSize().width;
+      this.model.countries = [];
     }
+
+    Player.prototype.addCountry = function(data) {
+      var entityConfigs;
+      entityConfigs = this.scene.rootModel.config.entities;
+      return this.model.countries.push(this.scene.createEntity(entityConfigs.country, data));
+    };
 
     Player.prototype.update = function(dt) {
       var mouseX;
@@ -4083,8 +4132,57 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  entities.ResourceManager = (function(_super) {
+  entities.PlayerManager = (function(_super) {
+    __extends(PlayerManager, _super);
 
+    function PlayerManager(scene, plugins, model) {
+      var _ref;
+      PlayerManager.__super__.constructor.call(this, scene, plugins, model);
+      this.model.turn = (_ref = this.model.turn) != null ? _ref : 1;
+      this.createPlayers();
+    }
+
+    PlayerManager.prototype.createPlayers = function() {
+      var entityConfigs, name, player, rootModel, scenario, _results;
+      rootModel = this.scene.rootModel;
+      scenario = rootModel.get('scenario');
+      entityConfigs = rootModel.config.entities;
+      this.model.players = [];
+      _results = [];
+      for (name in scenario.countries) {
+        player = this.scene.createEntity(entityConfigs.player);
+        player.addCountry({
+          country: name,
+          resources: scenario.resources,
+          plotData: scenario.countries[name].plots
+        });
+        _results.push(this.model.players.push(player));
+      }
+      return _results;
+    };
+
+    PlayerManager.prototype["event(engine:ui:clicked)"] = function(element) {
+      var turn;
+      if (element.id === "next-turn-button") {
+        turn = this.model.turn + 1;
+        if (turn > this.model.players.length) {
+          turn = 1;
+        }
+        return this.model.set('turn', turn);
+      }
+    };
+
+    return PlayerManager;
+
+  })(nv.Entity);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  entities.ResourceManager = (function(_super) {
     __extends(ResourceManager, _super);
 
     function ResourceManager(scene, plugins, model) {
@@ -4114,43 +4212,11 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  entities.TurnManager = (function(_super) {
-
-    __extends(TurnManager, _super);
-
-    function TurnManager(scene, plugins, model) {
-      var _ref, _ref1;
-      TurnManager.__super__.constructor.call(this, scene, plugins, model);
-      this.model.players = (_ref = this.model.players) != null ? _ref : 2;
-      this.model.turn = (_ref1 = this.model.turn) != null ? _ref1 : 1;
-    }
-
-    TurnManager.prototype["event(engine:ui:clicked)"] = function(element) {
-      var turn;
-      if (element.id === "next-turn-button") {
-        turn = this.model.turn + 1;
-        if (turn > this.model.players) {
-          turn = 1;
-        }
-        return this.model.set('turn', turn);
-      }
-    };
-
-    return TurnManager;
-
-  })(nv.Entity);
-
-}).call(this);
-
-(function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
   scenes.Main = (function(_super) {
-
     __extends(Main, _super);
 
     function Main(name, game, rootModel) {
+      rootModel.scenario = realms.gameConfig.scenarios.pvp.two;
       Main.__super__.constructor.call(this, name, game, rootModel);
       this.send("engine:timing:start");
     }
@@ -4167,9 +4233,8 @@
 }).call(this);
 
 (function() {
-
   realms.entities = {
-    background: {
+    map: {
       entity: entities.Map,
       plugins: [nv.SpriteMapRenderingPlugin],
       model: {
@@ -4182,8 +4247,37 @@
           height: 960,
           tileWidth: 32,
           tileHeight: 32,
-          data: [457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 453, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 328, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 455, 456, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 297, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 550, 552, 184, 184, 182, 183, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 425, 614, 616, 184, 650, 650, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 182, 119, 184, 182, 183, 184, 182, 801, 182, 650, 184, 375, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 119, 184, 183, 184, 184, 801, 184, 182, 183, 184, 184, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 328, 361, 374, 184, 650, 184, 184, 184, 184, 184, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 329, 457, 457, 457, 393, 184, 182, 650, 184, 184, 184, 389, 389, 389, 389, 389, 389, 390, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 184, 389, 389, 389, 389, 650, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 389, 389, 389, 389, 389, 389, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 184, 184, 389, 389, 389, 389, 389, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 421, 294, 389, 650, 650, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 455, 457, 457, 388, 389, 389, 389, 389, 389, 293, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 388, 389, 389, 389, 389, 389, 390, 457, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 420, 421, 421, 421, 421, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457],
           playerData: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    },
+    player: {
+      entity: entities.Player,
+      plugins: [],
+      model: {
+        options: {
+          name: "Player",
+          countries: []
+        }
+      }
+    },
+    country: {
+      entity: entities.Country,
+      plugins: [],
+      model: {
+        options: {
+          name: "Nowhere"
+        }
+      }
+    },
+    resourceManager: {
+      entity: entities.ResourceManager,
+      plugins: [],
+      model: {
+        options: {
+          food: 100,
+          population: 50,
+          gold: 0
         }
       }
     },
@@ -4196,6 +4290,9 @@
           frameWidth: 32,
           frameHeight: 32,
           animations: {
+            dirt: {
+              frames: [680]
+            },
             field: {
               frames: [805]
             },
@@ -4294,7 +4391,6 @@
 }).call(this);
 
 (function() {
-
   realms.levels = {
     x: 10
   };
@@ -4302,7 +4398,58 @@
 }).call(this);
 
 (function() {
+  realms.scenarios = {
+    pvp: {
+      description: "Player v. Player",
+      two: {
+        description: "2-players",
+        players: 2,
+        map: [457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 453, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 328, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 455, 456, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 297, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 550, 552, 184, 184, 182, 183, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 425, 614, 616, 184, 650, 650, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 182, 119, 184, 182, 183, 184, 182, 801, 182, 650, 184, 375, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 119, 184, 183, 184, 184, 801, 184, 182, 183, 184, 184, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 328, 361, 374, 184, 650, 184, 184, 184, 184, 184, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 329, 457, 457, 457, 393, 184, 182, 650, 184, 184, 184, 389, 389, 389, 389, 389, 389, 390, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 184, 389, 389, 389, 389, 650, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 389, 389, 389, 389, 389, 389, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 184, 184, 389, 389, 389, 389, 389, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 421, 294, 389, 650, 650, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 455, 457, 457, 388, 389, 389, 389, 389, 389, 293, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 388, 389, 389, 389, 389, 389, 390, 457, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 420, 421, 421, 421, 421, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457],
+        resources: {
+          food: 100,
+          population: 50,
+          gold: 0
+        },
+        countries: {
+          darkland: {
+            plots: [nv.Point(544, 320), nv.Point(576, 320), nv.Point(608, 320)]
+          },
+          sandyland: {
+            plots: [nv.Point(544, 320), nv.Point(576, 320), nv.Point(608, 320)]
+          }
+        }
+      },
+      three: {
+        description: "3-players",
+        players: 3,
+        map: [],
+        countries: {
+          darkland: {
+            plots: []
+          },
+          sandyland: {
+            plots: []
+          },
+          greenland: {
+            plots: []
+          }
+        }
+      },
+      four: {
+        description: "4-players"
+      }
+    },
+    pvc: {
+      description: "Player v. Computer",
+      one: {
+        description: "1-player"
+      }
+    }
+  };
 
+}).call(this);
+
+(function() {
   realms.gameConfig = {
     canvas: {
       id: '#game-canvas',
@@ -4329,14 +4476,8 @@
         },
         engines: [nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine, nv.UIEngine],
         entities: {
-          background: {
-            include: "background"
-          },
-          land: {
-            include: "land"
-          },
-          landTwo: {
-            include: "landTwo"
+          map: {
+            include: "map"
           },
           landSelectionScreen: {
             entity: entities.LandSelector,
@@ -4353,7 +4494,7 @@
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
-                text: "Next Turn",
+                text: "End Turn",
                 id: "next-turn-button",
                 x: 480,
                 y: 420
@@ -4393,24 +4534,13 @@
               }
             }
           },
-          turnManager: {
-            entity: entities.TurnManager,
+          playerManager: {
+            entity: entities.PlayerManager,
             plugins: [],
             model: {
               options: {
-                players: 2,
-                turn: 1
-              }
-            }
-          },
-          resourceManager: {
-            entity: entities.ResourceManager,
-            plugins: [],
-            model: {
-              options: {
-                food: 100,
-                population: 50,
-                gold: 0
+                turn: 1,
+                players: []
               }
             }
           },
@@ -4484,6 +4614,22 @@
               }
             }
           },
+          attackText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                id: 'attack-text',
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Attack Who?',
+                x: 200,
+                y: 200,
+                hidden: true
+              }
+            }
+          },
           turn: {
             entity: nv.Entity,
             plugins: [nv.TextUIPlugin],
@@ -4493,7 +4639,7 @@
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
                 text: "Player: {{turn}}",
-                bind: entities.TurnManager,
+                bind: entities.PlayerManager,
                 x: 500,
                 y: 36
               }
@@ -4503,13 +4649,13 @@
       }
     },
     levels: realms.levels,
-    entities: realms.entities
+    entities: realms.entities,
+    scenarios: realms.scenarios
   };
 
 }).call(this);
 
 (function() {
-
   nv.ready(function() {
     return this.app = new Application;
   });
