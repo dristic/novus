@@ -149,6 +149,19 @@ realms.gameConfig =
               bind: entities.ArmyManager
               x: 36
               y: 126
+        attackText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              id: 'attack-text'
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Attack Who?'
+              x: 200
+              y: 200
+              hidden: true
         turn:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

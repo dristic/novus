@@ -25,6 +25,14 @@ class nv.UIEngine extends nv.Engine
     for element in @elements
       unless element.hidden is true
         if element.bounds? and element.bounds().contains new nv.Point(data.x, data.y)
+          @scene.fire "engine:ui:mouse:down", data
+          event.stopPropagation()
+
+  "event(engine:gamepad:mouse:up)": (data, event) ->
+    for element in @elements
+      unless element.hidden is true
+        if element.bounds? and element.bounds().contains new nv.Point(data.x, data.y)
+          @scene.fire "engine:ui:mouse:up", data
           event.stopPropagation()
 
   update: (dt) ->

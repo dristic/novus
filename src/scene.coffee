@@ -40,6 +40,8 @@ class nv.Scene extends nv.EventDispatcher
     @createEntities @rootModel.config.scenes[@sceneName].entities
     @createSoundFxs()
 
+    @fire "scene:initialized"
+
   get: (key) ->
     @options[key] ? @rootModel[key]
 

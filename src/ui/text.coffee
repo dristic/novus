@@ -21,6 +21,7 @@ class nv.TextUIPlugin extends nv.UIPlugin
         @text.text = @entity.model.text.replace "{{" + key + "}}", binding.model[key]
 
   draw: (context, canvas) ->
-    @text.x = @entity.model.x
-    @text.y = @entity.model.y
-    @text.draw context, canvas
+    unless @hidden is true
+      @text.x = @entity.model.x
+      @text.y = @entity.model.y
+      @text.draw context, canvas

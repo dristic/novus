@@ -51,11 +51,11 @@ class nv.SliderUIPlugin extends nv.UIPlugin
   getBoxBounds: () ->
     new nv.Rect @box.x, @box.y, @box.x + @box.width, @box.y + @box.height
 
-  "event(engine:gamepad:mouse:down)": (data) ->
+  "event(engine:ui:mouse:down)": (data) ->
     if @getBoxBounds().contains new nv.Point(data.x, data.y)
       @dragging = true
 
-  "event(engine:gamepad:mouse:up)": (data) ->
+  "event(engine:ui:mouse:up)": (data) ->
     @dragging = false
 
   "event(engine:ui:clicked)": (element) ->
