@@ -22,10 +22,15 @@ class nv.EventDispatcher
         data: data ? {}
 
   send: (event, data) ->
+    stop = false
+    ev =
+      stopPropagation: () ->
+        stop = true
     event_listeners = @event_listeners[event]
     if event_listeners instanceof Array
       for listener in event_listeners
-        listener(data ? {})
+        listener(data ? {}, ev)
+        if stop is true then break
 
   off: (event, func) ->
     if not @event_listeners[event] instanceof Array
@@ -43,8 +48,6 @@ class nv.EventDispatcher
       events = @event_async_queue.slice(0)
       @event_async_queue = []
       for event in events
-        eventListeners = @event_listeners[event.event]
-        for listener in eventListeners
-          listener event.data if listener
+        @send event.event, event.data
     null
 

@@ -158,7 +158,7 @@ realms.gameConfig =
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
               text: "Player: {{turn}}"
-              bind: entities.TurnManager
+              bind: entities.PlayerManager
               x: 500
               y: 36
 

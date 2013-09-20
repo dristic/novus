@@ -21,6 +21,12 @@ class nv.UIEngine extends nv.Engine
   "event(engine:ui:destroy)": (element) ->
     @elements.splice @elements.indexOf(element), 1
 
+  "event(engine:gamepad:mouse:down)": (data, event) ->
+    for element in @elements
+      unless element.hidden is true
+        if element.bounds? and element.bounds().contains new nv.Point(data.x, data.y)
+          event.stopPropagation()
+
   update: (dt) ->
     for element in @elements
       element.update dt unless not element.update
@@ -29,6 +35,16 @@ class nv.UIEngine extends nv.Engine
     @context.save()
     element.draw @context, @canvas for element in @elements
     @context.restore()
+
+  drawBounds: () ->
+    for element in @elements
+      if element.bounds
+        bounds = element.bounds()
+        @context.beginPath()
+        @context.rect bounds.x, bounds.y, bounds.x2 - bounds.x, bounds.y2 - bounds.y
+        @context.setLineWidth 1
+        @context.setStrokeStyle 'red'
+        @context.stroke()
 
   destroy: () ->
     delete @elements

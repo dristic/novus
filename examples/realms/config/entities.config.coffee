@@ -37,7 +37,7 @@ realms.entities =
         food: 100
         population: 50
         gold: 0
-        
+
   land:
     entity: entities.Land
     plugins: [ nv.AnimatedSpriteRenderingPlugin ]
@@ -62,6 +62,7 @@ realms.entities =
         x: 576
         y: 320
         clickable: true
+
   landTwo:
     entity: entities.Land
     plugins: [ nv.AnimatedSpriteRenderingPlugin ]
@@ -84,6 +85,7 @@ realms.entities =
         x: 576
         y: 352
         clickable: true
+        
   landSelector:
     grain:
       entity: nv.Entity

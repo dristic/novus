@@ -45,6 +45,9 @@ class nv.SliderUIPlugin extends nv.UIPlugin
       x: entity.model.x + @max + 5
       y: entity.model.y
 
+  bounds: () ->
+    new nv.Rect @downButton.entity.model.x, @downButton.entity.model.y, @upButton.entity.model.x + @upButton.entity.model.width, @upButton.entity.model.y + @upButton.entity.model.height
+
   getBoxBounds: () ->
     new nv.Rect @box.x, @box.y, @box.x + @box.width, @box.y + @box.height
 
