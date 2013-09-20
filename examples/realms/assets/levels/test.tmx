@@ -8,7 +8,7 @@
  </tileset>
  <layer name="Map Data" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJzlls0RgjAQRhOsxIOM9OFBG3GwAWnAn8E61NEGlAJUoCuXITtgzCKQgIiHN2S4vP2yG0jMGYv/lBvx/t6B2rrGowM1NMEYcFp2JnM3BWYt9SsEIkXuE4HD6bOhiw/YFviBgKVcgCuwNdBLKtMZmIPTFd6dlRIY8CaZPJHDkzLhejhIn+j0uDkvOtEXCJ9cB1LVK5+RZHYXwJJnexmwd9b8lU1Fr+qM+DzLJXtln+ydaO41eoucOFd18pb1Ujmb8H5y6vSX6rmb4wDYir3V8RZ928LcekXkHIm6jgbyojMq4c3n1Jllir3IJWMq56+g+l/qzlZf7099oG5vmrojfZMn7SebTw==
+   eJzllk0OgjAQRqfxJC40cg8XehO9gOyNP+EeavQChQOowK1sQ5sMDYPYFkRcvKTp5s3XmUJzBpD/KXdi/9GD2vrGswc1tMFMEHTslHO3ECw76lcqyCpyXwkCRt8NVyJBDADjEUACBRyKvaOHXlKZbqxwxsop17oGV6/MFKocoZFJr6WLo9wh8+fVTu1LkIcb+zZ5zTsiZ3ct2LCyy2TPyhw+9FbdkYiVz7TOZ3rnjmetvXXOrcImb1MvlbMN7zunS3+pnq8QZ8EUnSs+X1tv3bctResdkXOi6rp4yKudWQMvzukyyxQnlcvEV85foep/6TpbQ30/DQHb3rT1RvomLydJmaY=
   </data>
  </layer>
  <layer name="Players" width="30" height="30" opacity="0.43">

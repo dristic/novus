@@ -1,5 +1,6 @@
 #= require entities.config
 #= require levels.config
+#= require scenarios.config
 
 realms.gameConfig =
   canvas:
@@ -44,12 +45,8 @@ realms.gameConfig =
         nv.UIEngine
       ]
       entities:
-        background:
-          include: "background"
-        land:
-          include: "land"
-        landTwo:
-          include: "landTwo"
+        map:
+          include: "map"
         landSelectionScreen:
           entity: entities.LandSelector
           plugins: [ ]
@@ -62,7 +59,7 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              text: "Next Turn"
+              text: "End Turn"
               id: "next-turn-button"
               x: 480
               y: 420
@@ -90,21 +87,13 @@ realms.gameConfig =
           model:
             options:
               army: 0
-        turnManager:
-          entity: entities.TurnManager
+        playerManager:
+          entity: entities.PlayerManager
           plugins: []
           model:
             options:
-              players: 2
               turn: 1
-        resourceManager:
-          entity: entities.ResourceManager
-          plugins: []
-          model:
-            options:
-              food: 100
-              population: 50
-              gold: 0
+              players: []
         sliderControl:
           entity: nv.Entity
           plugins: [ nv.SliderUIPlugin ]
@@ -175,3 +164,4 @@ realms.gameConfig =
 
   levels: realms.levels
   entities: realms.entities
+  scenarios: realms.scenarios

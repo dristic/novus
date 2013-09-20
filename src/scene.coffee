@@ -124,6 +124,13 @@ class nv.Scene extends nv.EventDispatcher
         return entity
     null
 
+  getEntities: (type) ->
+    entities = []
+    for entity in @entities
+      if entity instanceof type
+        entities.push entity
+    entities
+
   getEntityById: (id) ->
     for entity in @entities
       if entity.model? and entity.model.id? and entity.model.id is id
