@@ -1,5 +1,6 @@
 #= require entities.config
 #= require levels.config
+#= require scenarios.config
 
 realms.gameConfig =
   canvas:
@@ -44,12 +45,8 @@ realms.gameConfig =
         nv.UIEngine
       ]
       entities:
-        background:
-          include: "background"
-        land:
-          include: "land"
-        landTwo:
-          include: "landTwo"
+        map:
+          include: "map"
         landSelectionScreen:
           entity: entities.LandSelector
           plugins: [ ]
@@ -62,25 +59,17 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              text: "Next Turn"
+              text: "End Turn"
               id: "next-turn-button"
               x: 480
               y: 420
-        turnManager:
-          entity: entities.TurnManager
+        playerManager:
+          entity: entities.PlayerManager
           plugins: []
           model:
             options:
-              players: 2
               turn: 1
-        resourceManager:
-          entity: entities.ResourceManager
-          plugins: []
-          model:
-            options:
-              food: 100
-              population: 50
-              gold: 0
+              players: []
         sliderControl:
           entity: nv.Entity
           plugins: [ nv.SliderUIPlugin ]
@@ -88,54 +77,55 @@ realms.gameConfig =
             options:
               x: 200
               y: 200
-        population:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: "Population: {{population}}"
-              bind: entities.ResourceManager
-              x: 36
-              y: 36
-        foodText:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: 'Food {{food}}'
-              bind: entities.ResourceManager
-              x: 36
-              y: 66
-        goldText:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: 'Gold {{gold}}'
-              bind: entities.ResourceManager
-              x: 36
-              y: 96
-        turn:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: "Turn: {{turn}}"
-              bind: entities.TurnManager
-              x: 500
-              y: 36
+        # population:
+        #   entity: nv.Entity
+        #   plugins: [ nv.TextUIPlugin ]
+        #   model:
+        #     options:
+        #       color: '#CCC'
+        #       font: 'bold 20px sans-serif'
+        #       textBaseline: 'bottom'
+        #       text: "Population: {{population}}"
+        #       bind: entities.ResourceManager
+        #       x: 36
+        #       y: 36
+        # foodText:
+        #   entity: nv.Entity
+        #   plugins: [ nv.TextUIPlugin ]
+        #   model:
+        #     options:
+        #       color: '#CCC'
+        #       font: 'bold 20px sans-serif'
+        #       textBaseline: 'bottom'
+        #       text: 'Food {{food}}'
+        #       bind: entities.ResourceManager
+        #       x: 36
+        #       y: 66
+        # goldText:
+        #   entity: nv.Entity
+        #   plugins: [ nv.TextUIPlugin ]
+        #   model:
+        #     options:
+        #       color: '#CCC'
+        #       font: 'bold 20px sans-serif'
+        #       textBaseline: 'bottom'
+        #       text: 'Gold {{gold}}'
+        #       bind: entities.ResourceManager
+        #       x: 36
+        #       y: 96
+        # turn:
+        #   entity: nv.Entity
+        #   plugins: [ nv.TextUIPlugin ]
+        #   model:
+        #     options:
+        #       color: '#CCC'
+        #       font: 'bold 20px sans-serif'
+        #       textBaseline: 'bottom'
+        #       text: "Turn: {{turn}}"
+        #       bind: entities.TurnManager
+        #       x: 500
+        #       y: 36
 
   levels: realms.levels
   entities: realms.entities
+  scenarios: realms.scenarios

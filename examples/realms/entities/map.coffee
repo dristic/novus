@@ -1,5 +1,8 @@
 class entities.Map extends nv.Entity
   constructor: (scene, plugins, model) ->
+    # load map from player chosen game scenario
+    model.data = scene.get('scenario').map
+
     super scene, plugins, model
 
     @down = false
