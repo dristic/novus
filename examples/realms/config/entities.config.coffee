@@ -36,6 +36,7 @@ realms.entities =
       options:
         food: 100
         population: 50
+        army: 0
         gold: 0
 
   land:
@@ -55,7 +56,7 @@ realms.entities =
             frames: [833]
           gold:
             frames: [24]
-        currentAnimation: 'field'
+        currentAnimation: 'dirt'
         playing: false
         width: 32
         height: 32

@@ -18,6 +18,10 @@ class entities.PlayerManager extends nv.Entity
         resources: scenario.resources
         plotData: scenario.countries[name].plots
       @model.players.push player
+    @model.currentPlayer = @model.players[@model.turn - 1]
+
+  currentPlayer: ()->
+    @model.currentPlayer
 
   "event(engine:ui:clicked)": (element) ->
     if element.id is "next-turn-button"
@@ -25,3 +29,4 @@ class entities.PlayerManager extends nv.Entity
       if turn > @model.players.length
         turn = 1
       @model.set 'turn', turn
+      @model.set 'currentPlayer', @model.players[turn]

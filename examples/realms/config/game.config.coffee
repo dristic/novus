@@ -110,7 +110,10 @@ realms.gameConfig =
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
               text: "Population: {{population}}"
-              bind: entities.ResourceManager
+              # bind: entities.PlayerManager
+              bind: (scene) ->
+                (key) -> (scene.getEntity(entities.PlayerManager).currentPlayer().resources().model[key])
+              binding: 'dynamic'
               x: 36
               y: 36
         foodText:

@@ -11,9 +11,9 @@ realms.scenarios =
         gold: 0
       countries:
         darkland:
-          plots: [nv.Point(544,320), nv.Point(576,320), nv.Point(608,320)]
+          plots: [new nv.Point(576,320), new nv.Point(608,320), new nv.Point(576,352), new nv.Point(352, 416), new nv.Point(352, 448)]
         sandyland:
-          plots: [nv.Point(544,320), nv.Point(576,320), nv.Point(608,320)]
+          plots: [new nv.Point(576,480), new nv.Point(608,480), new nv.Point(608,512), new nv.Point(480, 576), new nv.Point(512, 576)]
 
     three:
       description: "3-players"
