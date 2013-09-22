@@ -20,6 +20,7 @@ class entities.MultiplayerController extends nv.Entity
       data = snapshot.val()
       if data.guid isnt @guid
         @scene.fire "game:army:attacked", data.amount
+        snapshot.ref().remove()
 
   "event(game:army:send)": (amount) ->
     @ref.child('attacks').push
