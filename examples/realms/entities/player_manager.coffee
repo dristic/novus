@@ -19,6 +19,7 @@ class entities.PlayerManager extends nv.Entity
         plotData: scenario.countries[name].plots
       @model.players.push player
     @model.currentPlayer = @model.players[@model.turn - 1]
+    @currentPlayer().beginTurn()
 
   currentPlayer: ()->
     @model.currentPlayer

@@ -27,8 +27,8 @@ class entities.ResourceManager extends nv.Entity
     population = @model.get 'population'
     farmers = population * ratio
     miners = population * (1 - ratio)
-    @model.set 'farmers', farmers
-    @model.set 'miners', miners
+    @projections.set 'farmers', farmers
+    @projections.set 'miners', miners
 
   setOwner: (owner) ->
     @owner = owner

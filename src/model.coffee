@@ -6,7 +6,7 @@ class nv.Model extends nv.EventDispatcher
 
   setMany: (object) ->
     for key of object
-      this[key] = object[key]
+      @set key, object[key]
 
   get: (key) ->
     this[key]
