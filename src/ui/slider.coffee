@@ -10,7 +10,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
 
     @upButton = new nv.ButtonUIPlugin scene,
       model:
-        text: "Up"
+        text: entity.model.rightText
         x: entity.model.x + 110
         y: entity.model.y
         width: 50
@@ -18,7 +18,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
 
     @downButton = new nv.ButtonUIPlugin scene,
       model:
-        text: "Down"
+        text: entity.model.leftText
         x: entity.model.x - 60
         y: entity.model.y
         width: 50

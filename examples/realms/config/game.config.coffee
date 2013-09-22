@@ -101,6 +101,8 @@ realms.gameConfig =
             options:
               x: 460
               y: 200
+              leftText: "Miners"
+              rightText: "Farmers"
         population:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

@@ -58,7 +58,6 @@ class entities.ResourceManager extends nv.Entity
       farmers: @projections.farmers
       miners: @projections.miners
       soldiers: @projections.soldiers
-    console.log "COMITTING", @model, @projections
 
   updateProjections: () ->
     @projectFarming()
