@@ -6,6 +6,10 @@ class entities.ResourceManager extends nv.Entity
       farmers: 0
       miners: 0
       soldiers: 0
+    @projections = new nv.Model
+      farmers: 0
+      miners: 0
+      soldiers: 0
 
   calculateResources: (lands) ->
     # Calculate food
@@ -19,6 +23,13 @@ class entities.ResourceManager extends nv.Entity
   "event(game:army:created)": (value) ->
     @model.set 'population', @model.get('population') - value
 
+  setPopulationRatio: (ratio) ->
+    population = @model.get 'population'
+    farmers = population * ratio
+    miners = population * (1 - ratio)
+    @model.set 'farmers', farmers
+    @model.set 'miners', miners
+
   setOwner: (owner) ->
     @owner = owner
 
@@ -29,7 +40,13 @@ class entities.ResourceManager extends nv.Entity
     @model.get 'projections'
 
   prepareProjections: () ->
-    @projections = @model.clone()
+    @projections.setMany
+      population: @model.population
+      gold: @model.gold
+      food: @model.food
+      farmers: @model.farmers
+      miners: @model.miners
+      soldiers: @model.soldiers
 
   commitProjections: () ->
     @model.setMany
@@ -39,7 +56,6 @@ class entities.ResourceManager extends nv.Entity
       farmers: @projections.farmers
       miners: @projections.miners
       soldiers: @projections.soldiers
-    @projections = null
 
   updateProjections: () ->
     @projectFarming()
@@ -49,14 +65,14 @@ class entities.ResourceManager extends nv.Entity
   projectFarming: () ->
     food = 0
     for i in [0..@owner.numberOfPlots('grain')]
-      food += (Math.random() * 1.5 + 0.7) * @projection.get('farmers')
+      food += (Math.random() * 1.5 + 0.7) * @projections.get('farmers')
     food = Math.min(food, 300) + @model.get 'food'
     @projections.set 'food', food
 
   projectMining: () ->
     gold = 0
-    for i in [0..@owneer.numberOfPlots('gold')]
-      gold += (Math.random() * 1.5 + 0.7) * 0.1 * @projection.get('miners')
+    for i in [0..@owner.numberOfPlots('gold')]
+      gold += (Math.random() * 1.5 + 0.7) * 0.1 * @projections.get('miners')
     gold = Math.min(gold, 30) + @model.get 'gold'
     @projections.set 'gold', gold
 

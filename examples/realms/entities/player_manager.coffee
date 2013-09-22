@@ -23,6 +23,11 @@ class entities.PlayerManager extends nv.Entity
   currentPlayer: ()->
     @model.currentPlayer
 
+  "event(engine:ui:slider:change)": (entity) ->
+    value = Math.floor(entity.model.value) / 100
+    @currentPlayer().resources().setPopulationRatio value
+    @currentPlayer().resources().updateProjections()
+
   "event(engine:ui:clicked)": (element) ->
     if element.id is "next-turn-button"
       turn = @model.turn + 1
@@ -30,7 +35,6 @@ class entities.PlayerManager extends nv.Entity
         turn = 1
 
       @currentPlayer().endTurn()
-
       @model.set 'turn', turn
       @model.set 'currentPlayer', @model.players[turn - 1]
       @currentPlayer().beginTurn()

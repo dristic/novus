@@ -16,6 +16,10 @@ class entities.Country extends nv.Entity
       landConfig.model.options.y = position.y
       @model.plots.push @scene.createEntity(landConfig)
 
+  "event(game:land:change)": (land) ->
+    unless @model.plots.indexOf land is -1
+      @resources().updateProjections()
+
   resources: () ->
     @model.resourceManager
 
