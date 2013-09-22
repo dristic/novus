@@ -215,6 +215,12 @@ realms.gameConfig =
               bind: entities.PlayerManager
               x: 500
               y: 36
+        multiplayerController:
+          entity: entities.MultiplayerController
+          plugins: []
+          model:
+            options:
+              url: 'https://novus-realms.firebaseio.com/'
 
   levels: realms.levels
   entities: realms.entities
