@@ -7,6 +7,9 @@ class entities.ResourceManager extends nv.Entity
       miners: 0
       soldiers: 0
 
+  calculateResources: (lands) ->
+    # Calculate food
+
   "event(engine:ui:clicked)": (element) ->
     if element.id is "next-turn-button"
       population = @model.get 'population'
@@ -94,14 +97,3 @@ class entities.ResourceManager extends nv.Entity
     food = @projections.get 'food'
     food -= @projections.get 'population'
     @projections.set 'food', food
-
-
-
-
-
-
-
-
-
-
-

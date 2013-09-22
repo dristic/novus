@@ -45,6 +45,11 @@ class nv.SliderUIPlugin extends nv.UIPlugin
       x: entity.model.x + @max + 5
       y: entity.model.y
 
+    @entity.model.on 'change:value', nv.bind this, @onValueChange
+
+  onValueChange: (value) ->
+    @scene.fire "engine:ui:slider:change", this.entity
+
   bounds: () ->
     new nv.Rect @downButton.entity.model.x, @downButton.entity.model.y, @upButton.entity.model.x + @upButton.entity.model.width, @upButton.entity.model.y + @upButton.entity.model.height
 
@@ -57,6 +62,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
 
   "event(engine:ui:mouse:up)": (data) ->
     @dragging = false
+    @entity.model.set 'value', @value
 
   "event(engine:ui:clicked)": (element) ->
     if element is @upButton

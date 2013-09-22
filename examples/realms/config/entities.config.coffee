@@ -55,7 +55,7 @@ realms.entities =
             frames: [833]
           gold:
             frames: [24]
-        currentAnimation: 'dirt'
+        currentAnimation: 'field'
         playing: false
         width: 32
         height: 32
@@ -92,8 +92,8 @@ realms.entities =
       plugins: [ nv.ButtonUIPlugin ]
       model:
         options:
-          id: "select-none"
-          text: "None"
+          id: "select-field"
+          text: "Field"
           x: 330
           y: 10
           width: 150

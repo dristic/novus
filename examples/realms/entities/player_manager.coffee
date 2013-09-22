@@ -32,6 +32,5 @@ class entities.PlayerManager extends nv.Entity
       @currentPlayer().endTurn()
 
       @model.set 'turn', turn
-      @model.set 'currentPlayer', @model.players[turn]
-
+      @model.set 'currentPlayer', @model.players[turn - 1]
       @currentPlayer().beginTurn()

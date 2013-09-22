@@ -21,7 +21,7 @@ class nv.Model extends nv.EventDispatcher
   clone: () ->
     clone = new nv.Model {}
     for key of this
-      next if typeof this[key] is "function"
+      continue if typeof this[key] is "function"
       clone[key] = this[key]
     clone
 
