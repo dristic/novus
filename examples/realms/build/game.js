@@ -1370,7 +1370,7 @@
       var key, _results;
       _results = [];
       for (key in object) {
-        _results.push(this[key] = object[key]);
+        _results.push(this.set(key, object[key]));
       }
       return _results;
     };
@@ -3481,33 +3481,64 @@
     __extends(TextUIPlugin, _super);
 
     function TextUIPlugin(scene, entity) {
-      var binding, key, match, _i, _len, _ref,
+      var bindMethod, binding, key, match, _i, _len, _ref,
         _this = this;
       TextUIPlugin.__super__.constructor.call(this, scene, entity);
       this.id = this.entity.model.id;
       this.text = new gleam.Text(this.entity.model);
-      if (this.entity.model.bind) {
-        if (typeof this.entity.model.bind === "function") {
-          binding = this.scene.getEntity(this.entity.model.bind);
-        } else {
-          binding = this.entity.model.bind;
+      this.dirty = true;
+      this.values = {};
+      if (this.entity.model.bind == null) {
+        return;
+      }
+      bindMethod = typeof this.entity.model.bind === "function" ? this.entity.model.binding || "entity" : "static";
+      binding = (function() {
+        switch (bindMethod) {
+          case "static":
+            return this.entity.model.bind;
+          case "entity":
+            return this.scene.getEntity(this.entity.model.bind);
+          case "dynamic":
+            return this.entity.model.bind(scene);
         }
-        _ref = this.entity.model.text.match(/\{{([\s\S]+?)}}/g);
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          match = _ref[_i];
-          match = match.replace('{{', '');
-          match = match.replace('}}', '');
-          key = match;
-          binding.model.on("change:" + key, function(value) {
-            return _this.text.text = _this.entity.model.text.replace("{{" + key + "}}", value);
-          });
-          this.text.text = this.entity.model.text.replace("{{" + key + "}}", binding.model[key]);
-        }
+      }).call(this);
+      _ref = this.entity.model.text.match(/\{{[\s\S]+?}}/g);
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        match = _ref[_i];
+        key = match.slice(2, -2);
+        this.values[key] = bindMethod === "dynamic" ? binding : binding.model[key];
+      }
+      if (bindMethod === "dynamic") {
+        return;
+      }
+      for (key in this.values) {
+        binding.model.on("change:" + key, function(value) {
+          _this.values[key] = value;
+          return _this.dirty = true;
+        });
       }
     }
 
+    TextUIPlugin.prototype.updateText = function() {
+      var key, text, value, _ref;
+      if (this.dirty) {
+        text = this.entity.model.text;
+        _ref = this.values;
+        for (key in _ref) {
+          value = _ref[key];
+          if (typeof value === "function") {
+            value = value(key);
+          }
+          text = text.replace("{{" + key + "}}", value);
+        }
+        this.text.text = text;
+        return this.dirty = false;
+      }
+    };
+
     TextUIPlugin.prototype.draw = function(context, canvas) {
       if (this.hidden !== true) {
+        this.updateText();
         this.text.x = this.entity.model.x;
         this.text.y = this.entity.model.y;
         return this.text.draw(context, canvas);
@@ -3604,7 +3635,7 @@
       this.max = 100;
       this.upButton = new nv.ButtonUIPlugin(scene, {
         model: {
-          text: "Up",
+          text: entity.model.rightText,
           x: entity.model.x + 110,
           y: entity.model.y,
           width: 50,
@@ -3613,7 +3644,7 @@
       });
       this.downButton = new nv.ButtonUIPlugin(scene, {
         model: {
-          text: "Down",
+          text: entity.model.leftText,
           x: entity.model.x - 60,
           y: entity.model.y,
           width: 50,
@@ -3641,7 +3672,12 @@
         x: entity.model.x + this.max + 5,
         y: entity.model.y
       });
+      this.entity.model.on('change:value', nv.bind(this, this.onValueChange));
     }
+
+    SliderUIPlugin.prototype.onValueChange = function(value) {
+      return this.scene.fire("engine:ui:slider:change", this.entity);
+    };
 
     SliderUIPlugin.prototype.bounds = function() {
       return new nv.Rect(this.downButton.entity.model.x, this.downButton.entity.model.y, this.upButton.entity.model.x + this.upButton.entity.model.width, this.upButton.entity.model.y + this.upButton.entity.model.height);
@@ -3658,7 +3694,8 @@
     };
 
     SliderUIPlugin.prototype["event(engine:ui:mouse:up)"] = function(data) {
-      return this.dragging = false;
+      this.dragging = false;
+      return this.entity.model.set('value', this.value);
     };
 
     SliderUIPlugin.prototype["event(engine:ui:clicked)"] = function(element) {
@@ -3888,17 +3925,46 @@
     __extends(Country, _super);
 
     function Country(scene, plugins, model) {
-      var data, entityConfigs, rootModel, scenario;
+      var entityConfigs, landConfig, position, rootModel, scenario, _i, _len, _ref;
       Country.__super__.constructor.call(this, scene, plugins, model);
       rootModel = this.scene.rootModel;
       scenario = rootModel.get('scenario');
       entityConfigs = rootModel.config.entities;
-      data = {
-        current: scenario.resources,
-        future: scenario.resources
-      };
-      this.model.resourceManager = this.scene.createEntity(entityConfigs.resourceManager, data);
+      this.model.set('resourceManager', this.scene.createEntity(entityConfigs.resourceManager, scenario.resources));
+      this.model.resourceManager.setOwner(this);
+      this.model.plots = [];
+      _ref = this.model.plotData;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        position = _ref[_i];
+        landConfig = nv.extend({}, entityConfigs.land);
+        landConfig.model.options.x = position.x;
+        landConfig.model.options.y = position.y;
+        this.model.plots.push(this.scene.createEntity(landConfig));
+      }
     }
+
+    Country.prototype["event(game:land:change)"] = function(land) {
+      if (!this.model.plots.indexOf(land === -1)) {
+        return this.resources().updateProjections();
+      }
+    };
+
+    Country.prototype.resources = function() {
+      return this.model.resourceManager;
+    };
+
+    Country.prototype.numberOfPlots = function(type) {
+      var count, plot, _i, _len, _ref;
+      count = 0;
+      _ref = this.model.plots;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        plot = _ref[_i];
+        if (plot.model.currentAnimation === type) {
+          count += 1;
+        }
+      }
+      return count;
+    };
 
     return Country;
 
@@ -3915,17 +3981,25 @@
 
     function Land(scene, plugins, model) {
       Land.__super__.constructor.call(this, scene, plugins, model);
+      this.model.set('value', 'field');
       this.renderer = this.getPlugin(nv.AnimatedSpriteRenderingPlugin);
     }
 
     Land.prototype.changeType = function(type) {
-      if (type === 'grain') {
-        this.renderer.play('grain');
-      } else if (type === 'field') {
-        this.renderer.play('field');
-      } else if (type === 'gold') {
-        this.renderer.play('gold');
+      switch (type) {
+        case 'grain':
+          this.model.set('value', 'grain');
+          break;
+        case 'field':
+          this.model.set('value', 'field');
+          break;
+        case 'gold':
+          this.model.set('value', 'gold');
+          break;
+        case 'unused':
+          this.model.set('value', 'dirt');
       }
+      this.renderer.play(this.model.get('value'));
       this.renderer.stop();
       return this.scene.fire("game:land:change", this);
     };
@@ -3993,6 +4067,8 @@
             this.land.changeType('grain');
           } else if (type === 'select-field') {
             this.land.changeType('field');
+          } else if (type === 'select-none') {
+            this.land.changeType('unused');
           } else if (type === 'select-gold') {
             this.land.changeType('gold');
           }
@@ -4050,7 +4126,7 @@
       cache = function() {
         return _this.getPlugin(nv.SpriteMapRenderingPlugin).cache(_this.model.width, _this.model.height);
       };
-      setTimeout(cache, 1000);
+      setTimeout(cache, 2000);
     }
 
     Map.prototype.update = function(dt) {
@@ -4116,10 +4192,22 @@
       return this.model.countries.push(this.scene.createEntity(entityConfigs.country, data));
     };
 
+    Player.prototype.resources = function(country) {
+      return this.model.countries[0].resources();
+    };
+
     Player.prototype.update = function(dt) {
       var mouseX;
       mouseX = this.gamepad.getState().mouse.x - (this.model.width / 2);
       return this.model.x = mouseX;
+    };
+
+    Player.prototype.beginTurn = function() {
+      return this.resources().prepareProjections();
+    };
+
+    Player.prototype.endTurn = function() {
+      return this.resources().commitProjections();
     };
 
     return Player;
@@ -4143,12 +4231,11 @@
     }
 
     PlayerManager.prototype.createPlayers = function() {
-      var entityConfigs, name, player, rootModel, scenario, _results;
+      var entityConfigs, name, player, rootModel, scenario;
       rootModel = this.scene.rootModel;
       scenario = rootModel.get('scenario');
       entityConfigs = rootModel.config.entities;
       this.model.players = [];
-      _results = [];
       for (name in scenario.countries) {
         player = this.scene.createEntity(entityConfigs.player);
         player.addCountry({
@@ -4156,9 +4243,21 @@
           resources: scenario.resources,
           plotData: scenario.countries[name].plots
         });
-        _results.push(this.model.players.push(player));
+        this.model.players.push(player);
       }
-      return _results;
+      this.model.currentPlayer = this.model.players[this.model.turn - 1];
+      return this.currentPlayer().beginTurn();
+    };
+
+    PlayerManager.prototype.currentPlayer = function() {
+      return this.model.currentPlayer;
+    };
+
+    PlayerManager.prototype["event(engine:ui:slider:change)"] = function(entity) {
+      var value;
+      value = Math.floor(entity.model.value) / 100;
+      this.currentPlayer().resources().setPopulationRatio(value);
+      return this.currentPlayer().resources().updateProjections();
     };
 
     PlayerManager.prototype["event(engine:ui:clicked)"] = function(element) {
@@ -4168,7 +4267,10 @@
         if (turn > this.model.players.length) {
           turn = 1;
         }
-        return this.model.set('turn', turn);
+        this.currentPlayer().endTurn();
+        this.model.set('turn', turn);
+        this.model.set('currentPlayer', this.model.players[turn - 1]);
+        return this.currentPlayer().beginTurn();
       }
     };
 
@@ -4187,7 +4289,19 @@
 
     function ResourceManager(scene, plugins, model) {
       ResourceManager.__super__.constructor.call(this, scene, plugins, model);
+      this.model.setMany({
+        farmers: 0,
+        miners: 0,
+        soldiers: 0
+      });
+      this.projections = new nv.Model({
+        farmers: 0,
+        miners: 0,
+        soldiers: 0
+      });
     }
+
+    ResourceManager.prototype.calculateResources = function(lands) {};
 
     ResourceManager.prototype["event(engine:ui:clicked)"] = function(element) {
       var population;
@@ -4200,6 +4314,113 @@
 
     ResourceManager.prototype["event(game:army:created)"] = function(value) {
       return this.model.set('population', this.model.get('population') - value);
+    };
+
+    ResourceManager.prototype.setPopulationRatio = function(ratio) {
+      var farmers, miners, population;
+      this.projections.set('ratio', ratio);
+      population = this.model.get('population');
+      farmers = population * ratio;
+      miners = population * (1 - ratio);
+      this.projections.set('farmers', farmers);
+      return this.projections.set('miners', miners);
+    };
+
+    ResourceManager.prototype.setOwner = function(owner) {
+      return this.owner = owner;
+    };
+
+    ResourceManager.prototype.current = function() {
+      return this.model;
+    };
+
+    ResourceManager.prototype.projections = function() {
+      return this.model.get('projections');
+    };
+
+    ResourceManager.prototype.prepareProjections = function() {
+      this.projections.setMany({
+        population: this.model.population,
+        gold: this.model.gold,
+        food: this.model.food,
+        farmers: this.model.farmers,
+        miners: this.model.miners,
+        soldiers: this.model.soldiers
+      });
+      return this.setPopulationRatio(this.model.get('ratio'));
+    };
+
+    ResourceManager.prototype.commitProjections = function() {
+      return this.model.setMany({
+        population: this.projections.population,
+        gold: this.projections.gold,
+        food: this.projections.food,
+        farmers: this.projections.farmers,
+        miners: this.projections.miners,
+        soldiers: this.projections.soldiers
+      });
+    };
+
+    ResourceManager.prototype.updateProjections = function() {
+      this.projectFarming();
+      this.projectMining();
+      return this.projectPopulation();
+    };
+
+    ResourceManager.prototype.projectFarming = function() {
+      var food, i, _i, _ref;
+      food = 0;
+      for (i = _i = 0, _ref = this.owner.numberOfPlots('grain'); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        food += (Math.random() * 1.5 + 0.7) * this.projections.get('farmers');
+      }
+      food = Math.min(food, 300) + this.model.get('food');
+      return this.projections.set('food', food);
+    };
+
+    ResourceManager.prototype.projectMining = function() {
+      var gold, i, _i, _ref;
+      gold = 0;
+      for (i = _i = 0, _ref = this.owner.numberOfPlots('gold'); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        gold += (Math.random() * 1.5 + 0.7) * 0.1 * this.projections.get('miners');
+      }
+      gold = Math.min(gold, 30) + this.model.get('gold');
+      return this.projections.set('gold', gold);
+    };
+
+    ResourceManager.prototype.projectPopulation = function() {
+      var currentPopulation, deathTarget, employedWorkers, farmers, food, growthTarget, miners, newPopulation, soldiers, supportablePopulation, workerImbalance;
+      currentPopulation = this.model.get('population');
+      growthTarget = currentPopulation * 1.05;
+      supportablePopulation = this.projections.get('food');
+      if (growthTarget < supportablePopulation) {
+        this.projections.set('population', growthTarget);
+      } else if (currentPopulation < supportablePopulation) {
+        this.projections.set('population', supportablePopulation);
+      } else {
+        deathTarget = currentPopulation * .1;
+        employedWorkers = this.projections.get('farmers') + this.projections.get('miners') + this.projections.get('soldiers');
+        newPopulation = currentPopulation - deathTarget;
+        this.projections.set('population', newPopulation);
+        workerImbalance = newPopulation - employedWorkers;
+        while (workerImbalance < 0) {
+          soldiers = this.projections.get('soldiers');
+          miners = this.projections.get('miners');
+          farmers = this.projections.get('farmers');
+          if (soldiers > 0) {
+            workerImbalance += soldiers;
+            this.projections.set('soldiers', Math.max(0, workerImbalance));
+          } else if (miners > 0) {
+            workerImbalance += miners;
+            this.projections.set('soldiers', Math.max(0, workerImbalance));
+          } else if (farmers > 0) {
+            workerImbalance += farmers;
+            this.projections.set('soldiers', Math.max(0, workerImbalance));
+          }
+        }
+      }
+      food = this.projections.get('food');
+      food -= this.projections.get('population');
+      return this.projections.set('food', food);
     };
 
     return ResourceManager;
@@ -4275,8 +4496,8 @@
       plugins: [],
       model: {
         options: {
-          food: 100,
-          population: 50,
+          population: 0,
+          food: 0,
           gold: 0
         }
       }
@@ -4303,7 +4524,7 @@
               frames: [24]
             }
           },
-          currentAnimation: 'field',
+          currentAnimation: 'dirt',
           playing: false,
           width: 32,
           height: 32,
@@ -4343,6 +4564,20 @@
       }
     },
     landSelector: {
+      unused: {
+        entity: nv.Entity,
+        plugins: [nv.ButtonUIPlugin],
+        model: {
+          options: {
+            id: "select-none",
+            text: "Unused",
+            x: 330,
+            y: 10,
+            width: 150,
+            height: 50
+          }
+        }
+      },
       grain: {
         entity: nv.Entity,
         plugins: [nv.ButtonUIPlugin],
@@ -4357,20 +4592,6 @@
           }
         }
       },
-      field: {
-        entity: nv.Entity,
-        plugins: [nv.ButtonUIPlugin],
-        model: {
-          options: {
-            id: "select-field",
-            text: "Field",
-            x: 170,
-            y: 10,
-            width: 150,
-            height: 50
-          }
-        }
-      },
       gold: {
         entity: nv.Entity,
         plugins: [nv.ButtonUIPlugin],
@@ -4378,7 +4599,7 @@
           options: {
             id: "select-gold",
             text: "Gold",
-            x: 330,
+            x: 170,
             y: 10,
             width: 150,
             height: 50
@@ -4412,10 +4633,10 @@
         },
         countries: {
           darkland: {
-            plots: [nv.Point(544, 320), nv.Point(576, 320), nv.Point(608, 320)]
+            plots: [new nv.Point(576, 320), new nv.Point(608, 320), new nv.Point(576, 352), new nv.Point(352, 416), new nv.Point(352, 448)]
           },
           sandyland: {
-            plots: [nv.Point(544, 320), nv.Point(576, 320), nv.Point(608, 320)]
+            plots: [new nv.Point(576, 480), new nv.Point(608, 480), new nv.Point(608, 512), new nv.Point(480, 576), new nv.Point(512, 576)]
           }
         }
       },
@@ -4550,7 +4771,9 @@
             model: {
               options: {
                 x: 460,
-                y: 200
+                y: 200,
+                leftText: "Miners",
+                rightText: "Farmers"
               }
             }
           },
