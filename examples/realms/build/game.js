@@ -3481,7 +3481,7 @@
     __extends(TextUIPlugin, _super);
 
     function TextUIPlugin(scene, entity) {
-      var bindMethod, binding, key, match, _i, _len, _ref,
+      var bindMethod, binding, key, keySegments, match, _i, _len, _ref,
         _this = this;
       TextUIPlugin.__super__.constructor.call(this, scene, entity);
       this.id = this.entity.model.id;
@@ -3506,16 +3506,39 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         match = _ref[_i];
         key = match.slice(2, -2);
-        this.values[key] = bindMethod === "dynamic" ? binding : binding.model[key];
+        keySegments = key.split('.');
+        if (keySegments.length > 1) {
+          binding = binding.model[keySegments[0]];
+          bindMethod = "proxy";
+        }
+        this.values[key] = (function() {
+          switch (bindMethod) {
+            case "dynamic":
+              return binding;
+            case "proxy":
+              return binding.get(keySegments[1]);
+            default:
+              return binding.model[key];
+          }
+        })();
       }
       if (bindMethod === "dynamic") {
         return;
       }
       for (key in this.values) {
-        binding.model.on("change:" + key, function(value) {
-          _this.values[key] = value;
-          return _this.dirty = true;
-        });
+        switch (bindMethod) {
+          case "proxy":
+            binding.on("change:" + keySegments[1], function(value) {
+              _this.values[key] = value;
+              return _this.dirty = true;
+            });
+            break;
+          default:
+            binding.model.on("change:" + key, function(value) {
+              _this.values[key] = value;
+              return _this.dirty = true;
+            });
+        }
       }
     }
 
@@ -3959,7 +3982,7 @@
       _ref = this.model.plots;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         plot = _ref[_i];
-        if (plot.model.currentAnimation === type) {
+        if (plot.model.value === type) {
           count += 1;
         }
       }
@@ -4112,6 +4135,8 @@
       this.gamepad = scene.get('gamepad');
       this.canvas = scene.get('canvas');
       this.camera = scene.get('camera');
+      this.camera.x = -160;
+      this.camera.y = -230;
       this.playerData = new nv.SpriteMapRenderingPlugin(scene, {
         model: {
           x: model.x,
@@ -4166,7 +4191,46 @@
       }
     };
 
+    Map.prototype["event(engine:ui:clicked)"] = function(element) {
+      switch (element.id) {
+        case "next-turn-button":
+          return this.scene.fire("game:turn:next");
+      }
+    };
+
     return Map;
+
+  })(nv.Entity);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  entities.MultiplayerController = (function(_super) {
+    __extends(MultiplayerController, _super);
+
+    function MultiplayerController(scene, plugins, model) {
+      var myRootRef,
+        _this = this;
+      MultiplayerController.__super__.constructor.call(this, scene, plugins, model);
+      myRootRef = new Firebase(this.model.url);
+      this.ref = myRootRef.child('game');
+      this.ref.child('turn').set(2);
+      this.ref.child('players').on('value', function(snapshot) {
+        _this.ref.child('players').off();
+        if (snapshot.val() === 0) {
+          _this.scene.fire("game:mp:player", 1);
+          return _this.ref.child('players').set(1);
+        } else {
+          _this.scene.fire("game:mp:player", 2);
+          return _this.ref.child('players').set(2);
+        }
+      });
+    }
+
+    return MultiplayerController;
 
   })(nv.Entity);
 
@@ -4224,9 +4288,8 @@
     __extends(PlayerManager, _super);
 
     function PlayerManager(scene, plugins, model) {
-      var _ref;
       PlayerManager.__super__.constructor.call(this, scene, plugins, model);
-      this.model.turn = (_ref = this.model.turn) != null ? _ref : 1;
+      this.model.turn = 0;
       this.createPlayers();
     }
 
@@ -4245,12 +4308,27 @@
         });
         this.model.players.push(player);
       }
-      this.model.currentPlayer = this.model.players[this.model.turn - 1];
-      return this.currentPlayer().beginTurn();
+      return this.nextPlayersTurn();
     };
 
     PlayerManager.prototype.currentPlayer = function() {
       return this.model.currentPlayer;
+    };
+
+    PlayerManager.prototype.nextPlayersTurn = function() {
+      var turn;
+      turn = this.model.turn + 1;
+      if (turn > this.model.players.length) {
+        turn = 1;
+      }
+      if (this.currentPlayer()) {
+        this.currentPlayer().endTurn();
+      }
+      this.model.set('turn', turn);
+      this.model.set('currentPlayer', this.model.players[turn - 1]);
+      this.currentPlayer().beginTurn();
+      this.model.set('resourcesCurrent', this.currentPlayer().resources().current());
+      return this.model.set('resourcesProjected', this.currentPlayer().resources().projected());
     };
 
     PlayerManager.prototype["event(engine:ui:slider:change)"] = function(entity) {
@@ -4260,18 +4338,8 @@
       return this.currentPlayer().resources().updateProjections();
     };
 
-    PlayerManager.prototype["event(engine:ui:clicked)"] = function(element) {
-      var turn;
-      if (element.id === "next-turn-button") {
-        turn = this.model.turn + 1;
-        if (turn > this.model.players.length) {
-          turn = 1;
-        }
-        this.currentPlayer().endTurn();
-        this.model.set('turn', turn);
-        this.model.set('currentPlayer', this.model.players[turn - 1]);
-        return this.currentPlayer().beginTurn();
-      }
+    PlayerManager.prototype["event(game:turn:next)"] = function() {
+      return this.nextPlayersTurn();
     };
 
     return PlayerManager;
@@ -4334,8 +4402,8 @@
       return this.model;
     };
 
-    ResourceManager.prototype.projections = function() {
-      return this.model.get('projections');
+    ResourceManager.prototype.projected = function() {
+      return this.projections;
     };
 
     ResourceManager.prototype.prepareProjections = function() {
@@ -4363,25 +4431,30 @@
 
     ResourceManager.prototype.updateProjections = function() {
       this.projectFarming();
-      this.projectMining();
-      return this.projectPopulation();
+      return this.projectMining();
     };
 
     ResourceManager.prototype.projectFarming = function() {
-      var food, i, _i, _ref;
+      var food, grainPlots, i, _i;
       food = 0;
-      for (i = _i = 0, _ref = this.owner.numberOfPlots('grain'); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        food += (Math.random() * 1.5 + 0.7) * this.projections.get('farmers');
+      grainPlots = this.owner.numberOfPlots('grain');
+      if (grainPlots > 0) {
+        for (i = _i = 1; 1 <= grainPlots ? _i <= grainPlots : _i >= grainPlots; i = 1 <= grainPlots ? ++_i : --_i) {
+          food += (Math.random() * 1.5 + 0.7) * this.projections.get('farmers');
+        }
       }
       food = Math.min(food, 300) + this.model.get('food');
       return this.projections.set('food', food);
     };
 
     ResourceManager.prototype.projectMining = function() {
-      var gold, i, _i, _ref;
+      var gold, goldPlots, i, _i;
       gold = 0;
-      for (i = _i = 0, _ref = this.owner.numberOfPlots('gold'); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        gold += (Math.random() * 1.5 + 0.7) * 0.1 * this.projections.get('miners');
+      goldPlots = this.owner.numberOfPlots('gold');
+      if (goldPlots > 0) {
+        for (i = _i = 1; 1 <= goldPlots ? _i <= goldPlots : _i >= goldPlots; i = 1 <= goldPlots ? ++_i : --_i) {
+          gold += (Math.random() * 1.5 + 0.7) * 0.1 * this.projections.get('miners');
+        }
       }
       gold = Math.min(gold, 30) + this.model.get('gold');
       return this.projections.set('gold', gold);
@@ -4785,8 +4858,8 @@
                 color: '#CCC',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
-                text: "Population: {{population}}",
-                bind: entities.ResourceManager,
+                text: "Population: {{resourcesCurrent.population}}",
+                bind: entities.PlayerManager,
                 x: 36,
                 y: 36
               }
@@ -4800,8 +4873,8 @@
                 color: '#CCC',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
-                text: 'Food {{food}}',
-                bind: entities.ResourceManager,
+                text: 'Food: {{resourcesCurrent.food}}',
+                bind: entities.PlayerManager,
                 x: 36,
                 y: 66
               }
@@ -4815,10 +4888,55 @@
                 color: '#CCC',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
-                text: 'Gold {{gold}}',
-                bind: entities.ResourceManager,
+                text: 'Gold {{resourcesCurrent.gold}}',
+                bind: entities.PlayerManager,
                 x: 36,
                 y: 96
+              }
+            }
+          },
+          populationProjected: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: "Population: {{resourcesProjected.population}}",
+                bind: entities.PlayerManager,
+                x: 36,
+                y: 180
+              }
+            }
+          },
+          foodProjected: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Food: {{resourcesProjected.food}}',
+                bind: entities.PlayerManager,
+                x: 36,
+                y: 210
+              }
+            }
+          },
+          goldProjected: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Gold {{resourcesProjected.gold}}',
+                bind: entities.PlayerManager,
+                x: 36,
+                y: 240
               }
             }
           },
@@ -4865,6 +4983,15 @@
                 bind: entities.PlayerManager,
                 x: 500,
                 y: 36
+              }
+            }
+          },
+          multiplayerController: {
+            entity: entities.MultiplayerController,
+            plugins: [],
+            model: {
+              options: {
+                url: 'https://novus-realms.firebaseio.com/'
               }
             }
           }
