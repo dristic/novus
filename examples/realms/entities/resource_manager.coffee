@@ -39,7 +39,7 @@ class entities.ResourceManager extends nv.Entity
     @model
 
   projected: () ->
-    @model.get 'projections'
+    @projections
 
   prepareProjections: () ->
     @projections.setMany
