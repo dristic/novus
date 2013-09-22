@@ -111,8 +111,11 @@ realms.gameConfig =
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: "Population: {{population}}"
-              bind: entities.ResourceManager
+              text: "Population: {{resourcesCurrent.population}}"
+              bind: entities.PlayerManager
+              # bind: (scene) ->
+              #   (key) -> (scene.getEntity(entities.PlayerManager).currentPlayer().resources().model[key])
+              # binding: 'dynamic'
               x: 36
               y: 36
         foodText:
@@ -123,8 +126,8 @@ realms.gameConfig =
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: 'Food {{food}}'
-              bind: entities.ResourceManager
+              text: 'Food: {{resourcesCurrent.food}}'
+              bind: entities.PlayerManager
               x: 36
               y: 66
         goldText:
@@ -135,10 +138,46 @@ realms.gameConfig =
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: 'Gold {{gold}}'
-              bind: entities.ResourceManager
+              text: 'Gold {{resourcesCurrent.gold}}'
+              bind: entities.PlayerManager
               x: 36
               y: 96
+        populationProjected:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: "Population: {{resourcesProjected.population}}"
+              bind: entities.PlayerManager
+              x: 36
+              y: 180
+        foodProjected:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Food: {{resourcesProjected.food}}'
+              bind: entities.PlayerManager
+              x: 36
+              y: 210
+        goldProjected:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Gold {{resourcesProjected.gold}}'
+              bind: entities.PlayerManager
+              x: 36
+              y: 240
         armyText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

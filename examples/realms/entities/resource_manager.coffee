@@ -6,6 +6,7 @@ class entities.ResourceManager extends nv.Entity
       farmers: 0
       miners: 0
       soldiers: 0
+      
     @projections = new nv.Model
       farmers: 0
       miners: 0
@@ -37,7 +38,7 @@ class entities.ResourceManager extends nv.Entity
   current: () ->
     @model
 
-  projections: () ->
+  projected: () ->
     @model.get 'projections'
 
   prepareProjections: () ->

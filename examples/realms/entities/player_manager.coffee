@@ -2,7 +2,7 @@ class entities.PlayerManager extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
-    @model.turn = @model.turn ? 1
+    @model.turn = @model.turn ? 0
     @createPlayers()
 
   createPlayers: () ->
@@ -18,24 +18,31 @@ class entities.PlayerManager extends nv.Entity
         resources: scenario.resources
         plotData: scenario.countries[name].plots
       @model.players.push player
-    @model.currentPlayer = @model.players[@model.turn - 1]
-    @currentPlayer().beginTurn()
+    @nextPlayersTurn()
 
   currentPlayer: ()->
     @model.currentPlayer
+
+  nextPlayersTurn: () ->
+    turn = @model.turn + 1
+    if turn > @model.players.length
+      turn = 1
+
+    @currentPlayer().endTurn() if @currentPlayer()
+
+    @model.set 'turn', turn
+    @model.set 'currentPlayer', @model.players[turn - 1]
+    @currentPlayer().beginTurn()
+
+    @model.set 'resourcesCurrent', @currentPlayer().resources().current()
+    @model.set 'resourcesProjected', @currentPlayer().resources().projected()
 
   "event(engine:ui:slider:change)": (entity) ->
     value = Math.floor(entity.model.value) / 100
     @currentPlayer().resources().setPopulationRatio value
     @currentPlayer().resources().updateProjections()
 
-  "event(engine:ui:clicked)": (element) ->
-    if element.id is "next-turn-button"
-      turn = @model.turn + 1
-      if turn > @model.players.length
-        turn = 1
+  "event(game:turn:next)": (element) ->
+    @nextPlayersTurn()
 
-      @currentPlayer().endTurn()
-      @model.set 'turn', turn
-      @model.set 'currentPlayer', @model.players[turn - 1]
-      @currentPlayer().beginTurn()
+  # event(country:activate)

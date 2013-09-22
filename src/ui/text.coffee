@@ -24,17 +24,32 @@ class nv.TextUIPlugin extends nv.UIPlugin
 
     for match in @entity.model.text.match /\{{[\s\S]+?}}/g
       key = match.slice(2, -2)
-      @values[ key ] = if bindMethod is "dynamic"
-        binding
-      else
-        binding.model[key]
+
+      keySegments = key.split '.'
+      if keySegments.length > 1
+        binding = binding.model[keySegments[0]]
+        #key = keySegments[1]
+        bindMethod = "proxy"
+
+      @values[ key ] = switch bindMethod 
+        when "dynamic" then binding
+        when "proxy" then binding.get keySegments[1]
+        else
+          binding.model[ key ]
 
     return if bindMethod is "dynamic"
 
     for key of @values
-      binding.model.on "change:#{key}", (value) =>
-        @values[key] = value
-        @dirty = true
+      switch bindMethod
+        when "proxy"
+          binding.on "change:#{key}", (value) =>
+            @values[key] = value
+            @dirty = true
+        else
+          binding.model.on "change:#{key}", (value) =>
+            @values[key] = value
+            @dirty = true
+
 
   updateText: () ->
     if @dirty
