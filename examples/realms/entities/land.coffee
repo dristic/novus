@@ -6,12 +6,11 @@ class entities.Land extends nv.Entity
     @renderer = @getPlugin nv.AnimatedSpriteRenderingPlugin
 
   changeType: (type) ->
-    if type is 'grain'
-      @model.set 'value', 'grain'
-    else if type is 'field'
-      @model.set 'value', 'field'
-    else if type is 'gold'
-      @model.set 'value', 'gold'
+    switch type
+      when 'grain' then @model.set 'value', 'grain'
+      when 'field' then @model.set 'value', 'field'
+      when 'gold' then @model.set 'value', 'gold'
+      when 'unused' then @model.set 'value', 'dirt'
     @renderer.play @model.get('value')
     @renderer.stop()
 
