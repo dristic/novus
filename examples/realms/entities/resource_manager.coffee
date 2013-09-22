@@ -24,6 +24,9 @@ class entities.ResourceManager extends nv.Entity
   "event(game:army:created)": (value) ->
     @model.set 'population', @model.get('population') - value
 
+  "event(game:army:attacked)": (value) ->
+    @model.set 'population', @model.get('population') - value
+
   setPopulationRatio: (ratio) ->
     @projections.set 'ratio', ratio
     population = @model.get 'population'

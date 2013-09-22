@@ -23,3 +23,4 @@ class entities.ArmyManager extends nv.Entity
         @attacking = false
         @attackText.hide()
         @model.set 'army', @model.get('army') - 50
+        @scene.fire "game:army:send", 50
