@@ -119,7 +119,7 @@ if (args[0] === undefined) {
   fs.writeFileSync('build/game.js', data);
 
   // Copy in index file
-  fs.createReadStream(__dirname + '/index.html').pipe(fs.createWriteStream('build/index.html'));
+  fs.createReadStream('assets/index.html').pipe(fs.createWriteStream('build/index.html'));
 } else if (args[0] === "watch") {
   //////////////
   // Novus Watch

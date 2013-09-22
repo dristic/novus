@@ -1076,6 +1076,12 @@
         _this.isReady = true;
         return func();
       });
+    },
+    s4: function() {
+      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    },
+    guid: function() {
+      return this.s4() + this.s4() + '-' + this.s4() + '-' + this.s4() + '-' + this.s4() + '-' + this.s4() + this.s4() + this.s4();
     }
   });
 
@@ -3929,7 +3935,8 @@
         if (county !== 1026) {
           this.attacking = false;
           this.attackText.hide();
-          return this.model.set('army', this.model.get('army') - 50);
+          this.model.set('army', this.model.get('army') - 50);
+          return this.scene.fire("game:army:send", 50);
         }
       }
     };
@@ -4215,11 +4222,11 @@
       var myRootRef,
         _this = this;
       MultiplayerController.__super__.constructor.call(this, scene, plugins, model);
+      this.guid = nv.guid();
       myRootRef = new Firebase(this.model.url);
       this.ref = myRootRef.child('game');
       this.ref.child('turn').set(2);
-      this.ref.child('players').on('value', function(snapshot) {
-        _this.ref.child('players').off();
+      this.ref.child('players').once('value', function(snapshot) {
         if (snapshot.val() === 0) {
           _this.scene.fire("game:mp:player", 1);
           return _this.ref.child('players').set(1);
@@ -4228,7 +4235,21 @@
           return _this.ref.child('players').set(2);
         }
       });
+      this.ref.child('attacks').on('child_added', function(snapshot) {
+        var data;
+        data = snapshot.val();
+        if (data.guid !== _this.guid) {
+          return _this.scene.fire("game:army:attacked", data.amount);
+        }
+      });
     }
+
+    MultiplayerController.prototype["event(game:army:send)"] = function(amount) {
+      return this.ref.child('attacks').push({
+        guid: this.guid,
+        amount: amount
+      });
+    };
 
     return MultiplayerController;
 
@@ -4381,6 +4402,10 @@
     };
 
     ResourceManager.prototype["event(game:army:created)"] = function(value) {
+      return this.model.set('population', this.model.get('population') - value);
+    };
+
+    ResourceManager.prototype["event(game:army:attacked)"] = function(value) {
       return this.model.set('population', this.model.get('population') - value);
     };
 
