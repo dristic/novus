@@ -28,5 +28,10 @@ class entities.PlayerManager extends nv.Entity
       turn = @model.turn + 1
       if turn > @model.players.length
         turn = 1
+
+      @currentPlayer().endTurn()
+
       @model.set 'turn', turn
       @model.set 'currentPlayer', @model.players[turn]
+
+      @currentPlayer().beginTurn()

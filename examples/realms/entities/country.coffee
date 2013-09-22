@@ -6,11 +6,8 @@ class entities.Country extends nv.Entity
     scenario = rootModel.get 'scenario'
     entityConfigs = rootModel.config.entities
 
-    data = 
-      current: scenario.resources
-      future: scenario.resources
-
-    @model.resourceManager = @scene.createEntity entityConfigs.resourceManager, data
+    @model.set 'resourceManager', @scene.createEntity entityConfigs.resourceManager, scenario.resources
+    @model.resourceManager.setOwner this
 
     @model.plots = []
     for plot in @model.plotData
@@ -21,3 +18,9 @@ class entities.Country extends nv.Entity
 
   resources: () ->
     @model.resourceManager
+
+  numberOfPlots: (type) ->
+    count = 0
+    for plot in @model.plots
+      count += 1 if plot.model.currentAnimation is type
+    count

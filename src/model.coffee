@@ -18,6 +18,13 @@ class nv.Model extends nv.EventDispatcher
   reset: () ->
     # specific classes must implement
 
+  clone: () ->
+    clone = new nv.Model {}
+    for key of this
+      next if typeof this[key] is "function"
+      clone[key] = this[key]
+    clone
+
   persist: () ->
     data = {}
     for key of this

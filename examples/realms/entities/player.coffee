@@ -16,3 +16,9 @@ class entities.Player extends nv.Entity
   update: (dt) ->
     mouseX = @gamepad.getState().mouse.x - (@model.width / 2)
     @model.x = mouseX
+
+  beginTurn: () ->
+    @resources().prepareProjections()
+
+  endTurn: () ->
+    @resources().commitProjections()

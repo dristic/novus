@@ -34,9 +34,8 @@ realms.entities =
     plugins: []
     model:
       options:
-        food: 100
-        population: 50
-        army: 0
+        population: 0
+        food: 0
         gold: 0
 
   land:
@@ -88,6 +87,17 @@ realms.entities =
         clickable: true
         
   landSelector:
+    unused:
+      entity: nv.Entity
+      plugins: [ nv.ButtonUIPlugin ]
+      model:
+        options:
+          id: "select-none"
+          text: "None"
+          x: 330
+          y: 10
+          width: 150
+          height: 50
     grain:
       entity: nv.Entity
       plugins: [ nv.ButtonUIPlugin ]
@@ -99,17 +109,6 @@ realms.entities =
           y: 10
           width: 150
           height: 50
-    field:
-      entity: nv.Entity
-      plugins: [ nv.ButtonUIPlugin ]
-      model:
-        options:
-          id: "select-field"
-          text: "Field"
-          x: 170
-          y: 10
-          width: 150
-          height: 50
     gold:
       entity: nv.Entity
       plugins: [ nv.ButtonUIPlugin ]
@@ -117,7 +116,7 @@ realms.entities =
         options:
           id: "select-gold"
           text: "Gold"
-          x: 330
+          x: 170
           y: 10
           width: 150
           height: 50
