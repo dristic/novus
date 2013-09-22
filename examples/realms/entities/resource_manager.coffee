@@ -63,19 +63,23 @@ class entities.ResourceManager extends nv.Entity
   updateProjections: () ->
     @projectFarming()
     @projectMining()
-    @projectPopulation()
+    # @projectPopulation()
 
   projectFarming: () ->
     food = 0
-    for i in [0..@owner.numberOfPlots('grain')]
-      food += (Math.random() * 1.5 + 0.7) * @projections.get('farmers')
+    grainPlots = @owner.numberOfPlots('grain')
+    if grainPlots > 0
+      for i in [1..grainPlots]
+        food += (Math.random() * 1.5 + 0.7) * @projections.get('farmers')
     food = Math.min(food, 300) + @model.get 'food'
     @projections.set 'food', food
 
   projectMining: () ->
     gold = 0
-    for i in [0..@owner.numberOfPlots('gold')]
-      gold += (Math.random() * 1.5 + 0.7) * 0.1 * @projections.get('miners')
+    goldPlots = @owner.numberOfPlots('gold')
+    if goldPlots > 0
+      for i in [1..goldPlots]
+        gold += (Math.random() * 1.5 + 0.7) * 0.1 * @projections.get('miners')
     gold = Math.min(gold, 30) + @model.get 'gold'
     @projections.set 'gold', gold
 

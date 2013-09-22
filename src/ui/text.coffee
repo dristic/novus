@@ -42,7 +42,7 @@ class nv.TextUIPlugin extends nv.UIPlugin
     for key of @values
       switch bindMethod
         when "proxy"
-          binding.on "change:#{key}", (value) =>
+          binding.on "change:#{keySegments[1]}", (value) =>
             @values[key] = value
             @dirty = true
         else

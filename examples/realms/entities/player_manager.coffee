@@ -2,7 +2,7 @@ class entities.PlayerManager extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
-    @model.turn = @model.turn ? 0
+    @model.turn = 0
     @createPlayers()
 
   createPlayers: () ->
@@ -42,7 +42,7 @@ class entities.PlayerManager extends nv.Entity
     @currentPlayer().resources().setPopulationRatio value
     @currentPlayer().resources().updateProjections()
 
-  "event(game:turn:next)": (element) ->
+  "event(game:turn:next)": () ->
     @nextPlayersTurn()
 
   # event(country:activate)

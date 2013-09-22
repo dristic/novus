@@ -26,5 +26,5 @@ class entities.Country extends nv.Entity
   numberOfPlots: (type) ->
     count = 0
     for plot in @model.plots
-      count += 1 if plot.model.currentAnimation is type
+      count += 1 if plot.model.value is type
     count
