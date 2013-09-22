@@ -24,6 +24,7 @@ class entities.ResourceManager extends nv.Entity
     @model.set 'population', @model.get('population') - value
 
   setPopulationRatio: (ratio) ->
+    @projections.set 'ratio', ratio
     population = @model.get 'population'
     farmers = population * ratio
     miners = population * (1 - ratio)
@@ -47,6 +48,7 @@ class entities.ResourceManager extends nv.Entity
       farmers: @model.farmers
       miners: @model.miners
       soldiers: @model.soldiers
+    @setPopulationRatio @model.get('ratio')
 
   commitProjections: () ->
     @model.setMany
@@ -56,6 +58,7 @@ class entities.ResourceManager extends nv.Entity
       farmers: @projections.farmers
       miners: @projections.miners
       soldiers: @projections.soldiers
+    console.log "COMITTING", @model, @projections
 
   updateProjections: () ->
     @projectFarming()
