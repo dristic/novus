@@ -8,25 +8,25 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @value = entity.model.value
     @max = 100
 
-    @upButton = new nv.ButtonUIPlugin scene,
+    @upText = new nv.TextUIPlugin scene,
       model:
         text: entity.model.rightText
-        x: entity.model.x + 110
-        y: entity.model.y
-        width: 50
-        height: 30
+        font: entity.model.font
+        textBaseline: 'bottom'
+        x: entity.model.x + 115
+        y: entity.model.y + 22
 
-    @downButton = new nv.ButtonUIPlugin scene,
+    @downText = new nv.TextUIPlugin scene,
       model:
         text: entity.model.leftText
+        font: entity.model.font
+        textBaseline: 'bottom'
         x: entity.model.x - 60
-        y: entity.model.y
-        width: 50
-        height: 30
+        y: entity.model.y + 22
 
     @box = new gleam.Square
-      color: "#CCC"
-      width: 5
+      color: "red"
+      width: 10
       height: 30
       x: entity.model.x + 1
       y: entity.model.y
@@ -42,7 +42,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
       color: "#000"
       width: 1
       height: 30
-      x: entity.model.x + @max + 5
+      x: entity.model.x + @max + @box.width
       y: entity.model.y
 
     @entity.model.on 'change:value', nv.bind this, @onValueChange
@@ -51,7 +51,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @scene.fire "engine:ui:slider:change", this.entity
 
   bounds: () ->
-    new nv.Rect @downButton.entity.model.x, @downButton.entity.model.y, @upButton.entity.model.x + @upButton.entity.model.width, @upButton.entity.model.y + @upButton.entity.model.height
+    new nv.Rect @minBox.x, @minBox.x, @maxBox.x, @maxBox.y + @box.height
 
   getBoxBounds: () ->
     new nv.Rect @box.x, @box.y, @box.x + @box.width, @box.y + @box.height
@@ -62,14 +62,6 @@ class nv.SliderUIPlugin extends nv.UIPlugin
 
   "event(engine:ui:mouse:up)": (data) ->
     @dragging = false
-    @entity.model.set 'value', @value
-
-  "event(engine:ui:clicked)": (element) ->
-    if element is @upButton
-      @value += 1
-    else if element is @downButton
-      @value -= 1
-    @clamp()
     @entity.model.set 'value', @value
 
   getValue: () ->

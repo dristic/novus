@@ -2,6 +2,8 @@
 #= require levels.config
 #= require scenarios.config
 
+uiFont = 'bold 16px sans-serif'
+
 realms.gameConfig =
   canvas:
     id: '#game-canvas'
@@ -94,22 +96,45 @@ realms.gameConfig =
             options:
               turn: 1
               players: []
-        sliderControl:
-          entity: nv.Entity
-          plugins: [ nv.SliderUIPlugin ]
-          model:
-            options:
-              x: 460
-              y: 200
-              leftText: "Miners"
-              rightText: "Farmers"
-        population:
+        laborDistributionText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
               color: '#CCC'
               font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Labor Distribution'
+              x: 36
+              y: 295
+        sliderControl:
+          entity: nv.Entity
+          plugins: [ nv.SliderUIPlugin ]
+          model:
+            options:
+              leftText: "Miners"
+              rightText: "Farmers"
+              font: uiFont
+              x: 75
+              y: 300
+        currentText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Current'
+              x: 36
+              y: 36
+        population:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: uiFont
               textBaseline: 'bottom'
               text: "Population: {{resourcesCurrent.population}}"
               bind: entities.PlayerManager
@@ -117,79 +142,90 @@ realms.gameConfig =
               #   (key) -> (scene.getEntity(entities.PlayerManager).currentPlayer().resources().model[key])
               # binding: 'dynamic'
               x: 36
-              y: 36
+              y: 55
         foodText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
               color: '#CCC'
-              font: 'bold 20px sans-serif'
+              font: uiFont
               textBaseline: 'bottom'
               text: 'Food: {{resourcesCurrent.food}}'
               bind: entities.PlayerManager
               x: 36
-              y: 66
+              y: 75
         goldText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
               color: '#CCC'
-              font: 'bold 20px sans-serif'
+              font: uiFont
               textBaseline: 'bottom'
               text: 'Gold {{resourcesCurrent.gold}}'
               bind: entities.PlayerManager
               x: 36
-              y: 96
-        populationProjected:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: "Population: {{resourcesProjected.population}}"
-              bind: entities.PlayerManager
-              x: 36
-              y: 180
-        foodProjected:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: 'Food: {{resourcesProjected.food}}'
-              bind: entities.PlayerManager
-              x: 36
-              y: 210
-        goldProjected:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: 'Gold {{resourcesProjected.gold}}'
-              bind: entities.PlayerManager
-              x: 36
-              y: 240
+              y: 95
         armyText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
               color: '#CCC'
-              font: 'bold 20px sans-serif'
+              font: uiFont
               textBaseline: 'bottom'
               text: 'Army {{army}}'
               bind: entities.ArmyManager
               x: 36
-              y: 126
+              y: 115
+        projectedText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Next Turn'
+              x: 36
+              y: 180
+        populationProjected:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: uiFont
+              textBaseline: 'bottom'
+              text: "Population: {{resourcesProjected.population}}"
+              bind: entities.PlayerManager
+              x: 36
+              y: 200
+        foodProjected:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: uiFont
+              textBaseline: 'bottom'
+              text: 'Food: {{resourcesProjected.food}}'
+              bind: entities.PlayerManager
+              x: 36
+              y: 220
+        goldProjected:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: uiFont
+              textBaseline: 'bottom'
+              text: 'Gold {{resourcesProjected.gold}}'
+              bind: entities.PlayerManager
+              x: 36
+              y: 240
         attackText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -197,7 +233,7 @@ realms.gameConfig =
             options:
               id: 'attack-text'
               color: '#CCC'
-              font: 'bold 20px sans-serif'
+              font: uiFont
               textBaseline: 'bottom'
               text: 'Attack Who?'
               x: 200
@@ -211,9 +247,9 @@ realms.gameConfig =
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: "Player: {{turn}}"
+              text: "Current Turn: {{turn}}"
               bind: entities.PlayerManager
-              x: 500
+              x: 480
               y: 36
         multiplayerController:
           entity: entities.MultiplayerController
