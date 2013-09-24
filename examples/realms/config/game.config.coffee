@@ -49,6 +49,16 @@ realms.gameConfig =
       entities:
         map:
           include: "map"
+        panel:
+          entity: nv.Entity
+          plugins: [ nv.PanelUIPlugin ]
+          model:
+            options:
+              color: 'rgba(0, 0, 0, 0.5)'
+              width: 200
+              height: 400
+              x: 0
+              y: 0
         landSelectionScreen:
           entity: entities.LandSelector
           plugins: [ ]
@@ -105,7 +115,7 @@ realms.gameConfig =
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
               text: 'Labor Distribution'
-              x: 36
+              x: 15
               y: 295
         sliderControl:
           entity: nv.Entity
@@ -126,7 +136,7 @@ realms.gameConfig =
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
               text: 'Current'
-              x: 36
+              x: 15
               y: 36
         population:
           entity: nv.Entity
@@ -141,7 +151,7 @@ realms.gameConfig =
               # bind: (scene) ->
               #   (key) -> (scene.getEntity(entities.PlayerManager).currentPlayer().resources().model[key])
               # binding: 'dynamic'
-              x: 36
+              x: 15
               y: 55
         foodText:
           entity: nv.Entity
@@ -153,7 +163,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: 'Food: {{resourcesCurrent.food}}'
               bind: entities.PlayerManager
-              x: 36
+              x: 15
               y: 75
         goldText:
           entity: nv.Entity
@@ -165,7 +175,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: 'Gold {{resourcesCurrent.gold}}'
               bind: entities.PlayerManager
-              x: 36
+              x: 15
               y: 95
         armyText:
           entity: nv.Entity
@@ -177,7 +187,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: 'Army {{army}}'
               bind: entities.ArmyManager
-              x: 36
+              x: 15
               y: 115
         projectedText:
           entity: nv.Entity
@@ -188,7 +198,7 @@ realms.gameConfig =
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
               text: 'Next Turn'
-              x: 36
+              x: 15
               y: 180
         populationProjected:
           entity: nv.Entity
@@ -200,7 +210,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: "Population: {{resourcesProjected.population}}"
               bind: entities.PlayerManager
-              x: 36
+              x: 15
               y: 200
         foodProjected:
           entity: nv.Entity
@@ -212,7 +222,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: 'Food: {{resourcesProjected.food}}'
               bind: entities.PlayerManager
-              x: 36
+              x: 15
               y: 220
         goldProjected:
           entity: nv.Entity
@@ -224,7 +234,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: 'Gold {{resourcesProjected.gold}}'
               bind: entities.PlayerManager
-              x: 36
+              x: 15
               y: 240
         attackText:
           entity: nv.Entity
