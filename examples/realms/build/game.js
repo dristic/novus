@@ -3652,6 +3652,36 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  nv.PanelUIPlugin = (function(_super) {
+    __extends(PanelUIPlugin, _super);
+
+    function PanelUIPlugin(scene, entity) {
+      PanelUIPlugin.__super__.constructor.call(this, scene, entity);
+      this.background = new gleam.Square({
+        color: entity.model.color,
+        width: entity.model.width,
+        height: entity.model.height,
+        x: entity.model.x,
+        y: entity.model.y
+      });
+    }
+
+    PanelUIPlugin.prototype.draw = function(context, canvas) {
+      this.background.x = this.entity.model.x;
+      this.background.y = this.entity.model.y;
+      return this.background.draw(context, canvas);
+    };
+
+    return PanelUIPlugin;
+
+  })(nv.UIPlugin);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   nv.SliderUIPlugin = (function(_super) {
     __extends(SliderUIPlugin, _super);
 
@@ -3662,27 +3692,27 @@
       entity.model.value = (_ref = entity.model.value) != null ? _ref : 1;
       this.value = entity.model.value;
       this.max = 100;
-      this.upButton = new nv.ButtonUIPlugin(scene, {
+      this.upText = new nv.TextUIPlugin(scene, {
         model: {
           text: entity.model.rightText,
-          x: entity.model.x + 110,
-          y: entity.model.y,
-          width: 50,
-          height: 30
+          font: entity.model.font,
+          textBaseline: 'bottom',
+          x: entity.model.x + 115,
+          y: entity.model.y + 22
         }
       });
-      this.downButton = new nv.ButtonUIPlugin(scene, {
+      this.downText = new nv.TextUIPlugin(scene, {
         model: {
           text: entity.model.leftText,
+          font: entity.model.font,
+          textBaseline: 'bottom',
           x: entity.model.x - 60,
-          y: entity.model.y,
-          width: 50,
-          height: 30
+          y: entity.model.y + 22
         }
       });
       this.box = new gleam.Square({
-        color: "#CCC",
-        width: 5,
+        color: "red",
+        width: 10,
         height: 30,
         x: entity.model.x + 1,
         y: entity.model.y
@@ -3698,7 +3728,7 @@
         color: "#000",
         width: 1,
         height: 30,
-        x: entity.model.x + this.max + 5,
+        x: entity.model.x + this.max + this.box.width,
         y: entity.model.y
       });
       this.entity.model.on('change:value', nv.bind(this, this.onValueChange));
@@ -3709,7 +3739,7 @@
     };
 
     SliderUIPlugin.prototype.bounds = function() {
-      return new nv.Rect(this.downButton.entity.model.x, this.downButton.entity.model.y, this.upButton.entity.model.x + this.upButton.entity.model.width, this.upButton.entity.model.y + this.upButton.entity.model.height);
+      return new nv.Rect(this.minBox.x, this.minBox.x, this.maxBox.x, this.maxBox.y + this.box.height);
     };
 
     SliderUIPlugin.prototype.getBoxBounds = function() {
@@ -3724,16 +3754,6 @@
 
     SliderUIPlugin.prototype["event(engine:ui:mouse:up)"] = function(data) {
       this.dragging = false;
-      return this.entity.model.set('value', this.value);
-    };
-
-    SliderUIPlugin.prototype["event(engine:ui:clicked)"] = function(element) {
-      if (element === this.upButton) {
-        this.value += 1;
-      } else if (element === this.downButton) {
-        this.value -= 1;
-      }
-      this.clamp();
       return this.entity.model.set('value', this.value);
     };
 
@@ -4223,25 +4243,28 @@
         _this = this;
       MultiplayerController.__super__.constructor.call(this, scene, plugins, model);
       this.guid = nv.guid();
-      myRootRef = new Firebase(this.model.url);
-      this.ref = myRootRef.child('game');
-      this.ref.child('turn').set(2);
-      this.ref.child('players').once('value', function(snapshot) {
-        if (snapshot.val() === 0) {
-          _this.scene.fire("game:mp:player", 1);
-          return _this.ref.child('players').set(1);
-        } else {
-          _this.scene.fire("game:mp:player", 2);
-          return _this.ref.child('players').set(2);
-        }
-      });
-      this.ref.child('attacks').on('child_added', function(snapshot) {
-        var data;
-        data = snapshot.val();
-        if (data.guid !== _this.guid) {
-          return _this.scene.fire("game:army:attacked", data.amount);
-        }
-      });
+      if (typeof Firebase !== "undefined" && Firebase !== null) {
+        myRootRef = new Firebase(this.model.url);
+        this.ref = myRootRef.child('game');
+        this.ref.child('turn').set(2);
+        this.ref.child('players').once('value', function(snapshot) {
+          if (snapshot.val() === 0) {
+            _this.scene.fire("game:mp:player", 1);
+            return _this.ref.child('players').set(1);
+          } else {
+            _this.scene.fire("game:mp:player", 2);
+            return _this.ref.child('players').set(2);
+          }
+        });
+        this.ref.child('attacks').on('child_added', function(snapshot) {
+          var data;
+          data = snapshot.val();
+          if (data.guid !== _this.guid) {
+            _this.scene.fire("game:army:attacked", data.amount);
+            return snapshot.ref().remove();
+          }
+        });
+      }
     }
 
     MultiplayerController.prototype["event(game:army:send)"] = function(amount) {
@@ -4769,6 +4792,10 @@
 }).call(this);
 
 (function() {
+  var uiFont;
+
+  uiFont = 'bold 16px sans-serif';
+
   realms.gameConfig = {
     canvas: {
       id: '#game-canvas',
@@ -4797,6 +4824,19 @@
         entities: {
           map: {
             include: "map"
+          },
+          panel: {
+            entity: nv.Entity,
+            plugins: [nv.PanelUIPlugin],
+            model: {
+              options: {
+                color: 'rgba(0, 0, 0, 0.5)',
+                width: 200,
+                height: 400,
+                x: 0,
+                y: 0
+              }
+            }
           },
           landSelectionScreen: {
             entity: entities.LandSelector,
@@ -4863,15 +4903,44 @@
               }
             }
           },
+          laborDistributionText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Labor Distribution',
+                x: 15,
+                y: 295
+              }
+            }
+          },
           sliderControl: {
             entity: nv.Entity,
             plugins: [nv.SliderUIPlugin],
             model: {
               options: {
-                x: 460,
-                y: 200,
                 leftText: "Miners",
-                rightText: "Farmers"
+                rightText: "Farmers",
+                font: uiFont,
+                x: 75,
+                y: 300
+              }
+            }
+          },
+          currentText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Current',
+                x: 15,
+                y: 36
               }
             }
           },
@@ -4881,12 +4950,12 @@
             model: {
               options: {
                 color: '#CCC',
-                font: 'bold 20px sans-serif',
+                font: uiFont,
                 textBaseline: 'bottom',
                 text: "Population: {{resourcesCurrent.population}}",
                 bind: entities.PlayerManager,
-                x: 36,
-                y: 36
+                x: 15,
+                y: 55
               }
             }
           },
@@ -4896,12 +4965,12 @@
             model: {
               options: {
                 color: '#CCC',
-                font: 'bold 20px sans-serif',
+                font: uiFont,
                 textBaseline: 'bottom',
                 text: 'Food: {{resourcesCurrent.food}}',
                 bind: entities.PlayerManager,
-                x: 36,
-                y: 66
+                x: 15,
+                y: 75
               }
             }
           },
@@ -4911,57 +4980,12 @@
             model: {
               options: {
                 color: '#CCC',
-                font: 'bold 20px sans-serif',
+                font: uiFont,
                 textBaseline: 'bottom',
                 text: 'Gold {{resourcesCurrent.gold}}',
                 bind: entities.PlayerManager,
-                x: 36,
-                y: 96
-              }
-            }
-          },
-          populationProjected: {
-            entity: nv.Entity,
-            plugins: [nv.TextUIPlugin],
-            model: {
-              options: {
-                color: '#CCC',
-                font: 'bold 20px sans-serif',
-                textBaseline: 'bottom',
-                text: "Population: {{resourcesProjected.population}}",
-                bind: entities.PlayerManager,
-                x: 36,
-                y: 180
-              }
-            }
-          },
-          foodProjected: {
-            entity: nv.Entity,
-            plugins: [nv.TextUIPlugin],
-            model: {
-              options: {
-                color: '#CCC',
-                font: 'bold 20px sans-serif',
-                textBaseline: 'bottom',
-                text: 'Food: {{resourcesProjected.food}}',
-                bind: entities.PlayerManager,
-                x: 36,
-                y: 210
-              }
-            }
-          },
-          goldProjected: {
-            entity: nv.Entity,
-            plugins: [nv.TextUIPlugin],
-            model: {
-              options: {
-                color: '#CCC',
-                font: 'bold 20px sans-serif',
-                textBaseline: 'bottom',
-                text: 'Gold {{resourcesProjected.gold}}',
-                bind: entities.PlayerManager,
-                x: 36,
-                y: 240
+                x: 15,
+                y: 95
               }
             }
           },
@@ -4971,12 +4995,71 @@
             model: {
               options: {
                 color: '#CCC',
-                font: 'bold 20px sans-serif',
+                font: uiFont,
                 textBaseline: 'bottom',
                 text: 'Army {{army}}',
                 bind: entities.ArmyManager,
-                x: 36,
-                y: 126
+                x: 15,
+                y: 115
+              }
+            }
+          },
+          projectedText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Next Turn',
+                x: 15,
+                y: 180
+              }
+            }
+          },
+          populationProjected: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: uiFont,
+                textBaseline: 'bottom',
+                text: "Population: {{resourcesProjected.population}}",
+                bind: entities.PlayerManager,
+                x: 15,
+                y: 200
+              }
+            }
+          },
+          foodProjected: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: uiFont,
+                textBaseline: 'bottom',
+                text: 'Food: {{resourcesProjected.food}}',
+                bind: entities.PlayerManager,
+                x: 15,
+                y: 220
+              }
+            }
+          },
+          goldProjected: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: uiFont,
+                textBaseline: 'bottom',
+                text: 'Gold {{resourcesProjected.gold}}',
+                bind: entities.PlayerManager,
+                x: 15,
+                y: 240
               }
             }
           },
@@ -4987,7 +5070,7 @@
               options: {
                 id: 'attack-text',
                 color: '#CCC',
-                font: 'bold 20px sans-serif',
+                font: uiFont,
                 textBaseline: 'bottom',
                 text: 'Attack Who?',
                 x: 200,
@@ -5004,9 +5087,9 @@
                 color: '#CCC',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
-                text: "Player: {{turn}}",
+                text: "Current Turn: {{turn}}",
                 bind: entities.PlayerManager,
-                x: 500,
+                x: 480,
                 y: 36
               }
             }
