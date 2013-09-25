@@ -35,6 +35,7 @@ class entities.PlayerManager extends nv.Entity
     @model.set 'currentPlayer', @model.players[@model.turn - 1]
     @updateData()
 
+  # Collects data from the current player and county to show in the UI
   updateData: () ->
     clientPlayer = @model.get 'clientPlayer'
     resources = clientPlayer.resources().model

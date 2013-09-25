@@ -33,7 +33,6 @@ class nv.UIEngine extends nv.Engine
       unless element.hidden is true
         if element.bounds? and element.bounds().contains new nv.Point(data.x, data.y)
           @scene.fire "engine:ui:mouse:up", data
-          event.stopPropagation()
 
   update: (dt) ->
     for element in @elements
