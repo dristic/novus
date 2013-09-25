@@ -9,47 +9,17 @@ class nv.TextUIPlugin extends nv.UIPlugin
     @dirty = true
     @values = {}
 
-    return unless @entity.model.bind?
+    if @entity.model.bind?
+      binding = @scene.getEntity @entity.model.bind
+      for match in @entity.model.text.match /\{{[\s\S]+?}}/g
+        key = match.slice(2, -2)
 
-    # 
-    bindMethod = if typeof @entity.model.bind is "function"
-      @entity.model.binding || "entity"
-    else
-      "static"
+        @values[key] = binding.model[key]
+        @dirty = true
 
-    binding = switch bindMethod
-      when "static" then @entity.model.bind
-      when "entity" then @scene.getEntity @entity.model.bind
-      when "dynamic" then @entity.model.bind(scene)
-
-    for match in @entity.model.text.match /\{{[\s\S]+?}}/g
-      key = match.slice(2, -2)
-
-      keySegments = key.split '.'
-      if keySegments.length > 1
-        binding = binding.model[keySegments[0]]
-        #key = keySegments[1]
-        bindMethod = "proxy"
-
-      @values[ key ] = switch bindMethod 
-        when "dynamic" then binding
-        when "proxy" then binding.get keySegments[1]
-        else
-          binding.model[ key ]
-
-    return if bindMethod is "dynamic"
-
-    for key of @values
-      switch bindMethod
-        when "proxy"
-          binding.on "change:#{keySegments[1]}", (value) =>
-            @values[key] = value
-            @dirty = true
-        else
-          binding.model.on "change:#{key}", (value) =>
-            @values[key] = value
-            @dirty = true
-
+        binding.model.on "change:#{key}", (value) =>
+          @values[key] = value
+          @dirty = true
 
   updateText: () ->
     if @dirty

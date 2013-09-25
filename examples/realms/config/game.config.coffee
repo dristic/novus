@@ -146,11 +146,8 @@ realms.gameConfig =
               color: '#CCC'
               font: uiFont
               textBaseline: 'bottom'
-              text: "Population: {{resourcesCurrent.population}}"
+              text: "Population: {{population}}"
               bind: entities.PlayerManager
-              # bind: (scene) ->
-              #   (key) -> (scene.getEntity(entities.PlayerManager).currentPlayer().resources().model[key])
-              # binding: 'dynamic'
               x: 15
               y: 55
         foodText:
@@ -161,7 +158,7 @@ realms.gameConfig =
               color: '#CCC'
               font: uiFont
               textBaseline: 'bottom'
-              text: 'Food: {{resourcesCurrent.food}}'
+              text: 'Food: {{food}}'
               bind: entities.PlayerManager
               x: 15
               y: 75
@@ -173,7 +170,7 @@ realms.gameConfig =
               color: '#CCC'
               font: uiFont
               textBaseline: 'bottom'
-              text: 'Gold {{resourcesCurrent.gold}}'
+              text: 'Gold {{gold}}'
               bind: entities.PlayerManager
               x: 15
               y: 95
@@ -186,7 +183,7 @@ realms.gameConfig =
               font: uiFont
               textBaseline: 'bottom'
               text: 'Army {{army}}'
-              bind: entities.ArmyManager
+              bind: entities.PlayerManager
               x: 15
               y: 115
         projectedText:
@@ -208,7 +205,7 @@ realms.gameConfig =
               color: '#CCC'
               font: uiFont
               textBaseline: 'bottom'
-              text: "Population: {{resourcesProjected.population}}"
+              text: "Population: {{p_population}}"
               bind: entities.PlayerManager
               x: 15
               y: 200
@@ -220,7 +217,7 @@ realms.gameConfig =
               color: '#CCC'
               font: uiFont
               textBaseline: 'bottom'
-              text: 'Food: {{resourcesProjected.food}}'
+              text: 'Food: {{p_food}}'
               bind: entities.PlayerManager
               x: 15
               y: 220
@@ -232,7 +229,7 @@ realms.gameConfig =
               color: '#CCC'
               font: uiFont
               textBaseline: 'bottom'
-              text: 'Gold {{resourcesProjected.gold}}'
+              text: 'Gold {{p_gold}}'
               bind: entities.PlayerManager
               x: 15
               y: 240

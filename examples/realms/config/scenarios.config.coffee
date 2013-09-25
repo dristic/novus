@@ -12,8 +12,10 @@ realms.scenarios =
         ratio: 0.5
       countries:
         darkland:
+          owner: 1
           plots: [new nv.Point(576,320), new nv.Point(608,320), new nv.Point(576,352), new nv.Point(352,416), new nv.Point(352,448)]
         sandyland:
+          owner: 2
           plots: [new nv.Point(576,480), new nv.Point(608,480), new nv.Point(608,512), new nv.Point(480,576), new nv.Point(512,576)]
 
     three:

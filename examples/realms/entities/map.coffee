@@ -57,7 +57,3 @@ class entities.Map extends nv.Entity
     tile = @playerData.getTileFromScreenXY(data.x - @camera.x, data.y - @camera.y)
     if tile isnt 0
       @scene.fire "game:clicked:county", tile
-
-  "event(engine:ui:clicked)": (element) ->
-    switch element.id
-      when "next-turn-button" then @scene.fire "game:turn:next"
