@@ -1,39 +1,35 @@
 class entities.ResourceManager extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
-
-    @model.setMany
-      farmers: 0
-      miners: 0
-      soldiers: 0
+    @projections = new nv.Model {}
       
-    @projections = new nv.Model
-      farmers: 0
-      miners: 0
-      soldiers: 0
+    @prepareProjections()
+    @active = false
 
   calculateResources: (lands) ->
     # Calculate food
 
-  "event(engine:ui:clicked)": (element) ->
-    if element.id is "next-turn-button"
-      population = @model.get 'population'
-      population += 100
-      @model.set 'population', population
-
   "event(game:army:created)": (value) ->
-    @model.set 'population', @model.get('population') - value
+    return unless @active is true
+    peasants = @projections.get('peasants')
+    value = Math.min(peasants, value)
+    @projections.set 'peasants', peasants - value
+    @projections.set 'soldiers', @projections.get('soldiers') + value
+    @updateProjections()
+
+  "event(game:army:send)": (value) ->
+    return unless @active is true
+    @model.set 'soldiers', ( @model.get('soldiers') - value )
 
   "event(game:army:attacked)": (value) ->
-    @model.set 'population', @model.get('population') - value
+    return unless @active is false
+    soldiers = @model.get('soldiers') - value
+    @model.set 'soldiers', Math.max(soldiers, 0)
+    @model.set('peasants', @model.get('peasants') - Math.abs(soldiers)) if soldiers < 0
 
-  setPopulationRatio: (ratio) ->
+  setLaborDistribution: (ratio) ->
     @projections.set 'ratio', ratio
-    population = @model.get 'population'
-    farmers = population * ratio
-    miners = population * (1 - ratio)
-    @projections.set 'farmers', farmers
-    @projections.set 'miners', miners
+    @updateProjections()
 
   setOwner: (owner) ->
     @owner = owner
@@ -44,82 +40,76 @@ class entities.ResourceManager extends nv.Entity
   projected: () ->
     @projections
 
+  activate: (state) ->
+    @active = state
+
   prepareProjections: () ->
     @projections.setMany
-      population: @model.population
-      gold: @model.gold
-      food: @model.food
-      farmers: @model.farmers
-      miners: @model.miners
+      peasants: @model.peasants
       soldiers: @model.soldiers
-    @setPopulationRatio @model.get('ratio')
+      food: @model.food
+      gold: @model.gold
+      ratio: @model.ratio
 
   commitProjections: () ->
     @model.setMany
-      population: @projections.population
+      peasants: @projections.peasants
+      soldiers: @projections.soldiers
       gold: @projections.gold
       food: @projections.food
-      farmers: @projections.farmers
-      miners: @projections.miners
-      soldiers: @projections.soldiers
+      ratio: @projections.ratio
 
   updateProjections: () ->
     @projectFarming()
     @projectMining()
-    # @projectPopulation()
+    @projectPopulation()
+
+    console.log "after update", @projections.peasants, @projections.soldiers
 
   projectFarming: () ->
     food = 0
     grainPlots = @owner.numberOfPlots('grain')
     if grainPlots > 0
       for i in [1..grainPlots]
-        food += (Math.random() * 1.5 + 0.7) * @projections.get('farmers')
+        food += (Math.random() * 1.5 + 0.7) * ( @projections.get('peasants') * (1 - @projections.get('ratio')) )
     food = Math.min(food, 300) + @model.get 'food'
-    @projections.set 'food', food
+    @projections.set 'food', Math.round(food)
 
   projectMining: () ->
     gold = 0
     goldPlots = @owner.numberOfPlots('gold')
     if goldPlots > 0
       for i in [1..goldPlots]
-        gold += (Math.random() * 1.5 + 0.7) * 0.1 * @projections.get('miners')
+        gold += (Math.random() * 1.5 + 0.7) * 0.1 * ( @projections.get('peasants') * @projections.get('ratio') )
     gold = Math.min(gold, 30) + @model.get 'gold'
-    @projections.set 'gold', gold
+    @projections.set 'gold', Math.round(gold)
 
   projectPopulation: () ->
-    currentPopulation = @model.get 'population'
-    growthTarget = currentPopulation * 1.05
+    currentPopulation = @model.get('peasants') + @model.get('soldiers')
+    growthTarget = Math.round(currentPopulation * 0.05)
+    projectedPopulation = currentPopulation + growthTarget
+    foodAvailable = @projections.get 'food'
 
-    supportablePopulation = @projections.get 'food'
+    # console.log "current pop", @model.get('peasants'), @model.get('soldiers')
+    # console.log "project pop", @projections.get('peasants'), @projections.get('soldiers')
+    # console.log growthTarget, projectedPopulation, foodAvailable
 
-    if growthTarget < supportablePopulation
-      @projections.set 'population', growthTarget
-    else if currentPopulation < supportablePopulation
-      @projections.set 'population', supportablePopulation
+    if projectedPopulation < foodAvailable
+      @projections.set 'peasants', (currentPopulation + growthTarget - @projections.get('soldiers'))
+    else if currentPopulation < foodAvailable
+      @projections.set 'peasants', Math.round(foodAvailable - @projections.get('soldiers'))
     else
-      deathTarget = currentPopulation * .1
+      deaths = Math.round(currentPopulation * .1)
+      newPopulation = currentPopulation - deaths
 
-      employedWorkers = @projections.get('farmers') + @projections.get('miners') + @projections.get('soldiers')
+      peasantDeaths = Math.round(deaths / 2)
+      soldierDeaths = deaths - peasantDeaths
 
-      newPopulation = currentPopulation - deathTarget
-      @projections.set 'population', newPopulation
-
-      workerImbalance = newPopulation - employedWorkers
-      while workerImbalance < 0
-        soldiers = @projections.get 'soldiers'
-        miners = @projections.get 'miners'
-        farmers = @projections.get 'farmers'
-
-        if soldiers > 0
-          workerImbalance += soldiers
-          @projections.set 'soldiers', Math.max(0, workerImbalance)
-        else if miners > 0
-          workerImbalance += miners
-          @projections.set 'soldiers', Math.max(0, workerImbalance)
-        else if farmers > 0
-          workerImbalance += farmers
-          @projections.set 'soldiers', Math.max(0, workerImbalance)
+      soldiers = @projections.get('soldiers') - soldierDeaths
+      @projections.set 'soldiers', Math.max(soldiers, 0)
+      peasantDeaths += Math.abs(soldierDeaths) if soldiers < 0
+      @projections.set('peasants', @projections.get('peasants') - peasantDeaths) if soldiers < 0
 
     food = @projections.get 'food'
-    food -= @projections.get 'population'
-    @projections.set 'food', food
+    food -= @projections.get('peasants') + @projections.get('soldiers')
+    @projections.set 'food', Math.max(food, 0)

@@ -6,6 +6,7 @@ class entities.Player extends nv.Entity
     @gameWidth = scene.get('canvas').getSize().width
     @model.countries = []
     @attacking = false
+    @active = false
 
   addCountry: (data) ->
     entityConfigs = @scene.rootModel.config.entities
@@ -19,26 +20,31 @@ class entities.Player extends nv.Entity
     @model.x = mouseX
 
   beginTurn: () ->
+    @active = true
+    @resources().activate(true)
     @resources().prepareProjections()
+    @resources().updateProjections()
 
   endTurn: () ->
+    @active = false
     @resources().commitProjections()
+    @resources().activate(false)
 
   "event(scene:initialized)": () ->
     @attackText = @scene.getEntityById('attack-text').getPlugin nv.TextUIPlugin
 
   "event(engine:ui:clicked)": (element) ->
+    return unless @active
     if element.id is "create-army-button"
-      @resources().projected().set 'soldiers', @resources().projected().get('soldiers') + 10
       @scene.fire "game:army:created", 10
     else if element.id is "attack-button"
       @attacking = true
       @attackText.show()
 
   "event(game:clicked:county)": (county) ->
+    return unless @active
     if @attacking is true
       if county isnt 1026
         @attacking = false
         @attackText.hide()
-        @resources().current().set 'soldiers', @resources().current().get('soldiers') - 50
-        @scene.fire "game:army:send", 50
+        @scene.fire "game:army:send", Math.min(@resources().current().get('soldiers'), 50)
