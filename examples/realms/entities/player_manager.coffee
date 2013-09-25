@@ -17,6 +17,7 @@ class entities.PlayerManager extends nv.Entity
         country: name
         resources: scenario.resources
         plotData: scenario.countries[name].plots
+        ratio: 0.5
       @model.players.push player
     @nextPlayersTurn()
 

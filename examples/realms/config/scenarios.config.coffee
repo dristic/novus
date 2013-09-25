@@ -9,6 +9,7 @@ realms.scenarios =
         food: 100
         population: 50
         gold: 0
+        ratio: 0.5
       countries:
         darkland:
           plots: [new nv.Point(576,320), new nv.Point(608,320), new nv.Point(576,352), new nv.Point(352,416), new nv.Point(352,448)]

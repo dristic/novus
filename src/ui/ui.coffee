@@ -3,3 +3,4 @@
 #= require button
 #= require panel
 #= require slider
+#= require sprite

@@ -6,14 +6,14 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
     @id = @entity.model.id
 
     @drawable = new gleam.Square
-      color: "#FFF"
+      color: @entity.model.fillColor ? "#FFF"
       width: @entity.model.width ? 150
       height: @entity.model.height ? 50
       x: 10
       y: 10
 
     @text = new gleam.Text
-      color: "#000"
+      color: @entity.model.textColor ? "#000"
       text: @entity.model.text
       textAlign: 'center'
       textBaseline: 'middle'
