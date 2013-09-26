@@ -60,6 +60,7 @@ class entities.PlayerManager extends nv.Entity
   "event(engine:ui:clicked)": (element) ->
     switch element.id
       when "next-turn-button" then @scene.fire "game:turn:next"
+      when "next-turn-other-button" then @scene.fire "game:turn:next"
 
   "event(game:turn:next)": () ->
     @nextPlayersTurn()

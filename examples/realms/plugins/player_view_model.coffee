@@ -2,6 +2,11 @@ class plugins.PlayerViewModel extends nv.Plugin
   constructor: (scene, entity) ->
     super scene, entity
 
+    @endTurnButton = @scene.getEntityById("next-turn-button")
+    @endTurnButton = @endTurnButton.getPlugin(nv.ButtonUIPlugin)
+    @endOtherTurnButton = @scene.getEntityById("next-turn-other-button")
+    @endOtherTurnButton = @endOtherTurnButton.getPlugin(nv.ButtonUIPlugin)
+
   "event(game:ui:update)": () ->
     @updateData()
 
@@ -29,3 +34,12 @@ class plugins.PlayerViewModel extends nv.Plugin
       p_soldiers: projections.soldiers
       p_food: projections.food
       p_gold: projections.gold
+
+    turn = @entity.model.get 'turn'
+    playerNumber = @entity.model.get 'playerNumber'
+    if turn is playerNumber
+      @endTurnButton.show()
+      @endOtherTurnButton.hide()
+    else
+      @endTurnButton.hide()
+      @endOtherTurnButton.show()

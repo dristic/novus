@@ -25,25 +25,32 @@ class nv.SliderUIPlugin extends nv.UIPlugin
         y: entity.model.y + 22
 
     @box = new gleam.Square
-      color: "red"
+      color: "#FFF"
       width: 10
       height: 30
       x: entity.model.x + 1
       y: entity.model.y
 
     @minBox = new gleam.Square
-      color: "#000"
+      color: "#555"
       width: 1
       height: 30
       x: entity.model.x
       y: entity.model.y
 
     @maxBox = new gleam.Square
-      color: "#000"
+      color: "#555"
       width: 1
       height: 30
       x: entity.model.x + @max + @box.width
       y: entity.model.y
+
+    @line = new gleam.Square
+      color: '#555'
+      width: @max + @box.width
+      height: 1
+      x: entity.model.x
+      y: entity.model.y + 15
 
     @entity.model.on 'change:value', nv.bind this, @onValueChange
 
@@ -79,6 +86,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
 
     @box.x = @entity.model.x + ((1 * @max) * @getValue())
 
-    @box.draw context, canvas
     @minBox.draw context, canvas
     @maxBox.draw context, canvas
+    @line.draw context, canvas
+    @box.draw context, canvas

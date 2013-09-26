@@ -55,8 +55,8 @@ realms.gameConfig =
           model:
             options:
               color: 'rgba(0, 0, 0, 0.5)'
-              width: 200
-              height: 400
+              width: 265
+              height: 480
               x: 0
               y: 0
         landSelectionScreen:
@@ -66,7 +66,7 @@ realms.gameConfig =
             options:
               x: 70
               y: 200
-        button:
+        endTurnButton:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
           model:
@@ -75,6 +75,15 @@ realms.gameConfig =
               id: "next-turn-button"
               x: 480
               y: 420
+        endOtherTurnButton:
+          entity: nv.Entity
+          plugins: [ nv.ButtonUIPlugin ]
+          model:
+            options:
+              text: "End Other Turn"
+              id: "next-turn-other-button"
+              x: 480
+              y: 360
         createArmy:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
@@ -82,8 +91,8 @@ realms.gameConfig =
             options:
               text: "Create Army"
               id: "create-army-button"
-              x: 480
-              y: 360
+              x: 20
+              y: 410
         attackButton:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
@@ -91,8 +100,8 @@ realms.gameConfig =
             options:
               text: "Attack"
               id: "attack-button"
-              x: 480
-              y: 300
+              x: 20
+              y: 350
         armyManager:
           entity: entities.ArmyManager
           plugins: []
