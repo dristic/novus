@@ -71,6 +71,10 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @dragging = false
     @entity.model.set 'value', @value
 
+  "event(engine:gamepad:mouse:up)": (data) ->
+    @dragging = false
+    @entity.model.set 'value', @value
+
   getValue: () ->
     @value / @max
 
