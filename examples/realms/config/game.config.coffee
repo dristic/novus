@@ -131,8 +131,8 @@ realms.gameConfig =
           plugins: [ nv.SliderUIPlugin ]
           model:
             options:
-              leftText: "Miners"
-              rightText: "Farmers"
+              leftText: "Farmers"
+              rightText: "Miners"
               font: uiFont
               x: 75
               y: 300
