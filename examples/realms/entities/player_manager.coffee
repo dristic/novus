@@ -33,29 +33,7 @@ class entities.PlayerManager extends nv.Entity
             ratio: 0.5
 
     @model.set 'currentPlayer', @model.players[@model.turn - 1]
-    @updateData()
-
-  # Collects data from the current player and county to show in the UI
-  updateData: () ->
-    # BLAH... as you like to say
-    # 
-    # SO NOT LIKING THIS... this kills the change event stuff
-    # we need just need to dynamically bind to the active player on this computer
-    #
-    #
-    clientPlayer = @model.get 'clientPlayer'
-    resources = clientPlayer.resources().model
-    projections = clientPlayer.resources().projections
-
-    @model.setMany
-      peasants: resources.peasants
-      food: resources.food
-      gold: resources.gold
-      soldiers: resources.soldiers
-      p_peasants: projections.peasants
-      p_soldiers: projections.soldiers
-      p_food: projections.food
-      p_gold: projections.gold
+    @scene.fire "game:ui:update"
 
   clientPlayer: () ->
     @model.clientPlayer
@@ -68,20 +46,16 @@ class entities.PlayerManager extends nv.Entity
     if turn > @model.players.length
       turn = 1
 
-    @updateData()
-
     @currentPlayer().endTurn()
     @model.set 'turn', turn
     @model.set 'currentPlayer', @model.players[turn - 1]
     @currentPlayer().beginTurn()
 
+    @scene.fire "game:turn:end"
+
   "event(engine:ui:slider:change)": (entity) ->
     value = Math.floor(entity.model.value) / 100
     @currentPlayer().resources().setLaborDistribution value
-    @updateData()
-
-  "event(game:land:change)": (land) ->
-    @updateData()
 
   "event(engine:ui:clicked)": (element) ->
     switch element.id

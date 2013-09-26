@@ -8,6 +8,7 @@
 #= require_tree models
 #= require_tree entities
 #= require_tree scenes
+#= require_tree plugins
 #= require_tree config
 
 nv.ready ->

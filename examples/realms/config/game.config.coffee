@@ -101,7 +101,7 @@ realms.gameConfig =
               army: 0
         playerManager:
           entity: entities.PlayerManager
-          plugins: []
+          plugins: [ plugins.PlayerViewModel ]
           model:
             options:
               turn: 1

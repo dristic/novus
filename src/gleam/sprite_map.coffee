@@ -36,7 +36,7 @@ class gleam.SpriteMap extends gleam.Sprite
         while x < @width
           cell = @data[++index]
           framesInARow = @image.width / @tileWidth
-          tileX = (cell % framesInARow) * @tileWidth - @tileWidth
+          tileX = ((cell - 1) % framesInARow) * @tileWidth
           tileY = Math.floor(cell / framesInARow) * @tileHeight
 
           context.drawImage @image, tileX, tileY, @tileWidth, @tileHeight, Math.floor(x + @x), Math.floor(y + @y), @tileWidth, @tileHeight

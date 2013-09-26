@@ -3,6 +3,7 @@
 @entities = {}
 @models = {}
 @renderers = {}
+@plugins = {}
 
 @realms = {}
 
