@@ -726,7 +726,7 @@
           while (x < this.width) {
             cell = this.data[++index];
             framesInARow = this.image.width / this.tileWidth;
-            tileX = (cell % framesInARow) * this.tileWidth - this.tileWidth;
+            tileX = ((cell - 1) % framesInARow) * this.tileWidth;
             tileY = Math.floor(cell / framesInARow) * this.tileHeight;
             context.drawImage(this.image, tileX, tileY, this.tileWidth, this.tileHeight, Math.floor(x + this.x), Math.floor(y + this.y), this.tileWidth, this.tileHeight);
             x += this.tileWidth;
@@ -3382,8 +3382,7 @@
         element = _ref[_i];
         if (element.hidden !== true) {
           if ((element.bounds != null) && element.bounds().contains(new nv.Point(data.x, data.y))) {
-            this.scene.fire("engine:ui:mouse:up", data);
-            _results.push(event.stopPropagation());
+            _results.push(this.scene.fire("engine:ui:mouse:up", data));
           } else {
             _results.push(void 0);
           }
@@ -3487,63 +3486,25 @@
     __extends(TextUIPlugin, _super);
 
     function TextUIPlugin(scene, entity) {
-      var bindMethod, binding, key, keySegments, match, _i, _len, _ref,
+      var binding, key, match, _i, _len, _ref,
         _this = this;
       TextUIPlugin.__super__.constructor.call(this, scene, entity);
       this.id = this.entity.model.id;
       this.text = new gleam.Text(this.entity.model);
       this.dirty = true;
       this.values = {};
-      if (this.entity.model.bind == null) {
-        return;
-      }
-      bindMethod = typeof this.entity.model.bind === "function" ? this.entity.model.binding || "entity" : "static";
-      binding = (function() {
-        switch (bindMethod) {
-          case "static":
-            return this.entity.model.bind;
-          case "entity":
-            return this.scene.getEntity(this.entity.model.bind);
-          case "dynamic":
-            return this.entity.model.bind(scene);
-        }
-      }).call(this);
-      _ref = this.entity.model.text.match(/\{{[\s\S]+?}}/g);
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        match = _ref[_i];
-        key = match.slice(2, -2);
-        keySegments = key.split('.');
-        if (keySegments.length > 1) {
-          binding = binding.model[keySegments[0]];
-          bindMethod = "proxy";
-        }
-        this.values[key] = (function() {
-          switch (bindMethod) {
-            case "dynamic":
-              return binding;
-            case "proxy":
-              return binding.get(keySegments[1]);
-            default:
-              return binding.model[key];
-          }
-        })();
-      }
-      if (bindMethod === "dynamic") {
-        return;
-      }
-      for (key in this.values) {
-        switch (bindMethod) {
-          case "proxy":
-            binding.on("change:" + keySegments[1], function(value) {
-              _this.values[key] = value;
-              return _this.dirty = true;
-            });
-            break;
-          default:
-            binding.model.on("change:" + key, function(value) {
-              _this.values[key] = value;
-              return _this.dirty = true;
-            });
+      if (this.entity.model.bind != null) {
+        binding = this.scene.getEntity(this.entity.model.bind);
+        _ref = this.entity.model.text.match(/\{{[\s\S]+?}}/g);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          match = _ref[_i];
+          key = match.slice(2, -2);
+          this.values[key] = binding.model[key];
+          this.dirty = true;
+          binding.model.on("change:" + key, function(value) {
+            _this.values[key] = value;
+            return _this.dirty = true;
+          });
         }
       }
     }
@@ -3588,18 +3549,18 @@
     __extends(ButtonUIPlugin, _super);
 
     function ButtonUIPlugin(scene, entity) {
-      var _ref, _ref1;
+      var _ref, _ref1, _ref2, _ref3;
       ButtonUIPlugin.__super__.constructor.call(this, scene, entity);
       this.id = this.entity.model.id;
       this.drawable = new gleam.Square({
-        color: "#FFF",
-        width: (_ref = this.entity.model.width) != null ? _ref : 150,
-        height: (_ref1 = this.entity.model.height) != null ? _ref1 : 50,
+        color: (_ref = this.entity.model.fillColor) != null ? _ref : "#FFF",
+        width: (_ref1 = this.entity.model.width) != null ? _ref1 : 150,
+        height: (_ref2 = this.entity.model.height) != null ? _ref2 : 50,
         x: 10,
         y: 10
       });
       this.text = new gleam.Text({
-        color: "#000",
+        color: (_ref3 = this.entity.model.textColor) != null ? _ref3 : "#000",
         text: this.entity.model.text,
         textAlign: 'center',
         textBaseline: 'middle',
@@ -3711,25 +3672,32 @@
         }
       });
       this.box = new gleam.Square({
-        color: "red",
+        color: "#FFF",
         width: 10,
         height: 30,
         x: entity.model.x + 1,
         y: entity.model.y
       });
       this.minBox = new gleam.Square({
-        color: "#000",
+        color: "#555",
         width: 1,
         height: 30,
         x: entity.model.x,
         y: entity.model.y
       });
       this.maxBox = new gleam.Square({
-        color: "#000",
+        color: "#555",
         width: 1,
         height: 30,
         x: entity.model.x + this.max + this.box.width,
         y: entity.model.y
+      });
+      this.line = new gleam.Square({
+        color: '#555',
+        width: this.max + this.box.width,
+        height: 1,
+        x: entity.model.x,
+        y: entity.model.y + 15
       });
       this.entity.model.on('change:value', nv.bind(this, this.onValueChange));
     }
@@ -3774,12 +3742,50 @@
         this.clamp();
       }
       this.box.x = this.entity.model.x + ((1 * this.max) * this.getValue());
-      this.box.draw(context, canvas);
       this.minBox.draw(context, canvas);
-      return this.maxBox.draw(context, canvas);
+      this.maxBox.draw(context, canvas);
+      this.line.draw(context, canvas);
+      return this.box.draw(context, canvas);
     };
 
     return SliderUIPlugin;
+
+  })(nv.UIPlugin);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.SpriteUIPlugin = (function(_super) {
+    __extends(SpriteUIPlugin, _super);
+
+    function SpriteUIPlugin(scene, entity) {
+      SpriteUIPlugin.__super__.constructor.call(this, scene, entity);
+      this.sprite = new gleam.Sprite(entity.model);
+    }
+
+    SpriteUIPlugin.prototype.bounds = function() {
+      return new nv.Rect(this.sprite.x, this.sprite.y, this.sprite.x + this.sprite.width, this.sprite.y + this.sprite.height);
+    };
+
+    SpriteUIPlugin.prototype.draw = function(context, canvas) {
+      var _this = this;
+      if (this.hidden !== true) {
+        this.sprite.x = this.entity.model.x;
+        this.sprite.y = this.entity.model.y;
+        if (this.entity.model.rotate != null) {
+          return context.rotateAround(this.sprite.x, this.sprite.y, this.entity.model.rotate, function() {
+            return _this.sprite.draw(context, canvas);
+          });
+        } else {
+          return this.sprite.draw(context, canvas);
+        }
+      }
+    };
+
+    return SpriteUIPlugin;
 
   })(nv.UIPlugin);
 
@@ -3887,6 +3893,8 @@
 
   this.renderers = {};
 
+  this.plugins = {};
+
   this.realms = {};
 
   this.Application = (function(_super) {
@@ -3930,36 +3938,7 @@
 
     function ArmyManager(scene, plugins, model) {
       ArmyManager.__super__.constructor.call(this, scene, plugins, model);
-      this.attacking = false;
     }
-
-    ArmyManager.prototype["event(scene:initialized)"] = function() {
-      return this.attackText = this.scene.getEntityById('attack-text').getPlugin(nv.TextUIPlugin);
-    };
-
-    ArmyManager.prototype["event(engine:ui:clicked)"] = function(element) {
-      var army;
-      if (element.id === "create-army-button") {
-        army = this.model.get('army');
-        army += 10;
-        this.model.set('army', army);
-        return this.scene.fire("game:army:created", 10);
-      } else if (element.id === "attack-button") {
-        this.attacking = true;
-        return this.attackText.show();
-      }
-    };
-
-    ArmyManager.prototype["event(game:clicked:county)"] = function(county) {
-      if (this.attacking === true) {
-        if (county !== 1026) {
-          this.attacking = false;
-          this.attackText.hide();
-          this.model.set('army', this.model.get('army') - 50);
-          return this.scene.fire("game:army:send", 50);
-        }
-      }
-    };
 
     return ArmyManager;
 
@@ -4218,13 +4197,6 @@
       }
     };
 
-    Map.prototype["event(engine:ui:clicked)"] = function(element) {
-      switch (element.id) {
-        case "next-turn-button":
-          return this.scene.fire("game:turn:next");
-      }
-    };
-
     return Map;
 
   })(nv.Entity);
@@ -4292,6 +4264,8 @@
       this.gamepad = scene.get('gamepad');
       this.gameWidth = scene.get('canvas').getSize().width;
       this.model.countries = [];
+      this.attacking = false;
+      this.active = false;
     }
 
     Player.prototype.addCountry = function(data) {
@@ -4311,11 +4285,45 @@
     };
 
     Player.prototype.beginTurn = function() {
-      return this.resources().prepareProjections();
+      this.active = true;
+      this.resources().activate(true);
+      this.resources().prepareProjections();
+      return this.resources().updateProjections();
     };
 
     Player.prototype.endTurn = function() {
-      return this.resources().commitProjections();
+      this.active = false;
+      this.resources().commitProjections();
+      return this.resources().activate(false);
+    };
+
+    Player.prototype["event(scene:initialized)"] = function() {
+      return this.attackText = this.scene.getEntityById('attack-text').getPlugin(nv.TextUIPlugin);
+    };
+
+    Player.prototype["event(engine:ui:clicked)"] = function(element) {
+      if (!this.active) {
+        return;
+      }
+      if (element.id === "create-army-button") {
+        return this.scene.fire("game:army:created", 10);
+      } else if (element.id === "attack-button") {
+        this.attacking = true;
+        return this.attackText.show();
+      }
+    };
+
+    Player.prototype["event(game:clicked:county)"] = function(county) {
+      if (!this.active) {
+        return;
+      }
+      if (this.attacking === true) {
+        if (county !== 1026) {
+          this.attacking = false;
+          this.attackText.hide();
+          return this.scene.fire("game:army:send", Math.min(this.resources().current().get('soldiers'), 50));
+        }
+      }
     };
 
     return Player;
@@ -4333,26 +4341,46 @@
 
     function PlayerManager(scene, plugins, model) {
       PlayerManager.__super__.constructor.call(this, scene, plugins, model);
-      this.model.turn = 0;
+      this.model.turn = 1;
+      this.model.playerNumber = 1;
       this.createPlayers();
     }
 
     PlayerManager.prototype.createPlayers = function() {
-      var entityConfigs, name, player, rootModel, scenario;
+      var entityConfigs, name, player, playerConfig, playerNumber, rootModel, scenario, _i, _j, _len, _ref, _ref1;
       rootModel = this.scene.rootModel;
       scenario = rootModel.get('scenario');
       entityConfigs = rootModel.config.entities;
       this.model.players = [];
-      for (name in scenario.countries) {
-        player = this.scene.createEntity(entityConfigs.player);
-        player.addCountry({
-          country: name,
-          resources: scenario.resources,
-          plotData: scenario.countries[name].plots
-        });
+      for (playerNumber = _i = 1, _ref = scenario.players; 1 <= _ref ? _i <= _ref : _i >= _ref; playerNumber = 1 <= _ref ? ++_i : --_i) {
+        playerConfig = nv.extend({}, entityConfigs.player);
+        playerConfig.model.options.number = playerNumber;
+        player = this.scene.createEntity(playerConfig);
         this.model.players.push(player);
+        if (playerNumber === this.model.playerNumber) {
+          this.model.set('clientPlayer', player);
+        }
       }
-      return this.nextPlayersTurn();
+      for (name in scenario.countries) {
+        _ref1 = this.model.players;
+        for (_j = 0, _len = _ref1.length; _j < _len; _j++) {
+          player = _ref1[_j];
+          if (player.model.number === scenario.countries[name].owner) {
+            player.addCountry({
+              country: name,
+              resources: scenario.resources,
+              plotData: scenario.countries[name].plots,
+              ratio: 0.5
+            });
+          }
+        }
+      }
+      this.model.set('currentPlayer', this.model.players[this.model.turn - 1]);
+      return this.scene.fire("game:ui:update");
+    };
+
+    PlayerManager.prototype.clientPlayer = function() {
+      return this.model.clientPlayer;
     };
 
     PlayerManager.prototype.currentPlayer = function() {
@@ -4365,21 +4393,26 @@
       if (turn > this.model.players.length) {
         turn = 1;
       }
-      if (this.currentPlayer()) {
-        this.currentPlayer().endTurn();
-      }
+      this.currentPlayer().endTurn();
       this.model.set('turn', turn);
       this.model.set('currentPlayer', this.model.players[turn - 1]);
       this.currentPlayer().beginTurn();
-      this.model.set('resourcesCurrent', this.currentPlayer().resources().current());
-      return this.model.set('resourcesProjected', this.currentPlayer().resources().projected());
+      return this.scene.fire("game:turn:end");
     };
 
     PlayerManager.prototype["event(engine:ui:slider:change)"] = function(entity) {
       var value;
       value = Math.floor(entity.model.value) / 100;
-      this.currentPlayer().resources().setPopulationRatio(value);
-      return this.currentPlayer().resources().updateProjections();
+      return this.currentPlayer().resources().setLaborDistribution(value);
+    };
+
+    PlayerManager.prototype["event(engine:ui:clicked)"] = function(element) {
+      switch (element.id) {
+        case "next-turn-button":
+          return this.scene.fire("game:turn:next");
+        case "next-turn-other-button":
+          return this.scene.fire("game:turn:next");
+      }
     };
 
     PlayerManager.prototype["event(game:turn:next)"] = function() {
@@ -4401,45 +4434,47 @@
 
     function ResourceManager(scene, plugins, model) {
       ResourceManager.__super__.constructor.call(this, scene, plugins, model);
-      this.model.setMany({
-        farmers: 0,
-        miners: 0,
-        soldiers: 0
-      });
-      this.projections = new nv.Model({
-        farmers: 0,
-        miners: 0,
-        soldiers: 0
-      });
+      this.projections = new nv.Model({});
+      this.prepareProjections();
+      this.active = false;
     }
 
     ResourceManager.prototype.calculateResources = function(lands) {};
 
-    ResourceManager.prototype["event(engine:ui:clicked)"] = function(element) {
-      var population;
-      if (element.id === "next-turn-button") {
-        population = this.model.get('population');
-        population += 100;
-        return this.model.set('population', population);
+    ResourceManager.prototype["event(game:army:created)"] = function(value) {
+      var peasants;
+      if (this.active !== true) {
+        return;
       }
+      peasants = this.projections.get('peasants');
+      value = Math.min(peasants, value);
+      this.projections.set('peasants', peasants - value);
+      this.projections.set('soldiers', this.projections.get('soldiers') + value);
+      return this.updateProjections();
     };
 
-    ResourceManager.prototype["event(game:army:created)"] = function(value) {
-      return this.model.set('population', this.model.get('population') - value);
+    ResourceManager.prototype["event(game:army:send)"] = function(value) {
+      if (this.active !== true) {
+        return;
+      }
+      return this.model.set('soldiers', this.model.get('soldiers') - value);
     };
 
     ResourceManager.prototype["event(game:army:attacked)"] = function(value) {
-      return this.model.set('population', this.model.get('population') - value);
+      var soldiers;
+      if (this.active !== false) {
+        return;
+      }
+      soldiers = this.model.get('soldiers') - value;
+      this.model.set('soldiers', Math.max(soldiers, 0));
+      if (soldiers < 0) {
+        return this.model.set('peasants', this.model.get('peasants') - Math.abs(soldiers));
+      }
     };
 
-    ResourceManager.prototype.setPopulationRatio = function(ratio) {
-      var farmers, miners, population;
+    ResourceManager.prototype.setLaborDistribution = function(ratio) {
       this.projections.set('ratio', ratio);
-      population = this.model.get('population');
-      farmers = population * ratio;
-      miners = population * (1 - ratio);
-      this.projections.set('farmers', farmers);
-      return this.projections.set('miners', miners);
+      return this.updateProjections();
     };
 
     ResourceManager.prototype.setOwner = function(owner) {
@@ -4454,32 +4489,35 @@
       return this.projections;
     };
 
+    ResourceManager.prototype.activate = function(state) {
+      return this.active = state;
+    };
+
     ResourceManager.prototype.prepareProjections = function() {
-      this.projections.setMany({
-        population: this.model.population,
-        gold: this.model.gold,
+      return this.projections.setMany({
+        peasants: this.model.peasants,
+        soldiers: this.model.soldiers,
         food: this.model.food,
-        farmers: this.model.farmers,
-        miners: this.model.miners,
-        soldiers: this.model.soldiers
+        gold: this.model.gold,
+        ratio: this.model.ratio
       });
-      return this.setPopulationRatio(this.model.get('ratio'));
     };
 
     ResourceManager.prototype.commitProjections = function() {
       return this.model.setMany({
-        population: this.projections.population,
+        peasants: this.projections.peasants,
+        soldiers: this.projections.soldiers,
         gold: this.projections.gold,
         food: this.projections.food,
-        farmers: this.projections.farmers,
-        miners: this.projections.miners,
-        soldiers: this.projections.soldiers
+        ratio: this.projections.ratio
       });
     };
 
     ResourceManager.prototype.updateProjections = function() {
       this.projectFarming();
-      return this.projectMining();
+      this.projectMining();
+      this.projectPopulation();
+      return console.log("after update", this.projections.peasants, this.projections.soldiers);
     };
 
     ResourceManager.prototype.projectFarming = function() {
@@ -4488,11 +4526,11 @@
       grainPlots = this.owner.numberOfPlots('grain');
       if (grainPlots > 0) {
         for (i = _i = 1; 1 <= grainPlots ? _i <= grainPlots : _i >= grainPlots; i = 1 <= grainPlots ? ++_i : --_i) {
-          food += (Math.random() * 1.5 + 0.7) * this.projections.get('farmers');
+          food += (Math.random() * 1.5 + 0.7) * (this.projections.get('peasants') * (1 - this.projections.get('ratio')));
         }
       }
       food = Math.min(food, 300) + this.model.get('food');
-      return this.projections.set('food', food);
+      return this.projections.set('food', Math.round(food));
     };
 
     ResourceManager.prototype.projectMining = function() {
@@ -4501,47 +4539,40 @@
       goldPlots = this.owner.numberOfPlots('gold');
       if (goldPlots > 0) {
         for (i = _i = 1; 1 <= goldPlots ? _i <= goldPlots : _i >= goldPlots; i = 1 <= goldPlots ? ++_i : --_i) {
-          gold += (Math.random() * 1.5 + 0.7) * 0.1 * this.projections.get('miners');
+          gold += (Math.random() * 1.5 + 0.7) * 0.1 * (this.projections.get('peasants') * this.projections.get('ratio'));
         }
       }
       gold = Math.min(gold, 30) + this.model.get('gold');
-      return this.projections.set('gold', gold);
+      return this.projections.set('gold', Math.round(gold));
     };
 
     ResourceManager.prototype.projectPopulation = function() {
-      var currentPopulation, deathTarget, employedWorkers, farmers, food, growthTarget, miners, newPopulation, soldiers, supportablePopulation, workerImbalance;
-      currentPopulation = this.model.get('population');
-      growthTarget = currentPopulation * 1.05;
-      supportablePopulation = this.projections.get('food');
-      if (growthTarget < supportablePopulation) {
-        this.projections.set('population', growthTarget);
-      } else if (currentPopulation < supportablePopulation) {
-        this.projections.set('population', supportablePopulation);
+      var currentPopulation, deaths, food, foodAvailable, growthTarget, newPopulation, peasantDeaths, projectedPopulation, soldierDeaths, soldiers;
+      currentPopulation = this.model.get('peasants') + this.model.get('soldiers');
+      growthTarget = Math.round(currentPopulation * 0.05);
+      projectedPopulation = currentPopulation + growthTarget;
+      foodAvailable = this.projections.get('food');
+      if (projectedPopulation < foodAvailable) {
+        this.projections.set('peasants', currentPopulation + growthTarget - this.projections.get('soldiers'));
+      } else if (currentPopulation < foodAvailable) {
+        this.projections.set('peasants', Math.round(foodAvailable - this.projections.get('soldiers')));
       } else {
-        deathTarget = currentPopulation * .1;
-        employedWorkers = this.projections.get('farmers') + this.projections.get('miners') + this.projections.get('soldiers');
-        newPopulation = currentPopulation - deathTarget;
-        this.projections.set('population', newPopulation);
-        workerImbalance = newPopulation - employedWorkers;
-        while (workerImbalance < 0) {
-          soldiers = this.projections.get('soldiers');
-          miners = this.projections.get('miners');
-          farmers = this.projections.get('farmers');
-          if (soldiers > 0) {
-            workerImbalance += soldiers;
-            this.projections.set('soldiers', Math.max(0, workerImbalance));
-          } else if (miners > 0) {
-            workerImbalance += miners;
-            this.projections.set('soldiers', Math.max(0, workerImbalance));
-          } else if (farmers > 0) {
-            workerImbalance += farmers;
-            this.projections.set('soldiers', Math.max(0, workerImbalance));
-          }
+        deaths = Math.round(currentPopulation * .1);
+        newPopulation = currentPopulation - deaths;
+        peasantDeaths = Math.round(deaths / 2);
+        soldierDeaths = deaths - peasantDeaths;
+        soldiers = this.projections.get('soldiers') - soldierDeaths;
+        this.projections.set('soldiers', Math.max(soldiers, 0));
+        if (soldiers < 0) {
+          peasantDeaths += Math.abs(soldierDeaths);
+        }
+        if (soldiers < 0) {
+          this.projections.set('peasants', this.projections.get('peasants') - peasantDeaths);
         }
       }
       food = this.projections.get('food');
-      food -= this.projections.get('population');
-      return this.projections.set('food', food);
+      food -= this.projections.get('peasants') + this.projections.get('soldiers');
+      return this.projections.set('food', Math.max(food, 0));
     };
 
     return ResourceManager;
@@ -4571,6 +4602,69 @@
     return Main;
 
   })(nv.Scene);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  plugins.PlayerViewModel = (function(_super) {
+    __extends(PlayerViewModel, _super);
+
+    function PlayerViewModel(scene, entity) {
+      PlayerViewModel.__super__.constructor.call(this, scene, entity);
+      this.endTurnButton = this.scene.getEntityById("next-turn-button");
+      this.endTurnButton = this.endTurnButton.getPlugin(nv.ButtonUIPlugin);
+      this.endOtherTurnButton = this.scene.getEntityById("next-turn-other-button");
+      this.endOtherTurnButton = this.endOtherTurnButton.getPlugin(nv.ButtonUIPlugin);
+    }
+
+    PlayerViewModel.prototype["event(game:ui:update)"] = function() {
+      return this.updateData();
+    };
+
+    PlayerViewModel.prototype["event(game:turn:end)"] = function() {
+      return this.updateData();
+    };
+
+    PlayerViewModel.prototype["event(game:land:change)"] = function(land) {
+      return this.updateData();
+    };
+
+    PlayerViewModel.prototype["event(engine:ui:slider:change)"] = function(entity) {
+      return this.updateData();
+    };
+
+    PlayerViewModel.prototype.updateData = function() {
+      var clientPlayer, playerNumber, projections, resources, turn;
+      clientPlayer = this.entity.model.get('clientPlayer');
+      resources = clientPlayer.resources().model;
+      projections = clientPlayer.resources().projections;
+      this.entity.model.setMany({
+        peasants: resources.peasants,
+        food: resources.food,
+        gold: resources.gold,
+        soldiers: resources.soldiers,
+        p_peasants: projections.peasants,
+        p_soldiers: projections.soldiers,
+        p_food: projections.food,
+        p_gold: projections.gold
+      });
+      turn = this.entity.model.get('turn');
+      playerNumber = this.entity.model.get('playerNumber');
+      if (turn === playerNumber) {
+        this.endTurnButton.show();
+        return this.endOtherTurnButton.hide();
+      } else {
+        this.endTurnButton.hide();
+        return this.endOtherTurnButton.show();
+      }
+    };
+
+    return PlayerViewModel;
+
+  })(nv.Plugin);
 
 }).call(this);
 
@@ -4749,14 +4843,18 @@
         map: [457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 453, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 328, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 455, 456, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 297, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 550, 552, 184, 184, 182, 183, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 425, 614, 616, 184, 650, 650, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 182, 119, 184, 182, 183, 184, 182, 801, 182, 650, 184, 375, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 119, 184, 183, 184, 184, 801, 184, 182, 183, 184, 184, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 328, 361, 374, 184, 650, 184, 184, 184, 184, 184, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 329, 457, 457, 457, 393, 184, 182, 650, 184, 184, 184, 389, 389, 389, 389, 389, 389, 390, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 184, 389, 389, 389, 389, 650, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 389, 389, 389, 389, 389, 389, 650, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 184, 184, 389, 389, 389, 389, 389, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 421, 294, 389, 650, 650, 389, 389, 389, 389, 390, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 455, 457, 457, 388, 389, 389, 389, 389, 389, 293, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 388, 389, 389, 389, 389, 389, 390, 457, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 420, 421, 421, 421, 421, 421, 422, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457],
         resources: {
           food: 100,
-          population: 50,
-          gold: 0
+          peasants: 50,
+          soldiers: 0,
+          gold: 0,
+          ratio: 0.5
         },
         countries: {
           darkland: {
+            owner: 1,
             plots: [new nv.Point(576, 320), new nv.Point(608, 320), new nv.Point(576, 352), new nv.Point(352, 416), new nv.Point(352, 448)]
           },
           sandyland: {
+            owner: 2,
             plots: [new nv.Point(576, 480), new nv.Point(608, 480), new nv.Point(608, 512), new nv.Point(480, 576), new nv.Point(512, 576)]
           }
         }
@@ -4831,8 +4929,8 @@
             model: {
               options: {
                 color: 'rgba(0, 0, 0, 0.5)',
-                width: 200,
-                height: 400,
+                width: 265,
+                height: 480,
                 x: 0,
                 y: 0
               }
@@ -4848,7 +4946,7 @@
               }
             }
           },
-          button: {
+          endTurnButton: {
             entity: nv.Entity,
             plugins: [nv.ButtonUIPlugin],
             model: {
@@ -4860,6 +4958,18 @@
               }
             }
           },
+          endOtherTurnButton: {
+            entity: nv.Entity,
+            plugins: [nv.ButtonUIPlugin],
+            model: {
+              options: {
+                text: "End Other Turn",
+                id: "next-turn-other-button",
+                x: 480,
+                y: 360
+              }
+            }
+          },
           createArmy: {
             entity: nv.Entity,
             plugins: [nv.ButtonUIPlugin],
@@ -4867,8 +4977,8 @@
               options: {
                 text: "Create Army",
                 id: "create-army-button",
-                x: 480,
-                y: 360
+                x: 20,
+                y: 410
               }
             }
           },
@@ -4879,8 +4989,8 @@
               options: {
                 text: "Attack",
                 id: "attack-button",
-                x: 480,
-                y: 300
+                x: 20,
+                y: 350
               }
             }
           },
@@ -4895,7 +5005,7 @@
           },
           playerManager: {
             entity: entities.PlayerManager,
-            plugins: [],
+            plugins: [plugins.PlayerViewModel],
             model: {
               options: {
                 turn: 1,
@@ -4922,8 +5032,8 @@
             plugins: [nv.SliderUIPlugin],
             model: {
               options: {
-                leftText: "Miners",
-                rightText: "Farmers",
+                leftText: "Farmers",
+                rightText: "Miners",
                 font: uiFont,
                 x: 75,
                 y: 300
@@ -4952,7 +5062,7 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: "Population: {{resourcesCurrent.population}}",
+                text: "Peasants: {{peasants}}",
                 bind: entities.PlayerManager,
                 x: 15,
                 y: 55
@@ -4967,10 +5077,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Food: {{resourcesCurrent.food}}',
+                text: 'Food: {{food}}',
                 bind: entities.PlayerManager,
                 x: 15,
-                y: 75
+                y: 95
               }
             }
           },
@@ -4982,10 +5092,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Gold {{resourcesCurrent.gold}}',
+                text: 'Gold: {{gold}}',
                 bind: entities.PlayerManager,
                 x: 15,
-                y: 95
+                y: 115
               }
             }
           },
@@ -4997,10 +5107,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Army {{army}}',
-                bind: entities.ArmyManager,
+                text: 'Soldiers: {{soldiers}}',
+                bind: entities.PlayerManager,
                 x: 15,
-                y: 115
+                y: 75
               }
             }
           },
@@ -5014,7 +5124,7 @@
                 textBaseline: 'bottom',
                 text: 'Next Turn',
                 x: 15,
-                y: 180
+                y: 170
               }
             }
           },
@@ -5026,10 +5136,25 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: "Population: {{resourcesProjected.population}}",
+                text: "Peasants: {{p_peasants}}",
                 bind: entities.PlayerManager,
                 x: 15,
-                y: 200
+                y: 190
+              }
+            }
+          },
+          populationArmy: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: uiFont,
+                textBaseline: 'bottom',
+                text: "Soldiers: {{p_soldiers}}",
+                bind: entities.PlayerManager,
+                x: 15,
+                y: 210
               }
             }
           },
@@ -5041,10 +5166,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Food: {{resourcesProjected.food}}',
+                text: 'Food: {{p_food}}',
                 bind: entities.PlayerManager,
                 x: 15,
-                y: 220
+                y: 230
               }
             }
           },
@@ -5056,10 +5181,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Gold {{resourcesProjected.gold}}',
+                text: 'Gold {{p_gold}}',
                 bind: entities.PlayerManager,
                 x: 15,
-                y: 240
+                y: 250
               }
             }
           },
