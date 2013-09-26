@@ -21,7 +21,7 @@ class nv.EventDispatcher
         event: event
         data: data ? {}
 
-  send: (event, data) ->
+  send: (event, data...) ->
     stop = false
     ev =
       stopPropagation: () ->
@@ -29,7 +29,7 @@ class nv.EventDispatcher
     event_listeners = @event_listeners[event]
     if event_listeners instanceof Array
       for listener in event_listeners
-        listener(data ? {}, ev)
+        listener(data..., ev)
         if stop is true then break
 
   off: (event, func) ->

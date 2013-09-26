@@ -33,7 +33,7 @@ class entities.PlayerManager extends nv.Entity
             ratio: 0.5
 
     @model.set 'currentPlayer', @model.players[@model.turn - 1]
-    @scene.fire "game:ui:update"
+    @scene.fire "game:player:assigned"
 
   clientPlayer: () ->
     @model.clientPlayer

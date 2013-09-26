@@ -53,6 +53,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
       y: entity.model.y + 15
 
     @entity.model.on 'change:value', nv.bind this, @onValueChange
+    @onValueChange(@value)
 
   onValueChange: (value) ->
     @scene.fire "engine:ui:slider:change", this.entity
@@ -68,12 +69,14 @@ class nv.SliderUIPlugin extends nv.UIPlugin
       @dragging = true
 
   "event(engine:ui:mouse:up)": (data) ->
-    @dragging = false
-    @entity.model.set 'value', @value
+    if @dragging is true
+      @dragging = false
+      @entity.model.set 'value', @value
 
   "event(engine:gamepad:mouse:up)": (data) ->
-    @dragging = false
-    @entity.model.set 'value', @value
+    if @dragging is true
+      @dragging = false
+      @entity.model.set 'value', @value
 
   getValue: () ->
     @value / @max

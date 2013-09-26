@@ -7,23 +7,16 @@ class plugins.PlayerViewModel extends nv.Plugin
     @endOtherTurnButton = @scene.getEntityById("next-turn-other-button")
     @endOtherTurnButton = @endOtherTurnButton.getPlugin(nv.ButtonUIPlugin)
 
-  "event(game:ui:update)": () ->
-    @updateData()
-
-  "event(game:turn:end)": () ->
-    @updateData()
-
-  "event(game:land:change)": (land) ->
-    @updateData()
-
-  "event(engine:ui:slider:change)": (entity) ->
-    @updateData()
-
-  # Collects data from the current player and county to show in the UI
-  updateData: () ->
+  "event(game:player:assigned)": () ->
     clientPlayer = @entity.model.get 'clientPlayer'
     resources = clientPlayer.resources().model
     projections = clientPlayer.resources().projections
+
+    resources.on 'change', (key, value) =>
+      @entity.model.set key, value
+
+    projections.on 'change', (key, value) =>
+      @entity.model.set "p_#{key}", value
 
     @entity.model.setMany
       peasants: resources.peasants
@@ -35,8 +28,16 @@ class plugins.PlayerViewModel extends nv.Plugin
       p_food: projections.food
       p_gold: projections.gold
 
+    @updateTurnButton()
+
+  "event(game:turn:end)": () ->
+    @updateTurnButton()
+
+  # Collects data from the current player and county to show in the UI
+  updateTurnButton: () ->
     turn = @entity.model.get 'turn'
     playerNumber = @entity.model.get 'playerNumber'
+
     if turn is playerNumber
       @endTurnButton.show()
       @endOtherTurnButton.hide()

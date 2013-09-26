@@ -13,6 +13,7 @@ class nv.Model extends nv.EventDispatcher
 
   set: (key, value) ->
     this[key] = value
+    @send "change", key, value
     @send "change:#{key}", value
 
   reset: () ->
