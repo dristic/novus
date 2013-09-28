@@ -28,6 +28,7 @@ class entities.ResourceManager extends nv.Entity
     @model.set('peasants', @model.get('peasants') - Math.abs(soldiers)) if soldiers < 0
 
   setLaborDistribution: (ratio) ->
+    console.log "labor ratio", ratio
     @projections.set 'ratio', ratio
     @updateProjections()
 
@@ -58,6 +59,8 @@ class entities.ResourceManager extends nv.Entity
       gold: @projections.gold
       food: @projections.food
       ratio: @projections.ratio
+    @grainYield = null
+    @goldYield = null
 
   updateProjections: () ->
     @projectFarming()
@@ -70,17 +73,25 @@ class entities.ResourceManager extends nv.Entity
     food = 0
     grainPlots = @owner.numberOfPlots('grain')
     if grainPlots > 0
+      @grainYield = @grainYield ? (Math.random() * 1.5 + 0.7)
+      console.log "grain yield:", @grainYield
       for i in [1..grainPlots]
-        food += (Math.random() * 1.5 + 0.7) * ( @projections.get('peasants') * (1 - @projections.get('ratio')) )
+        console.log "ratio: ", (1 - @projections.get('ratio'))
+        console.log "food", @grainYield * ( @projections.get('peasants') * (1 - @projections.get('ratio')) )
+        food += @grainYield * ( @projections.get('peasants') * (1 - @projections.get('ratio')) )
+    console.log "food2:", food
     food = Math.min(food, 300) + @model.get 'food'
+    console.log "food3:", food
     @projections.set 'food', Math.round(food)
 
   projectMining: () ->
     gold = 0
     goldPlots = @owner.numberOfPlots('gold')
     if goldPlots > 0
+      @goldYield = @goldYield ? (Math.random() * 1.5 + 0.7)
+      console.log "gold yield:", @goldYield
       for i in [1..goldPlots]
-        gold += (Math.random() * 1.5 + 0.7) * 0.1 * ( @projections.get('peasants') * @projections.get('ratio') )
+        gold += goldYield * 0.1 * ( @projections.get('peasants') * @projections.get('ratio') )
     gold = Math.min(gold, 30) + @model.get 'gold'
     @projections.set 'gold', Math.round(gold)
 
@@ -89,10 +100,6 @@ class entities.ResourceManager extends nv.Entity
     growthTarget = Math.round(currentPopulation * 0.05)
     projectedPopulation = currentPopulation + growthTarget
     foodAvailable = @projections.get 'food'
-
-    # console.log "current pop", @model.get('peasants'), @model.get('soldiers')
-    # console.log "project pop", @projections.get('peasants'), @projections.get('soldiers')
-    # console.log growthTarget, projectedPopulation, foodAvailable
 
     if projectedPopulation < foodAvailable
       @projections.set 'peasants', (currentPopulation + growthTarget - @projections.get('soldiers'))
@@ -111,5 +118,7 @@ class entities.ResourceManager extends nv.Entity
       @projections.set('peasants', @projections.get('peasants') - peasantDeaths) if soldiers < 0
 
     food = @projections.get 'food'
+    console.log "pop food b4:", food
     food -= @projections.get('peasants') + @projections.get('soldiers')
+    console.log "pop food af:", food
     @projections.set 'food', Math.max(food, 0)

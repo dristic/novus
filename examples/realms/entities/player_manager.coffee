@@ -34,6 +34,8 @@ class entities.PlayerManager extends nv.Entity
 
     @model.set 'currentPlayer', @model.players[@model.turn - 1]
     @scene.fire "game:player:assigned"
+    @currentPlayer().beginTurn()
+    # @scene.fire "game:ui:update"
 
   clientPlayer: () ->
     @model.clientPlayer

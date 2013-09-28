@@ -17,7 +17,7 @@ class entities.Country extends nv.Entity
       @model.plots.push @scene.createEntity(landConfig)
 
   "event(game:land:change)": (land) ->
-    unless @model.plots.indexOf land is -1
+    unless @model.plots.indexOf(land) is -1
       @resources().updateProjections()
 
   resources: () ->
