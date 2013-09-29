@@ -4,6 +4,9 @@ class entities.PlayerManager extends nv.Entity
 
     @model.turn = 1
     @model.playerNumber = 1
+    
+  "event(game:mp:player)": (number) ->
+    @model.playerNumber = number
     @createPlayers()
 
   createPlayers: () ->
@@ -35,7 +38,6 @@ class entities.PlayerManager extends nv.Entity
     @model.set 'currentPlayer', @model.players[@model.turn - 1]
     @scene.fire "game:player:assigned"
     @currentPlayer().beginTurn()
-    # @scene.fire "game:ui:update"
 
   clientPlayer: () ->
     @model.clientPlayer
@@ -53,11 +55,12 @@ class entities.PlayerManager extends nv.Entity
     @model.set 'currentPlayer', @model.players[turn - 1]
     @currentPlayer().beginTurn()
 
-    @scene.fire "game:turn:end"
+    @scene.fire "game:turn:end", turn
 
   "event(engine:ui:slider:change)": (entity) ->
-    value = Math.floor(entity.model.value) / 100
-    @currentPlayer().resources().setLaborDistribution value
+    if @currentPlayer()
+      value = Math.floor(entity.model.value) / 100
+      @currentPlayer().resources().setLaborDistribution value
 
   "event(engine:ui:clicked)": (element) ->
     switch element.id
