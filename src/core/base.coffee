@@ -1,9 +1,5 @@
 @nv = @nv ? {}
 
-@renderers = @renderers ? {}
-@entities = @entities ? {}
-@scenes = @scenes ? {}
-
 @getClass = (name) ->
   klass = window
   for part in name.split(".")

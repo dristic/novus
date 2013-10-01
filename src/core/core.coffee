@@ -1,5 +1,3 @@
-#= require key
-
 nv.config =
   debug: false
 
