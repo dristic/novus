@@ -1272,6 +1272,8 @@
 }).call(this);
 
 (function() {
+  var __slice = [].slice;
+
   nv.EventDispatcher = (function() {
     function EventDispatcher() {
       this.event_listeners = {};
@@ -1302,8 +1304,9 @@
       }
     };
 
-    EventDispatcher.prototype.send = function(event, data) {
-      var ev, event_listeners, listener, stop, _i, _len, _results;
+    EventDispatcher.prototype.send = function() {
+      var data, ev, event, event_listeners, listener, stop, _i, _len, _results;
+      event = arguments[0], data = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       stop = false;
       ev = {
         stopPropagation: function() {
@@ -1315,7 +1318,7 @@
         _results = [];
         for (_i = 0, _len = event_listeners.length; _i < _len; _i++) {
           listener = event_listeners[_i];
-          listener(data != null ? data : {}, ev);
+          listener.apply(null, __slice.call(data).concat([ev]));
           if (stop === true) {
             break;
           } else {
@@ -1387,6 +1390,7 @@
 
     Model.prototype.set = function(key, value) {
       this[key] = value;
+      this.send("change", key, value);
       return this.send("change:" + key, value);
     };
 
@@ -3700,6 +3704,7 @@
         y: entity.model.y + 15
       });
       this.entity.model.on('change:value', nv.bind(this, this.onValueChange));
+      this.onValueChange(this.value);
     }
 
     SliderUIPlugin.prototype.onValueChange = function(value) {
@@ -3721,8 +3726,17 @@
     };
 
     SliderUIPlugin.prototype["event(engine:ui:mouse:up)"] = function(data) {
-      this.dragging = false;
-      return this.entity.model.set('value', this.value);
+      if (this.dragging === true) {
+        this.dragging = false;
+        return this.entity.model.set('value', this.value);
+      }
+    };
+
+    SliderUIPlugin.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
+      if (this.dragging === true) {
+        this.dragging = false;
+        return this.entity.model.set('value', this.value);
+      }
     };
 
     SliderUIPlugin.prototype.getValue = function() {
@@ -3973,7 +3987,7 @@
     }
 
     Country.prototype["event(game:land:change)"] = function(land) {
-      if (!this.model.plots.indexOf(land === -1)) {
+      if (this.model.plots.indexOf(land) !== -1) {
         return this.resources().updateProjections();
       }
     };
@@ -4215,17 +4229,20 @@
         _this = this;
       MultiplayerController.__super__.constructor.call(this, scene, plugins, model);
       this.guid = nv.guid();
+      this.playerManager = scene.getEntity(entities.PlayerManager);
       if (typeof Firebase !== "undefined" && Firebase !== null) {
         myRootRef = new Firebase(this.model.url);
         this.ref = myRootRef.child('game');
-        this.ref.child('turn').set(2);
         this.ref.child('players').once('value', function(snapshot) {
-          if (snapshot.val() === 0) {
+          if (snapshot.val() === 0 || snapshot.val() === 2) {
             _this.scene.fire("game:mp:player", 1);
             return _this.ref.child('players').set(1);
-          } else {
+          } else if (snapshot.val() === 1) {
             _this.scene.fire("game:mp:player", 2);
             return _this.ref.child('players').set(2);
+          } else {
+            _this.ref.child('turn').set(1);
+            return _this.ref.child('players').set(0);
           }
         });
         this.ref.child('attacks').on('child_added', function(snapshot) {
@@ -4236,8 +4253,21 @@
             return snapshot.ref().remove();
           }
         });
+        this.ref.child('turn').on('value', function(snapshot) {
+          console.log("FIREBASE ON VALUE", snapshot.val());
+          if (_this.playerManager.model.turn !== snapshot.val()) {
+            return _this.scene.fire("game:turn:next", snapshot.val());
+          }
+        });
       }
     }
+
+    MultiplayerController.prototype["event(game:turn:next)"] = function(newTurn) {
+      if (this.playerManager.model.turn === newTurn) {
+        console.log("FIREBASE SET VALUE", newTurn);
+        return this.ref.child('turn').set(newTurn);
+      }
+    };
 
     MultiplayerController.prototype["event(game:army:send)"] = function(amount) {
       return this.ref.child('attacks').push({
@@ -4297,35 +4327,6 @@
       return this.resources().activate(false);
     };
 
-    Player.prototype["event(scene:initialized)"] = function() {
-      return this.attackText = this.scene.getEntityById('attack-text').getPlugin(nv.TextUIPlugin);
-    };
-
-    Player.prototype["event(engine:ui:clicked)"] = function(element) {
-      if (!this.active) {
-        return;
-      }
-      if (element.id === "create-army-button") {
-        return this.scene.fire("game:army:created", 10);
-      } else if (element.id === "attack-button") {
-        this.attacking = true;
-        return this.attackText.show();
-      }
-    };
-
-    Player.prototype["event(game:clicked:county)"] = function(county) {
-      if (!this.active) {
-        return;
-      }
-      if (this.attacking === true) {
-        if (county !== 1026) {
-          this.attacking = false;
-          this.attackText.hide();
-          return this.scene.fire("game:army:send", Math.min(this.resources().current().get('soldiers'), 50));
-        }
-      }
-    };
-
     return Player;
 
   })(nv.Entity);
@@ -4343,8 +4344,37 @@
       PlayerManager.__super__.constructor.call(this, scene, plugins, model);
       this.model.turn = 1;
       this.model.playerNumber = 1;
-      this.createPlayers();
+      this.attacking = false;
     }
+
+    PlayerManager.prototype["event(scene:initialized)"] = function() {
+      return this.attackText = this.scene.getEntityById('attack-text').getPlugin(nv.TextUIPlugin);
+    };
+
+    PlayerManager.prototype["event(game:army:created)"] = function(value) {
+      return this.clientPlayer().resources().createArmy(value);
+    };
+
+    PlayerManager.prototype["event(game:clicked:county)"] = function(county) {
+      if (this.model.turn === this.model.playerNumber) {
+        if (this.attacking === true) {
+          if (county !== 1026) {
+            this.attacking = false;
+            this.attackText.hide();
+            return this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50));
+          }
+        }
+      }
+    };
+
+    PlayerManager.prototype["event(game:mp:player)"] = function(number) {
+      this.model.playerNumber = number;
+      return this.createPlayers();
+    };
+
+    PlayerManager.prototype["event(game:army:attacked)"] = function(value) {
+      return this.clientPlayer().resources().onAttacked(value);
+    };
 
     PlayerManager.prototype.createPlayers = function() {
       var entityConfigs, name, player, playerConfig, playerNumber, rootModel, scenario, _i, _j, _len, _ref, _ref1;
@@ -4376,7 +4406,8 @@
         }
       }
       this.model.set('currentPlayer', this.model.players[this.model.turn - 1]);
-      return this.scene.fire("game:ui:update");
+      this.scene.fire("game:player:assigned");
+      return this.currentPlayer().beginTurn();
     };
 
     PlayerManager.prototype.clientPlayer = function() {
@@ -4397,21 +4428,33 @@
       this.model.set('turn', turn);
       this.model.set('currentPlayer', this.model.players[turn - 1]);
       this.currentPlayer().beginTurn();
-      return this.scene.fire("game:turn:end");
+      return this.scene.fire("game:turn:end", turn);
     };
 
     PlayerManager.prototype["event(engine:ui:slider:change)"] = function(entity) {
       var value;
-      value = Math.floor(entity.model.value) / 100;
-      return this.currentPlayer().resources().setLaborDistribution(value);
+      if (this.currentPlayer()) {
+        value = Math.floor(entity.model.value) / 100;
+        return this.currentPlayer().resources().setLaborDistribution(value);
+      }
     };
 
     PlayerManager.prototype["event(engine:ui:clicked)"] = function(element) {
+      var turn;
+      turn = this.model.turn + 1;
+      if (turn > this.model.players.length) {
+        turn = 1;
+      }
       switch (element.id) {
         case "next-turn-button":
-          return this.scene.fire("game:turn:next");
+          return this.scene.fire("game:turn:next", turn);
         case "next-turn-other-button":
-          return this.scene.fire("game:turn:next");
+          return this.scene.fire("game:turn:next", turn);
+        case "create-army-button":
+          return this.scene.fire("game:army:created", 10);
+        case "attack-button":
+          this.attacking = true;
+          return this.attackText.show();
       }
     };
 
@@ -4441,30 +4484,27 @@
 
     ResourceManager.prototype.calculateResources = function(lands) {};
 
-    ResourceManager.prototype["event(game:army:created)"] = function(value) {
-      var peasants;
-      if (this.active !== true) {
-        return;
+    ResourceManager.prototype.createArmy = function(value) {
+      var gold, soldiers;
+      gold = this.model.get('gold');
+      soldiers = Math.min(gold, value);
+      console.log('soldiers', gold, value, soldiers);
+      if (!(soldiers <= 0)) {
+        console.log('creating soldiers', soldiers);
+        this.model.set('gold', gold - soldiers);
+        this.model.set('soldiers', this.model.get('soldiers') + soldiers);
+        return this.updateProjections();
       }
-      peasants = this.projections.get('peasants');
-      value = Math.min(peasants, value);
-      this.projections.set('peasants', peasants - value);
-      this.projections.set('soldiers', this.projections.get('soldiers') + value);
-      return this.updateProjections();
     };
 
     ResourceManager.prototype["event(game:army:send)"] = function(value) {
       if (this.active !== true) {
-        return;
+        return this.model.set('soldiers', this.model.get('soldiers') - value);
       }
-      return this.model.set('soldiers', this.model.get('soldiers') - value);
     };
 
-    ResourceManager.prototype["event(game:army:attacked)"] = function(value) {
+    ResourceManager.prototype.onAttacked = function(value) {
       var soldiers;
-      if (this.active !== false) {
-        return;
-      }
       soldiers = this.model.get('soldiers') - value;
       this.model.set('soldiers', Math.max(soldiers, 0));
       if (soldiers < 0) {
@@ -4473,6 +4513,7 @@
     };
 
     ResourceManager.prototype.setLaborDistribution = function(ratio) {
+      console.log("labor ratio", ratio);
       this.projections.set('ratio', ratio);
       return this.updateProjections();
     };
@@ -4495,84 +4536,103 @@
 
     ResourceManager.prototype.prepareProjections = function() {
       return this.projections.setMany({
-        peasants: this.model.peasants,
-        soldiers: this.model.soldiers,
-        food: this.model.food,
-        gold: this.model.gold,
+        peasants: 0,
+        soldiers: 0,
+        food: 0,
+        gold: 0,
         ratio: this.model.ratio
       });
     };
 
     ResourceManager.prototype.commitProjections = function() {
-      return this.model.setMany({
-        peasants: this.projections.peasants,
-        soldiers: this.projections.soldiers,
-        gold: this.projections.gold,
-        food: this.projections.food,
+      var peasants;
+      peasants = this.model.get('peasants');
+      this.model.setMany({
+        peasants: peasants + this.projections.peasants,
+        soldiers: this.model.get('soldiers') + this.projections.soldiers,
+        gold: this.model.get('gold') + this.projections.gold,
+        food: Math.max(this.model.get('food') + this.projections.food, 0),
         ratio: this.projections.ratio
       });
+      this.grainYield = null;
+      return this.goldYield = null;
     };
 
     ResourceManager.prototype.updateProjections = function() {
       this.projectFarming();
       this.projectMining();
       this.projectPopulation();
-      return console.log("after update", this.projections.peasants, this.projections.soldiers);
+      return console.log("after update", this.projections.peasants, this.model.soldiers);
     };
 
     ResourceManager.prototype.projectFarming = function() {
-      var food, grainPlots, i, _i;
+      var farmersPerPlot, food, grainPlots, i, laborRatio, qty, _i, _ref;
       food = 0;
       grainPlots = this.owner.numberOfPlots('grain');
       if (grainPlots > 0) {
+        this.grainYield = (_ref = this.grainYield) != null ? _ref : Math.random() * 1.5 + 0.7;
+        laborRatio = 1 - this.projections.get('ratio');
+        console.log("grain yield:", this.grainYield);
+        console.log("ratio: ", laborRatio);
+        farmersPerPlot = Math.round(this.model.get('peasants') * laborRatio / grainPlots);
+        farmersPerPlot = Math.min(farmersPerPlot, 50);
+        console.log("farmers per plot:", farmersPerPlot);
         for (i = _i = 1; 1 <= grainPlots ? _i <= grainPlots : _i >= grainPlots; i = 1 <= grainPlots ? ++_i : --_i) {
-          food += (Math.random() * 1.5 + 0.7) * (this.projections.get('peasants') * (1 - this.projections.get('ratio')));
+          qty = this.grainYield * farmersPerPlot;
+          food += qty;
         }
       }
-      food = Math.min(food, 300) + this.model.get('food');
-      return this.projections.set('food', Math.round(food));
+      food = Math.min(food, 300);
+      console.log("food to grow:", food);
+      return this.projections.set('food', Math.round(food) - this.model.get('peasants') - this.model.get('soldiers'));
     };
 
     ResourceManager.prototype.projectMining = function() {
-      var gold, goldPlots, i, _i;
+      var gold, goldPlots, i, laborRatio, minersPerPlot, _i, _ref;
       gold = 0;
       goldPlots = this.owner.numberOfPlots('gold');
       if (goldPlots > 0) {
+        this.goldYield = (_ref = this.goldYield) != null ? _ref : Math.random() * 1.5 + 0.7;
+        laborRatio = this.projections.get('ratio');
+        console.log("gold yield:", this.goldYield);
+        minersPerPlot = Math.round(this.model.get('peasants') * laborRatio / goldPlots);
+        minersPerPlot = Math.min(minersPerPlot, 50);
+        console.log("miners per plot:", minersPerPlot);
         for (i = _i = 1; 1 <= goldPlots ? _i <= goldPlots : _i >= goldPlots; i = 1 <= goldPlots ? ++_i : --_i) {
-          gold += (Math.random() * 1.5 + 0.7) * 0.1 * (this.projections.get('peasants') * this.projections.get('ratio'));
+          gold += this.goldYield * 0.1 * minersPerPlot;
         }
       }
-      gold = Math.min(gold, 30) + this.model.get('gold');
+      gold = Math.min(gold, 30);
       return this.projections.set('gold', Math.round(gold));
     };
 
     ResourceManager.prototype.projectPopulation = function() {
-      var currentPopulation, deaths, food, foodAvailable, growthTarget, newPopulation, peasantDeaths, projectedPopulation, soldierDeaths, soldiers;
-      currentPopulation = this.model.get('peasants') + this.model.get('soldiers');
+      var currentPopulation, deaths, foodAvailable, growthTarget, peasantDeaths, peasants, projectedPopulation, projectedSoldiers, soldierDeaths, soldiers;
+      peasants = this.model.get('peasants');
+      soldiers = this.model.get('soldiers');
+      currentPopulation = peasants + soldiers;
       growthTarget = Math.round(currentPopulation * 0.05);
       projectedPopulation = currentPopulation + growthTarget;
-      foodAvailable = this.projections.get('food');
+      foodAvailable = this.model.get('food') + this.projections.get('food');
       if (projectedPopulation < foodAvailable) {
-        this.projections.set('peasants', currentPopulation + growthTarget - this.projections.get('soldiers'));
-      } else if (currentPopulation < foodAvailable) {
-        this.projections.set('peasants', Math.round(foodAvailable - this.projections.get('soldiers')));
+        return this.projections.set('peasants', growthTarget - this.projections.get('soldiers'));
+      } else if (currentPopulation <= foodAvailable) {
+        return this.projections.set('peasants', foodAvailable - currentPopulation - this.projections.get('soldiers'));
       } else {
-        deaths = Math.round(currentPopulation * .1);
-        newPopulation = currentPopulation - deaths;
+        deaths = Math.min(Math.round(currentPopulation * .1), currentPopulation - this.model.get('food'));
         peasantDeaths = Math.round(deaths / 2);
         soldierDeaths = deaths - peasantDeaths;
-        soldiers = this.projections.get('soldiers') - soldierDeaths;
-        this.projections.set('soldiers', Math.max(soldiers, 0));
-        if (soldiers < 0) {
-          peasantDeaths += Math.abs(soldierDeaths);
+        projectedSoldiers = this.projections.get('soldiers');
+        if (soldierDeaths > soldiers) {
+          if (soldiers > 0) {
+            this.projections.set('soldiers', this.projections.get('soldiers') - soldiers);
+          }
+          peasantDeaths += soldierDeaths - soldiers;
+        } else {
+          this.projections.set('soldiers', this.projections.get('soldiers') - soldierDeaths);
         }
-        if (soldiers < 0) {
-          this.projections.set('peasants', this.projections.get('peasants') - peasantDeaths);
-        }
+        return this.projections.set('peasants', -projectedSoldiers - peasantDeaths);
       }
-      food = this.projections.get('food');
-      food -= this.projections.get('peasants') + this.projections.get('soldiers');
-      return this.projections.set('food', Math.max(food, 0));
     };
 
     return ResourceManager;
@@ -4620,27 +4680,18 @@
       this.endOtherTurnButton = this.endOtherTurnButton.getPlugin(nv.ButtonUIPlugin);
     }
 
-    PlayerViewModel.prototype["event(game:ui:update)"] = function() {
-      return this.updateData();
-    };
-
-    PlayerViewModel.prototype["event(game:turn:end)"] = function() {
-      return this.updateData();
-    };
-
-    PlayerViewModel.prototype["event(game:land:change)"] = function(land) {
-      return this.updateData();
-    };
-
-    PlayerViewModel.prototype["event(engine:ui:slider:change)"] = function(entity) {
-      return this.updateData();
-    };
-
-    PlayerViewModel.prototype.updateData = function() {
-      var clientPlayer, playerNumber, projections, resources, turn;
+    PlayerViewModel.prototype["event(game:player:assigned)"] = function() {
+      var clientPlayer, projections, resources,
+        _this = this;
       clientPlayer = this.entity.model.get('clientPlayer');
       resources = clientPlayer.resources().model;
       projections = clientPlayer.resources().projections;
+      resources.on('change', function(key, value) {
+        return _this.entity.model.set(key, value);
+      });
+      projections.on('change', function(key, value) {
+        return _this.entity.model.set("p_" + key, value);
+      });
       this.entity.model.setMany({
         peasants: resources.peasants,
         food: resources.food,
@@ -4651,6 +4702,15 @@
         p_food: projections.food,
         p_gold: projections.gold
       });
+      return this.updateTurnButton();
+    };
+
+    PlayerViewModel.prototype["event(game:turn:end)"] = function() {
+      return this.updateTurnButton();
+    };
+
+    PlayerViewModel.prototype.updateTurnButton = function() {
+      var playerNumber, turn;
       turn = this.entity.model.get('turn');
       playerNumber = this.entity.model.get('playerNumber');
       if (turn === playerNumber) {
@@ -4994,15 +5054,6 @@
               }
             }
           },
-          armyManager: {
-            entity: entities.ArmyManager,
-            plugins: [],
-            model: {
-              options: {
-                army: 0
-              }
-            }
-          },
           playerManager: {
             entity: entities.PlayerManager,
             plugins: [plugins.PlayerViewModel],
@@ -5198,8 +5249,8 @@
                 font: uiFont,
                 textBaseline: 'bottom',
                 text: 'Attack Who?',
-                x: 200,
-                y: 200,
+                x: 250,
+                y: 250,
                 hidden: true
               }
             }

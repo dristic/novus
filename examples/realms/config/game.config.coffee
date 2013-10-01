@@ -102,12 +102,6 @@ realms.gameConfig =
               id: "attack-button"
               x: 20
               y: 350
-        armyManager:
-          entity: entities.ArmyManager
-          plugins: []
-          model:
-            options:
-              army: 0
         playerManager:
           entity: entities.PlayerManager
           plugins: [ plugins.PlayerViewModel ]
@@ -264,8 +258,8 @@ realms.gameConfig =
               font: uiFont
               textBaseline: 'bottom'
               text: 'Attack Who?'
-              x: 200
-              y: 200
+              x: 250
+              y: 250
               hidden: true
         turn:
           entity: nv.Entity

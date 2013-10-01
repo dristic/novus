@@ -9,22 +9,22 @@ class entities.ResourceManager extends nv.Entity
   calculateResources: (lands) ->
     # Calculate food
 
-  "event(game:army:created)": (value) ->
-    return unless @active is true
+  createArmy: (value) ->
     # peasants = @model.get('peasants')
     gold = @model.get('gold')
     soldiers = Math.min gold, value
-    return unless soldiers > 0
-    @model.set 'gold', gold - soldiers
-    @projections.set 'soldiers', @projections.get('soldiers') + soldiers
-    @updateProjections()
+    console.log 'soldiers', gold, value, soldiers
+    unless soldiers <= 0
+      console.log 'creating soldiers', soldiers
+      @model.set 'gold', gold - soldiers
+      @model.set 'soldiers', @model.get('soldiers') + soldiers
+      @updateProjections()
 
   "event(game:army:send)": (value) ->
-    return unless @active is true
-    @model.set 'soldiers', ( @model.get('soldiers') - value )
+    unless @active is true
+      @model.set 'soldiers', ( @model.get('soldiers') - value )
 
-  "event(game:army:attacked)": (value) ->
-    return unless @active is false
+  onAttacked: (value) ->
     soldiers = @model.get('soldiers') - value
     @model.set 'soldiers', Math.max(soldiers, 0)
     @model.set('peasants', @model.get('peasants') - Math.abs(soldiers)) if soldiers < 0
@@ -70,7 +70,7 @@ class entities.ResourceManager extends nv.Entity
     @projectMining()
     @projectPopulation()
 
-    console.log "after update", @projections.peasants, @projections.soldiers
+    console.log "after update", @projections.peasants, @model.soldiers
 
   projectFarming: () ->
     food = 0

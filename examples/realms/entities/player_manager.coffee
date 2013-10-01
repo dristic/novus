@@ -4,10 +4,28 @@ class entities.PlayerManager extends nv.Entity
 
     @model.turn = 1
     @model.playerNumber = 1
+    @attacking = false
+
+  "event(scene:initialized)": () ->
+    @attackText = @scene.getEntityById('attack-text').getPlugin nv.TextUIPlugin
+
+  "event(game:army:created)": (value) ->
+    @clientPlayer().resources().createArmy value
+
+  "event(game:clicked:county)": (county) ->
+    if @model.turn is @model.playerNumber
+      if @attacking is true
+        if county isnt 1026
+          @attacking = false
+          @attackText.hide()
+          @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
     
   "event(game:mp:player)": (number) ->
     @model.playerNumber = number
     @createPlayers()
+
+  "event(game:army:attacked)": (value) ->
+    @clientPlayer().resources().onAttacked value
 
   createPlayers: () ->
     rootModel = @scene.rootModel
@@ -63,9 +81,17 @@ class entities.PlayerManager extends nv.Entity
       @currentPlayer().resources().setLaborDistribution value
 
   "event(engine:ui:clicked)": (element) ->
+    turn = @model.turn + 1
+    if turn > @model.players.length
+      turn = 1
+
     switch element.id
-      when "next-turn-button" then @scene.fire "game:turn:next"
-      when "next-turn-other-button" then @scene.fire "game:turn:next"
+      when "next-turn-button" then @scene.fire "game:turn:next", turn
+      when "next-turn-other-button" then @scene.fire "game:turn:next", turn
+      when "create-army-button" then @scene.fire "game:army:created", 10
+      when "attack-button"
+        @attacking = true
+        @attackText.show()
 
   "event(game:turn:next)": () ->
     @nextPlayersTurn()
