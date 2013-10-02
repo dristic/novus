@@ -136,7 +136,7 @@ class entities.ResourceManager extends nv.Entity
         if soldiers > 0
           @projections.set 'soldiers', @projections.get('soldiers') - soldiers
         peasantDeaths += soldierDeaths - soldiers
-      else
+      else if soldierDeaths > 0
         @projections.set 'soldiers', @projections.get('soldiers') - soldierDeaths
 
       @projections.set 'peasants', - projectedSoldiers - peasantDeaths

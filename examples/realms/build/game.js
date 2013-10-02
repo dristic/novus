@@ -4688,7 +4688,7 @@
             this.projections.set('soldiers', this.projections.get('soldiers') - soldiers);
           }
           peasantDeaths += soldierDeaths - soldiers;
-        } else {
+        } else if (soldierDeaths > 0) {
           this.projections.set('soldiers', this.projections.get('soldiers') - soldierDeaths);
         }
         return this.projections.set('peasants', -projectedSoldiers - peasantDeaths);
