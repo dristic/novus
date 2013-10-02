@@ -750,22 +750,16 @@
 }).call(this);
 
 (function() {
-  var _ref, _ref1, _ref2, _ref3;
+  var _ref;
 
   this.nv = (_ref = this.nv) != null ? _ref : {};
 
-  this.renderers = (_ref1 = this.renderers) != null ? _ref1 : {};
-
-  this.entities = (_ref2 = this.entities) != null ? _ref2 : {};
-
-  this.scenes = (_ref3 = this.scenes) != null ? _ref3 : {};
-
   this.getClass = function(name) {
-    var klass, part, _i, _len, _ref4;
+    var klass, part, _i, _len, _ref1;
     klass = window;
-    _ref4 = name.split(".");
-    for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
-      part = _ref4[_i];
+    _ref1 = name.split(".");
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      part = _ref1[_i];
       klass = klass[part];
     }
     return klass;
@@ -780,172 +774,6 @@
       }
     }
     return newObj;
-  };
-
-}).call(this);
-
-(function() {
-  nv.ajax = function(url, method, data, callback) {
-    var e, onReadyStateChange, version, versions, xhr, _i, _len;
-    callback = callback != null ? callback : method;
-    if (typeof method === "function") {
-      method = 'GET';
-    }
-    data = data != null ? data : "";
-    if (typeof XMLHttpRequest !== 'undefined') {
-      xhr = new XMLHttpRequest();
-    } else {
-      versions = ["Microsoft.XmlHttp", "MSXML2.XmlHttp", "MSXML2.XmlHttp.3.0", "MSXML2.XmlHttp.4.0", "MSXML2.XmlHttp.5.0"];
-      for (_i = 0, _len = versions.length; _i < _len; _i++) {
-        version = versions[_i];
-        try {
-          xhr = new ActiveXObject(version);
-        } catch (_error) {
-          e = _error;
-        }
-      }
-    }
-    onReadyStateChange = function() {
-      if (xhr.readyState < 4) {
-        return;
-      }
-      if (xhr.status !== 200) {
-        return;
-      }
-      if (xhr.readyState === 4) {
-        return callback(xhr.responseText);
-      }
-    };
-    xhr.onreadystatechange = onReadyStateChange;
-    xhr.open(method, url, false);
-    return xhr.send(data);
-  };
-
-}).call(this);
-
-(function() {
-  var _ref;
-
-  window.nv = (_ref = window.nv) != null ? _ref : {};
-
-  window.nv.Controller = {
-    Up: 12,
-    Down: 13,
-    Left: 14,
-    Right: 15,
-    A: 0,
-    X: 1,
-    Y: 3,
-    B: 2,
-    LB: 4,
-    LT: 6,
-    RB: 5,
-    RT: 7,
-    Select: 8,
-    Start: 9,
-    LeftStick: 10,
-    RightStick: 11
-  };
-
-  window.nv.Key = {
-    Backspace: 8,
-    Tab: 9,
-    Enter: 13,
-    Shift: 16,
-    Control: 17,
-    PauseBreak: 19,
-    CapsLock: 20,
-    Esc: 27,
-    Spacebar: 32,
-    PageUp: 33,
-    PageDown: 34,
-    End: 35,
-    Home: 36,
-    Left: 37,
-    Up: 38,
-    Right: 39,
-    Down: 40,
-    Insert: 45,
-    Delete: 46,
-    Keyb0: 48,
-    Keyb1: 49,
-    Keyb2: 50,
-    Keyb3: 51,
-    Keyb4: 52,
-    Keyb5: 53,
-    Keyb6: 54,
-    Keyb7: 55,
-    Keyb8: 56,
-    Keyb9: 57,
-    A: 65,
-    B: 66,
-    C: 67,
-    D: 68,
-    E: 69,
-    F: 70,
-    G: 71,
-    H: 72,
-    I: 73,
-    J: 74,
-    K: 75,
-    L: 76,
-    M: 77,
-    N: 78,
-    O: 79,
-    P: 80,
-    Q: 81,
-    R: 82,
-    S: 83,
-    T: 84,
-    U: 85,
-    V: 86,
-    W: 87,
-    X: 88,
-    Y: 89,
-    Z: 90,
-    Numpad0: 96,
-    Numpad1: 97,
-    Numpad2: 98,
-    Numpad3: 99,
-    Numpad4: 100,
-    Numpad5: 101,
-    Numpad6: 102,
-    Numpad7: 103,
-    Numpad8: 104,
-    Numpad9: 105,
-    NumpadStar: 106,
-    NumpadPlus: 107,
-    NumpadMinus: 109,
-    NumpadPeriod: 110,
-    NumpadSlash: 111,
-    F1: 112,
-    F2: 113,
-    F3: 114,
-    F4: 115,
-    F5: 116,
-    F6: 117,
-    F7: 118,
-    F8: 119,
-    F9: 120,
-    F10: 121,
-    F11: 122,
-    F12: 123,
-    F13: 124,
-    F14: 125,
-    F15: 126,
-    NumLck: 144,
-    ScrLck: 145,
-    SemiColon: 186,
-    Equal: 187,
-    Comma: 188,
-    Minus: 189,
-    Period: 190,
-    Question: 191,
-    BackQuote: 192,
-    LeftBrace: 219,
-    Pipe: 220,
-    RightBrace: 221,
-    SingleQuote: 222
   };
 
 }).call(this);
@@ -1125,13 +953,397 @@
 }).call(this);
 
 (function() {
-  nv.Plugin = (function() {
-    function Plugin(scene, entity) {
-      var key;
+  var __slice = [].slice;
+
+  nv.EventDispatcher = (function() {
+    function EventDispatcher() {
+      this.event_listeners = {};
+      this.event_async_queue = [];
+    }
+
+    EventDispatcher.prototype.destroy = function() {
+      return this.processQueuedEvents();
+    };
+
+    EventDispatcher.prototype.on = function(event, func) {
+      var event_listeners;
+      event_listeners = this.event_listeners[event];
+      if (!(event_listeners instanceof Array)) {
+        event_listeners = [];
+      }
+      event_listeners.push(func);
+      this.event_listeners[event] = event_listeners;
+      return this;
+    };
+
+    EventDispatcher.prototype.fire = function(event, data) {
+      if (this.event_listeners[event] instanceof Array) {
+        return this.event_async_queue.push({
+          event: event,
+          data: data != null ? data : {}
+        });
+      }
+    };
+
+    EventDispatcher.prototype.send = function() {
+      var data, ev, event, event_listeners, listener, stop, _i, _len, _results;
+      event = arguments[0], data = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      stop = false;
+      ev = {
+        stopPropagation: function() {
+          return stop = true;
+        }
+      };
+      event_listeners = this.event_listeners[event];
+      if (event_listeners instanceof Array) {
+        _results = [];
+        for (_i = 0, _len = event_listeners.length; _i < _len; _i++) {
+          listener = event_listeners[_i];
+          listener.apply(null, __slice.call(data).concat([ev]));
+          if (stop === true) {
+            break;
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      }
+    };
+
+    EventDispatcher.prototype.off = function(event, func) {
+      if (!this.event_listeners[event] instanceof Array) {
+
+      } else {
+        if (this.event_listeners[event].indexOf(func) !== -1) {
+          this.event_listeners[event].splice(this.event_listeners[event].indexOf(func), 1);
+        }
+      }
+      return this;
+    };
+
+    EventDispatcher.prototype.update = function(dt) {
+      return this.processQueuedEvents();
+    };
+
+    EventDispatcher.prototype.processQueuedEvents = function() {
+      var event, events, _i, _len;
+      while (this.event_async_queue.length) {
+        events = this.event_async_queue.slice(0);
+        this.event_async_queue = [];
+        for (_i = 0, _len = events.length; _i < _len; _i++) {
+          event = events[_i];
+          this.send(event.event, event.data);
+        }
+      }
+      return null;
+    };
+
+    return EventDispatcher;
+
+  })();
+
+}).call(this);
+
+(function() {
+  nv.ajax = function(url, method, data, callback) {
+    var e, onReadyStateChange, version, versions, xhr, _i, _len;
+    callback = callback != null ? callback : method;
+    if (typeof method === "function") {
+      method = 'GET';
+    }
+    data = data != null ? data : "";
+    if (typeof XMLHttpRequest !== 'undefined') {
+      xhr = new XMLHttpRequest();
+    } else {
+      versions = ["Microsoft.XmlHttp", "MSXML2.XmlHttp", "MSXML2.XmlHttp.3.0", "MSXML2.XmlHttp.4.0", "MSXML2.XmlHttp.5.0"];
+      for (_i = 0, _len = versions.length; _i < _len; _i++) {
+        version = versions[_i];
+        try {
+          xhr = new ActiveXObject(version);
+        } catch (_error) {
+          e = _error;
+        }
+      }
+    }
+    onReadyStateChange = function() {
+      if (xhr.readyState < 4) {
+        return;
+      }
+      if (xhr.status !== 200) {
+        return;
+      }
+      if (xhr.readyState === 4) {
+        return callback(xhr.responseText);
+      }
+    };
+    xhr.onreadystatechange = onReadyStateChange;
+    xhr.open(method, url, false);
+    return xhr.send(data);
+  };
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.Model = (function(_super) {
+    __extends(Model, _super);
+
+    function Model(data) {
+      Model.__super__.constructor.apply(this, arguments);
+      this.setMany(data);
+    }
+
+    Model.prototype.setMany = function(object) {
+      var key, _results;
+      _results = [];
+      for (key in object) {
+        _results.push(this.set(key, object[key]));
+      }
+      return _results;
+    };
+
+    Model.prototype.get = function(key) {
+      return this[key];
+    };
+
+    Model.prototype.set = function(key, value) {
+      this[key] = value;
+      this.send("change", key, value);
+      return this.send("change:" + key, value);
+    };
+
+    Model.prototype.reset = function() {};
+
+    Model.prototype.persist = function() {
+      var data, key;
+      data = {};
+      for (key in this) {
+        data[key] = this[key];
+      }
+      return window.localStorage[this.constructor.name] = data;
+    };
+
+    Model.prototype.load = function() {
+      return this.setMany(window.localStorage[this.constructor.name]);
+    };
+
+    return Model;
+
+  })(nv.EventDispatcher);
+
+  nv.Collection = (function(_super) {
+    __extends(Collection, _super);
+
+    function Collection(arr) {
+      this.items = arr != null ? arr : [];
+    }
+
+    return Collection;
+
+  })(nv.Model);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.PathShapeModel = (function(_super) {
+    __extends(PathShapeModel, _super);
+
+    function PathShapeModel(options, defaultShape) {
+      this.defaultShape = defaultShape != null ? defaultShape : "";
+      if (options.shapes != null) {
+        this.modelShapes = options.shapes;
+      }
+      delete options.shapes;
+      PathShapeModel.__super__.constructor.call(this, options);
+    }
+
+    PathShapeModel.prototype.preparePath = function() {
+      return {
+        points: []
+      };
+    };
+
+    PathShapeModel.prototype.shouldDrawShape = function(shapeName) {
+      return true;
+    };
+
+    PathShapeModel.prototype.points = function(shapeName) {
+      var shape;
+      if (shapeName == null) {
+        shapeName = this.defaultShape;
+      }
+      shape = this.prepareShape(this.modelShapes[shapeName]);
+      return shape.points;
+    };
+
+    PathShapeModel.prototype.shapes = function() {
+      var shapeName, shapes;
+      shapes = [];
+      for (shapeName in this.modelShapes) {
+        if (this.shouldDrawShape(shapeName)) {
+          shapes.push(this.prepareShape(this.modelShapes[shapeName]));
+        }
+      }
+      return shapes;
+    };
+
+    PathShapeModel.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+      return this;
+    };
+
+    PathShapeModel.prototype.rotate = function(dr) {
+      this.rotation += dr;
+      return this;
+    };
+
+    PathShapeModel.prototype.bounds = function() {
+      var x1, x2, y1, y2;
+      x1 = x2 = y1 = y2 = null;
+      $.each(this.points(), function() {
+        if (x1 === null || this.x < x1) {
+          x1 = this.x;
+        }
+        if (x2 === null || this.x > x2) {
+          x2 = this.x;
+        }
+        if (y1 === null || this.y < y1) {
+          y1 = this.y;
+        }
+        if (y2 === null || this.y > y2) {
+          return y2 = this.y;
+        }
+      });
+      return new nv.Rect(x1, y1, x2, y2);
+    };
+
+    return PathShapeModel;
+
+  })(nv.Model);
+
+}).call(this);
+
+(function() {
+  nv.Point = (function() {
+    function Point(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+
+    Point.prototype.clone = function() {
+      return new nv.Point(this.x, this.y);
+    };
+
+    Point.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      this.y += dy;
+      return this;
+    };
+
+    Point.prototype.add = function(point) {
+      this.x += point.x;
+      this.y += point.y;
+      return this;
+    };
+
+    Point.prototype.times = function(num) {
+      new nv.Point(this.x * num, this.y * num);
+      return this;
+    };
+
+    Point.prototype.fromPolar = function(ang, rad) {
+      this.x = Math.cos(ang) * rad;
+      this.y = Math.sin(ang) * rad;
+      return this;
+    };
+
+    Point.prototype.constrain = function(rect) {
+      if (!rect.contains(this)) {
+        if (this.x < rect.x) {
+          this.x = 0;
+        }
+        if (this.x > rect.x2) {
+          this.x = rect.x2;
+        }
+        if (this.y < rect.y) {
+          this.y = 0;
+        }
+        if (this.y > rect.y2) {
+          this.y = rect.y2;
+        }
+      }
+      return this;
+    };
+
+    Point.prototype.eq = function(pt) {
+      return this.x === pt.x && this.y === pt.y;
+    };
+
+    return Point;
+
+  })();
+
+  nv.Rect = (function() {
+    function Rect(x, y, x2, y2) {
+      this.x = x;
+      this.y = y;
+      this.x2 = x2;
+      this.y2 = y2;
+    }
+
+    Rect.prototype.clone = function() {
+      return new nv.Rect(this.x, this.y, this.x2, this.y2);
+    };
+
+    Rect.prototype.reset = function(x, y, x2, y2) {
+      this.x = x;
+      this.y = y;
+      this.x2 = x2;
+      this.y2 = y2;
+    };
+
+    Rect.prototype._checkPt = function(tx, ty) {
+      return (tx >= this.x && tx <= this.x2) && (ty >= this.y && ty <= this.y2);
+    };
+
+    Rect.prototype.contains = function(pt) {
+      return this._checkPt(pt.x, pt.y);
+    };
+
+    Rect.prototype.intersects = function(rect) {
+      if (this.x2 < rect.x || this.y2 < rect.y || this.x > rect.x2 || this.y > rect.y2) {
+        return false;
+      }
+      return true;
+    };
+
+    Rect.prototype.translate = function(dx, dy) {
+      this.x += dx;
+      return this.y += dy;
+    };
+
+    return Rect;
+
+  })();
+
+}).call(this);
+
+(function() {
+  nv.Engine = (function() {
+    Engine.prototype.initializer = function() {};
+
+    function Engine(scene, config) {
+      var key, _ref;
       this.scene = scene;
-      this.entity = entity;
+      this.config = config;
+      this.config = (_ref = this.config) != null ? _ref : {};
       this.listeners = [];
-      this.destroyed = false;
       for (key in this) {
         if (/event\(.*\)/.test(key)) {
           this.on(key.slice(6, -1), nv.bind(this, this[key]));
@@ -1139,7 +1351,7 @@
       }
     }
 
-    Plugin.prototype.on = function(name, callback) {
+    Engine.prototype.on = function(name, callback) {
       this.scene.on(name, callback);
       return this.listeners.push({
         name: name,
@@ -1147,7 +1359,7 @@
       });
     };
 
-    Plugin.prototype.off = function(name, callback) {
+    Engine.prototype.off = function(name, callback) {
       var i, listener, _i, _len, _ref, _results;
       this.scene.off(name, callback);
       _ref = this.listeners;
@@ -1164,21 +1376,23 @@
       return _results;
     };
 
-    Plugin.prototype.destroy = function() {
+    Engine.prototype.prepare = function() {};
+
+    Engine.prototype.update = function(dt) {};
+
+    Engine.prototype.destroy = function() {
       var i, listener;
-      if (!this.destroyed) {
-        this.destroyed = true;
-        i = this.listeners.length;
-        while (i--) {
-          listener = this.listeners[i];
-          this.off(listener.name, listener.callback);
-        }
-        delete this.scene;
-        return delete this.entity;
+      i = this.listeners.length;
+      while (i--) {
+        listener = this.listeners[i];
+        this.off(listener.name, listener.callback);
       }
+      delete this.listeners;
+      delete this.scene;
+      return delete this.config;
     };
 
-    return Plugin;
+    return Engine;
 
   })();
 
@@ -1274,155 +1488,156 @@
 (function() {
   var __slice = [].slice;
 
-  nv.EventDispatcher = (function() {
-    function EventDispatcher() {
-      this.event_listeners = {};
-      this.event_async_queue = [];
+  nv.Game = (function() {
+    function Game(config) {
+      var engine, klass, name, scene, _i, _len, _ref;
+      this.rootModel = new nv.Model;
+      this.scenes = [];
+      this.sceneClasses = {};
+      this.engines = {};
+      if (config.engines != null) {
+        _ref = config.engines;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          engine = _ref[_i];
+          this.registerEngine(engine);
+        }
+      }
+      if (config.scenes != null) {
+        for (name in config.scenes) {
+          scene = name[0].toUpperCase() + name.toLowerCase().slice(1);
+          klass = "scenes." + scene;
+          this.registerScene(scene, getClass(klass));
+        }
+      }
+      this.rootModel.setMany({
+        config: config
+      });
     }
 
-    EventDispatcher.prototype.destroy = function() {
-      return this.processQueuedEvents();
+    Game.prototype.model = function() {
+      return this.rootModel;
     };
 
-    EventDispatcher.prototype.on = function(event, func) {
-      var event_listeners;
-      event_listeners = this.event_listeners[event];
-      if (!(event_listeners instanceof Array)) {
-        event_listeners = [];
-      }
-      event_listeners.push(func);
-      this.event_listeners[event] = event_listeners;
-      return this;
-    };
-
-    EventDispatcher.prototype.fire = function(event, data) {
-      if (this.event_listeners[event] instanceof Array) {
-        return this.event_async_queue.push({
-          event: event,
-          data: data != null ? data : {}
-        });
-      }
-    };
-
-    EventDispatcher.prototype.send = function() {
-      var data, ev, event, event_listeners, listener, stop, _i, _len, _results;
-      event = arguments[0], data = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      stop = false;
-      ev = {
-        stopPropagation: function() {
-          return stop = true;
-        }
+    Game.prototype.registerEngine = function(klass, initializer) {
+      var name;
+      name = klass.name;
+      return this.engines[name] = {
+        klass: klass,
+        initializer: initializer
       };
-      event_listeners = this.event_listeners[event];
-      if (event_listeners instanceof Array) {
-        _results = [];
-        for (_i = 0, _len = event_listeners.length; _i < _len; _i++) {
-          listener = event_listeners[_i];
-          listener.apply(null, __slice.call(data).concat([ev]));
-          if (stop === true) {
-            break;
-          } else {
-            _results.push(void 0);
-          }
-        }
-        return _results;
+    };
+
+    Game.prototype.registerScenes = function(object) {
+      var key, _results;
+      _results = [];
+      for (key in object) {
+        _results.push(this.registerScene(key, object[key]));
       }
+      return _results;
     };
 
-    EventDispatcher.prototype.off = function(event, func) {
-      if (!this.event_listeners[event] instanceof Array) {
+    Game.prototype.registerScene = function(name, klass) {
+      return this.sceneClasses[name] = klass;
+    };
 
-      } else {
-        if (this.event_listeners[event].indexOf(func) !== -1) {
-          this.event_listeners[event].splice(this.event_listeners[event].indexOf(func), 1);
+    Game.prototype.openScene = function() {
+      var args, name,
+        _this = this;
+      name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      this.scenes.push((function(func, args, ctor) {
+        ctor.prototype = func.prototype;
+        var child = new ctor, result = func.apply(child, args);
+        return Object(result) === result ? result : child;
+      })(this.sceneClasses[name], [name, this, this.rootModel].concat(__slice.call(args)), function(){}));
+      return this.scenes[this.scenes.length - 1].on("scene:close", function() {
+        return _this.closeScene(name);
+      });
+    };
+
+    Game.prototype.closeScene = function(name) {
+      var index, scene, _i, _len, _ref, _results;
+      name = name != null ? name : this.scenes[this.scenes.length - 1].constructor.name;
+      _ref = this.scenes;
+      _results = [];
+      for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
+        scene = _ref[index];
+        if (scene instanceof this.sceneClasses[name]) {
+          scene.destroy();
+          _results.push(this.scenes.splice(index, 1));
+        } else {
+          _results.push(void 0);
         }
       }
-      return this;
+      return _results;
     };
 
-    EventDispatcher.prototype.update = function(dt) {
-      return this.processQueuedEvents();
+    Game.prototype.start = function(scene) {
+      return this.openScene(scene);
     };
 
-    EventDispatcher.prototype.processQueuedEvents = function() {
-      var event, events, _i, _len;
-      while (this.event_async_queue.length) {
-        events = this.event_async_queue.slice(0);
-        this.event_async_queue = [];
-        for (_i = 0, _len = events.length; _i < _len; _i++) {
-          event = events[_i];
-          this.send(event.event, event.data);
-        }
-      }
-      return null;
-    };
-
-    return EventDispatcher;
+    return Game;
 
   })();
 
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  nv.Model = (function(_super) {
-    __extends(Model, _super);
-
-    function Model(data) {
-      Model.__super__.constructor.apply(this, arguments);
-      this.setMany(data);
+  nv.Plugin = (function() {
+    function Plugin(scene, entity) {
+      var key;
+      this.scene = scene;
+      this.entity = entity;
+      this.listeners = [];
+      this.destroyed = false;
+      for (key in this) {
+        if (/event\(.*\)/.test(key)) {
+          this.on(key.slice(6, -1), nv.bind(this, this[key]));
+        }
+      }
     }
 
-    Model.prototype.setMany = function(object) {
-      var key, _results;
+    Plugin.prototype.on = function(name, callback) {
+      this.scene.on(name, callback);
+      return this.listeners.push({
+        name: name,
+        callback: callback
+      });
+    };
+
+    Plugin.prototype.off = function(name, callback) {
+      var i, listener, _i, _len, _ref, _results;
+      this.scene.off(name, callback);
+      _ref = this.listeners;
       _results = [];
-      for (key in object) {
-        _results.push(this.set(key, object[key]));
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        listener = _ref[i];
+        if (listener.name === name && listener.callback === callback) {
+          this.listeners.splice(i, 1);
+          break;
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };
 
-    Model.prototype.get = function(key) {
-      return this[key];
-    };
-
-    Model.prototype.set = function(key, value) {
-      this[key] = value;
-      this.send("change", key, value);
-      return this.send("change:" + key, value);
-    };
-
-    Model.prototype.reset = function() {};
-
-    Model.prototype.persist = function() {
-      var data, key;
-      data = {};
-      for (key in this) {
-        data[key] = this[key];
+    Plugin.prototype.destroy = function() {
+      var i, listener;
+      if (!this.destroyed) {
+        this.destroyed = true;
+        i = this.listeners.length;
+        while (i--) {
+          listener = this.listeners[i];
+          this.off(listener.name, listener.callback);
+        }
+        delete this.scene;
+        return delete this.entity;
       }
-      return window.localStorage[this.constructor.name] = data;
     };
 
-    Model.prototype.load = function() {
-      return this.setMany(window.localStorage[this.constructor.name]);
-    };
+    return Plugin;
 
-    return Model;
-
-  })(nv.EventDispatcher);
-
-  nv.Collection = (function(_super) {
-    __extends(Collection, _super);
-
-    function Collection(arr) {
-      this.items = arr != null ? arr : [];
-    }
-
-    return Collection;
-
-  })(nv.Model);
+  })();
 
 }).call(this);
 
@@ -1714,267 +1929,250 @@
 }).call(this);
 
 (function() {
-  nv.Point = (function() {
-    function Point(x, y) {
-      this.x = x;
-      this.y = y;
+  var __objectId,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.PhysicsEngine = (function(_super) {
+    __extends(PhysicsEngine, _super);
+
+    function PhysicsEngine(scene, config) {
+      PhysicsEngine.__super__.constructor.call(this, scene, config);
+      this.passiveObjects = {};
+      this.activeObjects = {};
+      this.physicsObjects = [];
     }
 
-    Point.prototype.clone = function() {
-      return new nv.Point(this.x, this.y);
+    PhysicsEngine.prototype["event(engine:physics:create)"] = function(collidable) {
+      return this.trackObject(collidable);
     };
 
-    Point.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      this.y += dy;
-      return this;
+    PhysicsEngine.prototype["event(engine:physics:delete)"] = function(collidable) {
+      return this.removeObject(collidable);
     };
 
-    Point.prototype.add = function(point) {
-      this.x += point.x;
-      this.y += point.y;
-      return this;
+    PhysicsEngine.prototype["event(engine:physics:register)"] = function(obj) {
+      return this.physicsObjects.push(obj);
     };
 
-    Point.prototype.times = function(num) {
-      new nv.Point(this.x * num, this.y * num);
-      return this;
-    };
-
-    Point.prototype.fromPolar = function(ang, rad) {
-      this.x = Math.cos(ang) * rad;
-      this.y = Math.sin(ang) * rad;
-      return this;
-    };
-
-    Point.prototype.constrain = function(rect) {
-      if (!rect.contains(this)) {
-        if (this.x < rect.x) {
-          this.x = 0;
-        }
-        if (this.x > rect.x2) {
-          this.x = rect.x2;
-        }
-        if (this.y < rect.y) {
-          this.y = 0;
-        }
-        if (this.y > rect.y2) {
-          this.y = rect.y2;
-        }
+    PhysicsEngine.prototype.prepare = function() {
+      if (this.config.debug === true) {
+        this.canvas = this.scene.getEngine(nv.RenderingEngine).canvas;
+        return this.scene.fire("engine:timing:register:after", nv.bind(this, this.drawObjects));
       }
-      return this;
     };
 
-    Point.prototype.eq = function(pt) {
-      return this.x === pt.x && this.y === pt.y;
-    };
-
-    return Point;
-
-  })();
-
-  nv.Rect = (function() {
-    function Rect(x, y, x2, y2) {
-      this.x = x;
-      this.y = y;
-      this.x2 = x2;
-      this.y2 = y2;
-    }
-
-    Rect.prototype.clone = function() {
-      return new nv.Rect(this.x, this.y, this.x2, this.y2);
-    };
-
-    Rect.prototype.reset = function(x, y, x2, y2) {
-      this.x = x;
-      this.y = y;
-      this.x2 = x2;
-      this.y2 = y2;
-    };
-
-    Rect.prototype._checkPt = function(tx, ty) {
-      return (tx >= this.x && tx <= this.x2) && (ty >= this.y && ty <= this.y2);
-    };
-
-    Rect.prototype.contains = function(pt) {
-      return this._checkPt(pt.x, pt.y);
-    };
-
-    Rect.prototype.intersects = function(rect) {
-      if (this.x2 < rect.x || this.y2 < rect.y || this.x > rect.x2 || this.y > rect.y2) {
-        return false;
-      }
-      return true;
-    };
-
-    Rect.prototype.translate = function(dx, dy) {
-      this.x += dx;
-      return this.y += dy;
-    };
-
-    return Rect;
-
-  })();
-
-}).call(this);
-
-(function() {
-  var __slice = [].slice;
-
-  nv.Game = (function() {
-    function Game(config) {
-      var engine, klass, name, scene, _i, _len, _ref;
-      this.rootModel = new nv.Model;
-      this.scenes = [];
-      this.sceneClasses = {};
-      this.engines = {};
-      if (config.engines != null) {
-        _ref = config.engines;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          engine = _ref[_i];
-          this.registerEngine(engine);
-        }
-      }
-      if (config.scenes != null) {
-        for (name in config.scenes) {
-          scene = name[0].toUpperCase() + name.toLowerCase().slice(1);
-          klass = "scenes." + scene;
-          this.registerScene(scene, getClass(klass));
-        }
-      }
-      this.rootModel.setMany({
-        config: config
-      });
-    }
-
-    Game.prototype.model = function() {
-      return this.rootModel;
-    };
-
-    Game.prototype.registerEngine = function(klass, initializer) {
-      var name;
-      name = klass.name;
-      return this.engines[name] = {
-        klass: klass,
-        initializer: initializer
-      };
-    };
-
-    Game.prototype.registerScenes = function(object) {
-      var key, _results;
-      _results = [];
-      for (key in object) {
-        _results.push(this.registerScene(key, object[key]));
-      }
-      return _results;
-    };
-
-    Game.prototype.registerScene = function(name, klass) {
-      return this.sceneClasses[name] = klass;
-    };
-
-    Game.prototype.openScene = function() {
-      var args, name,
+    PhysicsEngine.prototype.drawObjects = function() {
+      var drawObj, ida, obj, _ref, _ref1, _results,
         _this = this;
-      name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      this.scenes.push((function(func, args, ctor) {
-        ctor.prototype = func.prototype;
-        var child = new ctor, result = func.apply(child, args);
-        return Object(result) === result ? result : child;
-      })(this.sceneClasses[name], [name, this, this.rootModel].concat(__slice.call(args)), function(){}));
-      return this.scenes[this.scenes.length - 1].on("scene:close", function() {
-        return _this.closeScene(name);
-      });
-    };
-
-    Game.prototype.closeScene = function(name) {
-      var index, scene, _i, _len, _ref, _results;
-      name = name != null ? name : this.scenes[this.scenes.length - 1].constructor.name;
-      _ref = this.scenes;
+      drawObj = function(obj) {
+        var bounds;
+        _this.canvas.context.setStrokeStyle("#FF0000");
+        _this.canvas.context.setStrokeWidth(2);
+        bounds = obj.bounds();
+        return _this.canvas.context.strokeRect(bounds.x, bounds.y, bounds.x2 - bounds.x, bounds.y2 - bounds.y);
+      };
+      _ref = this.activeObjects;
+      for (ida in _ref) {
+        obj = _ref[ida];
+        drawObj(obj);
+      }
+      _ref1 = this.passiveObjects;
       _results = [];
-      for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
-        scene = _ref[index];
-        if (scene instanceof this.sceneClasses[name]) {
-          scene.destroy();
-          _results.push(this.scenes.splice(index, 1));
-        } else {
-          _results.push(void 0);
-        }
+      for (ida in _ref1) {
+        obj = _ref1[ida];
+        _results.push(drawObj(obj));
       }
       return _results;
     };
 
-    Game.prototype.start = function(scene) {
-      return this.openScene(scene);
+    PhysicsEngine.prototype.trackObjects = function(array) {
+      var self;
+      self = this;
+      return $.each(array, function() {
+        return self.trackObject(this);
+      });
     };
 
-    return Game;
+    PhysicsEngine.prototype.trackObject = function(obj) {
+      switch (obj.type) {
+        case 'passive':
+          return this.passiveObjects[obj.id] = obj;
+        case 'active':
+          return this.activeObjects[obj.id] = obj;
+        case 'both':
+          this.passiveObjects[obj.id] = obj;
+          return this.activeObjects[obj.id] = obj;
+      }
+    };
 
-  })();
+    PhysicsEngine.prototype.removeObject = function(obj) {
+      switch (obj.type) {
+        case 'passive':
+          return delete this.passiveObjects[obj.id];
+        case 'active':
+          return delete this.activeObjects[obj.id];
+        case 'both':
+          delete this.passiveObjects[obj.id];
+          return delete this.activeObjects[obj.id];
+      }
+    };
 
-}).call(this);
-
-(function() {
-  nv.Engine = (function() {
-    Engine.prototype.initializer = function() {};
-
-    function Engine(scene, config) {
-      var key, _ref;
-      this.scene = scene;
-      this.config = config;
-      this.config = (_ref = this.config) != null ? _ref : {};
-      this.listeners = [];
-      for (key in this) {
-        if (/event\(.*\)/.test(key)) {
-          this.on(key.slice(6, -1), nv.bind(this, this[key]));
+    PhysicsEngine.prototype.update = function(dt) {
+      var ida, idp, ivec, obj, obja, objaBounds, objp, objpBounds, _i, _len, _ref, _ref1, _ref2, _results;
+      _ref = this.activeObjects;
+      for (ida in _ref) {
+        obja = _ref[ida];
+        objaBounds = obja.bounds();
+        _ref1 = this.passiveObjects;
+        for (idp in _ref1) {
+          objp = _ref1[idp];
+          if (ida === idp) {
+            continue;
+          }
+          objpBounds = objp.bounds();
+          if (objpBounds.intersects(objaBounds)) {
+            ivec = this.impactVector(objaBounds, objpBounds);
+            this.scene.send("engine:collision:queued", {
+              actor: obja.entity,
+              target: objp.entity
+            });
+            this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
+              actor: obja.entity,
+              target: objp.entity,
+              impactVector: ivec
+            });
+            break;
+          }
         }
       }
+      _ref2 = this.physicsObjects;
+      _results = [];
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        obj = _ref2[_i];
+        _results.push(obj.update(dt));
+      }
+      return _results;
+    };
+
+    PhysicsEngine.prototype.impactVector = function(colliderBounds, collideeBounds) {
+      var bottom, iVec, left, right, top;
+      iVec = new nv.Point(0, 0);
+      left = collideeBounds.x - colliderBounds.x2;
+      right = collideeBounds.x2 - colliderBounds.x;
+      top = collideeBounds.y - colliderBounds.y2;
+      bottom = collideeBounds.y2 - colliderBounds.y;
+      iVec.x = -1 * (Math.abs(left) <= right ? left : right);
+      iVec.y = -1 * (Math.abs(top) <= bottom ? top : bottom);
+      return iVec;
+    };
+
+    return PhysicsEngine;
+
+  })(nv.Engine);
+
+  nv.PhysicsPlugin = (function(_super) {
+    __extends(PhysicsPlugin, _super);
+
+    function PhysicsPlugin(scene, entity) {
+      PhysicsPlugin.__super__.constructor.call(this, scene, entity);
+      this.scene.fire("engine:physics:create", this);
     }
 
-    Engine.prototype.on = function(name, callback) {
-      this.scene.on(name, callback);
-      return this.listeners.push({
-        name: name,
-        callback: callback
-      });
+    PhysicsPlugin.prototype.destroy = function() {
+      this.scene.fire("engine:physics:delete", this);
+      return PhysicsPlugin.__super__.destroy.apply(this, arguments);
     };
 
-    Engine.prototype.off = function(name, callback) {
-      var i, listener, _i, _len, _ref, _results;
-      this.scene.off(name, callback);
-      _ref = this.listeners;
-      _results = [];
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        listener = _ref[i];
-        if (listener.name === name && listener.callback === callback) {
-          this.listeners.splice(i, 1);
-          break;
-        } else {
-          _results.push(void 0);
+    return PhysicsPlugin;
+
+  })(nv.Plugin);
+
+  __objectId = 0;
+
+  nv.PathPhysicsPlugin = (function(_super) {
+    __extends(PathPhysicsPlugin, _super);
+
+    function PathPhysicsPlugin(scene, entity) {
+      this.id = __objectId++;
+      this.type = entity.model.physicsObjectType;
+      this.boundingRect = new nv.Rect(0, 0, 0, 0);
+      PathPhysicsPlugin.__super__.constructor.call(this, scene, entity);
+      this.updateBounds();
+    }
+
+    PathPhysicsPlugin.prototype.bounds = function() {
+      this.updateBounds();
+      return this.boundingRect;
+    };
+
+    PathPhysicsPlugin.prototype.updateBounds = function() {
+      var point, x1, x2, y1, y2, _i, _len, _ref;
+      x1 = x2 = y1 = y2 = null;
+      _ref = this.entity.model.points();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        point = _ref[_i];
+        if (x1 === null || point.x < x1) {
+          x1 = point.x;
+        }
+        if (x2 === null || point.x > x2) {
+          x2 = point.x;
+        }
+        if (y1 === null || point.y < y1) {
+          y1 = point.y;
+        }
+        if (y2 === null || point.y > y2) {
+          y2 = point.y;
         }
       }
-      return _results;
+      return this.boundingRect.reset(x1, y1, x2, y2);
     };
 
-    Engine.prototype.prepare = function() {};
+    return PathPhysicsPlugin;
 
-    Engine.prototype.update = function(dt) {};
+  })(nv.PhysicsPlugin);
 
-    Engine.prototype.destroy = function() {
-      var i, listener;
-      i = this.listeners.length;
-      while (i--) {
-        listener = this.listeners[i];
-        this.off(listener.name, listener.callback);
+  nv.RectanglePhysicsPlugin = (function(_super) {
+    __extends(RectanglePhysicsPlugin, _super);
+
+    function RectanglePhysicsPlugin(scene, entity) {
+      this.id = __objectId++;
+      this.type = entity.model.physicsObjectType;
+      this.boundingRect = new nv.Rect(0, 0, 0, 0);
+      RectanglePhysicsPlugin.__super__.constructor.call(this, scene, entity);
+    }
+
+    RectanglePhysicsPlugin.prototype.bounds = function() {
+      var model;
+      model = this.entity.model;
+      return new nv.Rect(model.x, model.y, model.x + model.width, model.y + model.height);
+    };
+
+    return RectanglePhysicsPlugin;
+
+  })(nv.PhysicsPlugin);
+
+  nv.GravityPhysicsPlugin = (function(_super) {
+    __extends(GravityPhysicsPlugin, _super);
+
+    function GravityPhysicsPlugin(scene, entity) {
+      this.gravity = 0.003;
+      GravityPhysicsPlugin.__super__.constructor.call(this, scene, entity);
+    }
+
+    GravityPhysicsPlugin.prototype.update = function(dt) {
+      var model, tx, ty;
+      model = this.entity.model;
+      if (!model.thrusters) {
+        tx = this.gravity * (model.thrustVector.x < 0 ? 1 : -1);
+        ty = this.gravity * (model.thrustVector.y < 0 ? 1 : -1);
+        return model.thrustVector.translate(tx, ty);
       }
-      delete this.listeners;
-      delete this.scene;
-      return delete this.config;
     };
 
-    return Engine;
+    return GravityPhysicsPlugin;
 
-  })();
+  })(nv.PhysicsPlugin);
 
 }).call(this);
 
@@ -2056,6 +2254,139 @@
 
 (function() {
   var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.SoundEngine = (function(_super) {
+    __extends(SoundEngine, _super);
+
+    function SoundEngine(scene) {
+      var _this = this;
+      SoundEngine.__super__.constructor.call(this, scene);
+      this.plugins = [];
+      this.scene.on("sound:plugin:create", function(plugin) {
+        return _this.plugins.push(plugin);
+      });
+      this.scene.on("sound:plugin:delete", function(plugin) {
+        return _this.plugins = _this.plugins.filter(function(p) {
+          return p.id !== plugin.id;
+        });
+      });
+    }
+
+    SoundEngine.prototype.update = function(dt) {
+      var plugin, _i, _len, _ref, _results;
+      _ref = this.plugins;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        plugin = _ref[_i];
+        _results.push(plugin.update(dt));
+      }
+      return _results;
+    };
+
+    return SoundEngine;
+
+  })(nv.Engine);
+
+  nv.SoundPlugin = (function(_super) {
+    __extends(SoundPlugin, _super);
+
+    function SoundPlugin(scene, entity, options) {
+      var dispatch, self;
+      this.options = options;
+      SoundPlugin.__super__.constructor.call(this, scene, entity);
+      this.state = "stopped";
+      this.sound = new Audio(this.options.asset);
+      this.sound.onended = function() {
+        this.sound.currentTime = 0;
+        this.state = "stopped";
+        if (this.options.repeat) {
+          return this.play();
+        }
+      };
+      self = this;
+      dispatch = function() {
+        switch (this.action) {
+          case "play":
+            return self.play();
+          case "stop":
+            return self.stop();
+          case "pause":
+            return self.pause();
+        }
+      };
+      this.scene.on(this.options.event, dispatch.bind(this.options));
+      if (this.options.autoplay) {
+        this.play();
+      }
+    }
+
+    SoundPlugin.prototype.update = function(dt) {
+      if (!this.options.maxPlayTime) {
+        return;
+      }
+      if (new Date().getTime() - this.playTime > this.options.maxPlayTime) {
+        return this.stop();
+      }
+    };
+
+    SoundPlugin.prototype.play = function() {
+      if (this.state === "playing") {
+        this.rewind();
+      }
+      this.playTime = new Date().getTime();
+      if (this.options.startTime) {
+        this.sound.currentTime = this.options.startTime;
+      }
+      this.sound.play();
+      return this.state = "playing";
+    };
+
+    SoundPlugin.prototype.pause = function() {
+      this.sound.pause();
+      return this.state = "paused";
+    };
+
+    SoundPlugin.prototype.rewind = function() {
+      this.pause();
+      this.sound.currentTime = 0;
+      return this.state = "stopped";
+    };
+
+    SoundPlugin.prototype.stop = function() {
+      return this.rewind();
+    };
+
+    return SoundPlugin;
+
+  })(nv.Plugin);
+
+  nv.SoundFactory = (function() {
+    function SoundFactory() {}
+
+    SoundFactory.prototype.wire = function(scene, sounds) {
+      var name, sound, _results;
+      this.scene = scene;
+      _results = [];
+      for (name in sounds) {
+        sound = sounds[name];
+        _results.push(this._add(sound));
+      }
+      return _results;
+    };
+
+    SoundFactory.prototype._add = function(sound) {
+      return this.scene.fire('sound:plugin:create', new nv.SoundPlugin(this.scene, null, sound));
+    };
+
+    return SoundFactory;
+
+  })();
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
@@ -2098,6 +2429,223 @@
     return DebugEngine;
 
   })(nv.Engine);
+
+}).call(this);
+
+(function() {
+  var randRange, randVariation,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  randRange = function(min, max) {
+    return Math.random() * (max - min) + min;
+  };
+
+  randVariation = function(center, variation) {
+    return center + (variation * randRange(-0.5, 0.5));
+  };
+
+  nv.ParticleEngine = (function(_super) {
+    __extends(ParticleEngine, _super);
+
+    ParticleEngine.prototype.initializer = function(config, rootModel) {
+      return nv.extend(config, {
+        canvas: rootModel.canvas,
+        width: rootModel.canvas.width,
+        height: rootModel.canvas.height
+      });
+    };
+
+    function ParticleEngine(scene, config) {
+      ParticleEngine.__super__.constructor.call(this, scene);
+      this.canvas = config.canvas;
+      this.context = this.canvas.context;
+      this.emitters = [];
+    }
+
+    ParticleEngine.prototype["event(engine:particle:register:emitter)"] = function(emitter) {
+      this.emitters.push(emitter);
+      return this.scene.fire("engine:rendering:create", emitter);
+    };
+
+    ParticleEngine.prototype["event(engine:particle:destroy:emitter)"] = function(emitter) {
+      this.scene.fire("engine:rendering:destroy", emitter);
+      return this.emitters.splice(this.emitters.indexOf(emitter), 1);
+    };
+
+    ParticleEngine.prototype.update = function(dt) {
+      var emitter, _i, _len, _ref;
+      _ref = this.emitters;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        emitter = _ref[_i];
+        emitter.update(dt);
+      }
+      return this.emitters = this.emitters.filter(function(emitter) {
+        return !emitter.complete;
+      });
+    };
+
+    ParticleEngine.prototype.destroy = function() {
+      var emitter, _i, _len, _ref;
+      _ref = this.emitters;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        emitter = _ref[_i];
+        emitter.destroy;
+      }
+      delete this.emitters;
+      return ParticleEngine.__super__.destroy.apply(this, arguments);
+    };
+
+    return ParticleEngine;
+
+  })(nv.Engine);
+
+  nv.ParticleEmitter = (function() {
+    ParticleEmitter.prototype.defaults = {
+      position: new nv.Point(0, 0),
+      particlesPerSecond: 100,
+      maxParticles: 1024000,
+      particleLife: 0.5,
+      lifeVariation: 0.52,
+      colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(0, 0, 0, 0)]),
+      angle: 0,
+      angleVariation: Math.PI * 2,
+      minVelocity: 20,
+      maxVelocity: 50,
+      gravity: new nv.Point(0, 0),
+      collider: null,
+      bounceDamper: 0.5,
+      on: false
+    };
+
+    function ParticleEmitter(scene, options) {
+      this.scene = scene;
+      this.options = nv.clone(this.defaults);
+      this.options = nv.extend(this.options, options);
+      this.particles = [];
+      this.particleCounter = 0;
+      this.complete = false;
+      this.particlesThisFrame = 0;
+      this.scene.fire("engine:particle:register:emitter", this);
+    }
+
+    ParticleEmitter.prototype.destroy = function() {
+      this.options.on = false;
+      this.scene.fire("engine:particle:destroy:emitter", this);
+      return delete this.scene;
+    };
+
+    ParticleEmitter.prototype.set = function(key, value) {
+      return this.options[key] = value;
+    };
+
+    ParticleEmitter.prototype.get = function(key) {
+      return this.options[key];
+    };
+
+    ParticleEmitter.prototype.draw = function(context, canvas) {
+      var particle, _i, _len, _ref, _results;
+      _ref = this.particles;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        particle = _ref[_i];
+        _results.push(particle.draw(context, canvas));
+      }
+      return _results;
+    };
+
+    ParticleEmitter.prototype.spawnParticle = function(offset) {
+      var angle, life, position, speed, velocity;
+      angle = randVariation(this.options.angle, this.options.angleVariation);
+      speed = randRange(this.options.minVelocity, this.options.maxVelocity);
+      life = randVariation(this.options.particleLife, this.options.particleLife * this.options.lifeVariation);
+      velocity = new nv.Point().fromPolar(angle, speed);
+      position = this.options.position.clone().add(velocity.times(offset));
+      this.particles.push(new nv.Particle(this.options, position, velocity, life));
+      return this.particleCounter++;
+    };
+
+    ParticleEmitter.prototype.update = function(dt) {
+      var dead, deadParticle, i, index, particle, particlesToSpawn, _i, _j, _len, _len1, _ref;
+      dead = [];
+      _ref = this.particles;
+      for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
+        particle = _ref[index];
+        particle.update(dt);
+        if (particle.isDead()) {
+          dead.push(particle);
+        }
+      }
+      for (_j = 0, _len1 = dead.length; _j < _len1; _j++) {
+        deadParticle = dead[_j];
+        deadParticle.destroy();
+        this.particles.splice(this.particles.indexOf(deadParticle), 1);
+      }
+      dead = void 0;
+      if (this.options.on) {
+        this.particlesThisFrame += this.options.particlesPerSecond * dt;
+        i = 0;
+        particlesToSpawn = this.particlesThisFrame;
+        while (this.particlesThisFrame > 1) {
+          i++;
+          this.particlesThisFrame--;
+          this.spawnParticle((1.0 + i) / particlesToSpawn * dt);
+        }
+      }
+      if (this.options.maxParticles !== void 0 && this.particleCounter > this.options.maxParticles) {
+        this.options.on = false;
+        return this.complete = this.particles.length === 0;
+      }
+    };
+
+    return ParticleEmitter;
+
+  })();
+
+  nv.Particle = (function() {
+    function Particle(options, position, velocity, life) {
+      this.options = options;
+      this.position = position;
+      this.velocity = velocity;
+      this.life = life;
+      this.maxLife = this.life;
+    }
+
+    Particle.prototype.isDead = function() {
+      return this.life <= 0;
+    };
+
+    Particle.prototype.draw = function(context, canvas) {
+      var color, lifePercent;
+      if (this.isDead()) {
+        return;
+      }
+      lifePercent = 1.0 - (this.life / this.maxLife);
+      color = this.options.colors.getColor(lifePercent);
+      context.save();
+      context.globalAlpha = color.a;
+      context.setFillStyle(color.toCanvasColor());
+      context.fillRect(this.position.x - 1, this.position.y - 1, 3, 3);
+      return context.restore();
+    };
+
+    Particle.prototype.update = function(dt) {
+      this.velocity.add(this.options.gravity.times(dt));
+      this.position.add(this.velocity.times(dt));
+      return this.life -= dt;
+    };
+
+    Particle.prototype.destroy = function() {
+      delete this.options;
+      delete this.position;
+      delete this.velocity;
+      delete this.life;
+      return delete this.maxLife;
+    };
+
+    return Particle;
+
+  })();
 
 }).call(this);
 
@@ -2727,250 +3275,129 @@
 }).call(this);
 
 (function() {
-  var __objectId,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var _ref;
 
-  nv.PhysicsEngine = (function(_super) {
-    __extends(PhysicsEngine, _super);
+  window.nv = (_ref = window.nv) != null ? _ref : {};
 
-    function PhysicsEngine(scene, config) {
-      PhysicsEngine.__super__.constructor.call(this, scene, config);
-      this.passiveObjects = {};
-      this.activeObjects = {};
-      this.physicsObjects = [];
-    }
+  window.nv.Controller = {
+    Up: 12,
+    Down: 13,
+    Left: 14,
+    Right: 15,
+    A: 0,
+    X: 1,
+    Y: 3,
+    B: 2,
+    LB: 4,
+    LT: 6,
+    RB: 5,
+    RT: 7,
+    Select: 8,
+    Start: 9,
+    LeftStick: 10,
+    RightStick: 11
+  };
 
-    PhysicsEngine.prototype["event(engine:physics:create)"] = function(collidable) {
-      return this.trackObject(collidable);
-    };
-
-    PhysicsEngine.prototype["event(engine:physics:delete)"] = function(collidable) {
-      return this.removeObject(collidable);
-    };
-
-    PhysicsEngine.prototype["event(engine:physics:register)"] = function(obj) {
-      return this.physicsObjects.push(obj);
-    };
-
-    PhysicsEngine.prototype.prepare = function() {
-      if (this.config.debug === true) {
-        this.canvas = this.scene.getEngine(nv.RenderingEngine).canvas;
-        return this.scene.fire("engine:timing:register:after", nv.bind(this, this.drawObjects));
-      }
-    };
-
-    PhysicsEngine.prototype.drawObjects = function() {
-      var drawObj, ida, obj, _ref, _ref1, _results,
-        _this = this;
-      drawObj = function(obj) {
-        var bounds;
-        _this.canvas.context.setStrokeStyle("#FF0000");
-        _this.canvas.context.setStrokeWidth(2);
-        bounds = obj.bounds();
-        return _this.canvas.context.strokeRect(bounds.x, bounds.y, bounds.x2 - bounds.x, bounds.y2 - bounds.y);
-      };
-      _ref = this.activeObjects;
-      for (ida in _ref) {
-        obj = _ref[ida];
-        drawObj(obj);
-      }
-      _ref1 = this.passiveObjects;
-      _results = [];
-      for (ida in _ref1) {
-        obj = _ref1[ida];
-        _results.push(drawObj(obj));
-      }
-      return _results;
-    };
-
-    PhysicsEngine.prototype.trackObjects = function(array) {
-      var self;
-      self = this;
-      return $.each(array, function() {
-        return self.trackObject(this);
-      });
-    };
-
-    PhysicsEngine.prototype.trackObject = function(obj) {
-      switch (obj.type) {
-        case 'passive':
-          return this.passiveObjects[obj.id] = obj;
-        case 'active':
-          return this.activeObjects[obj.id] = obj;
-        case 'both':
-          this.passiveObjects[obj.id] = obj;
-          return this.activeObjects[obj.id] = obj;
-      }
-    };
-
-    PhysicsEngine.prototype.removeObject = function(obj) {
-      switch (obj.type) {
-        case 'passive':
-          return delete this.passiveObjects[obj.id];
-        case 'active':
-          return delete this.activeObjects[obj.id];
-        case 'both':
-          delete this.passiveObjects[obj.id];
-          return delete this.activeObjects[obj.id];
-      }
-    };
-
-    PhysicsEngine.prototype.update = function(dt) {
-      var ida, idp, ivec, obj, obja, objaBounds, objp, objpBounds, _i, _len, _ref, _ref1, _ref2, _results;
-      _ref = this.activeObjects;
-      for (ida in _ref) {
-        obja = _ref[ida];
-        objaBounds = obja.bounds();
-        _ref1 = this.passiveObjects;
-        for (idp in _ref1) {
-          objp = _ref1[idp];
-          if (ida === idp) {
-            continue;
-          }
-          objpBounds = objp.bounds();
-          if (objpBounds.intersects(objaBounds)) {
-            ivec = this.impactVector(objaBounds, objpBounds);
-            this.scene.send("engine:collision:queued", {
-              actor: obja.entity,
-              target: objp.entity
-            });
-            this.scene.fire("engine:collision:" + obja.entity.constructor.name + ":" + objp.entity.constructor.name, {
-              actor: obja.entity,
-              target: objp.entity,
-              impactVector: ivec
-            });
-            break;
-          }
-        }
-      }
-      _ref2 = this.physicsObjects;
-      _results = [];
-      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-        obj = _ref2[_i];
-        _results.push(obj.update(dt));
-      }
-      return _results;
-    };
-
-    PhysicsEngine.prototype.impactVector = function(colliderBounds, collideeBounds) {
-      var bottom, iVec, left, right, top;
-      iVec = new nv.Point(0, 0);
-      left = collideeBounds.x - colliderBounds.x2;
-      right = collideeBounds.x2 - colliderBounds.x;
-      top = collideeBounds.y - colliderBounds.y2;
-      bottom = collideeBounds.y2 - colliderBounds.y;
-      iVec.x = -1 * (Math.abs(left) <= right ? left : right);
-      iVec.y = -1 * (Math.abs(top) <= bottom ? top : bottom);
-      return iVec;
-    };
-
-    return PhysicsEngine;
-
-  })(nv.Engine);
-
-  nv.PhysicsPlugin = (function(_super) {
-    __extends(PhysicsPlugin, _super);
-
-    function PhysicsPlugin(scene, entity) {
-      PhysicsPlugin.__super__.constructor.call(this, scene, entity);
-      this.scene.fire("engine:physics:create", this);
-    }
-
-    PhysicsPlugin.prototype.destroy = function() {
-      this.scene.fire("engine:physics:delete", this);
-      return PhysicsPlugin.__super__.destroy.apply(this, arguments);
-    };
-
-    return PhysicsPlugin;
-
-  })(nv.Plugin);
-
-  __objectId = 0;
-
-  nv.PathPhysicsPlugin = (function(_super) {
-    __extends(PathPhysicsPlugin, _super);
-
-    function PathPhysicsPlugin(scene, entity) {
-      this.id = __objectId++;
-      this.type = entity.model.physicsObjectType;
-      this.boundingRect = new nv.Rect(0, 0, 0, 0);
-      PathPhysicsPlugin.__super__.constructor.call(this, scene, entity);
-      this.updateBounds();
-    }
-
-    PathPhysicsPlugin.prototype.bounds = function() {
-      this.updateBounds();
-      return this.boundingRect;
-    };
-
-    PathPhysicsPlugin.prototype.updateBounds = function() {
-      var point, x1, x2, y1, y2, _i, _len, _ref;
-      x1 = x2 = y1 = y2 = null;
-      _ref = this.entity.model.points();
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        point = _ref[_i];
-        if (x1 === null || point.x < x1) {
-          x1 = point.x;
-        }
-        if (x2 === null || point.x > x2) {
-          x2 = point.x;
-        }
-        if (y1 === null || point.y < y1) {
-          y1 = point.y;
-        }
-        if (y2 === null || point.y > y2) {
-          y2 = point.y;
-        }
-      }
-      return this.boundingRect.reset(x1, y1, x2, y2);
-    };
-
-    return PathPhysicsPlugin;
-
-  })(nv.PhysicsPlugin);
-
-  nv.RectanglePhysicsPlugin = (function(_super) {
-    __extends(RectanglePhysicsPlugin, _super);
-
-    function RectanglePhysicsPlugin(scene, entity) {
-      this.id = __objectId++;
-      this.type = entity.model.physicsObjectType;
-      this.boundingRect = new nv.Rect(0, 0, 0, 0);
-      RectanglePhysicsPlugin.__super__.constructor.call(this, scene, entity);
-    }
-
-    RectanglePhysicsPlugin.prototype.bounds = function() {
-      var model;
-      model = this.entity.model;
-      return new nv.Rect(model.x, model.y, model.x + model.width, model.y + model.height);
-    };
-
-    return RectanglePhysicsPlugin;
-
-  })(nv.PhysicsPlugin);
-
-  nv.GravityPhysicsPlugin = (function(_super) {
-    __extends(GravityPhysicsPlugin, _super);
-
-    function GravityPhysicsPlugin(scene, entity) {
-      this.gravity = 0.003;
-      GravityPhysicsPlugin.__super__.constructor.call(this, scene, entity);
-    }
-
-    GravityPhysicsPlugin.prototype.update = function(dt) {
-      var model, tx, ty;
-      model = this.entity.model;
-      if (!model.thrusters) {
-        tx = this.gravity * (model.thrustVector.x < 0 ? 1 : -1);
-        ty = this.gravity * (model.thrustVector.y < 0 ? 1 : -1);
-        return model.thrustVector.translate(tx, ty);
-      }
-    };
-
-    return GravityPhysicsPlugin;
-
-  })(nv.PhysicsPlugin);
+  window.nv.Key = {
+    Backspace: 8,
+    Tab: 9,
+    Enter: 13,
+    Shift: 16,
+    Control: 17,
+    PauseBreak: 19,
+    CapsLock: 20,
+    Esc: 27,
+    Spacebar: 32,
+    PageUp: 33,
+    PageDown: 34,
+    End: 35,
+    Home: 36,
+    Left: 37,
+    Up: 38,
+    Right: 39,
+    Down: 40,
+    Insert: 45,
+    Delete: 46,
+    Keyb0: 48,
+    Keyb1: 49,
+    Keyb2: 50,
+    Keyb3: 51,
+    Keyb4: 52,
+    Keyb5: 53,
+    Keyb6: 54,
+    Keyb7: 55,
+    Keyb8: 56,
+    Keyb9: 57,
+    A: 65,
+    B: 66,
+    C: 67,
+    D: 68,
+    E: 69,
+    F: 70,
+    G: 71,
+    H: 72,
+    I: 73,
+    J: 74,
+    K: 75,
+    L: 76,
+    M: 77,
+    N: 78,
+    O: 79,
+    P: 80,
+    Q: 81,
+    R: 82,
+    S: 83,
+    T: 84,
+    U: 85,
+    V: 86,
+    W: 87,
+    X: 88,
+    Y: 89,
+    Z: 90,
+    Numpad0: 96,
+    Numpad1: 97,
+    Numpad2: 98,
+    Numpad3: 99,
+    Numpad4: 100,
+    Numpad5: 101,
+    Numpad6: 102,
+    Numpad7: 103,
+    Numpad8: 104,
+    Numpad9: 105,
+    NumpadStar: 106,
+    NumpadPlus: 107,
+    NumpadMinus: 109,
+    NumpadPeriod: 110,
+    NumpadSlash: 111,
+    F1: 112,
+    F2: 113,
+    F3: 114,
+    F4: 115,
+    F5: 116,
+    F6: 117,
+    F7: 118,
+    F8: 119,
+    F9: 120,
+    F10: 121,
+    F11: 122,
+    F12: 123,
+    F13: 124,
+    F14: 125,
+    F15: 126,
+    NumLck: 144,
+    ScrLck: 145,
+    SemiColon: 186,
+    Equal: 187,
+    Comma: 188,
+    Minus: 189,
+    Period: 190,
+    Question: 191,
+    BackQuote: 192,
+    LeftBrace: 219,
+    Pipe: 220,
+    RightBrace: 221,
+    SingleQuote: 222
+  };
 
 }).call(this);
 
@@ -2978,349 +3405,79 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  nv.SoundEngine = (function(_super) {
-    __extends(SoundEngine, _super);
+  nv.EditorEngine = (function(_super) {
+    __extends(EditorEngine, _super);
 
-    function SoundEngine(scene) {
-      var _this = this;
-      SoundEngine.__super__.constructor.call(this, scene);
-      this.plugins = [];
-      this.scene.on("sound:plugin:create", function(plugin) {
-        return _this.plugins.push(plugin);
-      });
-      this.scene.on("sound:plugin:delete", function(plugin) {
-        return _this.plugins = _this.plugins.filter(function(p) {
-          return p.id !== plugin.id;
-        });
-      });
+    EditorEngine.prototype.initializer = function(config, rootModel) {};
+
+    function EditorEngine(scene, config) {
+      EditorEngine.__super__.constructor.call(this, scene, config);
+      window.addEventListener('message', nv.bind(this, this.handleMessage));
     }
 
-    SoundEngine.prototype.update = function(dt) {
-      var plugin, _i, _len, _ref, _results;
-      _ref = this.plugins;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        plugin = _ref[_i];
-        _results.push(plugin.update(dt));
-      }
-      return _results;
+    EditorEngine.prototype["event(game:start)"] = function() {
+      return this.sendMessage('load', '');
     };
 
-    return SoundEngine;
+    EditorEngine.prototype.handleMessage = function(event) {
+      var message;
+      console.log("MESSAGE: ", event);
+      message = event.data;
+      return this.scene.fire("engine:editor:" + message.type, message.data);
+    };
+
+    EditorEngine.prototype.sendMessage = function(type, message) {
+      console.log('posting', type, message);
+      return window.parent.postMessage({
+        type: type,
+        message: message
+      }, window.location.href);
+    };
+
+    return EditorEngine;
 
   })(nv.Engine);
-
-  nv.SoundPlugin = (function(_super) {
-    __extends(SoundPlugin, _super);
-
-    function SoundPlugin(scene, entity, options) {
-      var dispatch, self;
-      this.options = options;
-      SoundPlugin.__super__.constructor.call(this, scene, entity);
-      this.state = "stopped";
-      this.sound = new Audio(this.options.asset);
-      this.sound.onended = function() {
-        this.sound.currentTime = 0;
-        this.state = "stopped";
-        if (this.options.repeat) {
-          return this.play();
-        }
-      };
-      self = this;
-      dispatch = function() {
-        switch (this.action) {
-          case "play":
-            return self.play();
-          case "stop":
-            return self.stop();
-          case "pause":
-            return self.pause();
-        }
-      };
-      this.scene.on(this.options.event, dispatch.bind(this.options));
-      if (this.options.autoplay) {
-        this.play();
-      }
-    }
-
-    SoundPlugin.prototype.update = function(dt) {
-      if (!this.options.maxPlayTime) {
-        return;
-      }
-      if (new Date().getTime() - this.playTime > this.options.maxPlayTime) {
-        return this.stop();
-      }
-    };
-
-    SoundPlugin.prototype.play = function() {
-      if (this.state === "playing") {
-        this.rewind();
-      }
-      this.playTime = new Date().getTime();
-      if (this.options.startTime) {
-        this.sound.currentTime = this.options.startTime;
-      }
-      this.sound.play();
-      return this.state = "playing";
-    };
-
-    SoundPlugin.prototype.pause = function() {
-      this.sound.pause();
-      return this.state = "paused";
-    };
-
-    SoundPlugin.prototype.rewind = function() {
-      this.pause();
-      this.sound.currentTime = 0;
-      return this.state = "stopped";
-    };
-
-    SoundPlugin.prototype.stop = function() {
-      return this.rewind();
-    };
-
-    return SoundPlugin;
-
-  })(nv.Plugin);
-
-  nv.SoundFactory = (function() {
-    function SoundFactory() {}
-
-    SoundFactory.prototype.wire = function(scene, sounds) {
-      var name, sound, _results;
-      this.scene = scene;
-      _results = [];
-      for (name in sounds) {
-        sound = sounds[name];
-        _results.push(this._add(sound));
-      }
-      return _results;
-    };
-
-    SoundFactory.prototype._add = function(sound) {
-      return this.scene.fire('sound:plugin:create', new nv.SoundPlugin(this.scene, null, sound));
-    };
-
-    return SoundFactory;
-
-  })();
 
 }).call(this);
 
 (function() {
-  var randRange, randVariation,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  randRange = function(min, max) {
-    return Math.random() * (max - min) + min;
-  };
+  nv.LiveEditEngine = (function(_super) {
+    __extends(LiveEditEngine, _super);
 
-  randVariation = function(center, variation) {
-    return center + (variation * randRange(-0.5, 0.5));
-  };
-
-  nv.ParticleEngine = (function(_super) {
-    __extends(ParticleEngine, _super);
-
-    ParticleEngine.prototype.initializer = function(config, rootModel) {
-      return nv.extend(config, {
-        canvas: rootModel.canvas,
-        width: rootModel.canvas.width,
-        height: rootModel.canvas.height
+    LiveEditEngine.prototype.initializer = function(config, rootModel) {
+      var script,
+        _this = this;
+      script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = 'http://localhost:8888/socket.io/socket.io.js';
+      script.addEventListener('load', function(event) {
+        return _this.connect();
       });
+      return document.querySelector('head').appendChild(script);
     };
 
-    function ParticleEngine(scene, config) {
-      ParticleEngine.__super__.constructor.call(this, scene);
-      this.canvas = config.canvas;
-      this.context = this.canvas.context;
-      this.emitters = [];
+    function LiveEditEngine(scene, config) {
+      if (!this.connected) {
+        this.connect();
+      }
     }
 
-    ParticleEngine.prototype["event(engine:particle:register:emitter)"] = function(emitter) {
-      this.emitters.push(emitter);
-      return this.scene.fire("engine:rendering:create", emitter);
-    };
-
-    ParticleEngine.prototype["event(engine:particle:destroy:emitter)"] = function(emitter) {
-      this.scene.fire("engine:rendering:destroy", emitter);
-      return this.emitters.splice(this.emitters.indexOf(emitter), 1);
-    };
-
-    ParticleEngine.prototype.update = function(dt) {
-      var emitter, _i, _len, _ref;
-      _ref = this.emitters;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        emitter = _ref[_i];
-        emitter.update(dt);
+    LiveEditEngine.prototype.connect = function() {
+      if (!(typeof io === "undefined" || io === null)) {
+        this.socket = io.connect('http://localhost:8888');
+        this.socket.on('change', function(data) {
+          return window.location.href = window.location.href;
+        });
+        return this.connected = true;
       }
-      return this.emitters = this.emitters.filter(function(emitter) {
-        return !emitter.complete;
-      });
     };
 
-    ParticleEngine.prototype.destroy = function() {
-      var emitter, _i, _len, _ref;
-      _ref = this.emitters;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        emitter = _ref[_i];
-        emitter.destroy;
-      }
-      delete this.emitters;
-      return ParticleEngine.__super__.destroy.apply(this, arguments);
-    };
-
-    return ParticleEngine;
+    return LiveEditEngine;
 
   })(nv.Engine);
-
-  nv.ParticleEmitter = (function() {
-    ParticleEmitter.prototype.defaults = {
-      position: new nv.Point(0, 0),
-      particlesPerSecond: 100,
-      maxParticles: 1024000,
-      particleLife: 0.5,
-      lifeVariation: 0.52,
-      colors: new nv.Gradient([new nv.Color(255, 255, 255, 1), new nv.Color(0, 0, 0, 0)]),
-      angle: 0,
-      angleVariation: Math.PI * 2,
-      minVelocity: 20,
-      maxVelocity: 50,
-      gravity: new nv.Point(0, 0),
-      collider: null,
-      bounceDamper: 0.5,
-      on: false
-    };
-
-    function ParticleEmitter(scene, options) {
-      this.scene = scene;
-      this.options = nv.clone(this.defaults);
-      this.options = nv.extend(this.options, options);
-      this.particles = [];
-      this.particleCounter = 0;
-      this.complete = false;
-      this.particlesThisFrame = 0;
-      this.scene.fire("engine:particle:register:emitter", this);
-    }
-
-    ParticleEmitter.prototype.destroy = function() {
-      this.options.on = false;
-      this.scene.fire("engine:particle:destroy:emitter", this);
-      return delete this.scene;
-    };
-
-    ParticleEmitter.prototype.set = function(key, value) {
-      return this.options[key] = value;
-    };
-
-    ParticleEmitter.prototype.get = function(key) {
-      return this.options[key];
-    };
-
-    ParticleEmitter.prototype.draw = function(context, canvas) {
-      var particle, _i, _len, _ref, _results;
-      _ref = this.particles;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        particle = _ref[_i];
-        _results.push(particle.draw(context, canvas));
-      }
-      return _results;
-    };
-
-    ParticleEmitter.prototype.spawnParticle = function(offset) {
-      var angle, life, position, speed, velocity;
-      angle = randVariation(this.options.angle, this.options.angleVariation);
-      speed = randRange(this.options.minVelocity, this.options.maxVelocity);
-      life = randVariation(this.options.particleLife, this.options.particleLife * this.options.lifeVariation);
-      velocity = new nv.Point().fromPolar(angle, speed);
-      position = this.options.position.clone().add(velocity.times(offset));
-      this.particles.push(new nv.Particle(this.options, position, velocity, life));
-      return this.particleCounter++;
-    };
-
-    ParticleEmitter.prototype.update = function(dt) {
-      var dead, deadParticle, i, index, particle, particlesToSpawn, _i, _j, _len, _len1, _ref;
-      dead = [];
-      _ref = this.particles;
-      for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
-        particle = _ref[index];
-        particle.update(dt);
-        if (particle.isDead()) {
-          dead.push(particle);
-        }
-      }
-      for (_j = 0, _len1 = dead.length; _j < _len1; _j++) {
-        deadParticle = dead[_j];
-        deadParticle.destroy();
-        this.particles.splice(this.particles.indexOf(deadParticle), 1);
-      }
-      dead = void 0;
-      if (this.options.on) {
-        this.particlesThisFrame += this.options.particlesPerSecond * dt;
-        i = 0;
-        particlesToSpawn = this.particlesThisFrame;
-        while (this.particlesThisFrame > 1) {
-          i++;
-          this.particlesThisFrame--;
-          this.spawnParticle((1.0 + i) / particlesToSpawn * dt);
-        }
-      }
-      if (this.options.maxParticles !== void 0 && this.particleCounter > this.options.maxParticles) {
-        this.options.on = false;
-        return this.complete = this.particles.length === 0;
-      }
-    };
-
-    return ParticleEmitter;
-
-  })();
-
-  nv.Particle = (function() {
-    function Particle(options, position, velocity, life) {
-      this.options = options;
-      this.position = position;
-      this.velocity = velocity;
-      this.life = life;
-      this.maxLife = this.life;
-    }
-
-    Particle.prototype.isDead = function() {
-      return this.life <= 0;
-    };
-
-    Particle.prototype.draw = function(context, canvas) {
-      var color, lifePercent;
-      if (this.isDead()) {
-        return;
-      }
-      lifePercent = 1.0 - (this.life / this.maxLife);
-      color = this.options.colors.getColor(lifePercent);
-      context.save();
-      context.globalAlpha = color.a;
-      context.setFillStyle(color.toCanvasColor());
-      context.fillRect(this.position.x - 1, this.position.y - 1, 3, 3);
-      return context.restore();
-    };
-
-    Particle.prototype.update = function(dt) {
-      this.velocity.add(this.options.gravity.times(dt));
-      this.position.add(this.velocity.times(dt));
-      return this.life -= dt;
-    };
-
-    Particle.prototype.destroy = function() {
-      delete this.options;
-      delete this.position;
-      delete this.velocity;
-      delete this.life;
-      return delete this.maxLife;
-    };
-
-    return Particle;
-
-  })();
 
 }).call(this);
 
@@ -3811,86 +3968,6 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  nv.EditorEngine = (function(_super) {
-    __extends(EditorEngine, _super);
-
-    EditorEngine.prototype.initializer = function(config, rootModel) {};
-
-    function EditorEngine(scene, config) {
-      EditorEngine.__super__.constructor.call(this, scene, config);
-      window.addEventListener('message', nv.bind(this, this.handleMessage));
-    }
-
-    EditorEngine.prototype["event(game:start)"] = function() {
-      return this.sendMessage('load', '');
-    };
-
-    EditorEngine.prototype.handleMessage = function(event) {
-      var message;
-      console.log("MESSAGE: ", event);
-      message = event.data;
-      return this.scene.fire("engine:editor:" + message.type, message.data);
-    };
-
-    EditorEngine.prototype.sendMessage = function(type, message) {
-      console.log('posting', type, message);
-      return window.parent.postMessage({
-        type: type,
-        message: message
-      }, window.location.href);
-    };
-
-    return EditorEngine;
-
-  })(nv.Engine);
-
-}).call(this);
-
-(function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  nv.LiveEditEngine = (function(_super) {
-    __extends(LiveEditEngine, _super);
-
-    LiveEditEngine.prototype.initializer = function(config, rootModel) {
-      var script,
-        _this = this;
-      script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = 'http://localhost:8888/socket.io/socket.io.js';
-      script.addEventListener('load', function(event) {
-        return _this.connect();
-      });
-      return document.querySelector('head').appendChild(script);
-    };
-
-    function LiveEditEngine(scene, config) {
-      if (!this.connected) {
-        this.connect();
-      }
-    }
-
-    LiveEditEngine.prototype.connect = function() {
-      if (!(typeof io === "undefined" || io === null)) {
-        this.socket = io.connect('http://localhost:8888');
-        this.socket.on('change', function(data) {
-          return window.location.href = window.location.href;
-        });
-        return this.connected = true;
-      }
-    };
-
-    return LiveEditEngine;
-
-  })(nv.Engine);
-
-}).call(this);
-
-(function() {
 
 
 }).call(this);
@@ -3940,23 +4017,6 @@
 
 (function() {
 
-
-}).call(this);
-
-(function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  entities.ArmyManager = (function(_super) {
-    __extends(ArmyManager, _super);
-
-    function ArmyManager(scene, plugins, model) {
-      ArmyManager.__super__.constructor.call(this, scene, plugins, model);
-    }
-
-    return ArmyManager;
-
-  })(nv.Entity);
 
 }).call(this);
 
@@ -4489,12 +4549,12 @@
       gold = this.model.get('gold');
       soldiers = Math.min(gold, value);
       console.log('soldiers', gold, value, soldiers);
-      if (!(soldiers <= 0)) {
-        console.log('creating soldiers', soldiers);
-        this.model.set('gold', gold - soldiers);
-        this.model.set('soldiers', this.model.get('soldiers') + soldiers);
-        return this.updateProjections();
+      if (!(soldiers > 0)) {
+        return;
       }
+      this.model.set('gold', gold - soldiers);
+      this.projections.set('soldiers', this.projections.get('soldiers') + soldiers);
+      return this.updateProjections();
     };
 
     ResourceManager.prototype["event(game:army:send)"] = function(value) {
@@ -4562,7 +4622,7 @@
       this.projectFarming();
       this.projectMining();
       this.projectPopulation();
-      return console.log("after update", this.projections.peasants, this.model.soldiers);
+      return console.log("after update", this.projections.peasants, this.projections.soldiers);
     };
 
     ResourceManager.prototype.projectFarming = function() {
@@ -5087,7 +5147,8 @@
                 rightText: "Miners",
                 font: uiFont,
                 x: 75,
-                y: 300
+                y: 300,
+                value: 50
               }
             }
           },
