@@ -130,6 +130,7 @@ realms.gameConfig =
               font: uiFont
               x: 75
               y: 300
+              value: 50
         currentText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

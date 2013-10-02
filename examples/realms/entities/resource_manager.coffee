@@ -14,11 +14,16 @@ class entities.ResourceManager extends nv.Entity
     gold = @model.get('gold')
     soldiers = Math.min gold, value
     console.log 'soldiers', gold, value, soldiers
-    unless soldiers <= 0
-      console.log 'creating soldiers', soldiers
-      @model.set 'gold', gold - soldiers
-      @model.set 'soldiers', @model.get('soldiers') + soldiers
-      @updateProjections()
+    return unless soldiers > 0
+    @model.set 'gold', gold - soldiers
+    @projections.set 'soldiers', @projections.get('soldiers') + soldiers
+    @updateProjections()
+
+    # unless soldiers <= 0
+    #   console.log 'creating soldiers', soldiers
+    #   @model.set 'gold', gold - soldiers
+    #   @model.set 'soldiers', @model.get('soldiers') + soldiers
+    #   @updateProjections()
 
   "event(game:army:send)": (value) ->
     unless @active is true
@@ -70,7 +75,7 @@ class entities.ResourceManager extends nv.Entity
     @projectMining()
     @projectPopulation()
 
-    console.log "after update", @projections.peasants, @model.soldiers
+    console.log "after update", @projections.peasants, @projections.soldiers
 
   projectFarming: () ->
     food = 0
