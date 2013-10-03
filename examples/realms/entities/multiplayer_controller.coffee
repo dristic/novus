@@ -4,10 +4,17 @@ class entities.MultiplayerController extends nv.Entity
 
     @guid = nv.guid()
     @playerManager = scene.getEntity(entities.PlayerManager)
+    @hash = location.hash
+
+    if @hash is ''
+      @hash = @generateHash()
+    else
+      @hash = @hash.replace '#', ''
+
+    location.hash = @hash
 
     if Firebase?
-      myRootRef = new Firebase @model.url
-      @ref = myRootRef.child 'game'
+      @ref = new Firebase "#{@model.url}/game/#{@hash}"
 
       @ref.child('players').once 'value', (snapshot) =>
         if snapshot.val() is 0 or snapshot.val() is 2
@@ -41,3 +48,12 @@ class entities.MultiplayerController extends nv.Entity
     @ref.child('attacks').push
       guid: @guid
       amount: amount
+
+  generateHash: () ->
+    text = ""
+    possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+    for i in [0..5]
+      text += possible.charAt(Math.floor(Math.random() * possible.length))
+
+    text

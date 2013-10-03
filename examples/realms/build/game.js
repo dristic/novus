@@ -4285,14 +4285,19 @@
     __extends(MultiplayerController, _super);
 
     function MultiplayerController(scene, plugins, model) {
-      var myRootRef,
-        _this = this;
+      var _this = this;
       MultiplayerController.__super__.constructor.call(this, scene, plugins, model);
       this.guid = nv.guid();
       this.playerManager = scene.getEntity(entities.PlayerManager);
+      this.hash = location.hash;
+      if (this.hash === '') {
+        this.hash = this.generateHash();
+      } else {
+        this.hash = this.hash.replace('#', '');
+      }
+      location.hash = this.hash;
       if (typeof Firebase !== "undefined" && Firebase !== null) {
-        myRootRef = new Firebase(this.model.url);
-        this.ref = myRootRef.child('game');
+        this.ref = new Firebase("" + this.model.url + "/game/" + this.hash);
         this.ref.child('players').once('value', function(snapshot) {
           if (snapshot.val() === 0 || snapshot.val() === 2) {
             _this.scene.fire("game:mp:player", 1);
@@ -4334,6 +4339,16 @@
         guid: this.guid,
         amount: amount
       });
+    };
+
+    MultiplayerController.prototype.generateHash = function() {
+      var i, possible, text, _i;
+      text = "";
+      possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      for (i = _i = 0; _i <= 5; i = ++_i) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+      return text;
     };
 
     return MultiplayerController;
@@ -5336,7 +5351,7 @@
             plugins: [],
             model: {
               options: {
-                url: 'https://novus-realms.firebaseio.com/'
+                url: 'https://novus-realms.firebaseio.com'
               }
             }
           }

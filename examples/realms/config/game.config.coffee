@@ -279,7 +279,7 @@ realms.gameConfig =
           plugins: []
           model:
             options:
-              url: 'https://novus-realms.firebaseio.com/'
+              url: 'https://novus-realms.firebaseio.com'
 
   levels: realms.levels
   entities: realms.entities
