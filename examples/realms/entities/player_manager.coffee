@@ -6,6 +6,11 @@ class entities.PlayerManager extends nv.Entity
     @model.playerNumber = 1
     @attacking = false
 
+    @model.on 'change:turn', (value) =>
+      switch value
+        when 1 then @model.set 'turnColor', 'Red'
+        when 2 then @model.set 'turnColor', 'Blue'
+
   "event(scene:initialized)": () ->
     @attackText = @scene.getEntityById('attack-text').getPlugin nv.TextUIPlugin
 
@@ -42,6 +47,9 @@ class entities.PlayerManager extends nv.Entity
 
       if playerNumber is @model.playerNumber
         @model.set 'clientPlayer', player
+        switch playerNumber
+          when 1 then @model.set 'playerColor', 'Red'
+          when 2 then @model.set 'playerColor', 'Blue'
 
     # Create each country and add it to a player if it is owned
     for name of scenario.countries

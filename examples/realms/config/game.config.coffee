@@ -109,6 +109,7 @@ realms.gameConfig =
           model:
             options:
               version: version
+              playerColor: '...'
               turn: 1
               players: []
         laborDistributionText:
@@ -275,6 +276,18 @@ realms.gameConfig =
               text: "Current Turn: {{turn}}"
               bind: entities.PlayerManager
               x: 480
+              y: 36
+        playerColorText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: "{{playerColor}}"
+              bind: entities.PlayerManager
+              x: 350
               y: 36
         multiplayerController:
           entity: entities.MultiplayerController

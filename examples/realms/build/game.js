@@ -4416,10 +4416,19 @@
     __extends(PlayerManager, _super);
 
     function PlayerManager(scene, plugins, model) {
+      var _this = this;
       PlayerManager.__super__.constructor.call(this, scene, plugins, model);
       this.model.turn = 1;
       this.model.playerNumber = 1;
       this.attacking = false;
+      this.model.on('change:turn', function(value) {
+        switch (value) {
+          case 1:
+            return _this.model.set('turnColor', 'Red');
+          case 2:
+            return _this.model.set('turnColor', 'Blue');
+        }
+      });
     }
 
     PlayerManager.prototype["event(scene:initialized)"] = function() {
@@ -4464,6 +4473,13 @@
         this.model.players.push(player);
         if (playerNumber === this.model.playerNumber) {
           this.model.set('clientPlayer', player);
+          switch (playerNumber) {
+            case 1:
+              this.model.set('playerColor', 'Red');
+              break;
+            case 2:
+              this.model.set('playerColor', 'Blue');
+          }
         }
       }
       for (name in scenario.countries) {
@@ -5137,6 +5153,7 @@
             model: {
               options: {
                 version: version,
+                playerColor: '...',
                 turn: 1,
                 players: []
               }
@@ -5345,6 +5362,21 @@
                 text: "Current Turn: {{turn}}",
                 bind: entities.PlayerManager,
                 x: 480,
+                y: 36
+              }
+            }
+          },
+          playerColorText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: "{{playerColor}}",
+                bind: entities.PlayerManager,
+                x: 350,
                 y: 36
               }
             }
