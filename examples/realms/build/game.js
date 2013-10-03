@@ -4011,7 +4011,32 @@
 }).call(this);
 
 (function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  nv.AssignedLaborRenderer = (function(_super) {
+    __extends(AssignedLaborRenderer, _super);
+
+    function AssignedLaborRenderer(scene, entity) {
+      AssignedLaborRenderer.__super__.constructor.call(this, scene, entity);
+    }
+
+    AssignedLaborRenderer.prototype.draw = function(context, canvas) {
+      if (this.entity.model.value === "field" || this.entity.model.value === "dirt") {
+        return;
+      }
+      context.save();
+      context.setFillStyle("#f1f1f1");
+      context.fillRect(this.entity.model.x, this.entity.model.y, 15, 15);
+      context.setStrokeStyle("black");
+      context.setFont("10px 'Lucida Console'");
+      context.strokeText(this.entity.model.workers, this.entity.model.x + 3, this.entity.model.y + 11);
+      return context.restore();
+    };
+
+    return AssignedLaborRenderer;
+
+  })(nv.RenderingPlugin);
 
 }).call(this);
 
@@ -4069,6 +4094,21 @@
       return count;
     };
 
+    Country.prototype.allocateWorkers = function(type, qty) {
+      var plot, _i, _len, _ref, _results;
+      _ref = this.model.plots;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        plot = _ref[_i];
+        if (plot.model.value === type) {
+          _results.push(plot.model.set('workers', qty));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
     return Country;
 
   })(nv.Entity);
@@ -4102,6 +4142,7 @@
         case 'unused':
           this.model.set('value', 'dirt');
       }
+      this.model.set('workers', 0);
       this.renderer.play(this.model.get('value'));
       this.renderer.stop();
       return this.scene.fire("game:land:change", this);
@@ -4584,7 +4625,7 @@
         return;
       }
       this.model.set('gold', gold - soldiers);
-      this.projections.set('soldiers', this.projections.get('soldiers') + soldiers);
+      this.projections.set('soldiersInTraining', this.projections.get('soldiersInTraining') + soldiers);
       return this.updateProjections();
     };
 
@@ -4629,6 +4670,7 @@
       return this.projections.setMany({
         peasants: 0,
         soldiers: 0,
+        soldiersInTraining: 0,
         food: 0,
         gold: 0,
         ratio: this.model.ratio
@@ -4667,6 +4709,7 @@
         console.log("ratio: ", laborRatio);
         farmersPerPlot = Math.round(this.model.get('peasants') * laborRatio / grainPlots);
         farmersPerPlot = Math.min(farmersPerPlot, 50);
+        this.owner.allocateWorkers('grain', farmersPerPlot);
         console.log("farmers per plot:", farmersPerPlot);
         for (i = _i = 1; 1 <= grainPlots ? _i <= grainPlots : _i >= grainPlots; i = 1 <= grainPlots ? ++_i : --_i) {
           qty = this.grainYield * farmersPerPlot;
@@ -4688,6 +4731,7 @@
         console.log("gold yield:", this.goldYield);
         minersPerPlot = Math.round(this.model.get('peasants') * laborRatio / goldPlots);
         minersPerPlot = Math.min(minersPerPlot, 50);
+        this.owner.allocateWorkers('gold', minersPerPlot);
         console.log("miners per plot:", minersPerPlot);
         for (i = _i = 1; 1 <= goldPlots ? _i <= goldPlots : _i >= goldPlots; i = 1 <= goldPlots ? ++_i : --_i) {
           gold += this.goldYield * 0.1 * minersPerPlot;
@@ -4698,32 +4742,37 @@
     };
 
     ResourceManager.prototype.projectPopulation = function() {
-      var currentPopulation, deaths, foodAvailable, growthTarget, peasantDeaths, peasants, projectedPopulation, projectedSoldiers, soldierDeaths, soldiers;
+      var currentPopulation, deaths, diff, foodAvailable, growthTarget, peasantDeaths, peasants, projectedPopulation, soldierDeaths, soldiers, soldiersInTraining;
       peasants = this.model.get('peasants');
       soldiers = this.model.get('soldiers');
+      soldiersInTraining = this.projections.get('soldiersInTraining');
       currentPopulation = peasants + soldiers;
+      console.log("cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining);
       growthTarget = Math.round(currentPopulation * 0.05);
       projectedPopulation = currentPopulation + growthTarget;
-      foodAvailable = this.model.get('food') + this.projections.get('food');
+      foodAvailable = this.model.get('food');
+      console.log("growth:", growthTarget, projectedPopulation, foodAvailable);
+      this.projections.set('soldiers', soldiersInTraining);
       if (projectedPopulation < foodAvailable) {
-        return this.projections.set('peasants', growthTarget - this.projections.get('soldiers'));
+        this.projections.set('peasants', growthTarget - soldiersInTraining);
       } else if (currentPopulation <= foodAvailable) {
-        return this.projections.set('peasants', foodAvailable - currentPopulation - this.projections.get('soldiers'));
+        this.projections.set('peasants', foodAvailable - currentPopulation - soldiersInTraining);
       } else {
-        deaths = Math.min(Math.round(currentPopulation * .1), currentPopulation - this.model.get('food'));
+        deaths = Math.min(Math.round(currentPopulation * .1), currentPopulation - foodAvailable);
         peasantDeaths = Math.round(deaths / 2);
         soldierDeaths = deaths - peasantDeaths;
-        projectedSoldiers = this.projections.get('soldiers');
-        if (soldierDeaths > soldiers) {
-          if (soldiers > 0) {
-            this.projections.set('soldiers', this.projections.get('soldiers') - soldiers);
-          }
-          peasantDeaths += soldierDeaths - soldiers;
-        } else if (soldierDeaths > 0) {
-          this.projections.set('soldiers', this.projections.get('soldiers') - soldierDeaths);
+        if (soldiers === 0) {
+          peasantDeaths += soldierDeaths;
+          soldierDeaths = 0;
+        } else if (soldierDeaths > soldiers) {
+          diff = soldierDeaths - soldiers;
+          soldierDeaths = soldiers;
+          peasantDeaths += diff;
         }
-        return this.projections.set('peasants', -projectedSoldiers - peasantDeaths);
+        this.projections.set('soldiers', soldiersInTraining - soldierDeaths);
+        this.projections.set('peasants', -1 * peasantDeaths);
       }
+      return console.log("pop / soldiers:", this.projections.get('peasants'), this.projections.get('soldiers'));
     };
 
     return ResourceManager;
@@ -4870,7 +4919,7 @@
     },
     land: {
       entity: entities.Land,
-      plugins: [nv.AnimatedSpriteRenderingPlugin],
+      plugins: [nv.AnimatedSpriteRenderingPlugin, nv.AssignedLaborRenderer],
       model: {
         options: {
           src: '/assets/terrain_atlas.png',
@@ -4896,7 +4945,10 @@
           height: 32,
           x: 576,
           y: 320,
-          clickable: true
+          clickable: true,
+          workers: 0,
+          maxWorkers: 50,
+          value: 'unused'
         }
       }
     },
@@ -5045,7 +5097,7 @@
 
   uiFont = 'bold 16px sans-serif';
 
-  version = 'v0.0.2';
+  version = 'v0.0.3';
 
   realms.gameConfig = {
     canvas: {
