@@ -28,3 +28,7 @@ class entities.Country extends nv.Entity
     for plot in @model.plots
       count += 1 if plot.model.value is type
     count
+
+  allocateWorkers: (type, qty) ->
+    for plot in @model.plots
+      plot.model.set('workers', qty) if plot.model.value is type

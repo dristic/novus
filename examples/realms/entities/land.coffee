@@ -11,6 +11,7 @@ class entities.Land extends nv.Entity
       when 'field' then @model.set 'value', 'field'
       when 'gold' then @model.set 'value', 'gold'
       when 'unused' then @model.set 'value', 'dirt'
+    @model.set 'workers', 0
     @renderer.play @model.get('value')
     @renderer.stop()
 

@@ -40,7 +40,7 @@ realms.entities =
 
   land:
     entity: entities.Land
-    plugins: [ nv.AnimatedSpriteRenderingPlugin ]
+    plugins: [ nv.AnimatedSpriteRenderingPlugin, nv.AssignedLaborRenderer ]
     model:
       options:
         src: '/assets/terrain_atlas.png'
@@ -62,6 +62,9 @@ realms.entities =
         x: 576
         y: 320
         clickable: true
+        workers: 0
+        maxWorkers: 50
+        value: 'unused'
 
   landTwo:
     entity: entities.Land
