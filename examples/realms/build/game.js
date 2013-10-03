@@ -5025,9 +5025,11 @@
 }).call(this);
 
 (function() {
-  var uiFont;
+  var uiFont, version;
 
   uiFont = 'bold 16px sans-serif';
+
+  version = 'v0.0.2';
 
   realms.gameConfig = {
     canvas: {
@@ -5134,6 +5136,7 @@
             plugins: [plugins.PlayerViewModel],
             model: {
               options: {
+                version: version,
                 turn: 1,
                 players: []
               }
@@ -5352,6 +5355,21 @@
             model: {
               options: {
                 url: 'https://novus-realms.firebaseio.com'
+              }
+            }
+          },
+          versionText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#FFF',
+                font: '12px console',
+                textBaseline: 'bottom',
+                text: "version number {{version}}",
+                bind: entities.PlayerManager,
+                x: 300,
+                y: 480
               }
             }
           }

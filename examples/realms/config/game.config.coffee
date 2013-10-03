@@ -3,6 +3,7 @@
 #= require scenarios.config
 
 uiFont = 'bold 16px sans-serif'
+version = 'v0.0.2'
 
 realms.gameConfig =
   canvas:
@@ -107,6 +108,7 @@ realms.gameConfig =
           plugins: [ plugins.PlayerViewModel ]
           model:
             options:
+              version: version
               turn: 1
               players: []
         laborDistributionText:
@@ -280,6 +282,18 @@ realms.gameConfig =
           model:
             options:
               url: 'https://novus-realms.firebaseio.com'
+        versionText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#FFF'
+              font: '12px console'
+              textBaseline: 'bottom'
+              text: "version number {{version}}"
+              bind: entities.PlayerManager
+              x: 300
+              y: 480
 
   levels: realms.levels
   entities: realms.entities
