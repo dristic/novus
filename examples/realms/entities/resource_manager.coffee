@@ -16,14 +16,8 @@ class entities.ResourceManager extends nv.Entity
     console.log 'soldiers', gold, value, soldiers
     return unless soldiers > 0
     @model.set 'gold', gold - soldiers
-    @projections.set 'soldiers', @projections.get('soldiers') + soldiers
+    @projections.set 'soldiersInTraining', @projections.get('soldiersInTraining') + soldiers
     @updateProjections()
-
-    # unless soldiers <= 0
-    #   console.log 'creating soldiers', soldiers
-    #   @model.set 'gold', gold - soldiers
-    #   @model.set 'soldiers', @model.get('soldiers') + soldiers
-    #   @updateProjections()
 
   "event(game:army:send)": (value) ->
     unless @active is true
@@ -55,6 +49,7 @@ class entities.ResourceManager extends nv.Entity
     @projections.setMany
       peasants: 0 #@model.peasants
       soldiers: 0 #@model.soldiers
+      soldiersInTraining: 0
       food: 0 #@model.food
       gold: 0 #@model.gold
       ratio: @model.ratio
@@ -115,28 +110,39 @@ class entities.ResourceManager extends nv.Entity
   projectPopulation: () ->
     peasants = @model.get('peasants')
     soldiers = @model.get('soldiers')
+    soldiersInTraining = @projections.get('soldiersInTraining')
     currentPopulation = peasants + soldiers
+
+    console.log "cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining
 
     growthTarget = Math.round(currentPopulation * 0.05)
     projectedPopulation = currentPopulation + growthTarget
-    foodAvailable = @model.get('food') + @projections.get('food')
+    foodAvailable = @model.get('food') #+ @projections.get('food')
+
+    console.log "growth:", growthTarget, projectedPopulation, foodAvailable
+
+    @projections.set 'soldiers', soldiersInTraining
 
     if projectedPopulation < foodAvailable
-      @projections.set 'peasants', growthTarget - @projections.get('soldiers')
+      @projections.set 'peasants', growthTarget - soldiersInTraining
     else if currentPopulation <= foodAvailable
-      @projections.set 'peasants', foodAvailable - currentPopulation - @projections.get('soldiers')
+      @projections.set 'peasants', foodAvailable - currentPopulation - soldiersInTraining
     else
-      deaths = Math.min(Math.round(currentPopulation * .1), currentPopulation - @model.get('food'))
+      deaths = Math.min(Math.round(currentPopulation * .1), currentPopulation - foodAvailable)
 
       peasantDeaths = Math.round(deaths / 2)
       soldierDeaths = deaths - peasantDeaths
-      projectedSoldiers = @projections.get('soldiers')
 
-      if soldierDeaths > soldiers
-        if soldiers > 0
-          @projections.set 'soldiers', @projections.get('soldiers') - soldiers
-        peasantDeaths += soldierDeaths - soldiers
-      else if soldierDeaths > 0
-        @projections.set 'soldiers', @projections.get('soldiers') - soldierDeaths
+      if soldiers is 0 
+        peasantDeaths += soldierDeaths
+        soldierDeaths = 0
+      else if soldierDeaths > soldiers
+        diff = soldierDeaths - soldiers
+        soldierDeaths = soldiers
+        peasantDeaths += diff
 
-      @projections.set 'peasants', - projectedSoldiers - peasantDeaths
+      @projections.set 'soldiers', soldiersInTraining - soldierDeaths
+      @projections.set 'peasants',  -1 * peasantDeaths
+
+    console.log "pop / soldiers:", @projections.get('peasants'), @projections.get('soldiers')
+
