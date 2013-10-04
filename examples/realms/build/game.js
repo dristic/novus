@@ -4019,18 +4019,37 @@
 
     function AssignedLaborRenderer(scene, entity) {
       AssignedLaborRenderer.__super__.constructor.call(this, scene, entity);
+      this.farmer = new Image();
+      this.farmer.src = "/assets/farmer-16.png";
+      this.miner = new Image();
+      this.miner.src = "/assets/miner-16.png";
+      this.yields = [];
+      this.yields.push(new Image());
+      this.yields[0].src = "/assets/yield1-16.png";
+      this.yields.push(new Image());
+      this.yields[1].src = "/assets/yield2-16.png";
+      this.yields.push(new Image());
+      this.yields[2].src = "/assets/yield3-16.png";
     }
 
     AssignedLaborRenderer.prototype.draw = function(context, canvas) {
-      if (this.entity.model.value === "field" || this.entity.model.value === "dirt") {
+      var idx, type;
+      type = this.entity.model.value;
+      if (type === "field" || type === "dirt") {
         return;
       }
+      if (type === "grain") {
+        context.drawImage(this.farmer, this.entity.model.x, this.entity.model.y + 1);
+      } else {
+        context.drawImage(this.miner, this.entity.model.x, this.entity.model.y + 1);
+      }
+      idx = Math.floor(((this.entity.model["yield"] - 0.7) * 10) / 5);
+      context.drawImage(this.yields[idx], this.entity.model.x + 15, this.entity.model.y + 15);
       context.save();
       context.setFillStyle("#f1f1f1");
-      context.fillRect(this.entity.model.x, this.entity.model.y, 15, 15);
       context.setStrokeStyle("black");
       context.setFont("10px 'Lucida Console'");
-      context.strokeText(this.entity.model.workers, this.entity.model.x + 3, this.entity.model.y + 11);
+      context.strokeText(this.entity.model.workers, this.entity.model.x + 18, this.entity.model.y + 11);
       return context.restore();
     };
 
@@ -4094,14 +4113,15 @@
       return count;
     };
 
-    Country.prototype.allocateWorkers = function(type, qty) {
+    Country.prototype.setPlotData = function(type, workers, harvest) {
       var plot, _i, _len, _ref, _results;
       _ref = this.model.plots;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         plot = _ref[_i];
         if (plot.model.value === type) {
-          _results.push(plot.model.set('workers', qty));
+          plot.model.set('workers', workers);
+          _results.push(plot.model.set('yield', harvest));
         } else {
           _results.push(void 0);
         }
@@ -4707,9 +4727,9 @@
         laborRatio = 1 - this.projections.get('ratio');
         console.log("grain yield:", this.grainYield);
         console.log("ratio: ", laborRatio);
-        farmersPerPlot = Math.round(this.model.get('peasants') * laborRatio / grainPlots);
+        farmersPerPlot = Math.floor(this.model.get('peasants') * laborRatio / grainPlots);
         farmersPerPlot = Math.min(farmersPerPlot, 50);
-        this.owner.allocateWorkers('grain', farmersPerPlot);
+        this.owner.setPlotData('grain', farmersPerPlot, this.grainYield);
         console.log("farmers per plot:", farmersPerPlot);
         for (i = _i = 1; 1 <= grainPlots ? _i <= grainPlots : _i >= grainPlots; i = 1 <= grainPlots ? ++_i : --_i) {
           qty = this.grainYield * farmersPerPlot;
@@ -4729,9 +4749,9 @@
         this.goldYield = (_ref = this.goldYield) != null ? _ref : Math.random() * 1.5 + 0.7;
         laborRatio = this.projections.get('ratio');
         console.log("gold yield:", this.goldYield);
-        minersPerPlot = Math.round(this.model.get('peasants') * laborRatio / goldPlots);
+        minersPerPlot = Math.floor(this.model.get('peasants') * laborRatio / goldPlots);
         minersPerPlot = Math.min(minersPerPlot, 50);
-        this.owner.allocateWorkers('gold', minersPerPlot);
+        this.owner.setPlotData('gold', minersPerPlot, this.goldYield);
         console.log("miners per plot:", minersPerPlot);
         for (i = _i = 1; 1 <= goldPlots ? _i <= goldPlots : _i >= goldPlots; i = 1 <= goldPlots ? ++_i : --_i) {
           gold += this.goldYield * 0.1 * minersPerPlot;
@@ -4933,10 +4953,10 @@
               frames: [805]
             },
             grain: {
-              frames: [833]
+              frames: [832 + 97]
             },
             gold: {
-              frames: [24]
+              frames: [179]
             }
           },
           currentAnimation: 'dirt',
@@ -5447,12 +5467,12 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#FFF',
+                color: '#999',
                 font: '12px console',
                 textBaseline: 'bottom',
-                text: "version number {{version}}",
+                text: "{{version}}",
                 bind: entities.PlayerManager,
-                x: 300,
+                x: 3,
                 y: 480
               }
             }
