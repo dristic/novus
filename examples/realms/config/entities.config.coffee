@@ -52,9 +52,9 @@ realms.entities =
           field:
             frames: [805]
           grain:
-            frames: [833]
+            frames: [832 + 97]
           gold:
-            frames: [24]
+            frames: [179]
         currentAnimation: 'dirt'
         playing: false
         width: 32

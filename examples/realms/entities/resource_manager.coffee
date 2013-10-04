@@ -81,9 +81,9 @@ class entities.ResourceManager extends nv.Entity
       console.log "grain yield:", @grainYield
       console.log "ratio: ", laborRatio
       # spread peasants out across fields with 50 per plot max
-      farmersPerPlot = Math.round(@model.get('peasants') * laborRatio / grainPlots)
+      farmersPerPlot = Math.floor(@model.get('peasants') * laborRatio / grainPlots)
       farmersPerPlot = Math.min( farmersPerPlot, 50 )
-      @owner.allocateWorkers 'grain', farmersPerPlot
+      @owner.setPlotData 'grain', farmersPerPlot, @grainYield
       console.log "farmers per plot:", farmersPerPlot
       for i in [1..grainPlots]
         qty =  @grainYield * farmersPerPlot
@@ -100,9 +100,9 @@ class entities.ResourceManager extends nv.Entity
       @goldYield = @goldYield ? (Math.random() * 1.5 + 0.7)
       laborRatio = @projections.get('ratio')
       console.log "gold yield:", @goldYield
-      minersPerPlot = Math.round(@model.get('peasants') * laborRatio / goldPlots)
+      minersPerPlot = Math.floor(@model.get('peasants') * laborRatio / goldPlots)
       minersPerPlot = Math.min( minersPerPlot, 50 )
-      @owner.allocateWorkers 'gold', minersPerPlot
+      @owner.setPlotData 'gold', minersPerPlot, @goldYield
       console.log "miners per plot:", minersPerPlot
       for i in [1..goldPlots]
         gold += @goldYield * 0.1 * minersPerPlot
