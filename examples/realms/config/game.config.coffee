@@ -300,12 +300,12 @@ realms.gameConfig =
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#FFF'
+              color: '#999'
               font: '12px console'
               textBaseline: 'bottom'
-              text: "version number {{version}}"
+              text: "{{version}}"
               bind: entities.PlayerManager
-              x: 300
+              x: 3
               y: 480
 
   levels: realms.levels
