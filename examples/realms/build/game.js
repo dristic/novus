@@ -4527,7 +4527,7 @@
           }
         });
         this.ref.child('turn').on('value', function(snapshot) {
-          if (_this.playerManager.model.turn !== snapshot.val()) {
+          if (_this.playerManager.model.turn !== snapshot.val() && snapshot.val() !== null) {
             return _this.scene.fire("game:turn:next", snapshot.val());
           }
         });

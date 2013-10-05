@@ -38,7 +38,7 @@ class entities.MultiplayerController extends nv.Entity
           snapshot.ref().remove()
 
       @ref.child('turn').on 'value', (snapshot) =>
-        if @playerManager.model.turn isnt snapshot.val()
+        if @playerManager.model.turn isnt snapshot.val() and snapshot.val() isnt null
           @scene.fire "game:turn:next", snapshot.val()
 
   "event(game:turn:next)": (newTurn) ->
