@@ -88,6 +88,7 @@ class entities.PlayerManager extends nv.Entity
       @currentPlayer().resources().setLaborDistribution value
 
   "event(engine:ui:clicked)": (element) ->
+    currentTurn = @model.turn
     turn = @model.turn + 1
     if turn > @model.players.length
       turn = 1
@@ -96,10 +97,10 @@ class entities.PlayerManager extends nv.Entity
       when "next-turn-button" then @scene.fire "game:turn:next", turn
       when "next-turn-other-button" then @scene.fire "game:turn:next", turn
       when "create-army-button"
-        if turn is @model.playerNumber
+        if currentTurn is @model.playerNumber
           @scene.fire "game:army:created", 10
       when "attack-button"
-        if turn is @model.playerNumber
+        if currentTurn is @model.playerNumber
           @attacking = true
           @attackText.show()
 
