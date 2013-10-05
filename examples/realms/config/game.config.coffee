@@ -261,7 +261,7 @@ realms.gameConfig =
               color: '#CCC'
               font: uiFont
               textBaseline: 'bottom'
-              text: 'Attack Who?'
+              text: 'Send Troops Where?'
               x: 250
               y: 250
               hidden: true
@@ -273,7 +273,7 @@ realms.gameConfig =
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: "Current Turn: {{turn}}"
+              text: "Turn: {{turnColor}}"
               bind: entities.PlayerManager
               x: 480
               y: 36

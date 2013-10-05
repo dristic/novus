@@ -2,14 +2,9 @@ class entities.PlayerManager extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
-    @model.turn = 1
+    @model.set 'turn', 1
     @model.playerNumber = 1
     @attacking = false
-
-    @model.on 'change:turn', (value) =>
-      switch value
-        when 1 then @model.set 'turnColor', 'Red'
-        when 2 then @model.set 'turnColor', 'Blue'
 
   "event(scene:initialized)": () ->
     @attackText = @scene.getEntityById('attack-text').getPlugin nv.TextUIPlugin

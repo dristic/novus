@@ -7,6 +7,11 @@ class plugins.PlayerViewModel extends nv.Plugin
     @endOtherTurnButton = @scene.getEntityById("next-turn-other-button")
     @endOtherTurnButton = @endOtherTurnButton.getPlugin(nv.ButtonUIPlugin)
 
+    @entity.model.on 'change:turn', (value) =>
+      switch value
+        when 1 then @entity.model.set 'turnColor', 'Red'
+        when 2 then @entity.model.set 'turnColor', 'Blue'
+
   "event(game:player:assigned)": () ->
     clientPlayer = @entity.model.get 'clientPlayer'
     resources = clientPlayer.resources().model
