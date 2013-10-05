@@ -20,7 +20,11 @@ class entities.PlayerManager extends nv.Entity
   "event(game:clicked:county)": (county) ->
     if @model.turn is @model.playerNumber
       if @attacking is true
-        if county isnt 1026
+        if county is 1027 and @model.playerNumber is 1
+          @attacking = false
+          @attackText.hide()
+          @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
+        if county is 1026 and @model.playerNumber is 2
           @attacking = false
           @attackText.hide()
           @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)

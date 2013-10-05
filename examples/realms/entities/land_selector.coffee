@@ -5,6 +5,8 @@ class entities.LandSelector extends nv.Entity
     @selecting = false
     @land = null
 
+    @playerManager = @scene.getEntity entities.PlayerManager
+
     @buttons = []
     @buttonConfig = scene.get('config').entities.landSelector
     for button of @buttonConfig
@@ -39,7 +41,7 @@ class entities.LandSelector extends nv.Entity
         @hide()
 
   "event(engine:rendering:clicked:Land)": (entity) ->
-    if @selecting is false
+    if @selecting is false and @playerManager.clientPlayer().plots().indexOf(entity) isnt -1
       @land = entity
       @selecting = true
       @show()

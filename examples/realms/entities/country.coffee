@@ -23,6 +23,9 @@ class entities.Country extends nv.Entity
   resources: () ->
     @model.resourceManager
 
+  plots: () ->
+    @model.plots
+
   numberOfPlots: (type) ->
     count = 0
     for plot in @model.plots

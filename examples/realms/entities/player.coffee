@@ -15,6 +15,9 @@ class entities.Player extends nv.Entity
   resources: (country) ->
     @model.countries[0].resources()
 
+  plots: () ->
+    @model.countries[0].plots()
+
   update: (dt) ->
     mouseX = @gamepad.getState().mouse.x - (@model.width / 2)
     @model.x = mouseX

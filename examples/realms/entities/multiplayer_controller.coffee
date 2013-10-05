@@ -13,7 +13,9 @@ class entities.MultiplayerController extends nv.Entity
 
     location.hash = @hash
 
-    if Firebase?
+    if @hash is 'local'
+      @scene.fire "game:mp:player", 1
+    else if Firebase?
       @ref = new Firebase "#{@model.url}/game/#{@hash}"
 
       @ref.child('players').once 'value', (snapshot) =>

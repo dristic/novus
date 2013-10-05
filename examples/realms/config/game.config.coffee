@@ -60,13 +60,6 @@ realms.gameConfig =
               height: 480
               x: 0
               y: 0
-        landSelectionScreen:
-          entity: entities.LandSelector
-          plugins: [ ]
-          model:
-            options:
-              x: 70
-              y: 200
         endTurnButton:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
@@ -112,6 +105,13 @@ realms.gameConfig =
               playerColor: '...'
               turn: 1
               players: []
+        landSelectionScreen:
+          entity: entities.LandSelector
+          plugins: [ ]
+          model:
+            options:
+              x: 70
+              y: 200
         laborDistributionText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
