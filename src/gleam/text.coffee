@@ -11,6 +11,13 @@ class gleam.Text
     gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
+  measureText: (context, canvas) =>
+    context.save()
+    context.setFont @font
+    width = context.measureText(@text).width
+    context.restore()
+    width
+
   draw: (context, canvas) ->
     context.setFillStyle @color
     context.setFont @font

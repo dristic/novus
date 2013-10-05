@@ -118,7 +118,7 @@ realms.gameConfig =
           model:
             options:
               color: '#CCC'
-              font: 'bold 20px sans-serif'
+              font: '14px sans-serif'
               textBaseline: 'bottom'
               text: 'Labor Distribution'
               x: 15
@@ -128,12 +128,17 @@ realms.gameConfig =
           plugins: [ nv.SliderUIPlugin ]
           model:
             options:
-              leftText: "Farmers"
-              rightText: "Miners"
+              #leftText: "Farmers"
+              #rightText: "Miners"
+              leftImage: "/assets/farmer-16.wh.png"              
+              rightImage: "/assets/miner-16.wh.png"              
               font: uiFont
-              x: 75
+              x: 15
               y: 300
               value: 50
+              gap: 3
+              height: 20
+              lineHeight: 20
         currentText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

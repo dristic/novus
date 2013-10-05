@@ -8,6 +8,7 @@ class nv.TextUIPlugin extends nv.UIPlugin
     @text = new gleam.Text @entity.model
     @dirty = true
     @values = {}
+    @width = null
 
     if @entity.model.bind?
       binding = @scene.getEntity @entity.model.bind
@@ -31,6 +32,7 @@ class nv.TextUIPlugin extends nv.UIPlugin
       @dirty = false
 
   draw: (context, canvas) ->
+    @width = @width || @text.measureText(context, canvas)
     unless @hidden is true
       @updateText()
       @text.x = @entity.model.x
