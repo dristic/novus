@@ -4100,6 +4100,10 @@
       return this.model.resourceManager;
     };
 
+    Country.prototype.plots = function() {
+      return this.model.plots;
+    };
+
     Country.prototype.numberOfPlots = function(type) {
       var count, plot, _i, _len, _ref;
       count = 0;
@@ -4188,6 +4192,7 @@
       LandSelector.__super__.constructor.call(this, scene, plugins, model);
       this.selecting = false;
       this.land = null;
+      this.playerManager = this.scene.getEntity(entities.PlayerManager);
       this.buttons = [];
       this.buttonConfig = scene.get('config').entities.landSelector;
       for (button in this.buttonConfig) {
@@ -4243,7 +4248,7 @@
     };
 
     LandSelector.prototype["event(engine:rendering:clicked:Land)"] = function(entity) {
-      if (this.selecting === false) {
+      if (this.selecting === false && this.playerManager.clientPlayer().plots().indexOf(entity) !== -1) {
         this.land = entity;
         this.selecting = true;
         return this.show();
@@ -4357,6 +4362,9 @@
         this.hash = this.hash.replace('#', '');
       }
       location.hash = this.hash;
+      if (this.hash === 'local') {
+        this.scene.fire("game:mp:player", 1);
+      }
       if (typeof Firebase !== "undefined" && Firebase !== null) {
         this.ref = new Firebase("" + this.model.url + "/game/" + this.hash);
         this.ref.child('players').once('value', function(snapshot) {
@@ -4444,6 +4452,10 @@
       return this.model.countries[0].resources();
     };
 
+    Player.prototype.plots = function() {
+      return this.model.countries[0].plots();
+    };
+
     Player.prototype.update = function(dt) {
       var mouseX;
       mouseX = this.gamepad.getState().mouse.x - (this.model.width / 2);
@@ -4477,19 +4489,10 @@
     __extends(PlayerManager, _super);
 
     function PlayerManager(scene, plugins, model) {
-      var _this = this;
       PlayerManager.__super__.constructor.call(this, scene, plugins, model);
-      this.model.turn = 1;
+      this.model.set('turn', 1);
       this.model.playerNumber = 1;
       this.attacking = false;
-      this.model.on('change:turn', function(value) {
-        switch (value) {
-          case 1:
-            return _this.model.set('turnColor', 'Red');
-          case 2:
-            return _this.model.set('turnColor', 'Blue');
-        }
-      });
     }
 
     PlayerManager.prototype["event(scene:initialized)"] = function() {
@@ -4503,7 +4506,12 @@
     PlayerManager.prototype["event(game:clicked:county)"] = function(county) {
       if (this.model.turn === this.model.playerNumber) {
         if (this.attacking === true) {
-          if (county !== 1026) {
+          if (county === 1027 && this.model.playerNumber === 1) {
+            this.attacking = false;
+            this.attackText.hide();
+            this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50));
+          }
+          if (county === 1026 && this.model.playerNumber === 2) {
             this.attacking = false;
             this.attackText.hide();
             return this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50));
@@ -4603,10 +4611,15 @@
         case "next-turn-other-button":
           return this.scene.fire("game:turn:next", turn);
         case "create-army-button":
-          return this.scene.fire("game:army:created", 10);
+          if (turn === this.model.playerNumber) {
+            return this.scene.fire("game:army:created", 10);
+          }
+          break;
         case "attack-button":
-          this.attacking = true;
-          return this.attackText.show();
+          if (turn === this.model.playerNumber) {
+            this.attacking = true;
+            return this.attackText.show();
+          }
       }
     };
 
@@ -4833,11 +4846,20 @@
     __extends(PlayerViewModel, _super);
 
     function PlayerViewModel(scene, entity) {
+      var _this = this;
       PlayerViewModel.__super__.constructor.call(this, scene, entity);
       this.endTurnButton = this.scene.getEntityById("next-turn-button");
       this.endTurnButton = this.endTurnButton.getPlugin(nv.ButtonUIPlugin);
       this.endOtherTurnButton = this.scene.getEntityById("next-turn-other-button");
       this.endOtherTurnButton = this.endOtherTurnButton.getPlugin(nv.ButtonUIPlugin);
+      this.entity.model.on('change:turn', function(value) {
+        switch (value) {
+          case 1:
+            return _this.entity.model.set('turnColor', 'Red');
+          case 2:
+            return _this.entity.model.set('turnColor', 'Blue');
+        }
+      });
     }
 
     PlayerViewModel.prototype["event(game:player:assigned)"] = function() {
@@ -5161,16 +5183,6 @@
               }
             }
           },
-          landSelectionScreen: {
-            entity: entities.LandSelector,
-            plugins: [],
-            model: {
-              options: {
-                x: 70,
-                y: 200
-              }
-            }
-          },
           endTurnButton: {
             entity: nv.Entity,
             plugins: [nv.ButtonUIPlugin],
@@ -5228,6 +5240,16 @@
                 playerColor: '...',
                 turn: 1,
                 players: []
+              }
+            }
+          },
+          landSelectionScreen: {
+            entity: entities.LandSelector,
+            plugins: [],
+            model: {
+              options: {
+                x: 70,
+                y: 200
               }
             }
           },
@@ -5416,7 +5438,7 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Attack Who?',
+                text: 'Send Troops Where?',
                 x: 250,
                 y: 250,
                 hidden: true
@@ -5431,7 +5453,7 @@
                 color: '#CCC',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
-                text: "Current Turn: {{turn}}",
+                text: "Turn: {{turnColor}}",
                 bind: entities.PlayerManager,
                 x: 480,
                 y: 36

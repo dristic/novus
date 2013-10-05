@@ -95,10 +95,13 @@ class entities.PlayerManager extends nv.Entity
     switch element.id
       when "next-turn-button" then @scene.fire "game:turn:next", turn
       when "next-turn-other-button" then @scene.fire "game:turn:next", turn
-      when "create-army-button" then @scene.fire "game:army:created", 10
+      when "create-army-button"
+        if turn is @model.playerNumber
+          @scene.fire "game:army:created", 10
       when "attack-button"
-        @attacking = true
-        @attackText.show()
+        if turn is @model.playerNumber
+          @attacking = true
+          @attackText.show()
 
   "event(game:turn:next)": () ->
     @nextPlayersTurn()
