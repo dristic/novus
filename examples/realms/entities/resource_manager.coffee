@@ -14,19 +14,29 @@ class entities.ResourceManager extends nv.Entity
     gold = @model.get('gold')
     soldiers = Math.min gold, value
     console.log 'soldiers', gold, value, soldiers
-    return unless soldiers > 0
-    @model.set 'gold', gold - soldiers
-    @projections.set 'soldiersInTraining', @projections.get('soldiersInTraining') + soldiers
-    @updateProjections()
+    if soldiers > 0
+      @model.set 'gold', gold - soldiers
+      @projections.set 'soldiersInTraining', @projections.get('soldiersInTraining') + soldiers
+      @updateProjections()
+    else
+      @scene.fire 'game:ui:alert',
+        type: 'warning'
+        message: 'Training soldiers requires gold.'
 
   "event(game:army:send)": (value) ->
     unless @active is true
       @model.set 'soldiers', ( @model.get('soldiers') - value )
+      @scene.fire 'game:ui:alert',
+        type: 'info'
+        message: "#{value} soldiers rush into battle!"
 
   onAttacked: (value) ->
     soldiers = @model.get('soldiers') - value
     @model.set 'soldiers', Math.max(soldiers, 0)
     @model.set('peasants', @model.get('peasants') - Math.abs(soldiers)) if soldiers < 0
+    @scene.fire 'game:ui:alert',
+      type: 'alert'
+      message: "#{value} soldiers died in battle!"
 
   setLaborDistribution: (ratio) ->
     console.log "labor ratio", ratio

@@ -319,6 +319,29 @@ realms.gameConfig =
         #     options:
         #       x: 200
         #       y: 200
+        alertTest:
+          entity: nv.Entity
+          plugins: [ nv.AlertUIPlugin ]
+          model:
+            options:
+              position: 'center'
+              y: 10
+              width: 300
+              height: 25
+              lineHeight: 18
+              viewTime: 4
+              fadeTime: 2
+              font: '16px san-serif'
+              info:
+                style: '#7FFF2B'
+                color: '#222'
+              warning:
+                style: 'yellow'
+                color: '#222'
+              alert:
+                style: '#D40000'
+                color: '#fff'
+              
 
   levels: realms.levels
   entities: realms.entities

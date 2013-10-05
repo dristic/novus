@@ -5,3 +5,4 @@
 #= require slider
 #= require sprite
 #= require dialog
+#= require alert

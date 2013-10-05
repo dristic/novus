@@ -7,6 +7,7 @@ gleam.Rectangle = (options) ->
     cornerRadius: 0
     x: 0
     y: 0
+    alpha: 1
   options = options ? {}
   gleam.extend defaults, options
   gleam.extend this, defaults
@@ -14,6 +15,7 @@ gleam.Rectangle = (options) ->
 
 gleam.extend gleam.Rectangle.prototype,
   draw: (context, canvas) ->
+    context.source.globalAlpha = @alpha
     context.setStrokeStyle @strokeStyle if @strokeStyle
     context.setStrokeWidth @strokeWidth if @strokeWidth
     context.setFillStyle @fillStyle if @fillStyle

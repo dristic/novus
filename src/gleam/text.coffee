@@ -8,6 +8,7 @@ class gleam.Text
       textBaseline: 'bottom'
       textAlign: 'start'
       text: 'Lorem Ipsum'
+      alpha: 1
     gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
@@ -19,6 +20,7 @@ class gleam.Text
     width
 
   draw: (context, canvas) ->
+    context.source.globalAlpha = @alpha
     context.setFillStyle @color
     context.setFont @font
     context.setTextBaseline @textBaseline
