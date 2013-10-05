@@ -290,8 +290,11 @@
 }).call(this);
 
 (function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
   gleam.Text = (function() {
     function Text(options) {
+      this.measureText = __bind(this.measureText, this);
       var defaults;
       defaults = {
         color: '#CCC',
@@ -307,6 +310,15 @@
       }
       gleam.extend(this, defaults);
     }
+
+    Text.prototype.measureText = function(context, canvas) {
+      var width;
+      context.save();
+      context.setFont(this.font);
+      width = context.measureText(this.text).width;
+      context.restore();
+      return width;
+    };
 
     Text.prototype.draw = function(context, canvas) {
       context.setFillStyle(this.color);
@@ -1864,6 +1876,8 @@
           entity.destroy();
         }
         return this.entities.splice(this.entities.indexOf(entity), 1);
+      } else {
+        return console.log("Could not find entity", entity);
       }
     };
 
@@ -3654,6 +3668,7 @@
       this.text = new gleam.Text(this.entity.model);
       this.dirty = true;
       this.values = {};
+      this.width = null;
       if (this.entity.model.bind != null) {
         binding = this.scene.getEntity(this.entity.model.bind);
         _ref = this.entity.model.text.match(/\{{[\s\S]+?}}/g);
@@ -3688,6 +3703,7 @@
     };
 
     TextUIPlugin.prototype.draw = function(context, canvas) {
+      this.width = this.width || this.text.measureText(context, canvas);
       if (this.hidden !== true) {
         this.updateText();
         this.text.x = this.entity.model.x;
@@ -3808,61 +3824,93 @@
     __extends(SliderUIPlugin, _super);
 
     function SliderUIPlugin(scene, entity) {
-      var _ref;
+      var _ref, _ref1, _ref2;
       SliderUIPlugin.__super__.constructor.call(this, scene, entity);
       this.gamepad = scene.get('gamepad');
       entity.model.value = (_ref = entity.model.value) != null ? _ref : 1;
       this.value = entity.model.value;
       this.max = 100;
-      this.upText = new nv.TextUIPlugin(scene, {
-        model: {
-          text: entity.model.rightText,
-          font: entity.model.font,
-          textBaseline: 'bottom',
-          x: entity.model.x + 115,
-          y: entity.model.y + 22
-        }
-      });
-      this.downText = new nv.TextUIPlugin(scene, {
-        model: {
-          text: entity.model.leftText,
-          font: entity.model.font,
-          textBaseline: 'bottom',
-          x: entity.model.x - 60,
-          y: entity.model.y + 22
-        }
-      });
-      this.box = new gleam.Square({
-        color: "#FFF",
-        width: 10,
-        height: 30,
-        x: entity.model.x + 1,
-        y: entity.model.y
-      });
+      this.gap = (_ref1 = entity.model.gap) != null ? _ref1 : 10;
+      this.height = (_ref2 = entity.model.height) != null ? _ref2 : 30;
+      if (this.entity.model.leftText) {
+        this.down = new nv.TextUIPlugin(scene, {
+          model: {
+            text: entity.model.leftText,
+            font: entity.model.font,
+            textBaseline: 'bottom',
+            x: entity.model.x,
+            y: entity.model.y + this.entity.model.lineHeight + (this.height - entity.model.lineHeight) / 2
+          }
+        });
+      } else {
+        this.down = new gleam.Sprite({
+          src: entity.model.leftImage,
+          x: entity.model.x,
+          y: entity.model.y
+        });
+      }
+      this.entity.model.on('change:value', nv.bind(this, this.onValueChange));
+      this.onValueChange(this.value);
+    }
+
+    SliderUIPlugin.prototype.createControls = function() {
+      var lineWidth, model, x;
+      if (!this.down.width) {
+        return;
+      }
+      model = this.entity.model;
+      x = this.entity.model.x + this.down.width + this.gap;
+      if (this.down.onLoad != null) {
+        this.down.y += (this.height - this.down.height) / 2;
+      }
       this.minBox = new gleam.Square({
         color: "#555",
         width: 1,
-        height: 30,
-        x: entity.model.x,
-        y: entity.model.y
+        height: this.height,
+        x: x,
+        y: this.entity.model.y
+      });
+      this.boxLeftX = x + 1;
+      this.box = new gleam.Square({
+        color: "#FFF",
+        width: 10,
+        height: this.height,
+        x: this.boxLeftX,
+        y: this.entity.model.y
+      });
+      lineWidth = this.max + this.box.width;
+      this.line = new gleam.Square({
+        color: '#555',
+        width: lineWidth,
+        height: 1,
+        x: x,
+        y: this.entity.model.y + this.height / 2
       });
       this.maxBox = new gleam.Square({
         color: "#555",
         width: 1,
-        height: 30,
-        x: entity.model.x + this.max + this.box.width,
-        y: entity.model.y
+        height: this.height,
+        x: x + lineWidth,
+        y: this.entity.model.y
       });
-      this.line = new gleam.Square({
-        color: '#555',
-        width: this.max + this.box.width,
-        height: 1,
-        x: entity.model.x,
-        y: entity.model.y + 15
-      });
-      this.entity.model.on('change:value', nv.bind(this, this.onValueChange));
-      this.onValueChange(this.value);
-    }
+      if (this.entity.model.rightText) {
+        return this.up = new nv.TextUIPlugin(this.scene, {
+          model: {
+            text: this.entity.model.rightText,
+            font: this.entity.model.font,
+            textBaseline: 'bottom',
+            x: x + lineWidth + this.gap,
+            y: this.entity.model.y + this.entity.model.lineHeight + (this.height - this.entity.model.lineHeight) / 2
+          }
+        });
+      } else {
+        return this.up = new gleam.Sprite({
+          src: this.entity.model.rightImage,
+          x: x + lineWidth + this.gap,
+          y: -100
+        });
+      }
+    };
 
     SliderUIPlugin.prototype.onValueChange = function(value) {
       return this.scene.fire("engine:ui:slider:change", this.entity);
@@ -3907,16 +3955,37 @@
 
     SliderUIPlugin.prototype.draw = function(context, canvas) {
       var mouseX;
+      if (!this.up) {
+        this.createControls();
+      }
+      if (!this.up) {
+        return;
+      }
+      if (this.up.y < 0 && this.up.loaded) {
+        this.up.y = this.entity.model.y + (this.height - this.up.height) / 2;
+      }
       if (this.dragging === true) {
         mouseX = this.gamepad.getState().mouse.x;
         this.value = mouseX - this.minBox.x;
         this.clamp();
       }
-      this.box.x = this.entity.model.x + ((1 * this.max) * this.getValue());
+      this.box.x = this.boxLeftX + ((1 * this.max) * this.getValue());
+      this.down.draw(context, canvas);
+      this.up.draw(context, canvas);
       this.minBox.draw(context, canvas);
       this.maxBox.draw(context, canvas);
       this.line.draw(context, canvas);
       return this.box.draw(context, canvas);
+    };
+
+    SliderUIPlugin.prototype.destroy = function() {
+      this.up.destroy();
+      this.down.destroy();
+      this.box.destroy();
+      this.line.destroy();
+      this.minBox.destroy();
+      this.maxBox.destroy();
+      return SliderUIPlugin.__super__.destroy.apply(this, arguments);
     };
 
     return SliderUIPlugin;
@@ -3957,6 +4026,76 @@
     };
 
     return SpriteUIPlugin;
+
+  })(nv.UIPlugin);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.DialogUIPlugin = (function(_super) {
+    __extends(DialogUIPlugin, _super);
+
+    function DialogUIPlugin(scene, entity) {
+      DialogUIPlugin.__super__.constructor.call(this, scene, entity);
+      this.gamepad = scene.get('gamepad');
+      this.panel = new nv.PanelUIPlugin(scene, {
+        model: {
+          color: 'black',
+          width: 330,
+          height: 120,
+          x: entity.model.x - 10,
+          y: entity.model.y - 30
+        }
+      });
+      this.text = new nv.TextUIPlugin(scene, {
+        model: {
+          text: "Hello World",
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          x: entity.model.x,
+          y: entity.model.y
+        }
+      });
+      this.confirm = new nv.ButtonUIPlugin(scene, {
+        model: {
+          text: "Confirm",
+          id: 'confirm',
+          x: entity.model.x,
+          y: entity.model.y + 20
+        }
+      });
+      this.cancel = new nv.ButtonUIPlugin(scene, {
+        model: {
+          text: "Cancel",
+          id: 'cancel',
+          x: entity.model.x + 160,
+          y: entity.model.y + 20
+        }
+      });
+    }
+
+    DialogUIPlugin.prototype["event(engine:ui:clicked)"] = function(entity) {
+      if (entity === this.confirm) {
+        this.scene.fire("engine:ui:dialog:confirm", this);
+        return this.scene.removeEntity(this.entity);
+      } else if (entity === this.cancel) {
+        this.scene.fire("engine:ui:dialog:cancel", this);
+        return this.scene.removeEntity(this.entity);
+      }
+    };
+
+    DialogUIPlugin.prototype.destroy = function() {
+      this.panel.destroy();
+      this.text.destroy();
+      this.confirm.destroy();
+      this.cancel.destroy();
+      return DialogUIPlugin.__super__.destroy.apply(this, arguments);
+    };
+
+    return DialogUIPlugin;
 
   })(nv.UIPlugin);
 
@@ -4368,7 +4507,7 @@
       if (typeof Firebase !== "undefined" && Firebase !== null) {
         this.ref = new Firebase("" + this.model.url + "/game/" + this.hash);
         this.ref.child('players').once('value', function(snapshot) {
-          if (snapshot.val() === 0 || snapshot.val() === 2) {
+          if (snapshot.val() === 0 || snapshot.val() === 2 || snapshot.val() === null) {
             _this.scene.fire("game:mp:player", 1);
             return _this.ref.child('players').set(1);
           } else if (snapshot.val() === 1) {
@@ -4388,7 +4527,6 @@
           }
         });
         this.ref.child('turn').on('value', function(snapshot) {
-          console.log("FIREBASE ON VALUE", snapshot.val());
           if (_this.playerManager.model.turn !== snapshot.val()) {
             return _this.scene.fire("game:turn:next", snapshot.val());
           }
@@ -4398,7 +4536,6 @@
 
     MultiplayerController.prototype["event(game:turn:next)"] = function(newTurn) {
       if (this.playerManager.model.turn === newTurn) {
-        console.log("FIREBASE SET VALUE", newTurn);
         return this.ref.child('turn').set(newTurn);
       }
     };
@@ -4600,7 +4737,8 @@
     };
 
     PlayerManager.prototype["event(engine:ui:clicked)"] = function(element) {
-      var turn;
+      var currentTurn, turn;
+      currentTurn = this.model.turn;
       turn = this.model.turn + 1;
       if (turn > this.model.players.length) {
         turn = 1;
@@ -4611,12 +4749,12 @@
         case "next-turn-other-button":
           return this.scene.fire("game:turn:next", turn);
         case "create-army-button":
-          if (turn === this.model.playerNumber) {
+          if (currentTurn === this.model.playerNumber) {
             return this.scene.fire("game:army:created", 10);
           }
           break;
         case "attack-button":
-          if (turn === this.model.playerNumber) {
+          if (currentTurn === this.model.playerNumber) {
             this.attacking = true;
             return this.attackText.show();
           }
@@ -5259,7 +5397,7 @@
             model: {
               options: {
                 color: '#CCC',
-                font: 'bold 20px sans-serif',
+                font: '14px sans-serif',
                 textBaseline: 'bottom',
                 text: 'Labor Distribution',
                 x: 15,
@@ -5272,12 +5410,15 @@
             plugins: [nv.SliderUIPlugin],
             model: {
               options: {
-                leftText: "Farmers",
-                rightText: "Miners",
+                leftImage: "/assets/farmer-16.wh.png",
+                rightImage: "/assets/miner-16.wh.png",
                 font: uiFont,
-                x: 75,
+                x: 15,
                 y: 300,
-                value: 50
+                value: 50,
+                gap: 3,
+                height: 20,
+                lineHeight: 20
               }
             }
           },
