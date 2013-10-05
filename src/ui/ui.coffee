@@ -4,3 +4,4 @@
 #= require panel
 #= require slider
 #= require sprite
+#= require dialog

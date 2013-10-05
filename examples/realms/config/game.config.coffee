@@ -307,6 +307,13 @@ realms.gameConfig =
               bind: entities.PlayerManager
               x: 3
               y: 480
+        # dialogTest:
+        #   entity: nv.Entity
+        #   plugins: [ nv.DialogUIPlugin ]
+        #   model:
+        #     options:
+        #       x: 200
+        #       y: 200
 
   levels: realms.levels
   entities: realms.entities

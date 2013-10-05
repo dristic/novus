@@ -143,6 +143,8 @@ class nv.Scene extends nv.EventDispatcher
     unless @entities.indexOf(entity) is -1
       entity.destroy() unless not entity.destroy
       @entities.splice @entities.indexOf(entity), 1
+    else
+      console.log "Could not find entity", entity
 
   onRemoveEntity: (entity) ->
     @deletedEntities.push entity

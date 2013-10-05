@@ -97,3 +97,12 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @maxBox.draw context, canvas
     @line.draw context, canvas
     @box.draw context, canvas
+
+  destroy: () ->
+    @upText.destroy()
+    @downText.destroy()
+    @box.destroy()
+    @line.destroy()
+    @minBox.destroy()
+    @maxBox.destroy()
+    super
