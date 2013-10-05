@@ -20,7 +20,7 @@ class entities.MultiplayerController extends nv.Entity
       @ref = new Firebase "#{@model.url}/game/#{@hash}"
 
       @ref.child('players').once 'value', (snapshot) =>
-        if snapshot.val() is 0 or snapshot.val() is 2
+        if snapshot.val() is 0 or snapshot.val() is 2 or snapshot.val() is null
           @scene.fire "game:mp:player", 1
           @ref.child('players').set 1
         else if snapshot.val() is 1
@@ -38,13 +38,11 @@ class entities.MultiplayerController extends nv.Entity
           snapshot.ref().remove()
 
       @ref.child('turn').on 'value', (snapshot) =>
-        console.log "FIREBASE ON VALUE", snapshot.val()
         if @playerManager.model.turn isnt snapshot.val()
           @scene.fire "game:turn:next", snapshot.val()
 
   "event(game:turn:next)": (newTurn) ->
     if @playerManager.model.turn is newTurn
-      console.log "FIREBASE SET VALUE", newTurn
       @ref.child('turn').set newTurn
 
   "event(game:army:send)": (amount) ->
