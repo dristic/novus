@@ -303,7 +303,8 @@
         font: 'bold 20px sans-serif',
         textBaseline: 'bottom',
         textAlign: 'start',
-        text: 'Lorem Ipsum'
+        text: 'Lorem Ipsum',
+        alpha: 1
       };
       if (!!options) {
         gleam.extend(defaults, options);
@@ -321,6 +322,7 @@
     };
 
     Text.prototype.draw = function(context, canvas) {
+      context.source.globalAlpha = this.alpha;
       context.setFillStyle(this.color);
       context.setFont(this.font);
       context.setTextBaseline(this.textBaseline);
@@ -645,7 +647,8 @@
       height: 10,
       cornerRadius: 0,
       x: 0,
-      y: 0
+      y: 0,
+      alpha: 1
     };
     options = options != null ? options : {};
     gleam.extend(defaults, options);
@@ -655,6 +658,7 @@
 
   gleam.extend(gleam.Rectangle.prototype, {
     draw: function(context, canvas) {
+      context.source.globalAlpha = this.alpha;
       if (this.strokeStyle) {
         context.setStrokeStyle(this.strokeStyle);
       }
@@ -4102,6 +4106,152 @@
 }).call(this);
 
 (function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  nv.AlertUIPlugin = (function(_super) {
+    __extends(AlertUIPlugin, _super);
+
+    function AlertUIPlugin(scene, entity) {
+      var model, textX;
+      AlertUIPlugin.__super__.constructor.call(this, scene, entity);
+      model = entity.model;
+      model.width = model.width || 400;
+      model.height = model.height || 50;
+      model.x = (function() {
+        switch (model.position) {
+          case 'left':
+            return 10;
+          case 'right':
+            return scene.rootModel.canvas.width - 10 - model.width;
+          case 'center':
+            return scene.rootModel.canvas.halfWidth - (model.width / 2);
+        }
+      })();
+      model.y = model.y || 30;
+      model.textAlign = model.textAlign || 'center';
+      model.font = model.font || '14px sans-serif';
+      model.lineHeight = model.lineHeight || 14;
+      model.viewTimeMs = (model.viewTime || 3) * 1000;
+      model.fadeTimeMs = (model.fadeTime || 1) * 1000;
+      this.timerStart = null;
+      this.hidden = true;
+      this.panel = new gleam.Rectangle({
+        x: model.x,
+        y: model.y,
+        width: model.width,
+        height: model.height,
+        cornerRadius: model.corderRadius || 8,
+        fillStyle: 'white',
+        strokeStyle: 'black',
+        strokeWidth: model.strokeWidth || 3
+      });
+      textX = (function() {
+        switch (model.textAlign) {
+          case 'left':
+          case 'start':
+            return model.x + 10;
+          case 'right':
+          case 'end':
+            return model.x + model.width - 10;
+          case 'center':
+            return model.x + (model.width / 2);
+        }
+      })();
+      this.text = new gleam.Text({
+        color: model.color || '#000',
+        x: textX,
+        y: model.y + model.height - Math.floor((model.height - model.lineHeight) / 2),
+        textAlign: model.textAlign,
+        font: model.font,
+        text: 'Lorem Ipsum Dolar'
+      });
+    }
+
+    AlertUIPlugin.prototype["event(game:ui:alert)"] = function(data) {
+      var style;
+      style = (function() {
+        switch (data.type) {
+          case 'warning':
+            return this.entity.model.warning;
+          case 'alert':
+            return this.entity.model.alert;
+          default:
+            return this.entity.model.info;
+        }
+      }).call(this);
+      this.panel.fillStyle = style.style;
+      this.text.color = style.color;
+      this.text.text = data.message;
+      return this.showAlert();
+    };
+
+    AlertUIPlugin.prototype.showAlert = function() {
+      this.hidden = false;
+      this.fading = false;
+      this.timerStart = null;
+      this.timerEndMs = null;
+      this.opacity = 1;
+      return this.setElementAlpha(this.opacity);
+    };
+
+    AlertUIPlugin.prototype.hideAlert = function() {
+      this.hidden = true;
+      this.fading = false;
+      this.timerStart = null;
+      this.timerEndMs = null;
+      return this.opacity = 1;
+    };
+
+    AlertUIPlugin.prototype.setElementAlpha = function(alpha) {
+      this.panel.alpha = alpha;
+      return this.text.alpha = alpha;
+    };
+
+    AlertUIPlugin.prototype.update = function(dt) {
+      var deltaMs, now;
+      if (this.hidden) {
+        return;
+      }
+      now = Date.now();
+      deltaMs = now - this.timerStart;
+      if (this.timerStart === null) {
+        this.timerStart = now;
+        this.timerEndMs = this.entity.model.viewTimeMs + this.entity.model.fadeTimeMs;
+      } else if (deltaMs > this.timerEndMs) {
+        this.hideAlert();
+      } else if (!this.fading && deltaMs > this.entity.model.viewTimeMs) {
+        this.fading = true;
+      }
+      if (this.fading) {
+        this.opacity = 1 - ((deltaMs - this.entity.model.viewTimeMs) / this.entity.model.fadeTimeMs);
+        return this.setElementAlpha(this.opacity);
+      }
+    };
+
+    AlertUIPlugin.prototype.draw = function(context, canvas) {
+      if (this.hidden) {
+        return;
+      }
+      context.save();
+      this.panel.draw(context, canvas);
+      this.text.draw(context, canvas);
+      return context.restore();
+    };
+
+    AlertUIPlugin.prototype.destroy = function() {
+      this.panel.destroy();
+      this.text.destroy();
+      return AlertUIPlugin.__super__.destroy.apply(this, arguments);
+    };
+
+    return AlertUIPlugin;
+
+  })(nv.UIPlugin);
+
+}).call(this);
+
+(function() {
 
 
 }).call(this);
@@ -4792,17 +4942,25 @@
       gold = this.model.get('gold');
       soldiers = Math.min(gold, value);
       console.log('soldiers', gold, value, soldiers);
-      if (!(soldiers > 0)) {
-        return;
+      if (soldiers > 0) {
+        this.model.set('gold', gold - soldiers);
+        this.projections.set('soldiersInTraining', this.projections.get('soldiersInTraining') + soldiers);
+        return this.updateProjections();
+      } else {
+        return this.scene.fire('game:ui:alert', {
+          type: 'warning',
+          message: 'Training soldiers requires gold.'
+        });
       }
-      this.model.set('gold', gold - soldiers);
-      this.projections.set('soldiersInTraining', this.projections.get('soldiersInTraining') + soldiers);
-      return this.updateProjections();
     };
 
     ResourceManager.prototype["event(game:army:send)"] = function(value) {
       if (this.active !== true) {
-        return this.model.set('soldiers', this.model.get('soldiers') - value);
+        this.model.set('soldiers', this.model.get('soldiers') - value);
+        return this.scene.fire('game:ui:alert', {
+          type: 'info',
+          message: "" + value + " soldiers rush into battle!"
+        });
       }
     };
 
@@ -4811,8 +4969,12 @@
       soldiers = this.model.get('soldiers') - value;
       this.model.set('soldiers', Math.max(soldiers, 0));
       if (soldiers < 0) {
-        return this.model.set('peasants', this.model.get('peasants') - Math.abs(soldiers));
+        this.model.set('peasants', this.model.get('peasants') - Math.abs(soldiers));
       }
+      return this.scene.fire('game:ui:alert', {
+        type: 'alert',
+        message: "" + value + " soldiers died in battle!"
+      });
     };
 
     ResourceManager.prototype.setLaborDistribution = function(ratio) {
@@ -5637,6 +5799,34 @@
                 bind: entities.PlayerManager,
                 x: 3,
                 y: 480
+              }
+            }
+          },
+          alertTest: {
+            entity: nv.Entity,
+            plugins: [nv.AlertUIPlugin],
+            model: {
+              options: {
+                position: 'center',
+                y: 10,
+                width: 300,
+                height: 25,
+                lineHeight: 18,
+                viewTime: 4,
+                fadeTime: 2,
+                font: '16px san-serif',
+                info: {
+                  style: '#7FFF2B',
+                  color: '#222'
+                },
+                warning: {
+                  style: 'yellow',
+                  color: '#222'
+                },
+                alert: {
+                  style: '#D40000',
+                  color: '#fff'
+                }
               }
             }
           }
