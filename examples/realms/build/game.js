@@ -4346,6 +4346,58 @@
 
   })(nv.RenderingPlugin);
 
+  renderers.PlayerManager = (function(_super) {
+    __extends(PlayerManager, _super);
+
+    function PlayerManager(scene, entity) {
+      var data, image, model, name, scenario, _ref;
+      PlayerManager.__super__.constructor.call(this, scene, entity);
+      scenario = scene.rootModel.get('scenario');
+      this.flags = [];
+      this.turns = [];
+      _ref = scenario.countries;
+      for (name in _ref) {
+        data = _ref[name];
+        image = new Image();
+        image.src = data.flag.src;
+        this.flags.push(nv.extend({
+          image: image
+        }, data.flag));
+        model = nv.extend(data.flag, {
+          hidden: true,
+          x: 560,
+          y: 10
+        });
+        this.turns.push(new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model))));
+        this.turns[entity.model.turn - 1].hidden = false;
+      }
+    }
+
+    PlayerManager.prototype["event(game:turn:end)"] = function(turn) {
+      var indicator, _i, _len, _ref;
+      _ref = this.turns;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        indicator = _ref[_i];
+        indicator.hidden = true;
+      }
+      return this.turns[turn - 1].hidden = false;
+    };
+
+    PlayerManager.prototype.draw = function(context, canvas) {
+      var flag, _i, _len, _ref, _results;
+      _ref = this.flags;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        flag = _ref[_i];
+        _results.push(context.drawImage(flag.image, flag.x, flag.y));
+      }
+      return _results;
+    };
+
+    return PlayerManager;
+
+  })(nv.RenderingPlugin);
+
 }).call(this);
 
 (function() {
@@ -5396,11 +5448,25 @@
         countries: {
           darkland: {
             owner: 1,
-            plots: [new nv.Point(576, 320), new nv.Point(608, 320), new nv.Point(576, 352), new nv.Point(352, 416), new nv.Point(352, 448)]
+            plots: [new nv.Point(576, 320), new nv.Point(608, 320), new nv.Point(576, 352), new nv.Point(352, 416), new nv.Point(352, 448)],
+            flag: {
+              src: "/assets/shield-red-48.png",
+              x: 260,
+              y: 360,
+              width: 48,
+              height: 48
+            }
           },
           sandyland: {
             owner: 2,
-            plots: [new nv.Point(576, 480), new nv.Point(608, 480), new nv.Point(608, 512), new nv.Point(480, 576), new nv.Point(512, 576)]
+            plots: [new nv.Point(576, 480), new nv.Point(608, 480), new nv.Point(608, 512), new nv.Point(480, 576), new nv.Point(512, 576)],
+            flag: {
+              src: "/assets/shield-blue-48.png",
+              x: 560,
+              y: 620,
+              width: 48,
+              height: 48
+            }
           }
         }
       },
@@ -5533,7 +5599,7 @@
           },
           playerManager: {
             entity: entities.PlayerManager,
-            plugins: [plugins.PlayerViewModel],
+            plugins: [plugins.PlayerViewModel, renderers.PlayerManager],
             model: {
               options: {
                 version: version,
@@ -5802,7 +5868,7 @@
               }
             }
           },
-          alertTest: {
+          alert: {
             entity: nv.Entity,
             plugins: [nv.AlertUIPlugin],
             model: {
