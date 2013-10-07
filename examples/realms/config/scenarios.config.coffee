@@ -15,9 +15,21 @@ realms.scenarios =
         darkland:
           owner: 1
           plots: [new nv.Point(576,320), new nv.Point(608,320), new nv.Point(576,352), new nv.Point(352,416), new nv.Point(352,448)]
+          flag:
+            src: "/assets/shield-red-48.png"
+            x: 260
+            y: 360
+            width: 48
+            height: 48
         sandyland:
           owner: 2
           plots: [new nv.Point(576,480), new nv.Point(608,480), new nv.Point(608,512), new nv.Point(480,576), new nv.Point(512,576)]
+          flag:
+            src: "/assets/shield-blue-48.png"
+            x: 560
+            y: 620
+            width: 48
+            height: 48
 
     three:
       description: "3-players"

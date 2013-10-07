@@ -98,7 +98,7 @@ realms.gameConfig =
               y: 350
         playerManager:
           entity: entities.PlayerManager
-          plugins: [ plugins.PlayerViewModel ]
+          plugins: [ plugins.PlayerViewModel, renderers.PlayerManager ]
           model:
             options:
               version: version
@@ -319,7 +319,7 @@ realms.gameConfig =
         #     options:
         #       x: 200
         #       y: 200
-        alertTest:
+        alert:
           entity: nv.Entity
           plugins: [ nv.AlertUIPlugin ]
           model:
