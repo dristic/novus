@@ -36,6 +36,46 @@ realms.gameConfig =
       config:
         gamepad:
           keys:
+            confirm: nv.Key.Spacebar
+          trackMouse: true
+      engines: [
+        nv.RenderingEngine,
+        nv.GamepadEngine,
+        nv.SoundEngine,
+        nv.TimingEngine,
+        nv.DebugEngine,
+        nv.UIEngine
+      ]
+      entities:
+        map:
+          include: "map"
+        title:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 30px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Rords of the Lealm'
+              x: 175
+              y: 140
+        startText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#CCC'
+              font: 'bold 20px sans-serif'
+              textBaseline: 'bottom'
+              text: 'Click to Start'
+              x: 245
+              y: 200
+
+    game:
+      config:
+        gamepad:
+          keys:
             shoot: nv.Key.Spacebar
           trackMouse: true
       engines: [
