@@ -96,7 +96,7 @@ realms.gameConfig =
           model:
             options:
               color: 'rgba(0, 0, 0, 0.5)'
-              width: 265
+              width: 190
               height: 480
               x: 0
               y: 0
