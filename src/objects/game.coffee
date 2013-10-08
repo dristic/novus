@@ -32,6 +32,7 @@ class nv.Game
       @registerScene key, object[key]
 
   registerScene: (name, klass) ->
+    console.log "Registering", name, klass
     @sceneClasses[name] = klass
 
   openScene: (name, args...) ->

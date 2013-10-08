@@ -1,10 +1,10 @@
-class scenes.Main extends nv.Scene
+class scenes.Gameover extends nv.Scene
   constructor: (name, game, rootModel) ->
     rootModel.scenario = realms.gameConfig.scenarios.pvp.two
 
     super name, game, rootModel
 
-    @on "engine:gamepad:mouse:up", () =>
+    @on "engine:gamepad:mouse:down", () =>
       @fire "scene:close"
       @game.openScene 'Game'
 

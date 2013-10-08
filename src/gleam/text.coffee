@@ -27,3 +27,10 @@ class gleam.Text
     context.setTextAlign @textAlign
 
     context.fillText @text, @x, @y
+
+  destroy: () ->
+    delete @font
+    delete @textBaseline
+    delete @textAlign
+    delete @text
+    delete @color

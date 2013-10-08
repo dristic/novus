@@ -1,19 +1,18 @@
-# Gleam.Rectangle
-gleam.Rectangle = (options) ->
-  defaults =
-    fillStyle: '#CCC'
-    width: 10
-    height: 10
-    cornerRadius: 0
-    x: 0
-    y: 0
-    alpha: 1
-  options = options ? {}
-  gleam.extend defaults, options
-  gleam.extend this, defaults
-  this
+class gleam.Rectangle
+  constructor: (options) ->
+    defaults =
+      fillStyle: '#CCC'
+      width: 10
+      height: 10
+      cornerRadius: 0
+      x: 0
+      y: 0
+      alpha: 1
+    options = options ? {}
+    gleam.extend defaults, options
+    gleam.extend this, defaults
+    this
 
-gleam.extend gleam.Rectangle.prototype,
   draw: (context, canvas) ->
     context.source.globalAlpha = @alpha
     context.setStrokeStyle @strokeStyle if @strokeStyle
@@ -34,3 +33,6 @@ gleam.extend gleam.Rectangle.prototype,
     context.stroke()
     context.fill()
     context.closePath()
+
+  destroy: () ->
+    delete @fillStyle

@@ -13,3 +13,6 @@ class gleam.Square
   draw: (context, canvas) ->
     context.setFillStyle @color
     context.fillRect @x, @y, @width, @height
+
+  destroy: () ->
+    delete @color

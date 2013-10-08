@@ -27,7 +27,7 @@ class entities.Map extends nv.Entity
 
     cache = () =>
       @getPlugin(nv.SpriteMapRenderingPlugin).cache(@model.width, @model.height)
-    setTimeout cache, 2000
+    @timeout = setTimeout cache, 2000
 
   update: (dt) ->
     super dt
@@ -57,3 +57,6 @@ class entities.Map extends nv.Entity
     tile = @playerData.getTileFromScreenXY(data.x - @camera.x, data.y - @camera.y)
     if tile isnt 0
       @scene.fire "game:clicked:county", tile
+
+  destroy: () ->
+    clearTimeout @timeout

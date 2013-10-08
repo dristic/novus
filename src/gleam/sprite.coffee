@@ -24,3 +24,6 @@ class gleam.Sprite
         context.drawImage @image, @x, @y, @width, @height
       else
         context.drawImage @image, @origin.x, @origin.y, @origin.width, @origin.height, @x, @y, @width, @height
+
+  destroy: () ->
+    delete @image
