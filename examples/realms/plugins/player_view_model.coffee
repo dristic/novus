@@ -21,6 +21,7 @@ class plugins.PlayerViewModel extends nv.Plugin
       @entity.model.set key, value
 
     projections.on 'change', (key, value) =>
+      if value > 0 then value = "+#{value}"
       @entity.model.set "p_#{key}", value
 
     @entity.model.setMany

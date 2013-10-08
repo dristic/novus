@@ -23,17 +23,14 @@ class entities.ResourceManager extends nv.Entity
         type: 'warning'
         message: 'Training soldiers requires gold.'
 
-  "event(game:army:send)": (value) ->
-    unless @active is true
-      @model.set 'soldiers', ( @model.get('soldiers') - value )
-      @scene.fire 'game:ui:alert',
-        type: 'info'
-        message: "#{value} soldiers rush into battle!"
+  sendSoldiers: (value) ->
+    @model.set 'soldiers', ( @model.get('soldiers') - value )
 
   onAttacked: (value) ->
     soldiers = @model.get('soldiers') - value
     @model.set 'soldiers', Math.max(soldiers, 0)
     @model.set('peasants', @model.get('peasants') - Math.abs(soldiers)) if soldiers < 0
+
     @scene.fire 'game:ui:alert',
       type: 'alert'
       message: "#{value} soldiers died in battle!"

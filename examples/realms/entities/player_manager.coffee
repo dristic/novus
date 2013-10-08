@@ -19,7 +19,7 @@ class entities.PlayerManager extends nv.Entity
           @attacking = false
           @attackText.hide()
           @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
-        if county is 1026 and @model.playerNumber is 2
+        else if county is 1026 and @model.playerNumber is 2
           @attacking = false
           @attackText.hide()
           @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
@@ -30,6 +30,13 @@ class entities.PlayerManager extends nv.Entity
 
   "event(game:army:attacked)": (value) ->
     @clientPlayer().resources().onAttacked value
+
+  "event(game:army:send)": (value) ->
+    @clientPlayer().resources().sendSoldiers value
+
+    @scene.fire 'game:ui:alert',
+        type: 'info'
+        message: "#{value} soldiers rush into battle!"
 
   createPlayers: () ->
     rootModel = @scene.rootModel
