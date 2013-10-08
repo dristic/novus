@@ -415,7 +415,8 @@
         y: 10,
         width: null,
         height: null,
-        origin: null
+        origin: null,
+        alpha: 1.0
       };
       if (!!options) {
         gleam.extend(defaults, options);
@@ -437,11 +438,14 @@
 
     Sprite.prototype.draw = function(context, canvas) {
       if (!!this.loaded) {
+        context.save();
+        context.source.globalAlpha = this.alpha;
         if (!this.origin) {
-          return context.drawImage(this.image, this.x, this.y, this.width, this.height);
+          context.drawImage(this.image, this.x, this.y, this.width, this.height);
         } else {
-          return context.drawImage(this.image, this.origin.x, this.origin.y, this.origin.width, this.origin.height, this.x, this.y, this.width, this.height);
+          context.drawImage(this.image, this.origin.x, this.origin.y, this.origin.width, this.origin.height, this.x, this.y, this.width, this.height);
         }
+        return context.restore();
       }
     };
 
@@ -4377,6 +4381,14 @@
       var data, image, model, name, scenario, _ref;
       PlayerManager.__super__.constructor.call(this, scene, entity);
       scenario = scene.rootModel.get('scenario');
+      model = {
+        src: "/assets/turn-box.png",
+        x: 560,
+        y: 5,
+        width: 59,
+        height: 72
+      };
+      this.border = new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model)));
       this.flags = [];
       this.turns = [];
       _ref = scenario.countries;
@@ -4389,13 +4401,25 @@
         }, data.flag));
         model = nv.extend(data.flag, {
           hidden: true,
-          x: 560,
-          y: 10
+          x: 567,
+          y: 17
         });
         this.turns.push(new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model))));
         this.turns[entity.model.turn - 1].hidden = false;
       }
     }
+
+    PlayerManager.prototype["event(game:player:assigned)"] = function() {
+      var model;
+      model = {
+        src: this.flags[this.entity.model.playerNumber - 1].src,
+        x: 5,
+        y: 5,
+        width: 32,
+        height: 32
+      };
+      return this.shield = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+    };
 
     PlayerManager.prototype["event(game:turn:end)"] = function(turn) {
       var indicator, _i, _len, _ref;
@@ -4748,6 +4772,14 @@
             return _this.ref.child('players').set(0);
           }
         });
+        this.ref.child('players').on('value', function(snapshot) {
+          if (snapshot.val() === 2) {
+            return _this.scene.fire('game:ui:alert', {
+              type: 'info',
+              message: "Other player has joined the game!"
+            });
+          }
+        });
         this.ref.child('attacks').on('child_added', function(snapshot) {
           var data;
           data = snapshot.val();
@@ -4815,6 +4847,10 @@
       return this.model.countries.push(this.scene.createEntity(entityConfigs.country, data));
     };
 
+    Player.prototype.country = function(ignore) {
+      return this.model.countries[0];
+    };
+
     Player.prototype.resources = function(country) {
       return this.model.countries[0].resources();
     };
@@ -4876,9 +4912,8 @@
           if (county === 1027 && this.model.playerNumber === 1) {
             this.attacking = false;
             this.attackText.hide();
-            this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50));
-          }
-          if (county === 1026 && this.model.playerNumber === 2) {
+            return this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50));
+          } else if (county === 1026 && this.model.playerNumber === 2) {
             this.attacking = false;
             this.attackText.hide();
             return this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50));
@@ -4894,6 +4929,14 @@
 
     PlayerManager.prototype["event(game:army:attacked)"] = function(value) {
       return this.clientPlayer().resources().onAttacked(value);
+    };
+
+    PlayerManager.prototype["event(game:army:send)"] = function(value) {
+      this.clientPlayer().resources().sendSoldiers(value);
+      return this.scene.fire('game:ui:alert', {
+        type: 'info',
+        message: "" + value + " soldiers rush into battle!"
+      });
     };
 
     PlayerManager.prototype.createPlayers = function() {
@@ -5034,14 +5077,8 @@
       }
     };
 
-    ResourceManager.prototype["event(game:army:send)"] = function(value) {
-      if (this.active !== true) {
-        this.model.set('soldiers', this.model.get('soldiers') - value);
-        return this.scene.fire('game:ui:alert', {
-          type: 'info',
-          message: "" + value + " soldiers rush into battle!"
-        });
-      }
+    ResourceManager.prototype.sendSoldiers = function(value) {
+      return this.model.set('soldiers', this.model.get('soldiers') - value);
     };
 
     ResourceManager.prototype.onAttacked = function(value) {
@@ -5161,7 +5198,7 @@
       soldiersInTraining = this.projections.get('soldiersInTraining');
       currentPopulation = peasants + soldiers;
       console.log("cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining);
-      growthTarget = Math.round(currentPopulation * 0.05);
+      growthTarget = Math.round(currentPopulation * 0.075);
       projectedPopulation = currentPopulation + growthTarget;
       foodAvailable = this.model.get('food');
       console.log("growth:", growthTarget, projectedPopulation, foodAvailable);
@@ -5316,6 +5353,9 @@
         return _this.entity.model.set(key, value);
       });
       projections.on('change', function(key, value) {
+        if (value > 0) {
+          value = "+" + value;
+        }
         return _this.entity.model.set("p_" + key, value);
       });
       this.entity.model.setMany({
@@ -5326,7 +5366,8 @@
         p_peasants: projections.peasants,
         p_soldiers: projections.soldiers,
         p_food: projections.food,
-        p_gold: projections.gold
+        p_gold: projections.gold,
+        name: clientPlayer.country(0).model.country
       });
       return this.updateTurnButton();
     };
@@ -5538,7 +5579,7 @@
           ratio: 0.5
         },
         countries: {
-          darkland: {
+          Darkland: {
             owner: 1,
             plots: [new nv.Point(576, 320), new nv.Point(608, 320), new nv.Point(576, 352), new nv.Point(352, 416), new nv.Point(352, 448)],
             flag: {
@@ -5549,7 +5590,7 @@
               height: 48
             }
           },
-          sandyland: {
+          Danville: {
             owner: 2,
             plots: [new nv.Point(576, 480), new nv.Point(608, 480), new nv.Point(608, 512), new nv.Point(480, 576), new nv.Point(512, 576)],
             flag: {
@@ -5597,7 +5638,7 @@
 
   uiFont = 'bold 16px sans-serif';
 
-  version = 'v0.0.4';
+  version = 'v0.0.5';
 
   realms.gameConfig = {
     canvas: {
@@ -5628,16 +5669,43 @@
           map: {
             include: "map"
           },
+          scroll: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/paper-scroll-solid.png",
+                x: 120,
+                y: 70,
+                width: 392,
+                height: 297
+              }
+            }
+          },
+          castle: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/castle.png",
+                x: 160,
+                y: 130,
+                width: 310,
+                height: 210,
+                alpha: 0.3
+              }
+            }
+          },
           title: {
             entity: nv.Entity,
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
-                font: 'bold 30px sans-serif',
+                color: '#000',
+                font: 'bold 30px serif',
                 textBaseline: 'bottom',
                 text: 'Rords of the Lealm',
-                x: 175,
+                x: 190,
                 y: 140
               }
             }
@@ -5647,12 +5715,51 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
+                color: '#444',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
-                text: 'Click to Start',
-                x: 245,
-                y: 200
+                text: 'How many players?',
+                x: 215,
+                y: 220
+              }
+            }
+          },
+          twoPlayer: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/Numbers-2-icon.png",
+                x: 204,
+                y: 260,
+                width: 64,
+                height: 64
+              }
+            }
+          },
+          threePlayer: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/Numbers-3-icon.png",
+                x: 284,
+                y: 260,
+                width: 64,
+                height: 64
+              }
+            }
+          },
+          fourPlayer: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/Numbers-4-icon.png",
+                x: 364,
+                y: 260,
+                width: 64,
+                height: 64
               }
             }
           }
@@ -5678,8 +5785,8 @@
             model: {
               options: {
                 color: 'rgba(0, 0, 0, 0.5)',
-                width: 190,
-                height: 480,
+                width: 250,
+                height: 150,
                 x: 0,
                 y: 0
               }
@@ -5755,6 +5862,19 @@
               }
             }
           },
+          laborBoard: {
+            entity: nv.Entity,
+            plugins: [nv.PanelUIPlugin],
+            model: {
+              options: {
+                color: 'rgba(0, 0, 0, 0.5)',
+                width: 196,
+                height: 26,
+                x: 30,
+                y: 119
+              }
+            }
+          },
           laborDistributionText: {
             entity: nv.Entity,
             plugins: [nv.TextUIPlugin],
@@ -5763,9 +5883,9 @@
                 color: '#CCC',
                 font: '14px sans-serif',
                 textBaseline: 'bottom',
-                text: 'Labor Distribution',
-                x: 15,
-                y: 295
+                text: 'Labor',
+                x: 35,
+                y: 140
               }
             }
           },
@@ -5777,8 +5897,8 @@
                 leftImage: "/assets/farmer-16.wh.png",
                 rightImage: "/assets/miner-16.wh.png",
                 font: uiFont,
-                x: 15,
-                y: 300,
+                x: 80,
+                y: 122,
                 value: 50,
                 gap: 3,
                 height: 20,
@@ -5794,9 +5914,10 @@
                 color: '#CCC',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
-                text: 'Current',
-                x: 15,
-                y: 36
+                text: '{{name}}',
+                bind: entities.PlayerManager,
+                x: 35,
+                y: 32
               }
             }
           },
@@ -5810,7 +5931,7 @@
                 textBaseline: 'bottom',
                 text: "Peasants: {{peasants}}",
                 bind: entities.PlayerManager,
-                x: 15,
+                x: 35,
                 y: 55
               }
             }
@@ -5825,7 +5946,7 @@
                 textBaseline: 'bottom',
                 text: 'Food: {{food}}',
                 bind: entities.PlayerManager,
-                x: 15,
+                x: 35,
                 y: 95
               }
             }
@@ -5840,7 +5961,7 @@
                 textBaseline: 'bottom',
                 text: 'Gold: {{gold}}',
                 bind: entities.PlayerManager,
-                x: 15,
+                x: 35,
                 y: 115
               }
             }
@@ -5855,22 +5976,8 @@
                 textBaseline: 'bottom',
                 text: 'Soldiers: {{soldiers}}',
                 bind: entities.PlayerManager,
-                x: 15,
+                x: 35,
                 y: 75
-              }
-            }
-          },
-          projectedText: {
-            entity: nv.Entity,
-            plugins: [nv.TextUIPlugin],
-            model: {
-              options: {
-                color: '#CCC',
-                font: 'bold 20px sans-serif',
-                textBaseline: 'bottom',
-                text: 'Next Turn',
-                x: 15,
-                y: 170
               }
             }
           },
@@ -5879,13 +5986,13 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
+                color: 'red',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: "Peasants: {{p_peasants}}",
+                text: "{{p_peasants}}",
                 bind: entities.PlayerManager,
-                x: 15,
-                y: 190
+                x: 150,
+                y: 55
               }
             }
           },
@@ -5894,13 +6001,13 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
+                color: 'red',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: "Soldiers: {{p_soldiers}}",
+                text: "{{p_soldiers}}",
                 bind: entities.PlayerManager,
-                x: 15,
-                y: 210
+                x: 150,
+                y: 75
               }
             }
           },
@@ -5909,13 +6016,13 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
+                color: 'red',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Food: {{p_food}}',
+                text: '{{p_food}}',
                 bind: entities.PlayerManager,
-                x: 15,
-                y: 230
+                x: 150,
+                y: 95
               }
             }
           },
@@ -5924,13 +6031,13 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
+                color: 'red',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Gold {{p_gold}}',
+                text: '{{p_gold}}',
                 bind: entities.PlayerManager,
-                x: 15,
-                y: 250
+                x: 150,
+                y: 115
               }
             }
           },
@@ -5947,21 +6054,6 @@
                 x: 250,
                 y: 250,
                 hidden: true
-              }
-            }
-          },
-          turn: {
-            entity: nv.Entity,
-            plugins: [nv.TextUIPlugin],
-            model: {
-              options: {
-                color: '#CCC',
-                font: 'bold 20px sans-serif',
-                textBaseline: 'bottom',
-                text: "Turn: {{turnColor}}",
-                bind: entities.PlayerManager,
-                x: 480,
-                y: 36
               }
             }
           },
