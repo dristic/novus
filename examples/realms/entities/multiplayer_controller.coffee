@@ -31,6 +31,12 @@ class entities.MultiplayerController extends nv.Entity
           @ref.child('turn').set 1
           @ref.child('players').set 0
 
+      @ref.child('players').on 'value', (snapshot) =>
+        if snapshot.val() is 2
+          @scene.fire 'game:ui:alert',
+            type: 'info'
+            message: "Other player has joined the game!"
+
       @ref.child('attacks').on 'child_added', (snapshot) =>
         data = snapshot.val()
         if data.guid isnt @guid
