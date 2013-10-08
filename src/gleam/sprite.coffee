@@ -7,6 +7,7 @@ class gleam.Sprite
       width: null
       height: null
       origin: null
+      alpha: 1.0
     gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
@@ -20,10 +21,13 @@ class gleam.Sprite
 
   draw: (context, canvas) ->
     unless not @loaded
+      context.save()
+      context.source.globalAlpha = @alpha
       unless @origin
         context.drawImage @image, @x, @y, @width, @height
       else
         context.drawImage @image, @origin.x, @origin.y, @origin.width, @origin.height, @x, @y, @width, @height
+      context.restore()
 
   destroy: () ->
     delete @image

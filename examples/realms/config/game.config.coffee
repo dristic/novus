@@ -59,17 +59,28 @@ realms.gameConfig =
               y: 70
               width: 392
               height: 297
+        castle:
+          entity: nv.Entity
+          plugins: [ nv.SpriteUIPlugin ]
+          model:
+            options:
+              src: "/assets/castle.png"
+              x: 160
+              y: 130
+              width: 310
+              height: 210
+              alpha: 0.3
         title:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
               color: '#000'
-              font: 'bold 30px sans-serif'
+              font: 'bold 30px serif'
               textBaseline: 'bottom'
               text: 'Rords of the Lealm'
-              x: 180
-              y: 160
+              x: 190
+              y: 140
         startText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -87,8 +98,8 @@ realms.gameConfig =
           model:
             options:
               src: "/assets/Numbers-2-icon.png"
-              x: 180
-              y: 240
+              x: 204
+              y: 260
               width: 64
               height: 64
         threePlayer:
@@ -97,8 +108,8 @@ realms.gameConfig =
           model:
             options:
               src: "/assets/Numbers-3-icon.png"
-              x: 280
-              y: 240
+              x: 284
+              y: 260
               width: 64
               height: 64
         fourPlayer:
@@ -107,8 +118,8 @@ realms.gameConfig =
           model:
             options:
               src: "/assets/Numbers-4-icon.png"
-              x: 380
-              y: 240
+              x: 364
+              y: 260
               width: 64
               height: 64
 
