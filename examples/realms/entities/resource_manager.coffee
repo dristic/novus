@@ -57,11 +57,11 @@ class entities.ResourceManager extends nv.Entity
 
   prepareProjections: () ->
     @projections.setMany
-      peasants: 0 #@model.peasants
-      soldiers: 0 #@model.soldiers
+      peasants: 0 
+      soldiers: 0 
       soldiersInTraining: 0
-      food: 0 #@model.food
-      gold: 0 #@model.gold
+      food: 0 
+      gold: 0 
       ratio: @model.ratio
 
   commitProjections: () ->
@@ -99,7 +99,7 @@ class entities.ResourceManager extends nv.Entity
         qty =  @grainYield * farmersPerPlot
         food += qty
     # cap food production at 300 mouths
-    food = Math.min(food, 300) #+ @model.get 'food'
+    food = Math.min(food, 300)
     console.log "food to grow:", food
     @projections.set 'food', Math.round(food) - @model.get('peasants') - @model.get('soldiers')
 
@@ -116,7 +116,7 @@ class entities.ResourceManager extends nv.Entity
       console.log "miners per plot:", minersPerPlot
       for i in [1..goldPlots]
         gold += @goldYield * 0.1 * minersPerPlot
-    gold = Math.min(gold, 30) #+ @model.get 'gold'
+    gold = Math.min(gold, 30)
     @projections.set 'gold', Math.round(gold)
 
   projectPopulation: () ->
@@ -127,7 +127,7 @@ class entities.ResourceManager extends nv.Entity
 
     console.log "cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining
 
-    growthTarget = Math.round(currentPopulation * 0.05)
+    growthTarget = Math.round(currentPopulation * 0.75)
     projectedPopulation = currentPopulation + growthTarget
     foodAvailable = @model.get('food') #+ @projections.get('food')
 

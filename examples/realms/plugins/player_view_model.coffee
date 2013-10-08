@@ -32,6 +32,7 @@ class plugins.PlayerViewModel extends nv.Plugin
       p_soldiers: projections.soldiers
       p_food: projections.food
       p_gold: projections.gold
+      name: clientPlayer.country(0).model.country
 
     @updateTurnButton()
 

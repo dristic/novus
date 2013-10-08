@@ -46,6 +46,14 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 
 		scenario = scene.rootModel.get 'scenario'
 
+		model =
+			src: "/assets/turn-box.png"
+			x: 560
+			y: 5
+			width: 59
+			height: 72
+		@border = new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model)))
+
 		@flags = []
 		@turns = []
 		for name, data of scenario.countries
@@ -53,10 +61,19 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 			image.src = data.flag.src
 			@flags.push nv.extend {image: image}, data.flag
 
-			model = nv.extend data.flag, {hidden: true, x: 560, y: 10}
+			model = nv.extend data.flag, {hidden: true, x: 567, y: 17}
 
 			@turns.push new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model)))
 			@turns[entity.model.turn - 1].hidden = false
+
+	"event(game:player:assigned)": () ->
+		model =
+			src: @flags[ @entity.model.playerNumber - 1 ].src
+			x: 5
+			y: 5
+			width: 32
+			height: 32
+		@shield = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
 	"event(game:turn:end)": (turn) ->
 		for indicator in @turns
@@ -67,6 +84,4 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 	draw: (context, canvas) ->
 		for flag in @flags
 			context.drawImage flag.image, flag.x, flag.y
-
-
 

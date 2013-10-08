@@ -148,8 +148,8 @@ realms.gameConfig =
           model:
             options:
               color: 'rgba(0, 0, 0, 0.5)'
-              width: 190
-              height: 480
+              width: 250
+              height: 120
               x: 0
               y: 0
         endTurnButton:
@@ -239,9 +239,10 @@ realms.gameConfig =
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: 'Current'
-              x: 15
-              y: 36
+              text: '{{name}}'
+              bind: entities.PlayerManager
+              x: 35
+              y: 32
         population:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -362,18 +363,18 @@ realms.gameConfig =
               x: 250
               y: 250
               hidden: true
-        turn:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: "Turn: {{turnColor}}"
-              bind: entities.PlayerManager
-              x: 480
-              y: 36
+        # turn:
+        #   entity: nv.Entity
+        #   plugins: [ nv.TextUIPlugin ]
+        #   model:
+        #     options:
+        #       color: '#CCC'
+        #       font: 'bold 20px sans-serif'
+        #       textBaseline: 'bottom'
+        #       text: "Turn: {{turnColor}}"
+        #       bind: entities.PlayerManager
+        #       x: 480
+        #       y: 36
         playerColorText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

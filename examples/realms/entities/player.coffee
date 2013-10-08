@@ -12,6 +12,9 @@ class entities.Player extends nv.Entity
     entityConfigs = @scene.rootModel.config.entities
     @model.countries.push @scene.createEntity entityConfigs.country, data
 
+  country: (ignore) ->
+    @model.countries[0]
+
   resources: (country) ->
     @model.countries[0].resources()
 
