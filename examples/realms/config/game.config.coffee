@@ -149,7 +149,7 @@ realms.gameConfig =
             options:
               color: 'rgba(0, 0, 0, 0.5)'
               width: 250
-              height: 120
+              height: 150
               x: 0
               y: 0
         endTurnButton:
@@ -204,6 +204,16 @@ realms.gameConfig =
             options:
               x: 70
               y: 200
+        laborBoard:
+          entity: nv.Entity
+          plugins: [ nv.PanelUIPlugin ]
+          model:
+            options:
+              color: 'rgba(0, 0, 0, 0.5)'
+              width: 196
+              height: 26
+              x: 30
+              y: 119
         laborDistributionText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -212,9 +222,9 @@ realms.gameConfig =
               color: '#CCC'
               font: '14px sans-serif'
               textBaseline: 'bottom'
-              text: 'Labor Distribution'
-              x: 15
-              y: 295
+              text: 'Labor'
+              x: 35
+              y: 140
         sliderControl:
           entity: nv.Entity
           plugins: [ nv.SliderUIPlugin ]
@@ -225,8 +235,8 @@ realms.gameConfig =
               leftImage: "/assets/farmer-16.wh.png"              
               rightImage: "/assets/miner-16.wh.png"              
               font: uiFont
-              x: 15
-              y: 300
+              x: 80
+              y: 122
               value: 50
               gap: 3
               height: 20
@@ -253,7 +263,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: "Peasants: {{peasants}}"
               bind: entities.PlayerManager
-              x: 15
+              x: 35
               y: 55
         foodText:
           entity: nv.Entity
@@ -265,7 +275,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: 'Food: {{food}}'
               bind: entities.PlayerManager
-              x: 15
+              x: 35
               y: 95
         goldText:
           entity: nv.Entity
@@ -277,7 +287,7 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: 'Gold: {{gold}}'
               bind: entities.PlayerManager
-              x: 15
+              x: 35
               y: 115
         armyText:
           entity: nv.Entity
@@ -289,67 +299,67 @@ realms.gameConfig =
               textBaseline: 'bottom'
               text: 'Soldiers: {{soldiers}}'
               bind: entities.PlayerManager
-              x: 15
+              x: 35
               y: 75
-        projectedText:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
-              textBaseline: 'bottom'
-              text: 'Next Turn'
-              x: 15
-              y: 170
+        # projectedText:
+        #   entity: nv.Entity
+        #   plugins: [ nv.TextUIPlugin ]
+        #   model:
+        #     options:
+        #       color: '#CCC'
+        #       font: 'bold 20px sans-serif'
+        #       textBaseline: 'bottom'
+        #       text: 'Next Turn'
+        #       x: 15
+        #       y: 170
         populationProjected:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
+              color: 'red'
               font: uiFont
               textBaseline: 'bottom'
-              text: "Peasants: {{p_peasants}}"
+              text: "{{p_peasants}}"
               bind: entities.PlayerManager
-              x: 15
-              y: 190
+              x: 150
+              y: 55
         populationArmy:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
+              color: 'red'
               font: uiFont
               textBaseline: 'bottom'
-              text: "Soldiers: {{p_soldiers}}"
+              text: "{{p_soldiers}}"
               bind: entities.PlayerManager
-              x: 15
-              y: 210
+              x: 150
+              y: 75
         foodProjected:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
+              color: 'red'
               font: uiFont
               textBaseline: 'bottom'
-              text: 'Food: {{p_food}}'
+              text: '{{p_food}}'
               bind: entities.PlayerManager
-              x: 15
-              y: 230
+              x: 150
+              y: 95
         goldProjected:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
+              color: 'red'
               font: uiFont
               textBaseline: 'bottom'
-              text: 'Gold {{p_gold}}'
+              text: '{{p_gold}}'
               bind: entities.PlayerManager
-              x: 15
-              y: 250
+              x: 150
+              y: 115
         attackText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

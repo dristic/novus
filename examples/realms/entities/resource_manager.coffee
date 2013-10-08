@@ -127,7 +127,7 @@ class entities.ResourceManager extends nv.Entity
 
     console.log "cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining
 
-    growthTarget = Math.round(currentPopulation * 0.75)
+    growthTarget = Math.round(currentPopulation * 0.075)
     projectedPopulation = currentPopulation + growthTarget
     foodAvailable = @model.get('food') #+ @projections.get('food')
 
