@@ -283,6 +283,10 @@
       return context.fillRect(this.x, this.y, this.width, this.height);
     };
 
+    Square.prototype.destroy = function() {
+      return delete this.color;
+    };
+
     return Square;
 
   })();
@@ -328,6 +332,14 @@
       context.setTextBaseline(this.textBaseline);
       context.setTextAlign(this.textAlign);
       return context.fillText(this.text, this.x, this.y);
+    };
+
+    Text.prototype.destroy = function() {
+      delete this.font;
+      delete this.textBaseline;
+      delete this.textAlign;
+      delete this.text;
+      return delete this.color;
     };
 
     return Text;
@@ -431,6 +443,10 @@
           return context.drawImage(this.image, this.origin.x, this.origin.y, this.origin.width, this.origin.height, this.x, this.y, this.width, this.height);
         }
       }
+    };
+
+    Sprite.prototype.destroy = function() {
+      return delete this.image;
     };
 
     return Sprite;
@@ -639,25 +655,25 @@
 }).call(this);
 
 (function() {
-  gleam.Rectangle = function(options) {
-    var defaults;
-    defaults = {
-      fillStyle: '#CCC',
-      width: 10,
-      height: 10,
-      cornerRadius: 0,
-      x: 0,
-      y: 0,
-      alpha: 1
-    };
-    options = options != null ? options : {};
-    gleam.extend(defaults, options);
-    gleam.extend(this, defaults);
-    return this;
-  };
+  gleam.Rectangle = (function() {
+    function Rectangle(options) {
+      var defaults;
+      defaults = {
+        fillStyle: '#CCC',
+        width: 10,
+        height: 10,
+        cornerRadius: 0,
+        x: 0,
+        y: 0,
+        alpha: 1
+      };
+      options = options != null ? options : {};
+      gleam.extend(defaults, options);
+      gleam.extend(this, defaults);
+      this;
+    }
 
-  gleam.extend(gleam.Rectangle.prototype, {
-    draw: function(context, canvas) {
+    Rectangle.prototype.draw = function(context, canvas) {
       context.source.globalAlpha = this.alpha;
       if (this.strokeStyle) {
         context.setStrokeStyle(this.strokeStyle);
@@ -689,8 +705,15 @@
       context.stroke();
       context.fill();
       return context.closePath();
-    }
-  });
+    };
+
+    Rectangle.prototype.destroy = function() {
+      return delete this.fillStyle;
+    };
+
+    return Rectangle;
+
+  })();
 
 }).call(this);
 
@@ -1553,6 +1576,7 @@
     };
 
     Game.prototype.registerScene = function(name, klass) {
+      console.log("Registering", name, klass);
       return this.sceneClasses[name] = klass;
     };
 
@@ -4638,7 +4662,7 @@
       cache = function() {
         return _this.getPlugin(nv.SpriteMapRenderingPlugin).cache(_this.model.width, _this.model.height);
       };
-      setTimeout(cache, 2000);
+      this.timeout = setTimeout(cache, 2000);
     }
 
     Map.prototype.update = function(dt) {
@@ -4676,6 +4700,10 @@
       if (tile !== 0) {
         return this.scene.fire("game:clicked:county", tile);
       }
+    };
+
+    Map.prototype.destroy = function() {
+      return clearTimeout(this.timeout);
     };
 
     return Map;
@@ -5170,12 +5198,76 @@
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  scenes.Game = (function(_super) {
+    __extends(Game, _super);
+
+    function Game(name, game, rootModel) {
+      var _this = this;
+      rootModel.scenario = realms.gameConfig.scenarios.pvp.two;
+      Game.__super__.constructor.call(this, name, game, rootModel);
+      this.send("engine:timing:start");
+      this.on("scene:game:over", function(result) {
+        _this.rootModel.set('result', result);
+        _this.fire("scene:close");
+        return _this.game.openScene('Gameover');
+      });
+    }
+
+    Game.prototype.destroy = function() {
+      this.send("engine:timing:stop");
+      return Game.__super__.destroy.apply(this, arguments);
+    };
+
+    return Game;
+
+  })(nv.Scene);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  scenes.Gameover = (function(_super) {
+    __extends(Gameover, _super);
+
+    function Gameover(name, game, rootModel) {
+      var _this = this;
+      rootModel.scenario = realms.gameConfig.scenarios.pvp.two;
+      Gameover.__super__.constructor.call(this, name, game, rootModel);
+      this.on("engine:gamepad:mouse:down", function() {
+        _this.fire("scene:close");
+        return _this.game.openScene('Game');
+      });
+      this.send("engine:timing:start");
+    }
+
+    Gameover.prototype.destroy = function() {
+      this.send("engine:timing:stop");
+      return Gameover.__super__.destroy.apply(this, arguments);
+    };
+
+    return Gameover;
+
+  })(nv.Scene);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   scenes.Main = (function(_super) {
     __extends(Main, _super);
 
     function Main(name, game, rootModel) {
+      var _this = this;
       rootModel.scenario = realms.gameConfig.scenarios.pvp.two;
       Main.__super__.constructor.call(this, name, game, rootModel);
+      this.on("engine:gamepad:mouse:up", function() {
+        _this.fire("scene:close");
+        return _this.game.openScene('Game');
+      });
       this.send("engine:timing:start");
     }
 
@@ -5505,7 +5597,7 @@
 
   uiFont = 'bold 16px sans-serif';
 
-  version = 'v0.0.3';
+  version = 'v0.0.4';
 
   realms.gameConfig = {
     canvas: {
@@ -5526,6 +5618,50 @@
         config: {
           gamepad: {
             keys: {
+              confirm: nv.Key.Spacebar
+            },
+            trackMouse: true
+          }
+        },
+        engines: [nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.UIEngine],
+        entities: {
+          map: {
+            include: "map"
+          },
+          title: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 30px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Rords of the Lealm',
+                x: 175,
+                y: 140
+              }
+            }
+          },
+          startText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Click to Start',
+                x: 245,
+                y: 200
+              }
+            }
+          }
+        }
+      },
+      game: {
+        config: {
+          gamepad: {
+            keys: {
               shoot: nv.Key.Spacebar
             },
             trackMouse: true
@@ -5542,7 +5678,7 @@
             model: {
               options: {
                 color: 'rgba(0, 0, 0, 0.5)',
-                width: 265,
+                width: 190,
                 height: 480,
                 x: 0,
                 y: 0
@@ -5893,6 +6029,50 @@
                   style: '#D40000',
                   color: '#fff'
                 }
+              }
+            }
+          }
+        }
+      },
+      gameover: {
+        config: {
+          gamepad: {
+            keys: {
+              confirm: nv.Key.Spacebar
+            },
+            trackMouse: true
+          }
+        },
+        engines: [nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.UIEngine],
+        entities: {
+          map: {
+            include: "map"
+          },
+          title: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 30px sans-serif',
+                textBaseline: 'bottom',
+                text: 'Rords of the Lealm',
+                x: 175,
+                y: 140
+              }
+            }
+          },
+          startText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: 'bold 20px sans-serif',
+                textBaseline: 'bottom',
+                text: 'You Lose!',
+                x: 245,
+                y: 200
               }
             }
           }
