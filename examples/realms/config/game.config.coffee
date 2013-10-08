@@ -49,28 +49,69 @@ realms.gameConfig =
       entities:
         map:
           include: "map"
+        scroll:
+          entity: nv.Entity
+          plugins: [ nv.SpriteUIPlugin ]
+          model:
+            options:
+              src: "/assets/paper-scroll-solid.png"
+              x: 120
+              y: 70
+              width: 392
+              height: 297
         title:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
+              color: '#000'
               font: 'bold 30px sans-serif'
               textBaseline: 'bottom'
               text: 'Rords of the Lealm'
-              x: 175
-              y: 140
+              x: 180
+              y: 160
         startText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
+              color: '#444'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
-              text: 'Click to Start'
-              x: 245
-              y: 200
+              text: 'How many players?'
+              x: 215
+              y: 220
+        twoPlayer:
+          entity: nv.Entity
+          plugins: [ nv.SpriteUIPlugin ]
+          model:
+            options:
+              src: "/assets/Numbers-2-icon.png"
+              x: 180
+              y: 240
+              width: 64
+              height: 64
+        threePlayer:
+          entity: nv.Entity
+          plugins: [ nv.SpriteUIPlugin ]
+          model:
+            options:
+              src: "/assets/Numbers-3-icon.png"
+              x: 280
+              y: 240
+              width: 64
+              height: 64
+        fourPlayer:
+          entity: nv.Entity
+          plugins: [ nv.SpriteUIPlugin ]
+          model:
+            options:
+              src: "/assets/Numbers-4-icon.png"
+              x: 380
+              y: 240
+              width: 64
+              height: 64
+
 
     game:
       config:
