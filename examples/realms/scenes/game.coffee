@@ -1,6 +1,6 @@
 class scenes.Game extends nv.Scene
   constructor: (name, game, rootModel) ->
-    rootModel.scenario = realms.gameConfig.scenarios.pvp.two
+    rootModel.scenario = realms.gameConfig.scenarios.pvp.twoByThree
 
     super name, game, rootModel
 
