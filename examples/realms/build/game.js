@@ -5127,15 +5127,15 @@
       soldiers = this.model.get('soldiers') - value;
       this.model.set('soldiers', Math.max(soldiers, 0));
       if (soldiers < 0) {
-        peasants = this.model.get('peasants');
-        peasantKills = Math.abs(soldiers);
-        peasants = peasants - (peasantKills * 3);
-        this.model.set('peasants', peasants);
-      }
-      if (soldiers < 0) {
         soldierKills = value - Math.abs(soldiers);
       } else {
         soldierKills = value;
+      }
+      if (soldierKills < value) {
+        peasants = this.model.get('peasants');
+        peasantKills = value - soldierKills;
+        peasants = peasants - (peasantKills * 3);
+        this.model.set('peasants', peasants);
       }
       this.scene.fire("game:army:battle", {
         kills: {
