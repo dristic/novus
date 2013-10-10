@@ -60,6 +60,10 @@ class entities.ResourceManager extends nv.Entity
       food: 0 
       gold: 0 
       ratio: @model.ratio
+    if @model.food < @model.get('peasants') + @model.get('soldiers')
+      @scene.fire 'game:ui:alert',
+        type: 'warning'
+        message: 'Your population is starving. Grow food.'
 
   commitProjections: () ->
     peasants = @model.get('peasants')

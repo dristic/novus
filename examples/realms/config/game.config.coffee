@@ -317,6 +317,7 @@ realms.gameConfig =
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
+              id: 'projected-population'
               color: 'red'
               font: uiFont
               textBaseline: 'bottom'
@@ -329,6 +330,7 @@ realms.gameConfig =
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
+              id: 'projected-soldiers'
               color: 'red'
               font: uiFont
               textBaseline: 'bottom'
@@ -341,6 +343,7 @@ realms.gameConfig =
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
+              id: 'projected-food'
               color: 'red'
               font: uiFont
               textBaseline: 'bottom'
@@ -353,6 +356,7 @@ realms.gameConfig =
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
+              id: 'projected-gold'
               color: 'red'
               font: uiFont
               textBaseline: 'bottom'

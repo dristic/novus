@@ -2,10 +2,31 @@ class plugins.PlayerViewModel extends nv.Plugin
   constructor: (scene, entity) ->
     super scene, entity
 
-    @endTurnButton = @scene.getEntityById("next-turn-button")
-    @endTurnButton = @endTurnButton.getPlugin(nv.ButtonUIPlugin)
-    @endOtherTurnButton = @scene.getEntityById("next-turn-other-button")
-    @endOtherTurnButton = @endOtherTurnButton.getPlugin(nv.ButtonUIPlugin)
+  "event(scene:initialized)": () ->
+    turnControls =
+      "next-turn-button": nv.ButtonUIPlugin
+      "projected-population": nv.TextUIPlugin
+      "projected-soldiers": nv.TextUIPlugin
+      "projected-food": nv.TextUIPlugin
+      "projected-gold": nv.TextUIPlugin
+
+    doneControls =
+      "next-turn-other-button": nv.ButtonUIPlugin
+
+    @turnControls = []
+    for id, type of turnControls
+      control = @scene.getEntityById id
+      @turnControls.push control.getPlugin(type)
+
+    @doneControls = []
+    for id, type of doneControls
+      control = @scene.getEntityById id
+      @doneControls.push control.getPlugin(type)
+
+    # @endTurnButton = @scene.getEntityById("next-turn-button")
+    # @endTurnButton = @endTurnButton.getPlugin(nv.ButtonUIPlugin)
+    # @endOtherTurnButton = @scene.getEntityById("next-turn-other-button")
+    # @endOtherTurnButton = @endOtherTurnButton.getPlugin(nv.ButtonUIPlugin)
 
     @entity.model.on 'change:turn', (value) =>
       switch value
@@ -40,14 +61,14 @@ class plugins.PlayerViewModel extends nv.Plugin
   "event(game:turn:end)": () ->
     @updateTurnButton()
 
+  showControls: (controls, show) ->
+    for control in controls
+      if show then control.show() else control.hide()
+
   # Collects data from the current player and county to show in the UI
   updateTurnButton: () ->
     turn = @entity.model.get 'turn'
     playerNumber = @entity.model.get 'playerNumber'
 
-    if turn is playerNumber
-      @endTurnButton.show()
-      @endOtherTurnButton.hide()
-    else
-      @endTurnButton.hide()
-      @endOtherTurnButton.show()
+    @showControls @turnControls, (turn is playerNumber)
+    @showControls @doneControls, (turn isnt playerNumber)
