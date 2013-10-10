@@ -69,7 +69,7 @@ class entities.ResourceManager extends nv.Entity
     peasants = @model.get('peasants')
     @model.setMany
       peasants: peasants + @projections.peasants
-      soldiers: @model.get('soldiers') + @projections.soldiers
+      soldiers: Math.max(@model.get('soldiers') + @projections.soldiers, 0)
       gold: @model.get('gold') + @projections.gold
       food: Math.max(@model.get('food') + @projections.food, 0)
       ratio: @projections.ratio

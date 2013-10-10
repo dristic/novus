@@ -23,11 +23,6 @@ class plugins.PlayerViewModel extends nv.Plugin
       control = @scene.getEntityById id
       @doneControls.push control.getPlugin(type)
 
-    # @endTurnButton = @scene.getEntityById("next-turn-button")
-    # @endTurnButton = @endTurnButton.getPlugin(nv.ButtonUIPlugin)
-    # @endOtherTurnButton = @scene.getEntityById("next-turn-other-button")
-    # @endOtherTurnButton = @endOtherTurnButton.getPlugin(nv.ButtonUIPlugin)
-
     @entity.model.on 'change:turn', (value) =>
       switch value
         when 1 then @entity.model.set 'turnColor', 'Red'
