@@ -1,7 +1,6 @@
 class gleam.Rectangle
   constructor: (options) ->
     defaults =
-      fillStyle: '#CCC'
       width: 10
       height: 10
       cornerRadius: 0
@@ -31,7 +30,7 @@ class gleam.Rectangle
     context.arcTo @x, @y, @x + @cornerRadius, @y, @cornerRadius if @cornerRadius 
 
     context.stroke()
-    context.fill()
+    context.fill() if @fillStyle
     context.closePath()
 
   destroy: () ->

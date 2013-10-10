@@ -1,14 +1,17 @@
 class scenes.Main extends nv.Scene
   constructor: (name, game, rootModel) ->
-    rootModel.scenario = realms.gameConfig.scenarios.pvp.two
+    # load the 2x2 game model for background only
+    rootModel.scenario = realms.gameConfig.scenarios.pvp.twoByTwo
 
     super name, game, rootModel
 
-    @on "engine:gamepad:mouse:up", () =>
+    @send "engine:timing:start"
+
+  "event(engine:ui:clicked)": (btn) ->
+    if realms.gameConfig.scenarios.pvp[btn.id]?
+      @rootModel.scenario = realms.gameConfig.scenarios.pvp[btn.id]
       @fire "scene:close"
       @game.openScene 'Game'
-
-    @send "engine:timing:start"
 
   destroy: () ->
     @send "engine:timing:stop"

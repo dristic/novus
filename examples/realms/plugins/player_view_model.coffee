@@ -2,6 +2,17 @@ class plugins.PlayerViewModel extends nv.Plugin
   constructor: (scene, entity) ->
     super scene, entity
 
+    @entity.model.setMany
+      peasants: ""
+      food: ""
+      gold: ""
+      soldiers: ""
+      p_peasants: ""
+      p_soldiers: ""
+      p_food: ""
+      p_gold: ""
+      name: ""
+
   "event(scene:initialized)": () ->
     turnControls =
       "next-turn-button": nv.ButtonUIPlugin

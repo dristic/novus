@@ -92,36 +92,73 @@ realms.gameConfig =
               text: 'How many players?'
               x: 215
               y: 220
-        twoPlayer:
+        twoP2C:
           entity: nv.Entity
-          plugins: [ nv.SpriteUIPlugin ]
+          plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              src: "/assets/Numbers-2-icon.png"
+              id: "twoByTwo"
+              text: "2P/2C"
               x: 204
               y: 260
               width: 64
               height: 64
-        threePlayer:
+              fillStyle: false
+        twoP3C:
           entity: nv.Entity
-          plugins: [ nv.SpriteUIPlugin ]
+          plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              src: "/assets/Numbers-3-icon.png"
+              id: "twoByThree"
+              text: "2P/3C"
               x: 284
               y: 260
               width: 64
               height: 64
-        fourPlayer:
+              fillStyle: false
+        threeP3C:
           entity: nv.Entity
-          plugins: [ nv.SpriteUIPlugin ]
+          plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              src: "/assets/Numbers-4-icon.png"
+              id: "threeByThree"
+              text: "3P/3C"
               x: 364
               y: 260
               width: 64
               height: 64
+              fillStyle: false
+
+        # twoPlayer:
+        #   entity: nv.Entity
+        #   plugins: [ nv.SpriteUIPlugin ]
+        #   model:
+        #     options:
+        #       src: "/assets/Numbers-2-icon.png"
+        #       x: 204
+        #       y: 260
+        #       width: 64
+        #       height: 64
+        # threePlayer:
+        #   entity: nv.Entity
+        #   plugins: [ nv.SpriteUIPlugin ]
+        #   model:
+        #     options:
+        #       src: "/assets/Numbers-3-icon.png"
+        #       x: 284
+        #       y: 260
+        #       width: 64
+        #       height: 64
+        # fourPlayer:
+        #   entity: nv.Entity
+        #   plugins: [ nv.SpriteUIPlugin ]
+        #   model:
+        #     options:
+        #       src: "/assets/Numbers-4-icon.png"
+        #       x: 364
+        #       y: 260
+        #       width: 64
+        #       height: 64
 
 
     game:
