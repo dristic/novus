@@ -7,10 +7,8 @@ class gleam.Rectangle
       x: 0
       y: 0
       alpha: 1
-    options = options ? {}
-    gleam.extend defaults, options
+    gleam.extend defaults, options unless not options
     gleam.extend this, defaults
-    this
 
   draw: (context, canvas) ->
     context.source.globalAlpha = @alpha

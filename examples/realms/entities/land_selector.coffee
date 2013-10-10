@@ -12,9 +12,9 @@ class entities.LandSelector extends nv.Entity
     for button of @buttonConfig
       config = @buttonConfig[button]
       config.model.options.hidden = true
+      config.model.options.x += @model.x
+      config.model.options.y += @model.y
       button = @scene.createEntity config
-      button.model.y += @model.y
-      button.model.x += @model.x
       @buttons.push button
 
   show: () ->
