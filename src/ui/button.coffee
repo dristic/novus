@@ -5,6 +5,10 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
     # Used for telling what is interacted with
     @id = @entity.model.id
 
+    @entity.model.on 'change', (key, value) =>
+      if ['x','y','width','height'].indexOf(key) > -1
+        @button[key] = value
+
     @button = new gleam.Rectangle
       strokeStyle: @entity.model.strokeStyle ? "#000"
       strokeWidth: @entity.model.strokeWidth ? 4
@@ -41,8 +45,6 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
 
   draw: (context, canvas) ->
     return if @hidden is true
-    # @button.x = @entity.model.x
-    # @button.y = @entity.model.y
 
     # Calculate text position based on button
     @text.x = @button.x + (@button.width / 2)
