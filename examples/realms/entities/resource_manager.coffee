@@ -27,9 +27,29 @@ class entities.ResourceManager extends nv.Entity
     @model.set 'soldiers', ( @model.get('soldiers') - value )
 
   onAttacked: (value) ->
+    peasantKills = 0
+    soldierKills = 0
+
     soldiers = @model.get('soldiers') - value
     @model.set 'soldiers', Math.max(soldiers, 0)
-    @model.set('peasants', @model.get('peasants') - Math.abs(soldiers)) if soldiers < 0
+
+    # If we don't have enough soldiers kill peasants
+    if soldiers < 0
+      peasants = @model.get 'peasants'
+      peasantKills = Math.abs(soldiers)
+      peasants = peasants - (peasantKills * 3)
+      @model.set 'peasants', peasants
+
+    # Find how many soldier kills we have
+    if soldiers < 0
+      soldierKills = value - Math.abs(soldiers)
+    else
+      soldierKills = value
+
+    @scene.fire "game:army:battle",
+      kills:
+        soldiers: soldierKills
+        peasants: peasantKills
 
     @scene.fire 'game:ui:alert',
       type: 'alert'

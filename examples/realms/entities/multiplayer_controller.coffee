@@ -43,6 +43,15 @@ class entities.MultiplayerController extends nv.Entity
           @scene.fire "game:army:attacked", data.amount
           snapshot.ref().remove()
 
+      @ref.child('attack_results').on 'child_added', (snapshot) =>
+        data = snapshot.val()
+        if data.guid isnt @guid
+          @scene.fire "game:army:results", data
+          @scene.fire 'game:ui:alert',
+            type: 'info'
+            message: "Killed #{data.kills.soldiers} soldiers and #{data.kills.peasants} peasants!"
+          snapshot.ref().remove()
+
       @ref.child('turn').on 'value', (snapshot) =>
         if @playerManager.model.turn isnt snapshot.val() and snapshot.val() isnt null
           @scene.fire "game:turn:next", snapshot.val()
@@ -55,6 +64,11 @@ class entities.MultiplayerController extends nv.Entity
     @ref.child('attacks').push
       guid: @guid
       amount: amount
+
+  "event(game:army:battle)": (data) ->
+    @ref.child('attack_results').push
+      guid: @guid
+      kills: data.kills
 
   generateHash: () ->
     text = ""
