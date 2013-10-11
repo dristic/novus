@@ -10,7 +10,8 @@ class nv.PanelUIPlugin extends nv.UIPlugin
       y: entity.model.y
 
   draw: (context, canvas) ->
-    @background.x = @entity.model.x
-    @background.y = @entity.model.y
+    unless @hidden
+      @background.x = @entity.model.x
+      @background.y = @entity.model.y
 
-    @background.draw context, canvas
+      @background.draw context, canvas

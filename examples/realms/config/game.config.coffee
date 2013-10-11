@@ -269,8 +269,8 @@ realms.gameConfig =
             options:
               #leftText: "Farmers"
               #rightText: "Miners"
-              leftImage: "/assets/farmer-16.wh.png"              
-              rightImage: "/assets/miner-16.wh.png"              
+              leftImage: "/assets/farmer-16.wh.png"
+              rightImage: "/assets/miner-16.wh.png"
               font: uiFont
               x: 80
               y: 122
@@ -456,13 +456,6 @@ realms.gameConfig =
               bind: entities.PlayerManager
               x: 3
               y: 480
-        # dialogTest:
-        #   entity: nv.Entity
-        #   plugins: [ nv.DialogUIPlugin ]
-        #   model:
-        #     options:
-        #       x: 200
-        #       y: 200
         alert:
           entity: nv.Entity
           plugins: [ nv.AlertUIPlugin ]
@@ -485,6 +478,13 @@ realms.gameConfig =
               alert:
                 style: '#D40000'
                 color: '#fff'
+        armyCreator:
+          entity: entities.ArmyCreator
+          plugins: []
+          model:
+            options:
+              x: 190
+              y: 200
 
     gameover:
       config:

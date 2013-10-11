@@ -9,6 +9,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @max = 100
     @gap = entity.model.gap ? 10
     @height = entity.model.height ? 30
+    @offset = 0
 
     if @entity.model.leftText
       @down = new nv.TextUIPlugin scene,
@@ -85,13 +86,14 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @scene.fire "engine:ui:slider:change", this.entity
 
   bounds: () ->
-    new nv.Rect @minBox.x, @minBox.x, @maxBox.x, @maxBox.y + @box.height
+    new nv.Rect @minBox.x, @minBox.y, @maxBox.x, @maxBox.y + @box.height
 
   getBoxBounds: () ->
     new nv.Rect @box.x, @box.y, @box.x + @box.width, @box.y + @box.height
 
   "event(engine:ui:mouse:down)": (data) ->
     if @getBoxBounds().contains new nv.Point(data.x, data.y)
+      @offset = data.x - @box.x
       @dragging = true
 
   "event(engine:ui:mouse:up)": (data) ->
@@ -123,7 +125,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
       @value = mouseX - @minBox.x
       @clamp()
 
-    @box.x = @boxLeftX + ((1 * @max) * @getValue())
+    @box.x = @boxLeftX + ((1 * @max) * @getValue()) - @offset
 
     @down.draw context, canvas
     @up.draw context, canvas

@@ -6,45 +6,45 @@ class nv.DialogUIPlugin extends nv.UIPlugin
 
     @panel = new nv.PanelUIPlugin scene,
       model:
-        color: 'black'
-        width: 330
-        height: 120
-        x: entity.model.x - 10
-        y: entity.model.y - 30
-
-    @text = new nv.TextUIPlugin scene,
-      model:
-        text: "Hello World"
-        font: 'bold 20px sans-serif'
-        textBaseline: 'bottom'
-        x: entity.model.x
-        y: entity.model.y
+        color: 'rgba(0, 0, 0, 0.5)'
+        width: 3000
+        height: 3000
+        x: 0
+        y: 0
 
     @confirm = new nv.ButtonUIPlugin scene,
-      model:
+      model: new nv.Model
         text: "Confirm"
         id: 'confirm'
         x: entity.model.x
         y: entity.model.y + 20
 
     @cancel = new nv.ButtonUIPlugin scene,
-      model:
+      model: new nv.Model
         text: "Cancel"
         id: 'cancel'
         x: entity.model.x + 160
         y: entity.model.y + 20
 
+  show: () ->
+    @panel.show()
+    @confirm.show()
+    @cancel.show()
+
+  hide: () ->
+    @panel.hide()
+    @confirm.hide()
+    @cancel.hide()
+
   "event(engine:ui:clicked)": (entity) ->
     if entity is @confirm
       @scene.fire "engine:ui:dialog:confirm", this
-      @scene.removeEntity @entity
     else if entity is @cancel
       @scene.fire "engine:ui:dialog:cancel", this
-      @scene.removeEntity @entity
+    @hide()
 
   destroy: () ->
     @panel.destroy()
-    @text.destroy()
     @confirm.destroy()
     @cancel.destroy()
     super

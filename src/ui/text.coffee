@@ -22,6 +22,9 @@ class nv.TextUIPlugin extends nv.UIPlugin
           @values[key] = value
           @dirty = true
 
+  setText: (text) ->
+    @text.text = text
+
   updateText: () ->
     if @dirty
       text = @entity.model.text
