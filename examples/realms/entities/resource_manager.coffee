@@ -43,7 +43,8 @@ class entities.ResourceManager extends nv.Entity
     if soldierKills < value
       peasants = @model.get 'peasants'
       peasantKills = value - soldierKills
-      peasants = peasants - (peasantKills * 3)
+      peasantKills *= 3
+      peasants = peasants - peasantKills
       @model.set 'peasants', peasants
 
     @scene.fire "game:army:battle",
@@ -53,7 +54,7 @@ class entities.ResourceManager extends nv.Entity
 
     @scene.fire 'game:ui:alert',
       type: 'alert'
-      message: "#{value} soldiers died in battle!"
+      message: "#{soldierKills} soldiers and #{peasantKills} peasants died in battle!"
 
   setLaborDistribution: (ratio) ->
     console.log "labor ratio", ratio
