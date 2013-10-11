@@ -52,10 +52,6 @@ class entities.ResourceManager extends nv.Entity
         soldiers: soldierKills
         peasants: peasantKills
 
-    @scene.fire 'game:ui:alert',
-      type: 'alert'
-      message: "#{soldierKills} soldiers and #{peasantKills} peasants died in battle!"
-
   setLaborDistribution: (ratio) ->
     console.log "labor ratio", ratio
     @projections.set 'ratio', ratio

@@ -38,6 +38,11 @@ class entities.PlayerManager extends nv.Entity
         type: 'info'
         message: "#{value} soldiers rush into battle!"
 
+  "event(game:army:battle)": (data) ->
+    @scene.fire 'game:ui:alert',
+      type: 'alert'
+      message: "#{data.kills.soldiers} soldiers and #{data.kills.peasants} peasants died in battle!"
+
   createPlayers: () ->
     rootModel = @scene.rootModel
     scenario = rootModel.get 'scenario'
