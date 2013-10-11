@@ -3725,6 +3725,10 @@
       }
     }
 
+    TextUIPlugin.prototype.setText = function(text) {
+      return this.text.text = text;
+    };
+
     TextUIPlugin.prototype.updateText = function() {
       var key, text, value, _ref;
       if (this.dirty) {
@@ -3852,9 +3856,11 @@
     }
 
     PanelUIPlugin.prototype.draw = function(context, canvas) {
-      this.background.x = this.entity.model.x;
-      this.background.y = this.entity.model.y;
-      return this.background.draw(context, canvas);
+      if (!this.hidden) {
+        this.background.x = this.entity.model.x;
+        this.background.y = this.entity.model.y;
+        return this.background.draw(context, canvas);
+      }
     };
 
     return PanelUIPlugin;
@@ -3879,6 +3885,7 @@
       this.max = 100;
       this.gap = (_ref1 = entity.model.gap) != null ? _ref1 : 10;
       this.height = (_ref2 = entity.model.height) != null ? _ref2 : 30;
+      this.offset = 0;
       if (this.entity.model.leftText) {
         this.down = new nv.TextUIPlugin(scene, {
           model: {
@@ -3964,7 +3971,7 @@
     };
 
     SliderUIPlugin.prototype.bounds = function() {
-      return new nv.Rect(this.minBox.x, this.minBox.x, this.maxBox.x, this.maxBox.y + this.box.height);
+      return new nv.Rect(this.minBox.x, this.minBox.y, this.maxBox.x, this.maxBox.y + this.box.height);
     };
 
     SliderUIPlugin.prototype.getBoxBounds = function() {
@@ -3973,6 +3980,7 @@
 
     SliderUIPlugin.prototype["event(engine:ui:mouse:down)"] = function(data) {
       if (this.getBoxBounds().contains(new nv.Point(data.x, data.y))) {
+        this.offset = data.x - this.box.x;
         return this.dragging = true;
       }
     };
@@ -4016,7 +4024,7 @@
         this.value = mouseX - this.minBox.x;
         this.clamp();
       }
-      this.box.x = this.boxLeftX + ((1 * this.max) * this.getValue());
+      this.box.x = this.boxLeftX + ((1 * this.max) * this.getValue()) - this.offset;
       this.down.draw(context, canvas);
       this.up.draw(context, canvas);
       this.minBox.draw(context, canvas);
@@ -4090,53 +4098,54 @@
       this.gamepad = scene.get('gamepad');
       this.panel = new nv.PanelUIPlugin(scene, {
         model: {
-          color: 'black',
-          width: 330,
-          height: 120,
-          x: entity.model.x - 10,
-          y: entity.model.y - 30
-        }
-      });
-      this.text = new nv.TextUIPlugin(scene, {
-        model: {
-          text: "Hello World",
-          font: 'bold 20px sans-serif',
-          textBaseline: 'bottom',
-          x: entity.model.x,
-          y: entity.model.y
+          color: 'rgba(0, 0, 0, 0.5)',
+          width: 3000,
+          height: 3000,
+          x: 0,
+          y: 0
         }
       });
       this.confirm = new nv.ButtonUIPlugin(scene, {
-        model: {
+        model: new nv.Model({
           text: "Confirm",
           id: 'confirm',
           x: entity.model.x,
           y: entity.model.y + 20
-        }
+        })
       });
       this.cancel = new nv.ButtonUIPlugin(scene, {
-        model: {
+        model: new nv.Model({
           text: "Cancel",
           id: 'cancel',
           x: entity.model.x + 160,
           y: entity.model.y + 20
-        }
+        })
       });
     }
+
+    DialogUIPlugin.prototype.show = function() {
+      this.panel.show();
+      this.confirm.show();
+      return this.cancel.show();
+    };
+
+    DialogUIPlugin.prototype.hide = function() {
+      this.panel.hide();
+      this.confirm.hide();
+      return this.cancel.hide();
+    };
 
     DialogUIPlugin.prototype["event(engine:ui:clicked)"] = function(entity) {
       if (entity === this.confirm) {
         this.scene.fire("engine:ui:dialog:confirm", this);
-        return this.scene.removeEntity(this.entity);
       } else if (entity === this.cancel) {
         this.scene.fire("engine:ui:dialog:cancel", this);
-        return this.scene.removeEntity(this.entity);
       }
+      return this.hide();
     };
 
     DialogUIPlugin.prototype.destroy = function() {
       this.panel.destroy();
-      this.text.destroy();
       this.confirm.destroy();
       this.cancel.destroy();
       return DialogUIPlugin.__super__.destroy.apply(this, arguments);
@@ -4465,6 +4474,23 @@
 
 (function() {
 
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  entities.ArmyCreator = (function(_super) {
+    __extends(ArmyCreator, _super);
+
+    function ArmyCreator(scene, plugins, model) {
+      ArmyCreator.__super__.constructor.call(this, scene, plugins, model);
+    }
+
+    return ArmyCreator;
+
+  })(nv.Entity);
 
 }).call(this);
 
@@ -4978,6 +5004,13 @@
       });
     };
 
+    PlayerManager.prototype["event(game:army:battle)"] = function(data) {
+      return this.scene.fire('game:ui:alert', {
+        type: 'alert',
+        message: "" + data.kills.soldiers + " soldiers and " + data.kills.peasants + " peasants died in battle!"
+      });
+    };
+
     PlayerManager.prototype.createPlayers = function() {
       var entityConfigs, name, player, playerConfig, playerNumber, rootModel, scenario, _i, _j, _len, _ref, _ref1;
       rootModel = this.scene.rootModel;
@@ -5134,18 +5167,15 @@
       if (soldierKills < value) {
         peasants = this.model.get('peasants');
         peasantKills = value - soldierKills;
-        peasants = peasants - (peasantKills * 3);
+        peasantKills *= 3;
+        peasants = peasants - peasantKills;
         this.model.set('peasants', peasants);
       }
-      this.scene.fire("game:army:battle", {
+      return this.scene.fire("game:army:battle", {
         kills: {
           soldiers: soldierKills,
           peasants: peasantKills
         }
-      });
-      return this.scene.fire('game:ui:alert', {
-        type: 'alert',
-        message: "" + value + " soldiers died in battle!"
       });
     };
 
@@ -5856,7 +5886,7 @@
 
   uiFont = 'bold 16px sans-serif';
 
-  version = 'v0.0.5';
+  version = 'v0.0.6';
 
   realms.gameConfig = {
     canvas: {
@@ -6334,6 +6364,16 @@
                   style: '#D40000',
                   color: '#fff'
                 }
+              }
+            }
+          },
+          armyCreator: {
+            entity: entities.ArmyCreator,
+            plugins: [],
+            model: {
+              options: {
+                x: 190,
+                y: 200
               }
             }
           }
