@@ -31,6 +31,23 @@ realms.gameConfig =
     nv.UIEngine
   ]
 
+  playerMetadata: [ 
+    flag:
+      src: "/assets/shield-red-48.png"
+      width: 48
+      height: 48
+    , 
+      flag:
+        src: "/assets/shield-blue-48.png"
+        width: 48
+        height: 48
+    ,
+      flag:
+        src: "/assets/shield-yellow-48.png"
+        width: 48
+        height: 48
+  ]
+
   scenes:
     main:
       config:
@@ -98,7 +115,7 @@ realms.gameConfig =
           model:
             options:
               id: "twoByTwo"
-              text: "2P/2C"
+              text: "2x2"
               x: 204
               y: 260
               width: 64
@@ -110,7 +127,7 @@ realms.gameConfig =
           model:
             options:
               id: "twoByThree"
-              text: "2P/3C"
+              text: "2x3"
               x: 284
               y: 260
               width: 64
@@ -122,44 +139,12 @@ realms.gameConfig =
           model:
             options:
               id: "threeByThree"
-              text: "3P/3C"
+              text: "3x3"
               x: 364
               y: 260
               width: 64
               height: 64
               fillStyle: false
-
-        # twoPlayer:
-        #   entity: nv.Entity
-        #   plugins: [ nv.SpriteUIPlugin ]
-        #   model:
-        #     options:
-        #       src: "/assets/Numbers-2-icon.png"
-        #       x: 204
-        #       y: 260
-        #       width: 64
-        #       height: 64
-        # threePlayer:
-        #   entity: nv.Entity
-        #   plugins: [ nv.SpriteUIPlugin ]
-        #   model:
-        #     options:
-        #       src: "/assets/Numbers-3-icon.png"
-        #       x: 284
-        #       y: 260
-        #       width: 64
-        #       height: 64
-        # fourPlayer:
-        #   entity: nv.Entity
-        #   plugins: [ nv.SpriteUIPlugin ]
-        #   model:
-        #     options:
-        #       src: "/assets/Numbers-4-icon.png"
-        #       x: 364
-        #       y: 260
-        #       width: 64
-        #       height: 64
-
 
     game:
       config:

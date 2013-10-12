@@ -10,7 +10,7 @@ class entities.Country extends nv.Entity
     @model.resourceManager.setOwner this
 
     @model.plots = []
-    for position in @model.plotData
+    for position in @model.plots
       landConfig = nv.extend {}, entityConfigs.land
       landConfig.model.options.x = position.x
       landConfig.model.options.y = position.y
@@ -19,6 +19,9 @@ class entities.Country extends nv.Entity
   "event(game:land:change)": (land) ->
     unless @model.plots.indexOf(land) is -1
       @resources().updateProjections()
+
+  name: () ->
+    @model.get 'country'
 
   resources: () ->
     @model.resourceManager

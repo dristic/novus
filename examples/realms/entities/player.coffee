@@ -7,19 +7,29 @@ class entities.Player extends nv.Entity
     @model.countries = []
     @attacking = false
     @active = false
+    @model.selectedCountry = 0
 
   addCountry: (data) ->
     entityConfigs = @scene.rootModel.config.entities
     @model.countries.push @scene.createEntity entityConfigs.country, data
 
-  country: (ignore) ->
-    @model.countries[0]
+  country: () ->
+    @model.countries[@model.selectedCountry]
 
-  resources: (country) ->
-    @model.countries[0].resources()
+  selectCountry: (id) ->
+    for idx in [0..@model.countries.length]
+      if @model.countries[idx].model.id is id
+        @model.selectedCountry = idx
+        break
+
+  countries: () ->
+    @model.countries
+
+  resources: () ->
+    @model.countries[@model.selectedCountry].resources()
 
   plots: () ->
-    @model.countries[0].plots()
+    @model.countries[@model.selectedCountry].plots()
 
   update: (dt) ->
     mouseX = @gamepad.getState().mouse.x - (@model.width / 2)
@@ -27,11 +37,14 @@ class entities.Player extends nv.Entity
 
   beginTurn: () ->
     @active = true
-    @resources().activate(true)
-    @resources().prepareProjections()
-    @resources().updateProjections()
+    for country in @countries()
+      country.resources().activate(true)
+      country.resources().prepareProjections()
+      country.resources().updateProjections()
 
   endTurn: () ->
+    for country in @countries()
+      country.active = false
+      country.resources().commitProjections()
+      country.resources().activate(false)
     @active = false
-    @resources().commitProjections()
-    @resources().activate(false)

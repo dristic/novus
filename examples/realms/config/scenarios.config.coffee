@@ -22,27 +22,23 @@ realms.scenarios =
         ratio: 0.5
       countries:
         Darkland:
+          id: 1026
           owner: 1
           plots: [new nv.Point(576,320), new nv.Point(608,320), new nv.Point(576,352), new nv.Point(352,416), new nv.Point(352,448)]
           flag:
-            src: "/assets/shield-red-48.png"
             x: 260
             y: 360
-            width: 48
-            height: 48
         Danville:
+          id: 1027
           owner: 2
           plots: [new nv.Point(576,480), new nv.Point(608,480), new nv.Point(608,512), new nv.Point(480,576), new nv.Point(512,576)]
           flag:
-            src: "/assets/shield-blue-48.png"
             x: 560
             y: 620
-            width: 48
-            height: 48
 
     twoByThree:
       description: "2-players, 3-countries"
-      players: 3
+      players: 2
       map:
         width: 960
         height: 960
@@ -61,39 +57,26 @@ realms.scenarios =
         ratio: 0.5
       countries:
         Darkland:
+          id: 2050
           owner: 1
           plots: [new nv.Point(224,288), new nv.Point(288,288), new nv.Point(352,288), new nv.Point(256,352), new nv.Point(320,352)]
           flag:
-            src: "/assets/shield-red-48.png"
             x: 340
             y: 460
-            width: 48
-            height: 48
         Danville:
+          id: 2052
           owner: 2
           plots: [new nv.Point(608,512), new nv.Point(672,512), new nv.Point(736,512), new nv.Point(640,576), new nv.Point(704,576)]
           flag:
-            src: "/assets/shield-blue-48.png"
             x: 560
             y: 620
-            width: 48
-            height: 48
         York:
-          owner: 3
+          id: 2051
+          owner: 1
           plots: [new nv.Point(224,768), new nv.Point(288,768), new nv.Point(352,768), new nv.Point(256,832), new nv.Point(320,832)]
           flag:
-            src: "/assets/shield-yellow-48.png"
             x: 340
             y: 620
-            width: 48
-            height: 48
-          flags: ['neutral']
-          resources:
-            food: 100
-            peasants: 70
-            soldiers: 30
-            gold: 10
-            ratio: 0.5
 
     threeByThree:
       description: "3-players, 3-countries"

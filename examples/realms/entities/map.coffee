@@ -60,7 +60,7 @@ class entities.Map extends nv.Entity
 
     tile = @playerData.getTileFromScreenXY(data.x - @camera.x, data.y - @camera.y)
     if tile isnt 0
-      @scene.fire "game:clicked:county", tile
+      @scene.fire "game:clicked:country", tile
 
   destroy: () ->
     clearTimeout @timeout

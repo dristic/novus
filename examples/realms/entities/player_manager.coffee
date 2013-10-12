@@ -8,21 +8,23 @@ class entities.PlayerManager extends nv.Entity
 
   "event(scene:initialized)": () ->
     @attackText = @scene.getEntityById('attack-text').getPlugin nv.TextUIPlugin
+    @countries = @scene.getEntities(entities.Country)
 
   "event(game:army:created)": (value) ->
     @clientPlayer().resources().createArmy value
 
-  "event(game:clicked:county)": (county) ->
+  "event(game:clicked:country)": (id) ->
     if @model.turn is @model.playerNumber
-      if @attacking is true
-        if county is 1027 and @model.playerNumber is 1
-          @attacking = false
-          @attackText.hide()
-          @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
-        else if county is 1026 and @model.playerNumber is 2
-          @attacking = false
-          @attackText.hide()
-          @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
+      for country in @countries
+        if country.model.id is id
+          unless country.model.owner is @model.playerNumber
+            if @attacking is true
+              @attacking = false
+              @attackText.hide()
+              @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
+          else
+            @clientPlayer().selectCountry id
+            @scene.fire "game:selected:country"
     
   "event(game:mp:player)": (number) ->
     @model.playerNumber = number
@@ -58,21 +60,28 @@ class entities.PlayerManager extends nv.Entity
 
       if playerNumber is @model.playerNumber
         @model.set 'clientPlayer', player
-        switch playerNumber
-          when 1 then @model.set 'playerColor', 'Red'
-          when 2 then @model.set 'playerColor', 'Blue'
 
     # Create each country and add it to a player if it is owned
     for name of scenario.countries
       for player in @model.players
         if player.model.number is scenario.countries[name].owner
-          player.addCountry
+          flag = nv.extend {}, scenario.countries[name].flag
+          flag = nv.extend flag, rootModel.config.playerMetadata[player.model.number - 1].flag
+
+          data = nv.extend {}, scenario.countries[name]
+          data = nv.extend data,
             country: name
             resources: scenario.resources
-            plotData: scenario.countries[name].plots
             ratio: 0.5
+            flag: flag
+
+          player.addCountry data
+
+    @countries = @scene.getEntities(entities.Country)
 
     @model.set 'currentPlayer', @model.players[@model.turn - 1]
+    console.log "PLAYER =", @model.currentPlayer.model.number
+    console.log "TURN =", @model.turn
     @scene.fire "game:player:assigned"
     @currentPlayer().beginTurn()
 
@@ -90,6 +99,8 @@ class entities.PlayerManager extends nv.Entity
     @currentPlayer().endTurn()
     @model.set 'turn', turn
     @model.set 'currentPlayer', @model.players[turn - 1]
+    console.log "PLAYER =", @model.currentPlayer.model.number
+    console.log "TURN =", @model.turn
     @currentPlayer().beginTurn()
 
     @scene.fire "game:turn:end", turn

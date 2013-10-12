@@ -43,8 +43,12 @@ class nv.AssignedLaborRenderer extends nv.RenderingPlugin
 class renderers.PlayerManager extends nv.RenderingPlugin
 	constructor: (scene, entity) ->
 		super scene, entity
+		@flags = []
+		@turns = []
 
-		scenario = scene.rootModel.get 'scenario'
+	"event(game:player:assigned)": () ->
+		scenario = @scene.rootModel.get 'scenario'
+		playerMetadata = @scene.rootModel.config.playerMetadata
 
 		model =
 			src: "/assets/turn-box.png"
@@ -52,23 +56,23 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 			y: 5
 			width: 59
 			height: 72
-		@border = new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model)))
+		@border = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
-		@flags = []
-		@turns = []
-		for name, data of scenario.countries
-			image = new Image()
-			image.src = data.flag.src
-			@flags.push nv.extend {image: image}, data.flag
+		for player in @entity.model.players
+			for country in player.countries()
 
-			model = nv.extend data.flag, {hidden: true, x: 567, y: 17}
+				image = new Image()
+				image.src = country.model.flag.src
+				@flags.push nv.extend {image: image}, country.model.flag
 
-			@turns.push new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model)))
-			@turns[entity.model.turn - 1].hidden = false
+			model = nv.extend playerMetadata[player.model.number-1].flag, {hidden: true, x: 567, y: 17}
 
-	"event(game:player:assigned)": () ->
+			@turns.push new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
+			@turns[@entity.model.turn - 1].hidden = false
+
+
 		model =
-			src: @flags[ @entity.model.playerNumber - 1 ].src
+			src: playerMetadata[ @entity.model.playerNumber - 1 ].flag.src
 			x: 5
 			y: 5
 			width: 32
