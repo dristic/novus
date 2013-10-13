@@ -24,7 +24,7 @@ realms.scenarios =
         Darkland:
           id: 1026
           owner: 1
-          plots: [new nv.Point(576,320), new nv.Point(608,320), new nv.Point(576,352), new nv.Point(352,416), new nv.Point(352,448)]
+          plots: [new nv.Point(544,320), new nv.Point(576,320), new nv.Point(544,352), new nv.Point(352,416), new nv.Point(352,448)]
           flag:
             x: 260
             y: 360

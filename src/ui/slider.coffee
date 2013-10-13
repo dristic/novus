@@ -122,10 +122,10 @@ class nv.SliderUIPlugin extends nv.UIPlugin
 
     if @dragging is true
       mouseX = @gamepad.getState().mouse.x
-      @value = mouseX - @minBox.x
+      @value = mouseX - @minBox.x - @offset
       @clamp()
 
-    @box.x = @boxLeftX + ((1 * @max) * @getValue()) - @offset
+    @box.x = @minBox.x + @value
 
     @down.draw context, canvas
     @up.draw context, canvas
