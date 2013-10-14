@@ -326,12 +326,25 @@
     };
 
     Text.prototype.draw = function(context, canvas) {
+      var line, y, _i, _len, _ref, _results;
       context.source.globalAlpha = this.alpha;
       context.setFillStyle(this.color);
       context.setFont(this.font);
       context.setTextBaseline(this.textBaseline);
       context.setTextAlign(this.textAlign);
-      return context.fillText(this.text, this.x, this.y);
+      if (typeof this.text === "string") {
+        return context.fillText(this.text, this.x, this.y);
+      } else {
+        y = this.y;
+        _ref = this.text;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          line = _ref[_i];
+          context.fillText(line, this.x, y);
+          _results.push(y += this.lineHeight);
+        }
+        return _results;
+      }
     };
 
     Text.prototype.destroy = function() {
@@ -772,13 +785,13 @@
         x = 0;
         y = 0;
         index = -1;
+        framesInARow = this.image.width / this.tileWidth;
         _results = [];
         while (y < this.height) {
           while (x < this.width) {
             cell = this.data[++index];
-            framesInARow = this.image.width / this.tileWidth;
             tileX = ((cell - 1) % framesInARow) * this.tileWidth;
-            tileY = Math.floor(cell / framesInARow) * this.tileHeight;
+            tileY = Math.floor((cell - 1) / framesInARow) * this.tileHeight;
             context.drawImage(this.image, tileX, tileY, this.tileWidth, this.tileHeight, Math.floor(x + this.x), Math.floor(y + this.y), this.tileWidth, this.tileHeight);
             x += this.tileWidth;
           }
@@ -3706,10 +3719,11 @@
       TextUIPlugin.__super__.constructor.call(this, scene, entity);
       this.id = this.entity.model.id;
       this.text = new gleam.Text(this.entity.model);
-      this.dirty = true;
+      this.dirty = false;
       this.values = {};
       this.width = null;
       if (this.entity.model.bind != null) {
+        this.dirty = true;
         binding = this.scene.getEntity(this.entity.model.bind);
         _ref = this.entity.model.text.match(/\{{[\s\S]+?}}/g);
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -4021,10 +4035,10 @@
       }
       if (this.dragging === true) {
         mouseX = this.gamepad.getState().mouse.x;
-        this.value = mouseX - this.minBox.x;
+        this.value = mouseX - this.minBox.x - this.offset;
         this.clamp();
       }
-      this.box.x = this.boxLeftX + ((1 * this.max) * this.getValue()) - this.offset;
+      this.box.x = this.minBox.x + this.value;
       this.down.draw(context, canvas);
       this.up.draw(context, canvas);
       this.minBox.draw(context, canvas);
@@ -4402,9 +4416,16 @@
     __extends(PlayerManager, _super);
 
     function PlayerManager(scene, entity) {
-      var data, image, model, name, scenario, _ref;
       PlayerManager.__super__.constructor.call(this, scene, entity);
-      scenario = scene.rootModel.get('scenario');
+      this.flags = [];
+      this.turns = [];
+      this.selectedCountry = 0;
+    }
+
+    PlayerManager.prototype["event(game:player:assigned)"] = function() {
+      var country, image, model, player, playerMetadata, scenario, _i, _j, _len, _len1, _ref, _ref1;
+      scenario = this.scene.rootModel.get('scenario');
+      playerMetadata = this.scene.rootModel.config.playerMetadata;
       model = {
         src: "/assets/turn-box.png",
         x: 560,
@@ -4412,37 +4433,37 @@
         width: 59,
         height: 72
       };
-      this.border = new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model)));
-      this.flags = [];
-      this.turns = [];
-      _ref = scenario.countries;
-      for (name in _ref) {
-        data = _ref[name];
-        image = new Image();
-        image.src = data.flag.src;
-        this.flags.push(nv.extend({
-          image: image
-        }, data.flag));
-        model = nv.extend(data.flag, {
+      this.border = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+      _ref = this.entity.model.players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        _ref1 = player.countries();
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          country = _ref1[_j];
+          image = new Image();
+          image.src = country.model.flag.src;
+          this.flags.push(nv.extend({
+            image: image,
+            countryId: country.model.id
+          }, country.model.flag));
+        }
+        model = nv.extend(playerMetadata[player.model.number - 1].flag, {
           hidden: true,
           x: 567,
           y: 17
         });
-        this.turns.push(new nv.SpriteUIPlugin(scene, new nv.Entity(scene, [], new nv.Model(model))));
-        this.turns[entity.model.turn - 1].hidden = false;
+        this.turns.push(new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model))));
+        this.turns[this.entity.model.turn - 1].hidden = false;
       }
-    }
-
-    PlayerManager.prototype["event(game:player:assigned)"] = function() {
-      var model;
       model = {
-        src: this.flags[this.entity.model.playerNumber - 1].src,
+        src: playerMetadata[this.entity.model.playerNumber - 1].flag.src,
         x: 5,
         y: 5,
         width: 32,
         height: 32
       };
-      return this.shield = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+      this.shield = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+      return this.selectedCountry = this.entity.clientPlayer().selectedCountry().model.id;
     };
 
     PlayerManager.prototype["event(game:turn:end)"] = function(turn) {
@@ -4455,12 +4476,27 @@
       return this.turns[turn - 1].hidden = false;
     };
 
+    PlayerManager.prototype["event(game:selected:country)"] = function(id) {
+      return this.selectedCountry = id;
+    };
+
     PlayerManager.prototype.draw = function(context, canvas) {
       var flag, _i, _len, _ref, _results;
       _ref = this.flags;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         flag = _ref[_i];
+        if (flag.countryId === this.selectedCountry) {
+          context.save();
+          context.source.scale(1, 0.5);
+          context.setStrokeStyle("yellow");
+          context.setStrokeWidth(4);
+          context.source.beginPath();
+          context.source.arc(flag.x + (flag.width / 2) - 2.5, 2 * (flag.y + flag.height) - 10, 20, 0, Math.PI * 2, false);
+          context.stroke();
+          context.closePath();
+          context.restore();
+        }
         _results.push(context.drawImage(flag.image, flag.x, flag.y));
       }
       return _results;
@@ -4502,28 +4538,33 @@
     __extends(Country, _super);
 
     function Country(scene, plugins, model) {
-      var entityConfigs, landConfig, position, rootModel, scenario, _i, _len, _ref;
+      var entityConfigs, landConfig, plots, position, rootModel, scenario, _i, _len, _ref;
       Country.__super__.constructor.call(this, scene, plugins, model);
       rootModel = this.scene.rootModel;
       scenario = rootModel.get('scenario');
       entityConfigs = rootModel.config.entities;
       this.model.set('resourceManager', this.scene.createEntity(entityConfigs.resourceManager, scenario.resources));
       this.model.resourceManager.setOwner(this);
-      this.model.plots = [];
-      _ref = this.model.plotData;
+      plots = [];
+      _ref = this.model.plots;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         position = _ref[_i];
         landConfig = nv.extend({}, entityConfigs.land);
         landConfig.model.options.x = position.x;
         landConfig.model.options.y = position.y;
-        this.model.plots.push(this.scene.createEntity(landConfig));
+        plots.push(this.scene.createEntity(landConfig));
       }
+      this.model.plots = plots;
     }
 
     Country.prototype["event(game:land:change)"] = function(land) {
       if (this.model.plots.indexOf(land) !== -1) {
         return this.resources().updateProjections();
       }
+    };
+
+    Country.prototype.name = function() {
+      return this.model.get('country');
     };
 
     Country.prototype.resources = function() {
@@ -4701,11 +4742,11 @@
     __extends(Map, _super);
 
     function Map(scene, plugins, model) {
-      var accessoryiesModel, cache, mapModel, playerAllocModel, scenario,
+      var cache, layerModel, level, mapModel, playerAllocModel, scenario, _i,
         _this = this;
       scenario = scene.get('scenario');
       mapModel = nv.extend(model, scenario.map);
-      mapModel.data = scenario.data.map;
+      mapModel.data = scenario.data.layer0;
       Map.__super__.constructor.call(this, scene, plugins, mapModel);
       this.down = false;
       this.origin = {
@@ -4717,12 +4758,15 @@
       this.camera = scene.get('camera');
       this.camera.x = -160;
       this.camera.y = -230;
-      if (scenario.data.accessories != null) {
-        accessoryiesModel = nv.extend(model, scenario.map);
-        accessoryiesModel.data = scenario.data.accessories;
-        this.playerData = new nv.SpriteMapRenderingPlugin(scene, {
-          model: accessoryiesModel
-        });
+      this.layers = [];
+      for (level = _i = 1; _i <= 4; level = ++_i) {
+        if (scenario.data["layer" + level] != null) {
+          layerModel = nv.extend(model, scenario.map);
+          layerModel.data = scenario.data["layer" + level];
+          this.layers.push(new nv.SpriteMapRenderingPlugin(scene, {
+            model: layerModel
+          }));
+        }
       }
       playerAllocModel = nv.extend(model, scenario.map);
       playerAllocModel.data = scenario.data.playerData;
@@ -4768,7 +4812,7 @@
       this.down = false;
       tile = this.playerData.getTileFromScreenXY(data.x - this.camera.x, data.y - this.camera.y);
       if (tile !== 0) {
-        return this.scene.fire("game:clicked:county", tile);
+        return this.scene.fire("game:clicked:country", tile);
       }
     };
 
@@ -4860,10 +4904,10 @@
       }
     };
 
-    MultiplayerController.prototype["event(game:army:send)"] = function(amount) {
+    MultiplayerController.prototype["event(game:army:send)"] = function(soldiers) {
       return this.ref.child('attacks').push({
         guid: this.guid,
-        amount: amount
+        amount: soldiers
       });
     };
 
@@ -4904,6 +4948,7 @@
       this.model.countries = [];
       this.attacking = false;
       this.active = false;
+      this.model.selectedCountry = 0;
     }
 
     Player.prototype.addCountry = function(data) {
@@ -4912,16 +4957,38 @@
       return this.model.countries.push(this.scene.createEntity(entityConfigs.country, data));
     };
 
-    Player.prototype.country = function(ignore) {
-      return this.model.countries[0];
+    Player.prototype.country = function() {
+      return this.model.countries[this.model.selectedCountry];
     };
 
-    Player.prototype.resources = function(country) {
-      return this.model.countries[0].resources();
+    Player.prototype.selectCountry = function(id) {
+      var idx, _i, _ref, _results;
+      _results = [];
+      for (idx = _i = 0, _ref = this.model.countries.length; 0 <= _ref ? _i <= _ref : _i >= _ref; idx = 0 <= _ref ? ++_i : --_i) {
+        if (this.model.countries[idx].model.id === id) {
+          this.model.selectedCountry = idx;
+          break;
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
+    Player.prototype.selectedCountry = function() {
+      return this.model.countries[this.model.selectedCountry];
+    };
+
+    Player.prototype.countries = function() {
+      return this.model.countries;
+    };
+
+    Player.prototype.resources = function() {
+      return this.selectedCountry().resources();
     };
 
     Player.prototype.plots = function() {
-      return this.model.countries[0].plots();
+      return this.selectedCountry().plots();
     };
 
     Player.prototype.update = function(dt) {
@@ -4931,16 +4998,29 @@
     };
 
     Player.prototype.beginTurn = function() {
+      var country, _i, _len, _ref, _results;
       this.active = true;
-      this.resources().activate(true);
-      this.resources().prepareProjections();
-      return this.resources().updateProjections();
+      _ref = this.countries();
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        country = _ref[_i];
+        country.resources().activate(true);
+        country.resources().prepareProjections();
+        _results.push(country.resources().updateProjections());
+      }
+      return _results;
     };
 
     Player.prototype.endTurn = function() {
-      this.active = false;
-      this.resources().commitProjections();
-      return this.resources().activate(false);
+      var country, _i, _len, _ref;
+      _ref = this.countries();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        country = _ref[_i];
+        country.active = false;
+        country.resources().commitProjections();
+        country.resources().activate(false);
+      }
+      return this.active = false;
     };
 
     return Player;
@@ -4964,26 +5044,39 @@
     }
 
     PlayerManager.prototype["event(scene:initialized)"] = function() {
-      return this.attackText = this.scene.getEntityById('attack-text').getPlugin(nv.TextUIPlugin);
+      this.attackText = this.scene.getEntityById('attack-text').getPlugin(nv.TextUIPlugin);
+      return this.countries = this.scene.getEntities(entities.Country);
     };
 
     PlayerManager.prototype["event(game:army:created)"] = function(value) {
       return this.clientPlayer().resources().createArmy(value);
     };
 
-    PlayerManager.prototype["event(game:clicked:county)"] = function(county) {
+    PlayerManager.prototype["event(game:clicked:country)"] = function(id) {
+      var country, _i, _len, _ref, _results;
       if (this.model.turn === this.model.playerNumber) {
-        if (this.attacking === true) {
-          if (county === 1027 && this.model.playerNumber === 1) {
-            this.attacking = false;
-            this.attackText.hide();
-            return this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50));
-          } else if (county === 1026 && this.model.playerNumber === 2) {
-            this.attacking = false;
-            this.attackText.hide();
-            return this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50));
+        _ref = this.countries;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          country = _ref[_i];
+          if (country.model.id === id) {
+            if (country.model.owner !== this.model.playerNumber) {
+              if (this.attacking === true) {
+                this.attacking = false;
+                this.attackText.hide();
+                _results.push(this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50)));
+              } else {
+                _results.push(void 0);
+              }
+            } else {
+              this.clientPlayer().selectCountry(id);
+              _results.push(this.scene.fire("game:selected:country", id));
+            }
+          } else {
+            _results.push(void 0);
           }
         }
+        return _results;
       }
     };
 
@@ -4992,12 +5085,12 @@
       return this.createPlayers();
     };
 
-    PlayerManager.prototype["event(game:army:attacked)"] = function(value) {
-      return this.clientPlayer().resources().onAttacked(value);
+    PlayerManager.prototype["event(game:army:attacked)"] = function(enemySoldiers) {
+      return this.clientPlayer().resources().onAttacked(enemySoldiers);
     };
 
-    PlayerManager.prototype["event(game:army:send)"] = function(value) {
-      this.clientPlayer().resources().sendSoldiers(value);
+    PlayerManager.prototype["event(game:army:send)"] = function(soldiers) {
+      this.clientPlayer().resources().sendSoldiers(soldiers);
       return this.scene.fire('game:ui:alert', {
         type: 'info',
         message: "" + value + " soldiers rush into battle!"
@@ -5012,7 +5105,7 @@
     };
 
     PlayerManager.prototype.createPlayers = function() {
-      var entityConfigs, name, player, playerConfig, playerNumber, rootModel, scenario, _i, _j, _len, _ref, _ref1;
+      var data, entityConfigs, flag, name, player, playerConfig, playerNumber, rootModel, scenario, _i, _j, _len, _ref, _ref1;
       rootModel = this.scene.rootModel;
       scenario = rootModel.get('scenario');
       entityConfigs = rootModel.config.entities;
@@ -5024,13 +5117,6 @@
         this.model.players.push(player);
         if (playerNumber === this.model.playerNumber) {
           this.model.set('clientPlayer', player);
-          switch (playerNumber) {
-            case 1:
-              this.model.set('playerColor', 'Red');
-              break;
-            case 2:
-              this.model.set('playerColor', 'Blue');
-          }
         }
       }
       for (name in scenario.countries) {
@@ -5038,16 +5124,23 @@
         for (_j = 0, _len = _ref1.length; _j < _len; _j++) {
           player = _ref1[_j];
           if (player.model.number === scenario.countries[name].owner) {
-            player.addCountry({
+            flag = nv.extend({}, scenario.countries[name].flag);
+            flag = nv.extend(flag, rootModel.config.playerMetadata[player.model.number - 1].flag);
+            data = nv.extend({}, scenario.countries[name]);
+            data = nv.extend(data, {
               country: name,
               resources: scenario.resources,
-              plotData: scenario.countries[name].plots,
-              ratio: 0.5
+              ratio: 0.5,
+              flag: flag
             });
+            player.addCountry(data);
           }
         }
       }
+      this.countries = this.scene.getEntities(entities.Country);
       this.model.set('currentPlayer', this.model.players[this.model.turn - 1]);
+      console.log("PLAYER =", this.model.currentPlayer.model.number);
+      console.log("TURN =", this.model.turn);
       this.scene.fire("game:player:assigned");
       return this.currentPlayer().beginTurn();
     };
@@ -5069,6 +5162,8 @@
       this.currentPlayer().endTurn();
       this.model.set('turn', turn);
       this.model.set('currentPlayer', this.model.players[turn - 1]);
+      console.log("PLAYER =", this.model.currentPlayer.model.number);
+      console.log("TURN =", this.model.turn);
       this.currentPlayer().beginTurn();
       return this.scene.fire("game:turn:end", turn);
     };
@@ -5279,7 +5374,7 @@
         }
       }
       gold = Math.min(gold, 30);
-      return this.projections.set('gold', Math.round(gold));
+      return this.projections.set('gold', Math.round(gold * 10) / 10);
     };
 
     ResourceManager.prototype.projectPopulation = function() {
@@ -5413,13 +5508,16 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   plugins.PlayerViewModel = (function(_super) {
     __extends(PlayerViewModel, _super);
 
     function PlayerViewModel(scene, entity) {
+      this.projectionChanged = __bind(this.projectionChanged, this);
+      this.resourceChanged = __bind(this.resourceChanged, this);
       PlayerViewModel.__super__.constructor.call(this, scene, entity);
       this.entity.model.setMany({
         peasants: "",
@@ -5432,12 +5530,15 @@
         p_gold: "",
         name: ""
       });
+      this.resources = null;
     }
 
     PlayerViewModel.prototype["event(scene:initialized)"] = function() {
       var control, doneControls, id, turnControls, type,
         _this = this;
       turnControls = {
+        "attack-button": nv.ButtonUIPlugin,
+        "create-army-button": nv.ButtonUIPlugin,
         "next-turn-button": nv.ButtonUIPlugin,
         "projected-population": nv.TextUIPlugin,
         "projected-soldiers": nv.TextUIPlugin,
@@ -5469,37 +5570,57 @@
       });
     };
 
-    PlayerViewModel.prototype["event(game:player:assigned)"] = function() {
-      var clientPlayer, projections, resources,
-        _this = this;
+    PlayerViewModel.prototype.resourceChanged = function(key, value) {
+      return this.entity.model.set(key, value);
+    };
+
+    PlayerViewModel.prototype.projectionChanged = function(key, value) {
+      if (value > 0) {
+        value = "+" + value;
+      }
+      return this.entity.model.set("p_" + key, value);
+    };
+
+    PlayerViewModel.prototype.unbindResources = function() {
+      if (this.resources !== null) {
+        this.resources.off('change', this.resourceChanged);
+        return this.projections.off('change', this.projectionChanged);
+      }
+    };
+
+    PlayerViewModel.prototype.bindResources = function() {
+      var clientPlayer;
+      this.unbindResources();
       clientPlayer = this.entity.model.get('clientPlayer');
-      resources = clientPlayer.resources().model;
-      projections = clientPlayer.resources().projections;
-      resources.on('change', function(key, value) {
-        return _this.entity.model.set(key, value);
+      this.resources = clientPlayer.resources().model;
+      this.projections = clientPlayer.resources().projections;
+      console.log("BINDING TO PLAYER =", clientPlayer.model.number, clientPlayer.country().name());
+      this.resources.on('change', this.resourceChanged);
+      this.projections.on('change', this.projectionChanged);
+      return this.entity.model.setMany({
+        peasants: this.resources.peasants,
+        food: this.resources.food,
+        gold: this.resources.gold,
+        soldiers: this.resources.soldiers,
+        p_peasants: this.projections.peasants,
+        p_soldiers: this.projections.soldiers,
+        p_food: this.projections.food,
+        p_gold: this.projections.gold,
+        name: clientPlayer.country().name()
       });
-      projections.on('change', function(key, value) {
-        if (value > 0) {
-          value = "+" + value;
-        }
-        return _this.entity.model.set("p_" + key, value);
-      });
-      this.entity.model.setMany({
-        peasants: resources.peasants,
-        food: resources.food,
-        gold: resources.gold,
-        soldiers: resources.soldiers,
-        p_peasants: projections.peasants,
-        p_soldiers: projections.soldiers,
-        p_food: projections.food,
-        p_gold: projections.gold,
-        name: clientPlayer.country(0).model.country
-      });
+    };
+
+    PlayerViewModel.prototype["event(game:player:assigned)"] = function() {
+      this.bindResources();
       return this.updateTurnButton();
     };
 
     PlayerViewModel.prototype["event(game:turn:end)"] = function() {
       return this.updateTurnButton();
+    };
+
+    PlayerViewModel.prototype["event(game:selected:country)"] = function() {
+      return this.bindResources();
     };
 
     PlayerViewModel.prototype.showControls = function(controls, show) {
@@ -5707,8 +5828,8 @@
           tileHeight: 32
         },
         data: {
-          map: [457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 453, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 328, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 455, 456, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 297, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 183, 801, 184, 184, 182, 183, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 425, 801, 184, 682, 682, 801, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 182, 119, 184, 182, 183, 184, 182, 801, 682, 801, 184, 375, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 119, 184, 183, 184, 184, 801, 184, 182, 183, 184, 184, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 328, 361, 374, 184, 682, 184, 184, 376, 184, 184, 801, 801, 184, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 329, 457, 457, 457, 393, 184, 182, 682, 184, 184, 184, 801, 184, 184, 184, 801, 184, 391, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 184, 184, 184, 801, 801, 682, 682, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 801, 801, 184, 184, 801, 801, 682, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 184, 184, 801, 801, 184, 801, 801, 184, 184, 184, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 360, 361, 184, 682, 682, 801, 184, 376, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 455, 457, 457, 393, 801, 801, 801, 376, 801, 359, 360, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 393, 801, 184, 801, 801, 801, 391, 457, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 360, 360, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457],
-          accessories: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 375, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 183, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 375, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 183, 374, 374, 374, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          layer0: [457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 453, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 328, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 455, 456, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 297, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 183, 801, 184, 184, 182, 183, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 425, 801, 184, 682, 682, 801, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 182, 119, 184, 182, 183, 184, 182, 801, 682, 801, 184, 375, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 119, 184, 183, 184, 184, 801, 184, 182, 183, 184, 184, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 328, 361, 374, 184, 682, 184, 184, 376, 184, 184, 801, 801, 184, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 329, 457, 457, 457, 393, 184, 182, 682, 184, 184, 184, 801, 184, 184, 184, 801, 184, 391, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 184, 184, 184, 801, 801, 682, 682, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 801, 801, 184, 184, 801, 801, 682, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 184, 184, 801, 801, 184, 801, 801, 184, 184, 184, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 360, 361, 184, 682, 682, 801, 184, 376, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 455, 457, 457, 393, 801, 801, 801, 376, 801, 359, 360, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 393, 801, 184, 801, 801, 801, 391, 457, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 360, 360, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457],
+          layer1: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 375, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 183, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 375, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 183, 374, 374, 374, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           playerData: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 1027, 1027, 1027, 1025, 1025, 1025, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1025, 1025, 1025, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1025, 1025, 1025, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1025, 1025, 1025, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1025, 1025, 1025, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1026, 1026, 1026, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1025, 1025, 1025, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1025, 1025, 1025, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         },
         resources: {
@@ -5720,32 +5841,28 @@
         },
         countries: {
           Darkland: {
+            id: 1026,
             owner: 1,
-            plots: [new nv.Point(576, 320), new nv.Point(608, 320), new nv.Point(576, 352), new nv.Point(352, 416), new nv.Point(352, 448)],
+            plots: [new nv.Point(544, 320), new nv.Point(576, 320), new nv.Point(544, 352), new nv.Point(352, 416), new nv.Point(352, 448)],
             flag: {
-              src: "/assets/shield-red-48.png",
-              x: 260,
-              y: 360,
-              width: 48,
-              height: 48
+              x: 440,
+              y: 360
             }
           },
           Danville: {
+            id: 1027,
             owner: 2,
             plots: [new nv.Point(576, 480), new nv.Point(608, 480), new nv.Point(608, 512), new nv.Point(480, 576), new nv.Point(512, 576)],
             flag: {
-              src: "/assets/shield-blue-48.png",
-              x: 560,
-              y: 620,
-              width: 48,
-              height: 48
+              x: 490,
+              y: 490
             }
           }
         }
       },
       twoByThree: {
         description: "2-players, 3-countries",
-        players: 3,
+        players: 2,
         map: {
           width: 960,
           height: 960,
@@ -5754,8 +5871,8 @@
           tileHeight: 32
         },
         data: {
-          map: [801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 360, 360, 360, 361, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 423, 424, 297, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 329, 454, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 328, 361, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 455, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 423, 424, 424, 424, 425, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 376, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 802, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801],
-          accessories: [0, 505, 506, 507, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 505, 506, 507, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 569, 570, 571, 0, 537, 538, 539, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 505, 506, 507, 569, 570, 571, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 987, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 993, 993, 993, 993, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 993, 993, 993, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 993, 993, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 505, 506, 507, 0, 993, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 537, 538, 539, 0, 0, 993, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 569, 570, 571, 0, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 505, 506, 507, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 505, 506, 507, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 537, 538, 539, 569, 570, 571, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 569, 570, 571, 0, 0, 505, 506, 507, 537, 538, 539, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 993, 0, 0, 0, 0, 537, 538, 539, 569, 570, 571, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 993, 505, 506, 507, 0, 569, 570, 571, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 993, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          layer0: [801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 360, 360, 360, 361, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 423, 424, 297, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 329, 454, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 328, 361, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 455, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 423, 424, 424, 424, 425, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 376, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 802, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801],
+          layer1: [0, 505, 506, 507, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 505, 506, 507, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 569, 570, 571, 0, 537, 538, 539, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 505, 506, 507, 569, 570, 571, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 987, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 993, 993, 993, 993, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 993, 993, 993, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 993, 993, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 505, 506, 507, 0, 993, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 537, 538, 539, 0, 0, 993, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 569, 570, 571, 0, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 505, 506, 507, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 505, 506, 507, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 537, 538, 539, 569, 570, 571, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 569, 570, 571, 0, 0, 505, 506, 507, 537, 538, 539, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 993, 0, 0, 0, 0, 537, 538, 539, 569, 570, 571, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 993, 505, 506, 507, 0, 569, 570, 571, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 993, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           playerData: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 2052, 2052, 2052, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 2052, 2052, 2052, 2052, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 0, 2050, 0, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 0, 2051, 2051, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         },
         resources: {
@@ -5767,44 +5884,30 @@
         },
         countries: {
           Darkland: {
+            id: 2050,
             owner: 1,
             plots: [new nv.Point(224, 288), new nv.Point(288, 288), new nv.Point(352, 288), new nv.Point(256, 352), new nv.Point(320, 352)],
             flag: {
-              src: "/assets/shield-red-48.png",
               x: 340,
-              y: 460,
-              width: 48,
-              height: 48
+              y: 460
             }
           },
           Danville: {
+            id: 2052,
             owner: 2,
             plots: [new nv.Point(608, 512), new nv.Point(672, 512), new nv.Point(736, 512), new nv.Point(640, 576), new nv.Point(704, 576)],
             flag: {
-              src: "/assets/shield-blue-48.png",
               x: 560,
-              y: 620,
-              width: 48,
-              height: 48
+              y: 620
             }
           },
           York: {
-            owner: 3,
+            id: 2051,
+            owner: 1,
             plots: [new nv.Point(224, 768), new nv.Point(288, 768), new nv.Point(352, 768), new nv.Point(256, 832), new nv.Point(320, 832)],
             flag: {
-              src: "/assets/shield-yellow-48.png",
               x: 340,
-              y: 620,
-              width: 48,
-              height: 48
-            },
-            flags: ['neutral'],
-            resources: {
-              food: 100,
-              peasants: 70,
-              soldiers: 30,
-              gold: 10,
-              ratio: 0.5
+              y: 620
             }
           }
         }
@@ -5820,8 +5923,8 @@
           tileHeight: 32
         },
         data: {
-          map: [801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 360, 360, 360, 361, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 423, 424, 297, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 329, 454, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 328, 361, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 455, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 423, 424, 424, 424, 425, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 376, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 802, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801],
-          accessories: [0, 505, 506, 507, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 505, 506, 507, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 569, 570, 571, 0, 537, 538, 539, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 505, 506, 507, 569, 570, 571, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 987, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 993, 993, 993, 993, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 993, 993, 993, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 993, 993, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 505, 506, 507, 0, 993, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 537, 538, 539, 0, 0, 993, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 569, 570, 571, 0, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 505, 506, 507, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 505, 506, 507, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 537, 538, 539, 569, 570, 571, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 569, 570, 571, 0, 0, 505, 506, 507, 537, 538, 539, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 993, 0, 0, 0, 0, 537, 538, 539, 569, 570, 571, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 993, 505, 506, 507, 0, 569, 570, 571, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 993, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          layer0: [801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 360, 360, 360, 361, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 423, 424, 297, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 329, 454, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 328, 361, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 455, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 423, 424, 424, 424, 425, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 376, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 802, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 374, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 801, 714, 801, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 714, 802, 714, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801],
+          layer1: [0, 505, 506, 507, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 505, 506, 507, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 569, 570, 571, 0, 537, 538, 539, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 505, 506, 507, 569, 570, 571, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 987, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 993, 993, 993, 993, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 993, 993, 993, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 993, 993, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 505, 506, 507, 0, 993, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 537, 538, 539, 0, 0, 993, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 569, 570, 571, 0, 0, 0, 0, 0, 0, 993, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 0, 0, 505, 506, 507, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 505, 506, 507, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 537, 538, 539, 569, 570, 571, 0, 0, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 993, 569, 570, 571, 0, 0, 505, 506, 507, 537, 538, 539, 505, 506, 507, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 505, 506, 507, 993, 0, 0, 0, 0, 537, 538, 539, 569, 570, 571, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 537, 538, 539, 993, 505, 506, 507, 0, 569, 570, 571, 0, 0, 0, 569, 570, 571, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 569, 570, 571, 993, 537, 538, 539, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           playerData: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 0, 2052, 2052, 2052, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 0, 0, 0, 0, 2052, 2052, 2052, 2052, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2050, 2050, 2050, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 0, 2050, 0, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 0, 2051, 2051, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 2052, 2052, 2052, 2052, 2052, 2052, 2052, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 2051, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         },
         resources: {
@@ -5863,6 +5966,68 @@
               y: 620,
               width: 48,
               height: 48
+            }
+          }
+        }
+      },
+      twoByFour: {
+        description: "2-players, 4-countries",
+        players: 2,
+        map: {
+          width: 960,
+          height: 960,
+          src: '/assets/terrain_atlas.png',
+          tileWidth: 32,
+          tileHeight: 32
+        },
+        data: {
+          layer0: [392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 360, 329, 392, 392, 392, 392, 392, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 392, 392, 392, 392, 392, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 392, 392, 392, 392, 392, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 392, 392, 392, 392, 392, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 392, 392, 392, 392, 392, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 329, 392, 392, 296, 424, 424, 424, 424, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 296, 424, 424, 425, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 329, 393, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 360, 360, 329, 392, 328, 361, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 296, 424, 424, 424, 424, 425, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 391, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 359, 360, 329, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 360, 360, 360, 361, 801, 801, 801, 801, 801, 801, 801, 801, 359, 360, 329, 392, 296, 425, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 392, 392, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 391, 392, 392, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 392, 392, 392, 328, 360, 360, 360, 360, 360, 360, 360, 360, 329, 392, 392, 392, 393, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 423, 424, 424, 424, 424, 424, 424, 424, 424, 424, 424, 424, 424, 424, 425, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 392, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801, 801],
+          layer1: [385, 386, 386, 386, 386, 386, 290, 419, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 386, 386, 386, 386, 387, 0, 0, 900, 901, 902, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 386, 386, 386, 386, 387, 0, 0, 932, 933, 934, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 451, 386, 386, 386, 386, 387, 0, 0, 932, 933, 934, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 386, 386, 386, 290, 419, 0, 900, 870, 933, 934, 0, 0, 550, 551, 551, 551, 551, 552, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 386, 386, 386, 387, 0, 0, 932, 933, 933, 934, 0, 0, 582, 583, 583, 583, 583, 584, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 386, 386, 386, 387, 0, 0, 932, 933, 837, 966, 0, 0, 614, 615, 615, 615, 615, 616, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 386, 386, 386, 387, 0, 0, 932, 933, 934, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 290, 418, 418, 419, 0, 900, 870, 933, 934, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 0, 932, 933, 933, 869, 901, 901, 902, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 0, 932, 933, 933, 933, 933, 933, 934, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 0, 932, 933, 933, 933, 933, 933, 934, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 0, 964, 965, 965, 965, 965, 965, 966, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 550, 551, 551, 551, 551, 552, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 582, 583, 583, 583, 583, 584, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 550, 551, 551, 551, 551, 552, 0, 0, 0, 0, 0, 0, 0, 0, 614, 615, 615, 615, 615, 616, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 582, 583, 583, 583, 583, 584, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 385, 386, 387, 0, 0, 0, 614, 615, 615, 615, 615, 616, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 900, 901, 901, 901, 902, 0, 0, 417, 418, 419, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 932, 933, 933, 933, 934, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 932, 933, 933, 933, 934, 0, 0, 80, 81, 81, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 964, 965, 838, 933, 934, 0, 0, 112, 113, 113, 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 932, 933, 934, 0, 0, 112, 113, 113, 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 932, 933, 934, 0, 0, 112, 113, 113, 114, 0, 550, 551, 551, 551, 551, 552, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 964, 838, 934, 0, 0, 112, 113, 113, 114, 0, 582, 583, 583, 583, 583, 584, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 964, 966, 0, 0, 112, 113, 113, 114, 0, 614, 615, 615, 615, 615, 616, 0, 0, 0, 0, 0, 0, 31, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 17, 145, 146, 0, 0, 0, 0, 0, 0, 0, 0, 900, 901, 901, 901, 902, 63, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 932, 933, 933, 933, 934, 95, 96, 0, 31, 32, 0, 0, 0, 0, 0, 0, 0, 0, 112, 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 932, 933, 933, 933, 934, 127, 128, 0, 63, 64, 0, 0, 0, 0, 0, 0, 0, 0, 112, 114, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 932, 933, 933, 933, 934, 159, 160, 0, 95, 96, 0, 0, 0, 0, 0, 0, 0, 0],
+          layer2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 95, 96, 127, 128, 600, 95, 96, 127, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 127, 128, 159, 160, 600, 127, 128, 159, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 159, 160, 0, 600, 0, 159, 160, 600, 0, 0, 0, 0, 0, 31, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63, 64, 31, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 95, 96, 63, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 127, 128, 95, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 159, 160, 127, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 694, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 600, 31, 32, 159, 160, 0, 695, 695, 695, 695, 695, 695, 695, 695, 695, 695, 695, 695, 695, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63, 64, 600, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 695, 0, 529, 530, 530, 531, 0, 0, 0, 0, 0, 0, 95, 96, 0, 600, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 695, 0, 561, 562, 562, 563, 0, 0, 0, 0, 0, 0, 127, 128, 31, 32, 0, 0, 0, 0, 0, 0, 0, 0, 16, 48, 0, 0, 236, 0, 695, 0, 593, 594, 594, 595, 0, 0, 0, 0, 0, 0, 159, 160, 63, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 695, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 95, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 695, 695, 695, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 127, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 159, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 236, 48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 591, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 623, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 623, 0, 0, 0, 0, 0, 695, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 95, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 655, 0, 0, 0, 0, 0, 0, 695, 0, 0, 0, 0, 0, 0, 205, 0, 0, 0, 0, 127, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 695, 0, 0, 0, 0, 0, 0, 0, 0, 31, 32, 0, 159, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 695, 0, 0, 0, 0, 0, 0, 0, 63, 64, 0, 0, 31, 32, 0, 0, 0, 0, 0, 0, 31, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 695, 0, 0, 0, 0, 0, 0, 95, 96, 0, 0, 63, 64, 0, 0, 0, 0, 0, 0, 63, 64, 0, 0, 0, 0, 0, 0, 31, 32, 0, 0, 695, 0, 0, 0, 0, 0, 127, 128, 0, 0, 95, 96, 600, 0, 0, 31, 32, 0, 95, 96, 0, 236, 0, 235, 0, 0, 63, 64, 0, 0, 0, 695, 0, 0, 0, 0, 159, 160, 0, 0, 127, 128, 0, 600, 0, 63, 64, 0, 127, 128, 0, 0, 0, 0, 0, 0, 95, 96, 0, 0, 0, 695, 0, 0, 0, 600, 0, 600, 0, 0, 159, 160, 600, 600, 0, 95, 96, 0, 159, 160, 0, 0, 0, 236, 0, 0, 127, 128, 0, 0, 0, 0, 695, 0, 600, 0, 600, 0],
+          playerData: [1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 1027, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1027, 1027, 1027, 0, 0, 0, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 1027, 1027, 0, 0, 0, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 1027, 1027, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 1027, 1027, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 1027, 1027, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 0, 0, 0, 0, 0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 0, 0, 0, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 0, 1028, 1028, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1029, 1029, 1029, 1029, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1028, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1028, 1028, 1028, 1028, 1028, 0, 1028, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1028, 1028, 1028, 1028, 1028, 1028, 1029, 0, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 1029, 0, 1028, 1028, 1028, 1028, 1028]
+        },
+        resources: {
+          food: 120,
+          peasants: 50,
+          soldiers: 5,
+          gold: 0,
+          ratio: 0.5
+        },
+        countries: {
+          Darkland: {
+            id: 1026,
+            owner: 2,
+            plots: [new nv.Point(224, 510), new nv.Point(272, 510), new nv.Point(320, 510), new nv.Point(288, 334), new nv.Point(352, 334)],
+            flag: {
+              x: 440,
+              y: 500
+            }
+          },
+          Danville: {
+            id: 1027,
+            owner: 1,
+            plots: [new nv.Point(480, 162), new nv.Point(528, 162), new nv.Point(576, 162), new nv.Point(300, 162), new nv.Point(320, 96)],
+            flag: {
+              x: 470,
+              y: 240
+            }
+          },
+          Lighton: {
+            id: 1028,
+            owner: 1,
+            plots: [new nv.Point(672, 450), new nv.Point(720, 450), new nv.Point(768, 450), new nv.Point(776, 592), new nv.Point(824, 592)],
+            flag: {
+              x: 620,
+              y: 620
+            }
+          },
+          Danshire: {
+            id: 1029,
+            owner: 2,
+            plots: [new nv.Point(192, 768), new nv.Point(240, 768), new nv.Point(288, 768), new nv.Point(422, 878), new nv.Point(474, 878)],
+            flag: {
+              x: 460,
+              y: 730
             }
           }
         }
@@ -5902,6 +6067,27 @@
     },
     preload: ['assets/terrain_atlas.png'],
     engines: [nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine, nv.SoundEngine, nv.ParticleEngine, nv.UIEngine],
+    playerMetadata: [
+      {
+        flag: {
+          src: "/assets/shield-red-48.png",
+          width: 48,
+          height: 48
+        }
+      }, {
+        flag: {
+          src: "/assets/shield-blue-48.png",
+          width: 48,
+          height: 48
+        }
+      }, {
+        flag: {
+          src: "/assets/shield-yellow-48.png",
+          width: 48,
+          height: 48
+        }
+      }
+    ],
     scenes: {
       main: {
         config: {
@@ -5978,7 +6164,7 @@
             model: {
               options: {
                 id: "twoByTwo",
-                text: "2P/2C",
+                text: "2x2",
                 x: 204,
                 y: 260,
                 width: 64,
@@ -5987,13 +6173,13 @@
               }
             }
           },
-          twoP3C: {
+          twoP4C: {
             entity: nv.Entity,
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
-                id: "twoByThree",
-                text: "2P/3C",
+                id: "twoByFour",
+                text: "2x4",
                 x: 284,
                 y: 260,
                 width: 64,
@@ -6008,7 +6194,7 @@
             model: {
               options: {
                 id: "threeByThree",
-                text: "3P/3C",
+                text: "3x3",
                 x: 364,
                 y: 260,
                 width: 64,
@@ -6054,7 +6240,7 @@
                 text: "End Turn",
                 id: "next-turn-button",
                 x: 480,
-                y: 420
+                y: 410
               }
             }
           },
@@ -6066,7 +6252,7 @@
                 text: "End Other Turn",
                 id: "next-turn-other-button",
                 x: 480,
-                y: 360
+                y: 410
               }
             }
           },
@@ -6124,7 +6310,7 @@
                 color: 'rgba(0, 0, 0, 0.5)',
                 width: 196,
                 height: 26,
-                x: 30,
+                x: 49,
                 y: 119
               }
             }
@@ -6138,7 +6324,7 @@
                 font: '14px sans-serif',
                 textBaseline: 'bottom',
                 text: 'Labor',
-                x: 35,
+                x: 54,
                 y: 140
               }
             }
@@ -6151,7 +6337,7 @@
                 leftImage: "/assets/farmer-16.wh.png",
                 rightImage: "/assets/miner-16.wh.png",
                 font: uiFont,
-                x: 80,
+                x: 98,
                 y: 122,
                 value: 50,
                 gap: 3,
@@ -6160,7 +6346,7 @@
               }
             }
           },
-          currentText: {
+          countryName: {
             entity: nv.Entity,
             plugins: [nv.TextUIPlugin],
             model: {
@@ -6175,6 +6361,22 @@
               }
             }
           },
+          labels: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#CCC',
+                font: uiFont,
+                textBaseline: 'bottom',
+                textAlign: 'right',
+                lineHeight: 20,
+                text: ["Peasants", "Soldiers", "Food", "Gold"],
+                x: 110,
+                y: 55
+              }
+            }
+          },
           population: {
             entity: nv.Entity,
             plugins: [nv.TextUIPlugin],
@@ -6183,9 +6385,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: "Peasants: {{peasants}}",
+                textAlign: 'right',
+                text: "{{peasants}}",
                 bind: entities.PlayerManager,
-                x: 35,
+                x: 150,
                 y: 55
               }
             }
@@ -6198,9 +6401,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Food: {{food}}',
+                textAlign: 'right',
+                text: '{{food}}',
                 bind: entities.PlayerManager,
-                x: 35,
+                x: 150,
                 y: 95
               }
             }
@@ -6213,9 +6417,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Gold: {{gold}}',
+                textAlign: 'right',
+                text: '{{gold}}',
                 bind: entities.PlayerManager,
-                x: 35,
+                x: 150,
                 y: 115
               }
             }
@@ -6228,9 +6433,10 @@
                 color: '#CCC',
                 font: uiFont,
                 textBaseline: 'bottom',
-                text: 'Soldiers: {{soldiers}}',
+                textAlign: 'right',
+                text: '{{soldiers}}',
                 bind: entities.PlayerManager,
-                x: 35,
+                x: 150,
                 y: 75
               }
             }
@@ -6244,9 +6450,10 @@
                 color: 'red',
                 font: uiFont,
                 textBaseline: 'bottom',
+                textAlign: 'right',
                 text: "{{p_peasants}}",
                 bind: entities.PlayerManager,
-                x: 150,
+                x: 190,
                 y: 55
               }
             }
@@ -6260,9 +6467,10 @@
                 color: 'red',
                 font: uiFont,
                 textBaseline: 'bottom',
+                textAlign: 'right',
                 text: "{{p_soldiers}}",
                 bind: entities.PlayerManager,
-                x: 150,
+                x: 190,
                 y: 75
               }
             }
@@ -6276,9 +6484,10 @@
                 color: 'red',
                 font: uiFont,
                 textBaseline: 'bottom',
+                textAlign: 'right',
                 text: '{{p_food}}',
                 bind: entities.PlayerManager,
-                x: 150,
+                x: 190,
                 y: 95
               }
             }
@@ -6292,9 +6501,10 @@
                 color: 'red',
                 font: uiFont,
                 textBaseline: 'bottom',
+                textAlign: 'right',
                 text: '{{p_gold}}',
                 bind: entities.PlayerManager,
-                x: 150,
+                x: 190,
                 y: 115
               }
             }
