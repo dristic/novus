@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="50" height="50" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="my tiles" tilewidth="32" tileheight="32">
+  <image source="../Downloads/terrain_atlas.png" width="1024" height="1024"/>
+ </tileset>
+ <layer name="Desert Later" width="50" height="50">
+  <data encoding="base64" compression="zlib">
+   eJztmFsKwjAQRUt2b6sLsfjTL9dgF+AeLHYPNjSBEPJwmtDcCTkwWEH0nkwnkXYdLs+tZlE6RTrNo9Goh7cqrvRin2Nusyzz9kZxcLgId81WoTNt9XLk5uQgGUTYgwvXgAcnOHrcxT4PMvugKjQfaOj8k7rWOUdVK4CDbz7N/V/nl5m/kb0JwcN3f1Dyl3Ix1z52DnDwoDgsTDyWg4Xg8bEyuPYgtPvKtS/dIplCXmfiy/BQDjEPpDnw1aiqVDYKyGtMAXleKaTsRUjU2I/mUR6uuW0oM45Mbf3gml/TPLBoHljUcAZKajvP0Z9DxXDl+/f/e8pv5F4T87tCPYm5IXnknJXY5+11yenhW/Mjz6DPnrWUOUfzMPtg+5jvU54lro5r/ZoDap4cfcvdC9uDst4un6P9ysEPBgA+vg==
+  </data>
+ </layer>
+ <layer name="Grass Layer" width="50" height="50">
+  <data encoding="base64" compression="zlib">
+   eJy1WTtyFEkQ7RoZcAJxAGL5eFgKbCIE4gKAT0iIE8zaRACDB9auu4YW8MDR6ABCgAcOXEAa9ga4VMV0Bq/fvMyq1sRWREa1arqr8+XLX5eOuq47zHLUz1PnOppb7uF3zGlW95RxMy3nZ3k+zvKZxNaifdT71Dyn5709x2BHHH9k+TfLrJcTwGFr9twiDfWbwr6LVNcJcdlvLTaIbFiGYfgAOs96HnDtyqTrrjbKtckQ57SL7Xsen8R9DQP70ifhY7ezbneyzPpZyayXncnv95kom9b0Vj7IflDGs97WGAeKF8SBOv/I6/+l5fVz+K3gYP9T8aD8x7M7rxsGjwuPl9uEocwXslwU6zsTrb/y9yh+0O6mNw7G8JHi2nRH39rLuj1qlP2J1o9tOu/qsVzkW5b7aSmm/wFhmAkejtMwV52koX28GtKadzw+lN5FHiSfA86rJ8465130WebffMCLA+X7l0hn1hv1Zw48XVUdtDg52Pgt6LOMD+daXBf5c1VlicHTvyXX4t+IA+2psCgf8ny/hsPDwL6PXDAn6HOIwzhReQWxzbshd+fhI8pHJswFr+O9pv82YEHfupqWepWZc0CUixSOG3CtfENxcJxWOVIxYrrvZtkj/7L5TtK+Zb+XmP6L5O8KH5H9uU4wPsUj+1URL59y3Jj+NZ09HMr+HM8eBxzzCofXH1kNaLV5Cx/K/i3CdcXsrepyrXatM1prQ4QB17xvGMOAet9YVSdcj4biQtVtjgMlH9Oq/ig3U6DImmNPxAfXChUHHi6Pi/8bx3beezct8ai6zdgUT8hn1E+vg2MzP3tJyM818HicYJ+oYrslpr3Y2BJ7q76Y8ewGuCJfYy44tlts7Nm99i3O9bRcP01LQZ6YE+VrzEXkS56NPf28b5OW79saHs7XLd8IiKPlTKTlnET11Z7fGR72NZQxYyv5/YrSwetvvJ5f8Wp4y7DzEzszwZhvHZu9z4+xP/bH6uzB40D5XRmKk+ORfFhsKNtG9q5xU/M79jHDwjFfG5ajfnZDntnGvDb2nLLmd5ZPEMuHETg4Rykbq7XznFM+yu/aB3mc/Njfboxzq29btFct39r12HPK8uzz3rbXslzP8iKopYanxgX6E+6l4lGtjT2nPAIcO1nu9jhU7BuelqFqHvur4sjWxp5Tludf53e+6bmYOXxw/bd3lsE9kuVYFXeHYo8oz0R1xsu9huetiI8pvAPfGXHh1QPeI8ozWC+i+j6m5qga6uGo1V62O983ps7M6Xnco5wXnG1o/lv5ULGlOG7pHb06w3wVOet1X2Q57edaH6rGvb5n/C7epXoGleOjeFF8IS+G4wBmPI9SPhsN9q8xfCjda3wVOejtz/PZhr//vAFHxAfHvseHqmGKL7P7KXBwBnhON/z9Hwb10PwL5buwR5Tja7WHc+mCfOoU+LA4UTa4lTSWl3ntlViv1Ucvdtivv3VD2+A9C+ADr/F/Arzvk6SxvMt/v3dweDFqs8LEutt3J3/X4PPIDYri43LSWL7k669plRcvJ6t+C3EWDOqbOTpX4bhRZ+nGxz9JY7FehXnBmOG87PlYEe/8ovWbv3ae3gVYIl5Mh8jHjAd1foHfBV4N4rXo/xumc4SlDBUvNR+LeIj28Hqtw27IBd6POrfwgkPl5THnSIZD1bVpN/T/Wj/AOtd4WWeoM1SLD7S7169F/cAveK30SQ==
+  </data>
+ </layer>
+ <layer name="Beach to Grass Layer" width="50" height="50">
+  <data encoding="base64" compression="zlib">
+   eJztmc1Kw0AQgLfmLJ49KRRPPoEnBWlPijev/kB70Ifwh7YH8R00or3oU9jqczmDGbKOW1mT3clO6AcDgUA6X3d3djMxJm1uOsbcdprOoh5nkP/+0qFx2uSgeU1od8D8z1vgoDl/JKTDOCtjktV/ni8xa9JUyCN2XR0IjInU3hDbBc9LW0JrOub8Qo/J0uNfhPK4gHwvWbxATJV53EG+2xCvVgwghhE8PrLf8RnQ457lLDmvQpGah2ue+8TBAo9eQx6uee4bbw6P9wY9+P9alRye0y3OhtI+IT0QcpkVLlJn9tAeCLo8sehG9onh4SIP7MPrk6vuxCQPNEau+sTrjhRU32YVfl9qHvmAHmOP2ua7fzWF7xzz3b9SoA09a4TXsxjnZkloH+0V7wEDxT72+UbjXNuA2Cyu7RqgjV2IPfPTJ3VGjl7nCcSpKX1Sxc59aL1fU8/gCuLalD6p8rygN0D9wQe4fjSlT4qM2Biss/t2H4d8UoM7EMcr34FI9J/rgvNp54/7dE/qm0BV5pBf38pxFfaENce+oGFMbJdDcDhiHuSW+pgg86Kn2XfkSm4axoRw+dj1S5MLwtcNomXNc2wXu6Zp80D4uPQCfheQhtZMyG8bqfEFBmyMyw==
+  </data>
+ </layer>
+ <layer name="Tree Layer" width="50" height="50">
+  <data encoding="base64" compression="zlib">
+   eJztmjtOw0AQhtdZWsQR4CbAARAl6eAmvGo4ASK5AFEqkopnHYkKUQEXgBI6YEbxyONh89iHvWvJnzQyC4syv/9ZO5pdpdxZh9iYM24KmxBbqsifxk1jH+JAFfnTOBbHWqmTBXGq///fIcSRKvKncaz6uoccHxbEo0FHD6KvivxpHKu+bP24hhhDjPKg/IlY9WXjx7BTjrNMqfNs+reLfA75kzJPnXJcgYZBVtYj/YnFSC8f49wD0tMkBpD7p55eXwzrPxZ7Hbv5qer4sJw/0EWkpAOZWMyVOr5ZxGQb1ucqxFo2/dmV2N5gXe1A/ruez5vYOpCJuLqQgg7Ep6YQ1PGciBYfWh1p0epIi1ZHWrQ60qLVEYdLyLUH0Rc5N03HDeR6C3Gny5qapuMVcn2DeNdlTQjX4dqnrIsf+Oxf/PyVsiaE63DtU9YFryWuCWmSH7yWunmvha51++HTE5e11GV9o7rXuU9PnNcSrzHUU7eOUD1x+bz6En0gl7DBpyfOPZhXYyawDynDB5+eOPeA15hc83UQcp0js76rSEL7EWKd89xNz+IqIR9CrHOeu8kjE6H8IB9C7H3x3OV7vWrIhxB7X/PeIza4rNWq9rjle8QGeS5iGara4152fZiQ5yI4i7SF3uP2WR/yXATPfZZXNE5pj1uei+C+zPKKxqnscSN0byknXivSKyL2mRwT8l7zWpFemeakgry3plqRv5PjPwIuHEI=
+  </data>
+ </layer>
+ <layer name="Boundaries" width="50" height="50">
+  <data encoding="base64" compression="zlib">
+   eJztmMENwjAMRasyCKzBCZYoVOIAS1QgcYAlgCPMAEe2gGOXwRG1alkNNIWmDvhJlkmwFP/ETdpEUXv0wQZgc7AF6cc2eltc26RxvZgR+DHYBmwblfliGz2PkwbO7xHsFJX5Yhs9j7v2vKb5Fr4OtG6wj8Zh/rkwHXwdMF9aczROWv4cXje0D9dAWi1VUfX8Yl8utJYouK/R59f0GU/XRiKYe5XvYu4TGOsGY08dxzT51jlffJEV+S8F120ddpD/HuwQuA7lt0iKuqyyVUC1mgWUK+cM++2l2HOl6DB1MXE0c97c4+fvoRAdUubzU1RHN9hqXUp9h8rsR+ZvrTq+Bj0Hm+JLx6v3JjwHbf9zS5n3+Z0Q2n5sQ3XIQnXIQnXIQnXIwkVH07tVH7jo8Hm3WvddCM3l+0rvVhVFURRF+Ucey8VkYw==
+  </data>
+ </layer>
+</map>
