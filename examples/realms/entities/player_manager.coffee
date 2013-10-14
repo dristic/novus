@@ -30,11 +30,11 @@ class entities.PlayerManager extends nv.Entity
     @model.playerNumber = number
     @createPlayers()
 
-  "event(game:army:attacked)": (value) ->
-    @clientPlayer().resources().onAttacked value
+  "event(game:army:attacked)": (enemySoldiers) ->
+    @clientPlayer().resources().onAttacked enemySoldiers
 
-  "event(game:army:send)": (value) ->
-    @clientPlayer().resources().sendSoldiers value
+  "event(game:army:send)": (soldiers) ->
+    @clientPlayer().resources().sendSoldiers soldiers
 
     @scene.fire 'game:ui:alert',
         type: 'info'

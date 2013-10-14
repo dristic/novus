@@ -6,11 +6,12 @@ class nv.TextUIPlugin extends nv.UIPlugin
     @id = @entity.model.id
 
     @text = new gleam.Text @entity.model
-    @dirty = true
+    @dirty = false
     @values = {}
     @width = null
 
     if @entity.model.bind?
+      @dirty = true
       binding = @scene.getEntity @entity.model.bind
       for match in @entity.model.text.match /\{{[\s\S]+?}}/g
         key = match.slice(2, -2)

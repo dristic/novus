@@ -60,10 +60,10 @@ class entities.MultiplayerController extends nv.Entity
     if @playerManager.model.turn is newTurn
       @ref.child('turn').set newTurn
 
-  "event(game:army:send)": (amount) ->
+  "event(game:army:send)": (soldiers) ->
     @ref.child('attacks').push
       guid: @guid
-      amount: amount
+      amount: soldiers
 
   "event(game:army:battle)": (data) ->
     @ref.child('attack_results').push

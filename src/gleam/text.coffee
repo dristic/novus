@@ -26,7 +26,14 @@ class gleam.Text
     context.setTextBaseline @textBaseline
     context.setTextAlign @textAlign
 
-    context.fillText @text, @x, @y
+    if typeof @text is "string"
+      context.fillText @text, @x, @y
+    else
+      y = @y
+      for line in @text
+        context.fillText line, @x, y
+        y += @lineHeight
+
 
   destroy: () ->
     delete @font
