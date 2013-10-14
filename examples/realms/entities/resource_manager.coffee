@@ -135,7 +135,7 @@ class entities.ResourceManager extends nv.Entity
       for i in [1..goldPlots]
         gold += @goldYield * 0.1 * minersPerPlot
     gold = Math.min(gold, 30)
-    @projections.set 'gold', Math.round(gold)
+    @projections.set 'gold', Math.round((gold * 10)) / 10
 
   projectPopulation: () ->
     peasants = @model.get('peasants')
