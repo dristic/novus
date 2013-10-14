@@ -3,7 +3,7 @@ class entities.Map extends nv.Entity
     # load map from player chosen game scenario
     scenario = scene.get('scenario')
     mapModel = nv.extend model, scenario.map
-    mapModel.data = scenario.data.map
+    mapModel.data = scenario.data.layer0
 
     super scene, plugins, mapModel
 
@@ -17,11 +17,13 @@ class entities.Map extends nv.Entity
     @camera.x = -160
     @camera.y = -230
 
-    if scenario.data.accessories?
-      accessoryiesModel = nv.extend model, scenario.map
-      accessoryiesModel.data = scenario.data.accessories
-      @playerData = new nv.SpriteMapRenderingPlugin scene,
-        model: accessoryiesModel
+    @layers = []
+    for level in [1..4]
+      if scenario.data["layer" + level]?
+        layerModel = nv.extend model, scenario.map
+        layerModel.data = scenario.data["layer" + level]
+        @layers.push new nv.SpriteMapRenderingPlugin scene,
+          model: layerModel
 
     playerAllocModel = nv.extend model, scenario.map
     playerAllocModel.data = scenario.data.playerData

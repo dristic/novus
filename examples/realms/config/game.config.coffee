@@ -121,13 +121,13 @@ realms.gameConfig =
               width: 64
               height: 64
               fillStyle: false
-        twoP3C:
+        twoP4C:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              id: "twoByThree"
-              text: "2x3"
+              id: "twoByFour"
+              text: "2x4"
               x: 284
               y: 260
               width: 64
@@ -182,7 +182,7 @@ realms.gameConfig =
               text: "End Turn"
               id: "next-turn-button"
               x: 480
-              y: 420
+              y: 410
         endOtherTurnButton:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
@@ -191,7 +191,7 @@ realms.gameConfig =
               text: "End Other Turn"
               id: "next-turn-other-button"
               x: 480
-              y: 360
+              y: 410
         createArmy:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]

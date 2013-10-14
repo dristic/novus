@@ -70,7 +70,6 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 			@turns.push new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 			@turns[@entity.model.turn - 1].hidden = false
 
-
 		model =
 			src: playerMetadata[ @entity.model.playerNumber - 1 ].flag.src
 			x: 5
@@ -83,7 +82,6 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 		for indicator in @turns
 			indicator.hidden = true
 		@turns[turn - 1].hidden = false
-
 
 	draw: (context, canvas) ->
 		for flag in @flags

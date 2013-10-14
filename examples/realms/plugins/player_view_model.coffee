@@ -17,6 +17,8 @@ class plugins.PlayerViewModel extends nv.Plugin
 
   "event(scene:initialized)": () ->
     turnControls =
+      "attack-button": nv.ButtonUIPlugin
+      "create-army-button": nv.ButtonUIPlugin
       "next-turn-button": nv.ButtonUIPlugin
       "projected-population": nv.TextUIPlugin
       "projected-soldiers": nv.TextUIPlugin
@@ -77,28 +79,6 @@ class plugins.PlayerViewModel extends nv.Plugin
       name: clientPlayer.country().name()
 
   "event(game:player:assigned)": () ->
-    # clientPlayer = @entity.model.get 'clientPlayer'
-    # resources = clientPlayer.resources().model
-    # projections = clientPlayer.resources().projections
-
-    # resources.on 'change', (key, value) =>
-    #   @entity.model.set key, value
-
-    # projections.on 'change', (key, value) =>
-    #   if value > 0 then value = "+#{value}"
-    #   @entity.model.set "p_#{key}", value
-
-    # @entity.model.setMany
-    #   peasants: resources.peasants
-    #   food: resources.food
-    #   gold: resources.gold
-    #   soldiers: resources.soldiers
-    #   p_peasants: projections.peasants
-    #   p_soldiers: projections.soldiers
-    #   p_food: projections.food
-    #   p_gold: projections.gold
-    #   name: clientPlayer.country(0).model.country
-
     @bindResources()
     @updateTurnButton()
 
