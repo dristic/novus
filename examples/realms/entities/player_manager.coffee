@@ -38,7 +38,7 @@ class entities.PlayerManager extends nv.Entity
 
     @scene.fire 'game:ui:alert',
         type: 'info'
-        message: "#{value} soldiers rush into battle!"
+        message: "#{soldiers} soldiers rush into battle!"
 
   "event(game:army:battle)": (data) ->
     @scene.fire 'game:ui:alert',

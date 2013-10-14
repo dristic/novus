@@ -5093,7 +5093,7 @@
       this.clientPlayer().resources().sendSoldiers(soldiers);
       return this.scene.fire('game:ui:alert', {
         type: 'info',
-        message: "" + value + " soldiers rush into battle!"
+        message: "" + soldiers + " soldiers rush into battle!"
       });
     };
 
