@@ -45,6 +45,7 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 		super scene, entity
 		@flags = []
 		@turns = []
+		@selectedCountry = 0
 
 	"event(game:player:assigned)": () ->
 		scenario = @scene.rootModel.get 'scenario'
@@ -63,7 +64,7 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 
 				image = new Image()
 				image.src = country.model.flag.src
-				@flags.push nv.extend {image: image}, country.model.flag
+				@flags.push nv.extend {image: image, countryId: country.model.id}, country.model.flag
 
 			model = nv.extend playerMetadata[player.model.number-1].flag, {hidden: true, x: 567, y: 17}
 
@@ -78,12 +79,27 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 			height: 32
 		@shield = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
+		@selectedCountry = @entity.clientPlayer().selectedCountry().model.id
+
 	"event(game:turn:end)": (turn) ->
 		for indicator in @turns
 			indicator.hidden = true
 		@turns[turn - 1].hidden = false
 
+	"event(game:selected:country)": (id) ->
+		@selectedCountry = id
+
 	draw: (context, canvas) ->
 		for flag in @flags
+			if flag.countryId is @selectedCountry
+				context.save();
+				context.source.scale(1, 0.5);
+				context.setStrokeStyle "yellow"
+				context.setStrokeWidth 4
+				context.source.beginPath();
+				context.source.arc(flag.x + (flag.width/2) - 2.5, 2*(flag.y + flag.height) - 10, 20, 0, Math.PI*2, false);
+				context.stroke();
+				context.closePath();
+				context.restore();
 			context.drawImage flag.image, flag.x, flag.y
 

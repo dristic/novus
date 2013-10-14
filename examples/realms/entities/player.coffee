@@ -22,14 +22,17 @@ class entities.Player extends nv.Entity
         @model.selectedCountry = idx
         break
 
+  selectedCountry: () ->
+    @model.countries[@model.selectedCountry]
+
   countries: () ->
     @model.countries
 
   resources: () ->
-    @model.countries[@model.selectedCountry].resources()
+    @selectedCountry().resources()
 
   plots: () ->
-    @model.countries[@model.selectedCountry].plots()
+    @selectedCountry().plots()
 
   update: (dt) ->
     mouseX = @gamepad.getState().mouse.x - (@model.width / 2)

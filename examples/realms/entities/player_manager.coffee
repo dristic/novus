@@ -24,7 +24,7 @@ class entities.PlayerManager extends nv.Entity
               @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
           else
             @clientPlayer().selectCountry id
-            @scene.fire "game:selected:country"
+            @scene.fire "game:selected:country", id
     
   "event(game:mp:player)": (number) ->
     @model.playerNumber = number
