@@ -6,7 +6,7 @@ class scenes.Game extends nv.Scene
 
     @send "engine:timing:start"
 
-    @on "scene:game:over", (result) =>
+    @on "game:over", (result) =>
       @rootModel.set 'result', result
       @fire "scene:close"
       @game.openScene 'Gameover'

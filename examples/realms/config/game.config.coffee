@@ -490,6 +490,7 @@ realms.gameConfig =
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
+              id: "result-text"
               color: '#CCC'
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'

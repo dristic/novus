@@ -3737,6 +3737,9 @@
           });
         }
       }
+      this.entity.model.on("change:text", function(newText) {
+        return _this.setText(newText);
+      });
     }
 
     TextUIPlugin.prototype.setText = function(text) {
@@ -4895,8 +4898,26 @@
             return _this.scene.fire("game:turn:next", snapshot.val());
           }
         });
+        this.ref.child('population_update').on('child_added', function(snapshot) {
+          var data;
+          data = snapshot.val();
+          if (data.guid !== _this.guid) {
+            if (data.population <= 0) {
+              _this.scene.fire("game:over", "win");
+              return snapshot.ref().remove();
+            }
+          }
+        });
       }
     }
+
+    MultiplayerController.prototype["event(game:lose)"] = function(population) {
+      this.ref.child('population_update').push({
+        guid: this.guid,
+        population: population
+      });
+      return this.scene.fire("game:over", "lose");
+    };
 
     MultiplayerController.prototype["event(game:turn:next)"] = function(newTurn) {
       if (this.playerManager.model.turn === newTurn) {
@@ -5231,7 +5252,6 @@
       var gold, soldiers;
       gold = this.model.get('gold');
       soldiers = Math.min(gold, value);
-      console.log('soldiers', gold, value, soldiers);
       if (soldiers > 0) {
         this.model.set('gold', gold - soldiers);
         this.projections.set('soldiersInTraining', this.projections.get('soldiersInTraining') + soldiers);
@@ -5249,9 +5269,11 @@
     };
 
     ResourceManager.prototype.onAttacked = function(value) {
-      var peasantKills, peasants, soldierKills, soldiers;
+      var morale, peasantKills, peasants, soldierKills, soldiers;
       peasantKills = 0;
       soldierKills = 0;
+      morale = (Math.random() * 0.3) + 0.85;
+      value = Math.floor(morale * value);
       soldiers = this.model.get('soldiers') - value;
       this.model.set('soldiers', Math.max(soldiers, 0));
       if (soldiers < 0) {
@@ -5266,12 +5288,15 @@
         peasants = peasants - peasantKills;
         this.model.set('peasants', peasants);
       }
-      return this.scene.fire("game:army:battle", {
+      this.scene.fire("game:army:battle", {
         kills: {
           soldiers: soldierKills,
           peasants: peasantKills
         }
       });
+      if (this.model.get('peasants') <= 0) {
+        return this.scene.fire("game:lose", 0);
+      }
     };
 
     ResourceManager.prototype.setLaborDistribution = function(ratio) {
@@ -5428,7 +5453,7 @@
       var _this = this;
       Game.__super__.constructor.call(this, name, game, rootModel);
       this.send("engine:timing:start");
-      this.on("scene:game:over", function(result) {
+      this.on("game:over", function(result) {
         _this.rootModel.set('result', result);
         _this.fire("scene:close");
         return _this.game.openScene('Gameover');
@@ -5455,12 +5480,18 @@
 
     function Gameover(name, game, rootModel) {
       var _this = this;
-      rootModel.scenario = realms.gameConfig.scenarios.pvp.two;
+      rootModel.scenario = realms.gameConfig.scenarios.pvp.twoByTwo;
       Gameover.__super__.constructor.call(this, name, game, rootModel);
       this.on("engine:gamepad:mouse:down", function() {
         _this.fire("scene:close");
         return _this.game.openScene('Game');
       });
+      this.resultText = this.getEntityById('result-text');
+      if (rootModel.get('result') === "win") {
+        this.resultText.model.set('text', "You Win!");
+      } else {
+        this.resultText.model.set('text', "You Lose...");
+      }
       this.send("engine:timing:start");
     }
 
@@ -6622,6 +6653,7 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
+                id: "result-text",
                 color: '#CCC',
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',

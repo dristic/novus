@@ -10,10 +10,9 @@ class entities.ResourceManager extends nv.Entity
     # Calculate food
 
   createArmy: (value) ->
-    # peasants = @model.get('peasants')
     gold = @model.get('gold')
     soldiers = Math.min gold, value
-    console.log 'soldiers', gold, value, soldiers
+    
     if soldiers > 0
       @model.set 'gold', gold - soldiers
       @projections.set 'soldiersInTraining', @projections.get('soldiersInTraining') + soldiers
@@ -29,6 +28,10 @@ class entities.ResourceManager extends nv.Entity
   onAttacked: (value) ->
     peasantKills = 0
     soldierKills = 0
+
+    # Randomize the battles a bit
+    morale = (Math.random() * 0.3) + 0.85
+    value = Math.floor(morale * value)
 
     soldiers = @model.get('soldiers') - value
     @model.set 'soldiers', Math.max(soldiers, 0)
@@ -51,6 +54,10 @@ class entities.ResourceManager extends nv.Entity
       kills:
         soldiers: soldierKills
         peasants: peasantKills
+
+    # TODO: Make this check happen when a player's country is taken over
+    if @model.get('peasants') <= 0
+      @scene.fire "game:lose", 0
 
   setLaborDistribution: (ratio) ->
     console.log "labor ratio", ratio
