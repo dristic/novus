@@ -21,7 +21,9 @@ class entities.PlayerManager extends nv.Entity
             if @attacking is true
               @attacking = false
               @attackText.hide()
-              @scene.fire "game:army:send", Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
+              @scene.fire "game:army:send", 
+                amount: Math.min(@clientPlayer().resources().current().get('soldiers'), 50)
+                country: id
           else
             @clientPlayer().selectCountry id
             @scene.fire "game:selected:country", id
@@ -30,8 +32,8 @@ class entities.PlayerManager extends nv.Entity
     @model.playerNumber = number
     @createPlayers()
 
-  "event(game:army:attacked)": (enemySoldiers) ->
-    @clientPlayer().resources().onAttacked enemySoldiers
+  "event(game:army:attacked)": (data) ->
+    @clientPlayer().onAttacked data.country, data.amount
 
   "event(game:army:send)": (soldiers) ->
     @clientPlayer().resources().sendSoldiers soldiers

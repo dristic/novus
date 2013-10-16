@@ -43,7 +43,9 @@ class entities.MultiplayerController extends nv.Entity
       @ref.child('attacks').on 'child_added', (snapshot) =>
         data = snapshot.val()
         if data.guid isnt @guid
-          @scene.fire "game:army:attacked", data.amount
+          @scene.fire "game:army:attacked",
+            amount: data.amount
+            country: data.country
           snapshot.ref().remove()
 
       # Get battle results when attacking
@@ -79,10 +81,11 @@ class entities.MultiplayerController extends nv.Entity
     if @playerManager.model.turn is newTurn
       @ref.child('turn').set newTurn
 
-  "event(game:army:send)": (soldiers) ->
+  "event(game:army:send)": (data) ->
     @ref.child('attacks').push
       guid: @guid
-      amount: soldiers
+      amount: data.amount
+      country: data.country
 
   "event(game:army:battle)": (data) ->
     @ref.child('attack_results').push
