@@ -4033,6 +4033,9 @@
       if (!this.up) {
         return;
       }
+      if (!!this.hidden) {
+        return;
+      }
       if (this.up.y < 0 && this.up.loaded) {
         this.up.y = this.entity.model.y + (this.height - this.up.height) / 2;
       }
@@ -4524,8 +4527,101 @@
     __extends(ArmyCreator, _super);
 
     function ArmyCreator(scene, plugins, model) {
+      var value,
+        _this = this;
       ArmyCreator.__super__.constructor.call(this, scene, plugins, model);
+      this.max = 100;
+      this.value = 0;
+      this.dialog = new nv.DialogUIPlugin(scene, {
+        model: new nv.Model({
+          x: this.model.get('x'),
+          y: this.model.get('y')
+        })
+      });
+      this.slider = new nv.SliderUIPlugin(scene, {
+        model: new nv.Model({
+          leftImage: "/assets/farmer-16.wh.png",
+          rightImage: "/assets/miner-16.wh.png",
+          x: 190,
+          y: 190,
+          value: 50,
+          gap: 3,
+          height: 20,
+          lineHeight: 20
+        })
+      });
+      this.text = new nv.TextUIPlugin(scene, {
+        model: new nv.Model({
+          color: '#CCC',
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          text: 'Soldiers: 0',
+          x: 190,
+          y: 185
+        })
+      });
+      this.label = new nv.TextUIPlugin(scene, {
+        model: new nv.Model({
+          color: '#CCC',
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          text: 'Create How Many?',
+          x: 190,
+          y: 165
+        })
+      });
+      this.slider.entity.model.on('change:value', function(value) {
+        return _this.setValue(value);
+      });
+      value = this.slider.entity.model.get('value');
+      this.setValue(value);
+      this.hide();
     }
+
+    ArmyCreator.prototype.setValue = function(value) {
+      value = Math.floor((value * this.max) / 100);
+      this.value = value;
+      return this.text.entity.model.set('text', "Soldiers: " + this.value);
+    };
+
+    ArmyCreator.prototype.show = function() {
+      this.dialog.show();
+      this.slider.show();
+      this.text.show();
+      return this.label.show();
+    };
+
+    ArmyCreator.prototype.hide = function() {
+      this.dialog.hide();
+      this.slider.hide();
+      this.text.hide();
+      return this.label.hide();
+    };
+
+    ArmyCreator.prototype["event(game:armycreator:show)"] = function(max) {
+      this.max = max;
+      this.setValue(this.slider.entity.model.get('value'));
+      return this.show();
+    };
+
+    ArmyCreator.prototype["event(engine:ui:dialog:confirm)"] = function(element) {
+      if (element === this.dialog) {
+        this.scene.fire("game:army:created", this.value);
+        return this.hide();
+      }
+    };
+
+    ArmyCreator.prototype["event(engine:ui:dialog:cancel)"] = function(element) {
+      if (element === this.dialog) {
+        return this.hide();
+      }
+    };
+
+    ArmyCreator.prototype["event(engine:ui:dialog:show)"] = function(id) {
+      if (id === this.model.get('id')) {
+        return this.show();
+      }
+    };
 
     return ArmyCreator;
 
@@ -4877,7 +4973,10 @@
           var data;
           data = snapshot.val();
           if (data.guid !== _this.guid) {
-            _this.scene.fire("game:army:attacked", data.amount);
+            _this.scene.fire("game:army:attacked", {
+              amount: data.amount,
+              country: data.country
+            });
             return snapshot.ref().remove();
           }
         });
@@ -4925,10 +5024,11 @@
       }
     };
 
-    MultiplayerController.prototype["event(game:army:send)"] = function(soldiers) {
+    MultiplayerController.prototype["event(game:army:send)"] = function(data) {
       return this.ref.child('attacks').push({
         guid: this.guid,
-        amount: soldiers
+        amount: data.amount,
+        country: data.country
       });
     };
 
@@ -4971,6 +5071,22 @@
       this.active = false;
       this.model.selectedCountry = 0;
     }
+
+    Player.prototype.onAttacked = function(country, amount) {
+      var found, _i, _len, _ref;
+      found = false;
+      _ref = this.countries();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        country = _ref[_i];
+        if (country.model.id === country) {
+          found = true;
+          country.resources().onAttacked(amount);
+        }
+      }
+      if (found === false) {
+        return console.log("Attacked but could not find country with id: ", country);
+      }
+    };
 
     Player.prototype.addCountry = function(data) {
       var entityConfigs;
@@ -5085,7 +5201,10 @@
               if (this.attacking === true) {
                 this.attacking = false;
                 this.attackText.hide();
-                _results.push(this.scene.fire("game:army:send", Math.min(this.clientPlayer().resources().current().get('soldiers'), 50)));
+                _results.push(this.scene.fire("game:army:send", {
+                  amount: Math.min(this.clientPlayer().resources().current().get('soldiers'), 50),
+                  country: id
+                }));
               } else {
                 _results.push(void 0);
               }
@@ -5106,8 +5225,8 @@
       return this.createPlayers();
     };
 
-    PlayerManager.prototype["event(game:army:attacked)"] = function(enemySoldiers) {
-      return this.clientPlayer().resources().onAttacked(enemySoldiers);
+    PlayerManager.prototype["event(game:army:attacked)"] = function(data) {
+      return this.clientPlayer().onAttacked(data.country, data.amount);
     };
 
     PlayerManager.prototype["event(game:army:send)"] = function(soldiers) {
@@ -5191,14 +5310,14 @@
 
     PlayerManager.prototype["event(engine:ui:slider:change)"] = function(entity) {
       var value;
-      if (this.currentPlayer()) {
+      if (this.currentPlayer() && entity.model.id === "population-slider") {
         value = Math.floor(entity.model.value) / 100;
         return this.currentPlayer().resources().setLaborDistribution(value);
       }
     };
 
     PlayerManager.prototype["event(engine:ui:clicked)"] = function(element) {
-      var currentTurn, turn;
+      var currentTurn, gold, turn;
       currentTurn = this.model.turn;
       turn = this.model.turn + 1;
       if (turn > this.model.players.length) {
@@ -5211,7 +5330,8 @@
           return this.scene.fire("game:turn:next", turn);
         case "create-army-button":
           if (currentTurn === this.model.playerNumber) {
-            return this.scene.fire("game:army:created", 10);
+            gold = this.clientPlayer().resources().model.get('gold');
+            return this.scene.fire("game:armycreator:show", gold);
           }
           break;
         case "attack-button":
@@ -6082,7 +6202,7 @@
 
   uiFont = 'bold 16px sans-serif';
 
-  version = 'v0.0.6';
+  version = 'v0.0.7';
 
   realms.gameConfig = {
     canvas: {
@@ -6365,6 +6485,7 @@
             plugins: [nv.SliderUIPlugin],
             model: {
               options: {
+                id: "population-slider",
                 leftImage: "/assets/farmer-16.wh.png",
                 rightImage: "/assets/miner-16.wh.png",
                 font: uiFont,

@@ -3,7 +3,7 @@
 #= require scenarios.config
 
 uiFont = 'bold 16px sans-serif'
-version = 'v0.0.6'
+version = 'v0.0.7'
 
 realms.gameConfig =
   canvas:
