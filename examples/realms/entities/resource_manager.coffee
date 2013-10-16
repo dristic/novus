@@ -12,9 +12,9 @@ class entities.ResourceManager extends nv.Entity
   createArmy: (value) ->
     gold = @model.get('gold')
     soldiers = Math.min gold, value
-    
+
     if soldiers > 0
-      @model.set 'gold', gold - soldiers
+      @model.set 'gold', @goldCalc(gold - soldiers)
       @projections.set 'soldiersInTraining', @projections.get('soldiersInTraining') + soldiers
       @updateProjections()
     else
@@ -55,10 +55,6 @@ class entities.ResourceManager extends nv.Entity
         soldiers: soldierKills
         peasants: peasantKills
 
-    # TODO: Make this check happen when a player's country is taken over
-    if @model.get('peasants') <= 0
-      @scene.fire "game:lose", 0
-
   setLaborDistribution: (ratio) ->
     console.log "labor ratio", ratio
     @projections.set 'ratio', ratio
@@ -94,7 +90,7 @@ class entities.ResourceManager extends nv.Entity
     @model.setMany
       peasants: peasants + @projections.peasants
       soldiers: Math.max(@model.get('soldiers') + @projections.soldiers, 0)
-      gold: @model.get('gold') + @projections.gold
+      gold: @goldCalc( @model.get('gold') + @projections.gold )
       food: Math.max(@model.get('food') + @projections.food, 0)
       ratio: @projections.ratio
     @grainYield = null
@@ -128,6 +124,9 @@ class entities.ResourceManager extends nv.Entity
     console.log "food to grow:", food
     @projections.set 'food', Math.round(food) - @model.get('peasants') - @model.get('soldiers')
 
+  goldCalc: (gold) ->
+    Math.round((gold * 10)) / 10
+
   projectMining: () ->
     gold = 0
     goldPlots = @owner.numberOfPlots('gold')
@@ -142,7 +141,7 @@ class entities.ResourceManager extends nv.Entity
       for i in [1..goldPlots]
         gold += @goldYield * 0.1 * minersPerPlot
     gold = Math.min(gold, 30)
-    @projections.set 'gold', Math.round((gold * 10)) / 10
+    @projections.set 'gold', @goldCalc(gold)
 
   projectPopulation: () ->
     peasants = @model.get('peasants')

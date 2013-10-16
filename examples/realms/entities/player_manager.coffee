@@ -84,7 +84,7 @@ class entities.PlayerManager extends nv.Entity
             ratio: 0.5
             flag: flag
 
-          player.addCountry data
+          player.createCountry data
 
     @countries = @scene.getEntities(entities.Country)
 
@@ -148,4 +148,7 @@ class entities.PlayerManager extends nv.Entity
   "event(game:turn:next)": () ->
     @nextPlayersTurn()
 
-  # event(country:activate)
+  "event(game:country:captured)": (data) ->
+    data.defeated.removeCountry(data.country)
+    #data.victor.addCountry(data.country)
+
