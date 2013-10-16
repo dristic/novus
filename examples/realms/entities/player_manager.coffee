@@ -36,11 +36,18 @@ class entities.PlayerManager extends nv.Entity
     @clientPlayer().onAttacked data.country, data.amount
 
   "event(game:army:send)": (data) ->
-    @clientPlayer().resources().sendSoldiers data.amount
+    unless data.amount is 0
+      @clientPlayer().resources().sendSoldiers data.amount
 
-    @scene.fire 'game:ui:alert',
-        type: 'info'
-        message: "#{data.amount} soldiers rush into battle!"
+      @scene.fire 'game:ui:alert',
+          type: 'info'
+          message: "#{data.amount} soldiers rush into battle!"
+
+    else
+      @scene.fire 'game:ui:alert',
+          type: 'warning'
+          message: "You must create an army before attacking"
+
 
   "event(game:army:battle)": (data) ->
     @scene.fire 'game:ui:alert',
@@ -103,7 +110,9 @@ class entities.PlayerManager extends nv.Entity
     @model.set 'currentPlayer', @model.players[turn - 1]
     console.log "PLAYER =", @model.currentPlayer.model.number
     console.log "TURN =", @model.turn
-    @currentPlayer().beginTurn()
+
+    if @clientPlayer().model.number is turn
+      @clientPlayer().beginTurn()
 
     @scene.fire "game:turn:end", turn
 
@@ -124,7 +133,13 @@ class entities.PlayerManager extends nv.Entity
       when "create-army-button"
         if currentTurn is @model.playerNumber
           gold = @clientPlayer().resources().model.get 'gold'
-          @scene.fire "game:armycreator:show", gold
+          unless gold is 0
+            @scene.fire "game:armycreator:show", gold
+          else
+            @scene.fire 'game:ui:alert',
+                type: 'info'
+                message: "Training peasants requires gold. Mine some."
+
       when "attack-button"
         if currentTurn is @model.playerNumber
           @attacking = true

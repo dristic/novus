@@ -6,7 +6,7 @@ class nv.DialogUIPlugin extends nv.UIPlugin
 
     @panel = new nv.PanelUIPlugin scene,
       model:
-        color: 'rgba(0, 0, 0, 0.5)'
+        color: 'rgba(0, 0, 0, 0.7)'
         width: 3000
         height: 3000
         x: 0

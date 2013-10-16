@@ -36,9 +36,9 @@ class entities.ArmyCreator extends nv.Entity
         color: '#CCC'
         font: 'bold 20px sans-serif'
         textBaseline: 'bottom'
-        text: 'Create How Many?'
+        text: 'Train how many peasants?'
         x: 190
-        y: 165
+        y: 160
 
     @slider.entity.model.on 'change:value', (value) =>
       @setValue value
