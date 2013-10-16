@@ -9,15 +9,15 @@ class entities.Player extends nv.Entity
     @active = false
     @model.selectedCountry = 0
 
-  onAttacked: (country, amount) ->
+  onAttacked: (id, amount) ->
     found = false
     for country in @countries()
-      if country.model.id is country
+      if country.model.id is id
         found = true
         country.resources().onAttacked amount
 
     if found is false
-      console.log "Attacked but could not find country with id: ", country
+      console.log "Attacked but could not find country with id: ", id
 
   addCountry: (data) ->
     entityConfigs = @scene.rootModel.config.entities

@@ -4118,7 +4118,7 @@
       this.gamepad = scene.get('gamepad');
       this.panel = new nv.PanelUIPlugin(scene, {
         model: {
-          color: 'rgba(0, 0, 0, 0.5)',
+          color: 'rgba(0, 0, 0, 0.7)',
           width: 3000,
           height: 3000,
           x: 0,
@@ -4565,9 +4565,9 @@
           color: '#CCC',
           font: 'bold 20px sans-serif',
           textBaseline: 'bottom',
-          text: 'Create How Many?',
+          text: 'Train how many peasants?',
           x: 190,
-          y: 165
+          y: 160
         })
       });
       this.slider.entity.model.on('change:value', function(value) {
@@ -5072,19 +5072,19 @@
       this.model.selectedCountry = 0;
     }
 
-    Player.prototype.onAttacked = function(country, amount) {
-      var found, _i, _len, _ref;
+    Player.prototype.onAttacked = function(id, amount) {
+      var country, found, _i, _len, _ref;
       found = false;
       _ref = this.countries();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         country = _ref[_i];
-        if (country.model.id === country) {
+        if (country.model.id === id) {
           found = true;
           country.resources().onAttacked(amount);
         }
       }
       if (found === false) {
-        return console.log("Attacked but could not find country with id: ", country);
+        return console.log("Attacked but could not find country with id: ", id);
       }
     };
 
@@ -5230,11 +5230,18 @@
     };
 
     PlayerManager.prototype["event(game:army:send)"] = function(data) {
-      this.clientPlayer().resources().sendSoldiers(data.amount);
-      return this.scene.fire('game:ui:alert', {
-        type: 'info',
-        message: "" + data.amount + " soldiers rush into battle!"
-      });
+      if (data.amount !== 0) {
+        this.clientPlayer().resources().sendSoldiers(data.amount);
+        return this.scene.fire('game:ui:alert', {
+          type: 'info',
+          message: "" + data.amount + " soldiers rush into battle!"
+        });
+      } else {
+        return this.scene.fire('game:ui:alert', {
+          type: 'warning',
+          message: "You must create an army before attacking"
+        });
+      }
     };
 
     PlayerManager.prototype["event(game:army:battle)"] = function(data) {
@@ -5304,7 +5311,9 @@
       this.model.set('currentPlayer', this.model.players[turn - 1]);
       console.log("PLAYER =", this.model.currentPlayer.model.number);
       console.log("TURN =", this.model.turn);
-      this.currentPlayer().beginTurn();
+      if (this.clientPlayer().model.number === turn) {
+        this.clientPlayer().beginTurn();
+      }
       return this.scene.fire("game:turn:end", turn);
     };
 
@@ -5331,7 +5340,14 @@
         case "create-army-button":
           if (currentTurn === this.model.playerNumber) {
             gold = this.clientPlayer().resources().model.get('gold');
-            return this.scene.fire("game:armycreator:show", gold);
+            if (gold !== 0) {
+              return this.scene.fire("game:armycreator:show", gold);
+            } else {
+              return this.scene.fire('game:ui:alert', {
+                type: 'info',
+                message: "Training peasants requires gold. Mine some."
+              });
+            }
           }
           break;
         case "attack-button":
