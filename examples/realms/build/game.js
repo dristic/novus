@@ -5229,11 +5229,11 @@
       return this.clientPlayer().onAttacked(data.country, data.amount);
     };
 
-    PlayerManager.prototype["event(game:army:send)"] = function(soldiers) {
-      this.clientPlayer().resources().sendSoldiers(soldiers);
+    PlayerManager.prototype["event(game:army:send)"] = function(data) {
+      this.clientPlayer().resources().sendSoldiers(data.amount);
       return this.scene.fire('game:ui:alert', {
         type: 'info',
-        message: "" + soldiers + " soldiers rush into battle!"
+        message: "" + data.amount + " soldiers rush into battle!"
       });
     };
 

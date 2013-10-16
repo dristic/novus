@@ -35,12 +35,12 @@ class entities.PlayerManager extends nv.Entity
   "event(game:army:attacked)": (data) ->
     @clientPlayer().onAttacked data.country, data.amount
 
-  "event(game:army:send)": (soldiers) ->
-    @clientPlayer().resources().sendSoldiers soldiers
+  "event(game:army:send)": (data) ->
+    @clientPlayer().resources().sendSoldiers data.amount
 
     @scene.fire 'game:ui:alert',
         type: 'info'
-        message: "#{soldiers} soldiers rush into battle!"
+        message: "#{data.amount} soldiers rush into battle!"
 
   "event(game:army:battle)": (data) ->
     @scene.fire 'game:ui:alert',
