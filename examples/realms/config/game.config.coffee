@@ -252,8 +252,7 @@ realms.gameConfig =
           plugins: [ nv.SliderUIPlugin ]
           model:
             options:
-              #leftText: "Farmers"
-              #rightText: "Miners"
+              id: "population-slider"
               leftImage: "/assets/farmer-16.wh.png"
               rightImage: "/assets/miner-16.wh.png"
               font: uiFont

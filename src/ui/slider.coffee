@@ -117,6 +117,8 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @createControls() unless @up
     return unless @up
 
+    return unless not @hidden
+
     if @up.y < 0 and @up.loaded
       @up.y = @entity.model.y + (@height - @up.height)/2
 

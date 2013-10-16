@@ -108,7 +108,7 @@ class entities.PlayerManager extends nv.Entity
     @scene.fire "game:turn:end", turn
 
   "event(engine:ui:slider:change)": (entity) ->
-    if @currentPlayer()
+    if @currentPlayer() and entity.model.id is "population-slider"
       value = Math.floor(entity.model.value) / 100
       @currentPlayer().resources().setLaborDistribution value
 
@@ -123,7 +123,8 @@ class entities.PlayerManager extends nv.Entity
       when "next-turn-other-button" then @scene.fire "game:turn:next", turn
       when "create-army-button"
         if currentTurn is @model.playerNumber
-          @scene.fire "game:army:created", 10
+          gold = @clientPlayer().resources().model.get 'gold'
+          @scene.fire "game:armycreator:show", gold
       when "attack-button"
         if currentTurn is @model.playerNumber
           @attacking = true
