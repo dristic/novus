@@ -5081,6 +5081,17 @@
         if (country.model.id === id) {
           found = true;
           country.resources().onAttacked(amount);
+          if (country.resources().get('peasants') <= 0) {
+            if (this.countries.length !== 1) {
+              this.scene.fire("game:country:captured", {
+                victor: null,
+                defeated: this,
+                country: country
+              });
+            } else {
+              this.scene.fire("game:lose", 0);
+            }
+          }
         }
       }
       if (found === false) {
@@ -5088,10 +5099,20 @@
       }
     };
 
-    Player.prototype.addCountry = function(data) {
+    Player.prototype.createCountry = function(data) {
       var entityConfigs;
       entityConfigs = this.scene.rootModel.config.entities;
       return this.model.countries.push(this.scene.createEntity(entityConfigs.country, data));
+    };
+
+    Player.prototype.addCountry = function(country) {
+      this.countries.push(country);
+      return country.model.flag = this.countries[0].model.flag;
+    };
+
+    Player.prototype.removeCountry = function(country) {
+      this.model.selectedCountry = 0;
+      return this.countries.splice(this.countries.indexOf(country), 1);
     };
 
     Player.prototype.country = function() {
@@ -5280,7 +5301,7 @@
               ratio: 0.5,
               flag: flag
             });
-            player.addCountry(data);
+            player.createCountry(data);
           }
         }
       }
@@ -5362,6 +5383,10 @@
       return this.nextPlayersTurn();
     };
 
+    PlayerManager.prototype["event(game:country:captured)"] = function(data) {
+      return data.defeated.removeCountry(data.country);
+    };
+
     return PlayerManager;
 
   })(nv.Entity);
@@ -5387,9 +5412,9 @@
     ResourceManager.prototype.createArmy = function(value) {
       var gold, soldiers;
       gold = this.model.get('gold');
-      soldiers = Math.min(gold, value);
+      soldiers = Math.floor(Math.min(gold, value, this.model.get('peasants')));
       if (soldiers > 0) {
-        this.model.set('gold', gold - soldiers);
+        this.model.set('gold', this.goldCalc(gold - soldiers));
         this.projections.set('soldiersInTraining', this.projections.get('soldiersInTraining') + soldiers);
         return this.updateProjections();
       } else {
@@ -5424,15 +5449,12 @@
         peasants = peasants - peasantKills;
         this.model.set('peasants', peasants);
       }
-      this.scene.fire("game:army:battle", {
+      return this.scene.fire("game:army:battle", {
         kills: {
           soldiers: soldierKills,
           peasants: peasantKills
         }
       });
-      if (this.model.get('peasants') <= 0) {
-        return this.scene.fire("game:lose", 0);
-      }
     };
 
     ResourceManager.prototype.setLaborDistribution = function(ratio) {
@@ -5480,7 +5502,7 @@
       this.model.setMany({
         peasants: peasants + this.projections.peasants,
         soldiers: Math.max(this.model.get('soldiers') + this.projections.soldiers, 0),
-        gold: this.model.get('gold') + this.projections.gold,
+        gold: this.goldCalc(this.model.get('gold') + this.projections.gold),
         food: Math.max(this.model.get('food') + this.projections.food, 0),
         ratio: this.projections.ratio
       });
@@ -5518,6 +5540,10 @@
       return this.projections.set('food', Math.round(food) - this.model.get('peasants') - this.model.get('soldiers'));
     };
 
+    ResourceManager.prototype.goldCalc = function(gold) {
+      return Math.round(gold * 10) / 10;
+    };
+
     ResourceManager.prototype.projectMining = function() {
       var gold, goldPlots, i, laborRatio, minersPerPlot, _i, _ref;
       gold = 0;
@@ -5535,7 +5561,7 @@
         }
       }
       gold = Math.min(gold, 30);
-      return this.projections.set('gold', Math.round(gold * 10) / 10);
+      return this.projections.set('gold', this.goldCalc(gold));
     };
 
     ResourceManager.prototype.projectPopulation = function() {
