@@ -11,7 +11,7 @@ class entities.ResourceManager extends nv.Entity
 
   createArmy: (value) ->
     gold = @model.get('gold')
-    soldiers = Math.min gold, value
+    soldiers = Math.floor( Math.min gold, value, @model.get('peasants') )
 
     if soldiers > 0
       @model.set 'gold', @goldCalc(gold - soldiers)
