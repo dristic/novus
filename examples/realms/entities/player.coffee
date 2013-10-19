@@ -8,29 +8,23 @@ class entities.Player extends nv.Entity
     @attacking = false
     @active = false
     @model.selectedCountry = 0
+    @playerManager = scene.getEntity(entities.PlayerManager)
 
-  onAttacked: (id, amount) ->
+  onAttacked: (id, amount, playerNumber) ->
     found = false
     for country in @countries()
       if country.model.id is id
         found = true
         country.resources().onAttacked amount
 
-        # TODO: Make this check happen when a player's country is taken over
-
-        # 1. Check for 0 peasants
-        # 2. Check player to see if it has another country
-        # 3. If no more countries, fire game over
-        # 4. if has more countries, transfer country
-
         if country.resources().get('peasants') <= 0
           unless @countries.length is 1
             @scene.fire "game:country:captured",
-              victor: null
+              victor: @playerManager.getPlayerByNumber(playerNumber)
               defeated: this
               country: country
           else
-            @scene.fire "game:lose", 0        
+            @scene.fire "game:lose", country.resources().get('peasants')
 
     if found is false
       console.log "Attacked but could not find country with id: ", id

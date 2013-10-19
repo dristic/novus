@@ -46,6 +46,7 @@ class entities.MultiplayerController extends nv.Entity
           @scene.fire "game:army:attacked",
             amount: data.amount
             country: data.country
+            player: data.player
           snapshot.ref().remove()
 
       # Get battle results when attacking
@@ -86,6 +87,7 @@ class entities.MultiplayerController extends nv.Entity
       guid: @guid
       amount: data.amount
       country: data.country
+      player: @playerManager.model.get('playerNumber')
 
   "event(game:army:battle)": (data) ->
     @ref.child('attack_results').push

@@ -33,7 +33,7 @@ class entities.PlayerManager extends nv.Entity
     @createPlayers()
 
   "event(game:army:attacked)": (data) ->
-    @clientPlayer().onAttacked data.country, data.amount
+    @clientPlayer().onAttacked data.country, data.amount, data.player
 
   "event(game:army:send)": (data) ->
     unless data.amount is 0
@@ -93,6 +93,12 @@ class entities.PlayerManager extends nv.Entity
     console.log "TURN =", @model.turn
     @scene.fire "game:player:assigned"
     @currentPlayer().beginTurn()
+
+  getPlayerByNumber: (number) ->
+    for player in @model.players
+      if player.model.get('number') is number
+        return player
+    null
 
   clientPlayer: () ->
     @model.clientPlayer
