@@ -59,13 +59,15 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 			height: 72
 		@border = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
+		# for player in @entity.model.players
+		# 	for country in player.countries()
+
+		# 		image = new Image()
+		# 		image.src = country.model.flag.src
+		# 		@flags.push nv.extend {image: image, countryId: country.model.id}, country.model.flag
+		@loadFlags()
+
 		for player in @entity.model.players
-			for country in player.countries()
-
-				image = new Image()
-				image.src = country.model.flag.src
-				@flags.push nv.extend {image: image, countryId: country.model.id}, country.model.flag
-
 			model = nv.extend playerMetadata[player.model.number-1].flag, {hidden: true, x: 567, y: 17}
 
 			@turns.push new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
@@ -81,6 +83,15 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 
 		@selectedCountry = @entity.clientPlayer().selectedCountry().model.id
 
+	loadFlags: () ->
+		@flags = []
+		for player in @entity.model.players
+			for country in player.countries()
+				image = new Image()
+				image.src = country.model.flag.src
+				@flags.push nv.extend {image: image, countryId: country.model.id}, country.model.flag
+
+
 	"event(game:turn:end)": (turn) ->
 		for indicator in @turns
 			indicator.hidden = true
@@ -88,6 +99,10 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 
 	"event(game:selected:country)": (id) ->
 		@selectedCountry = id
+
+	"event(game:country:updated)": () ->
+		@loadFlags()
+
 
 	draw: (context, canvas) ->
 		for flag in @flags

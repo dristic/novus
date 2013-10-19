@@ -100,6 +100,11 @@ class entities.PlayerManager extends nv.Entity
         return player
     null
 
+  getCountryById: (id) ->
+    for country in @countries
+      if country.model.get('id') is id
+        return country
+
   clientPlayer: () ->
     @model.clientPlayer
 
@@ -155,6 +160,7 @@ class entities.PlayerManager extends nv.Entity
     @nextPlayersTurn()
 
   "event(game:country:captured)": (data) ->
-    data.defeated.removeCountry(data.country)
-    data.victor.addCountry(data.country)
+    country = @getCountryById data.country
+    @getPlayerByNumber(data.defeated).removeCountry(country)
+    @getPlayerByNumber(data.victor).addCountry(country)
 

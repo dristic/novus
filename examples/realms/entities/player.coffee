@@ -18,11 +18,11 @@ class entities.Player extends nv.Entity
         country.resources().onAttacked amount
 
         if country.population() <= 0
-          unless @countries.length is 1
+          unless @model.countries.length is 1
             @scene.fire "game:country:captured",
-              victor: @playerManager.getPlayerByNumber(playerNumber)
-              defeated: this
-              country: country
+              victor: playerNumber
+              defeated: this.model.number
+              country: country.model.id
           else
             @scene.fire "game:lose", country.population()
 
@@ -37,7 +37,8 @@ class entities.Player extends nv.Entity
   # country captured -- add to list
   addCountry: (country) ->
     @model.countries.push country
-    country.model.flag = @model.countries[0].model.flag
+    country.model.flag.src = @model.countries[0].model.flag.src
+    @scene.fire "game:country:updated"
 
   # country lost in battle - remove it
   removeCountry: (country) ->
