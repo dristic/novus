@@ -156,5 +156,5 @@ class entities.PlayerManager extends nv.Entity
 
   "event(game:country:captured)": (data) ->
     data.defeated.removeCountry(data.country)
-    #data.victor.addCountry(data.country)
+    data.victor.addCountry(data.country)
 

@@ -16,15 +16,15 @@ class entities.Player extends nv.Entity
       if country.model.id is id
         found = true
         country.resources().onAttacked amount
-
-        if country.resources().model.get('peasants') <= 0
+        
+        if country.population() <= 0
           unless @countries.length is 1
             @scene.fire "game:country:captured",
               victor: @playerManager.getPlayerByNumber(playerNumber)
               defeated: this
               country: country
           else
-            @scene.fire "game:lose", country.resources().get('peasants')
+            @scene.fire "game:lose", country.population()
 
     if found is false
       console.log "Attacked but could not find country with id: ", id
