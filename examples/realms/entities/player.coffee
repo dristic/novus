@@ -17,7 +17,7 @@ class entities.Player extends nv.Entity
         found = true
         country.resources().onAttacked amount
 
-        if country.resources().get('peasants') <= 0
+        if country.resources().model.get('peasants') <= 0
           unless @countries.length is 1
             @scene.fire "game:country:captured",
               victor: @playerManager.getPlayerByNumber(playerNumber)
