@@ -16,7 +16,7 @@ class entities.Player extends nv.Entity
       if country.model.id is id
         found = true
         country.resources().onAttacked amount
-        
+
         if country.population() <= 0
           unless @countries.length is 1
             @scene.fire "game:country:captured",
@@ -36,13 +36,13 @@ class entities.Player extends nv.Entity
 
   # country captured -- add to list
   addCountry: (country) ->
-    @countries.push country
-    country.model.flag = @countries[0].model.flag
+    @model.countries.push country
+    country.model.flag = @model.countries[0].model.flag
 
   # country lost in battle - remove it
   removeCountry: (country) ->
     @model.selectedCountry = 0
-    @countries.splice @countries.indexOf(country), 1
+    @model.countries.splice @model.countries.indexOf(country), 1
 
   country: () ->
     @model.countries[@model.selectedCountry]
