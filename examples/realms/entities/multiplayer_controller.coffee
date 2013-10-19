@@ -76,14 +76,12 @@ class entities.MultiplayerController extends nv.Entity
       @ref.child('country_captured').on 'child_added', (snapshot) =>
         data = snapshot.val()
         if data.guid isnt @guid
-          @scene.fire "game:country:captured",
-            victor: data.victor
-            defeated: data.defeated
-            country: data.country
+          data.remote = true
+          @scene.fire "game:country:captured", data
           snapshot.ref().remove()
 
   "event(game:country:captured)": (data) ->
-    if data.defeated isnt @playerManager.model.get('playerNumber')
+    unless data.remote is true
       @ref.child('country_captured').push
         guid: @guid
         victor: data.victor
