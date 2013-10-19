@@ -28,6 +28,9 @@ class entities.Country extends nv.Entity
   resources: () ->
     @model.resourceManager
 
+  population: () ->
+    @model.resourceManager.getPopulation()
+
   plots: () ->
     @model.plots
 

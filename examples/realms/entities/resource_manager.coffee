@@ -6,8 +6,8 @@ class entities.ResourceManager extends nv.Entity
     @prepareProjections()
     @active = false
 
-  calculateResources: (lands) ->
-    # Calculate food
+  getPopulation: () ->
+    @model.get('peasants') + @model.get('soldiers')
 
   createArmy: (value) ->
     gold = @model.get('gold')
