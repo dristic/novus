@@ -57,12 +57,12 @@ class entities.Map extends nv.Entity
       x: data.x
       y: data.y
 
-  "event(engine:gamepad:mouse:down)": (data) ->
-    @down = false
-
     tile = @playerData.getTileFromScreenXY(data.x - @camera.x, data.y - @camera.y)
     if tile isnt 0
       @scene.fire "game:clicked:country", tile
+
+  "event(engine:gamepad:mouse:up)": (data) ->
+    @down = false
 
   destroy: () ->
     clearTimeout @timeout

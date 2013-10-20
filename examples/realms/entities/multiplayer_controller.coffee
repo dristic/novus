@@ -21,7 +21,7 @@ class entities.MultiplayerController extends nv.Entity
 
       # Select the player number
       @ref.child('players').once 'value', (snapshot) =>
-        if snapshot.val() is 0 or snapshot.val() is 2 or snapshot.val() is null
+        if snapshot.val() is 0 or snapshot.val() is 3 or snapshot.val() is null
           @scene.fire "game:mp:player", 1
           @ref.child('players').set 1
         else if snapshot.val() is 1

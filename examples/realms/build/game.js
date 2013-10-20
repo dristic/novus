@@ -4924,20 +4924,20 @@
     };
 
     Map.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
+      var tile;
       this.down = true;
-      return this.origin = {
+      this.origin = {
         x: data.x,
         y: data.y
       };
-    };
-
-    Map.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
-      var tile;
-      this.down = false;
       tile = this.playerData.getTileFromScreenXY(data.x - this.camera.x, data.y - this.camera.y);
       if (tile !== 0) {
         return this.scene.fire("game:clicked:country", tile);
       }
+    };
+
+    Map.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
+      return this.down = false;
     };
 
     Map.prototype.destroy = function() {
@@ -4975,7 +4975,7 @@
       if (typeof Firebase !== "undefined" && Firebase !== null) {
         this.ref = new Firebase("" + this.model.url + "/game/" + this.hash);
         this.ref.child('players').once('value', function(snapshot) {
-          if (snapshot.val() === 0 || snapshot.val() === 2 || snapshot.val() === null) {
+          if (snapshot.val() === 0 || snapshot.val() === 3 || snapshot.val() === null) {
             _this.scene.fire("game:mp:player", 1);
             return _this.ref.child('players').set(1);
           } else if (snapshot.val() === 1) {
@@ -5127,7 +5127,7 @@
         country = _ref[_i];
         if (country.model.id === id) {
           found = true;
-          country.resources().onAttacked(amount);
+          country.resources().onAttacked(amount, id);
           if (country.population() <= 0) {
             if (this.model.countries.length !== 1) {
               this.scene.fire("game:country:captured", {
@@ -5301,11 +5301,11 @@
     };
 
     PlayerManager.prototype["event(game:army:send)"] = function(data) {
-      if (data.amount !== 0) {
+      if (!(data.amount <= 0)) {
         this.clientPlayer().resources().sendSoldiers(data.amount);
         return this.scene.fire('game:ui:alert', {
           type: 'info',
-          message: "" + data.amount + " soldiers rush into battle!"
+          message: "" + data.amount + " soldiers attack " + (this.getCountryNameById(data.country)) + "!"
         });
       } else {
         return this.scene.fire('game:ui:alert', {
@@ -5316,9 +5316,11 @@
     };
 
     PlayerManager.prototype["event(game:army:battle)"] = function(data) {
+      var attacker;
+      attacker = this.getCountryNameById(data.attacker);
       return this.scene.fire('game:ui:alert', {
         type: 'alert',
-        message: "" + data.kills.soldiers + " soldiers and " + data.kills.peasants + " peasants died in battle!"
+        message: "" + attacker + " attacked! " + data.kills.soldiers + " soldiers and " + data.kills.peasants + " peasants died in battle!"
       });
     };
 
@@ -5384,6 +5386,10 @@
           return country;
         }
       }
+    };
+
+    PlayerManager.prototype.getCountryNameById = function(id) {
+      return this.getCountryById(id).model.country;
     };
 
     PlayerManager.prototype.clientPlayer = function() {
@@ -5507,7 +5513,7 @@
       return this.model.set('soldiers', this.model.get('soldiers') - value);
     };
 
-    ResourceManager.prototype.onAttacked = function(value) {
+    ResourceManager.prototype.onAttacked = function(value, countryId) {
       var morale, peasantKills, peasants, soldierKills, soldiers;
       peasantKills = 0;
       soldierKills = 0;
@@ -5530,7 +5536,8 @@
       return this.scene.fire("game:army:battle", {
         kills: {
           soldiers: soldierKills,
-          peasants: peasantKills
+          peasants: peasantKills,
+          attacker: countryId
         }
       });
     };
