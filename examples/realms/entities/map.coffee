@@ -57,7 +57,7 @@ class entities.Map extends nv.Entity
       x: data.x
       y: data.y
 
-  "event(engine:gamepad:mouse:up)": (data) ->
+  "event(engine:gamepad:mouse:down)": (data) ->
     @down = false
 
     tile = @playerData.getTileFromScreenXY(data.x - @camera.x, data.y - @camera.y)

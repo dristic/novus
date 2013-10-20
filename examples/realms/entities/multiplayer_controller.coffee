@@ -47,7 +47,7 @@ class entities.MultiplayerController extends nv.Entity
             amount: data.amount
             country: data.country
             player: data.player
-          snapshot.ref().remove()
+          # snapshot.ref().remove()
 
       # Get battle results when attacking
       @ref.child('attack_results').on 'child_added', (snapshot) =>
@@ -57,7 +57,7 @@ class entities.MultiplayerController extends nv.Entity
           @scene.fire 'game:ui:alert',
             type: 'info'
             message: "Killed #{data.kills.soldiers} soldiers and #{data.kills.peasants} peasants!"
-          snapshot.ref().remove()
+          # snapshot.ref().remove()
 
       # Keep track of turn switching
       @ref.child('turn').on 'value', (snapshot) =>
@@ -70,7 +70,7 @@ class entities.MultiplayerController extends nv.Entity
         if data.guid isnt @guid
           if data.population <= 0
             @scene.fire "game:over", "win"
-            snapshot.ref().remove()
+            # snapshot.ref().remove()
 
       # Country capturing
       @ref.child('country_captured').on 'child_added', (snapshot) =>
@@ -78,7 +78,7 @@ class entities.MultiplayerController extends nv.Entity
         if data.guid isnt @guid
           data.remote = true
           @scene.fire "game:country:captured", data
-          snapshot.ref().remove()
+          # snapshot.ref().remove()
 
   "event(game:country:captured)": (data) ->
     unless data.remote is true

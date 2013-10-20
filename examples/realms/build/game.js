@@ -4931,7 +4931,7 @@
       };
     };
 
-    Map.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
+    Map.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
       var tile;
       this.down = false;
       tile = this.playerData.getTileFromScreenXY(data.x - this.camera.x, data.y - this.camera.y);
@@ -4998,12 +4998,11 @@
           var data;
           data = snapshot.val();
           if (data.guid !== _this.guid) {
-            _this.scene.fire("game:army:attacked", {
+            return _this.scene.fire("game:army:attacked", {
               amount: data.amount,
               country: data.country,
               player: data.player
             });
-            return snapshot.ref().remove();
           }
         });
         this.ref.child('attack_results').on('child_added', function(snapshot) {
@@ -5011,11 +5010,10 @@
           data = snapshot.val();
           if (data.guid !== _this.guid) {
             _this.scene.fire("game:army:results", data);
-            _this.scene.fire('game:ui:alert', {
+            return _this.scene.fire('game:ui:alert', {
               type: 'info',
               message: "Killed " + data.kills.soldiers + " soldiers and " + data.kills.peasants + " peasants!"
             });
-            return snapshot.ref().remove();
           }
         });
         this.ref.child('turn').on('value', function(snapshot) {
@@ -5028,8 +5026,7 @@
           data = snapshot.val();
           if (data.guid !== _this.guid) {
             if (data.population <= 0) {
-              _this.scene.fire("game:over", "win");
-              return snapshot.ref().remove();
+              return _this.scene.fire("game:over", "win");
             }
           }
         });
@@ -5038,8 +5035,7 @@
           data = snapshot.val();
           if (data.guid !== _this.guid) {
             data.remote = true;
-            _this.scene.fire("game:country:captured", data);
-            return snapshot.ref().remove();
+            return _this.scene.fire("game:country:captured", data);
           }
         });
       }
