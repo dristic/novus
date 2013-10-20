@@ -15,7 +15,7 @@ class entities.Player extends nv.Entity
     for country in @countries()
       if country.model.id is id
         found = true
-        country.resources().onAttacked amount
+        country.resources().onAttacked amount, id
 
         if country.population() <= 0
           unless @model.countries.length is 1
