@@ -25,7 +25,7 @@ class entities.ResourceManager extends nv.Entity
   sendSoldiers: (value) ->
     @model.set 'soldiers', ( @model.get('soldiers') - value )
 
-  onAttacked: (value) ->
+  onAttacked: (value, countryId) ->
     peasantKills = 0
     soldierKills = 0
 
@@ -54,6 +54,7 @@ class entities.ResourceManager extends nv.Entity
       kills:
         soldiers: soldierKills
         peasants: peasantKills
+        attacker: countryId
 
   setLaborDistribution: (ratio) ->
     console.log "labor ratio", ratio

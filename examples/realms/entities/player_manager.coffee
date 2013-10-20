@@ -36,23 +36,23 @@ class entities.PlayerManager extends nv.Entity
     @clientPlayer().onAttacked data.country, data.amount, data.player
 
   "event(game:army:send)": (data) ->
-    unless data.amount is 0
+    unless data.amount <= 0
       @clientPlayer().resources().sendSoldiers data.amount
 
       @scene.fire 'game:ui:alert',
-          type: 'info'
-          message: "#{data.amount} soldiers rush into battle!"
+        type: 'info'
+        message: "#{data.amount} soldiers attack #{@getCountryNameById(data.country)}!"
 
     else
       @scene.fire 'game:ui:alert',
-          type: 'warning'
-          message: "You must create an army before attacking"
-
+        type: 'warning'
+        message: "You must create an army before attacking"
 
   "event(game:army:battle)": (data) ->
+    attacker = @getCountryNameById(data.attacker)
     @scene.fire 'game:ui:alert',
       type: 'alert'
-      message: "#{data.kills.soldiers} soldiers and #{data.kills.peasants} peasants died in battle!"
+      message: "#{attacker} attacked! #{data.kills.soldiers} soldiers and #{data.kills.peasants} peasants died in battle!"
 
   createPlayers: () ->
     rootModel = @scene.rootModel
@@ -104,6 +104,9 @@ class entities.PlayerManager extends nv.Entity
     for country in @countries
       if country.model.get('id') is id
         return country
+
+  getCountryNameById: (id) ->
+    @getCountryById(id).model.country
 
   clientPlayer: () ->
     @model.clientPlayer
