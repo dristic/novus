@@ -27,6 +27,9 @@ class entities.MultiplayerController extends nv.Entity
         else if snapshot.val() is 1
           @scene.fire "game:mp:player", 2
           @ref.child('players').set 2
+        else if snapshot.val() is 2
+          @scene.fire "game:mp:player", 3
+          @ref.child('players').set 3
         else
           # Reset the game
           @ref.child('turn').set 1

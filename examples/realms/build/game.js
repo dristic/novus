@@ -4981,6 +4981,9 @@
           } else if (snapshot.val() === 1) {
             _this.scene.fire("game:mp:player", 2);
             return _this.ref.child('players').set(2);
+          } else if (snapshot.val() === 2) {
+            _this.scene.fire("game:mp:player", 3);
+            return _this.ref.child('players').set(3);
           } else {
             _this.ref.child('turn').set(1);
             return _this.ref.child('players').set(0);
