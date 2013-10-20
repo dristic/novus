@@ -4900,7 +4900,7 @@
       cache = function() {
         return _this.getPlugin(nv.SpriteMapRenderingPlugin).cache(_this.model.width, _this.model.height);
       };
-      this.timeout = setTimeout(cache, 2000);
+      this.timeout = setTimeout(cache, 5000);
     }
 
     Map.prototype.update = function(dt) {

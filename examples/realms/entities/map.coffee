@@ -33,7 +33,7 @@ class entities.Map extends nv.Entity
 
     cache = () =>
       @getPlugin(nv.SpriteMapRenderingPlugin).cache(@model.width, @model.height)
-    @timeout = setTimeout cache, 2000
+    @timeout = setTimeout cache, 5000
 
   update: (dt) ->
     super dt
