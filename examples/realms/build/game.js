@@ -4429,7 +4429,7 @@
     }
 
     PlayerManager.prototype["event(game:player:assigned)"] = function() {
-      var country, image, model, player, playerMetadata, scenario, _i, _j, _len, _len1, _ref, _ref1;
+      var model, player, playerMetadata, scenario, _i, _len, _ref;
       scenario = this.scene.rootModel.get('scenario');
       playerMetadata = this.scene.rootModel.config.playerMetadata;
       model = {
@@ -4440,19 +4440,10 @@
         height: 72
       };
       this.border = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+      this.loadFlags();
       _ref = this.entity.model.players;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         player = _ref[_i];
-        _ref1 = player.countries();
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          country = _ref1[_j];
-          image = new Image();
-          image.src = country.model.flag.src;
-          this.flags.push(nv.extend({
-            image: image,
-            countryId: country.model.id
-          }, country.model.flag));
-        }
         model = nv.extend(playerMetadata[player.model.number - 1].flag, {
           hidden: true,
           x: 567,
@@ -4472,6 +4463,32 @@
       return this.selectedCountry = this.entity.clientPlayer().selectedCountry().model.id;
     };
 
+    PlayerManager.prototype.loadFlags = function() {
+      var country, image, player, _i, _len, _ref, _results;
+      this.flags = [];
+      _ref = this.entity.model.players;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        _results.push((function() {
+          var _j, _len1, _ref1, _results1;
+          _ref1 = player.countries();
+          _results1 = [];
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            country = _ref1[_j];
+            image = new Image();
+            image.src = country.model.flag.src;
+            _results1.push(this.flags.push(nv.extend({
+              image: image,
+              countryId: country.model.id
+            }, country.model.flag)));
+          }
+          return _results1;
+        }).call(this));
+      }
+      return _results;
+    };
+
     PlayerManager.prototype["event(game:turn:end)"] = function(turn) {
       var indicator, _i, _len, _ref;
       _ref = this.turns;
@@ -4484,6 +4501,10 @@
 
     PlayerManager.prototype["event(game:selected:country)"] = function(id) {
       return this.selectedCountry = id;
+    };
+
+    PlayerManager.prototype["event(game:country:updated)"] = function() {
+      return this.loadFlags();
     };
 
     PlayerManager.prototype.draw = function(context, canvas) {
@@ -4668,6 +4689,10 @@
 
     Country.prototype.resources = function() {
       return this.model.resourceManager;
+    };
+
+    Country.prototype.population = function() {
+      return this.model.resourceManager.getPopulation();
     };
 
     Country.prototype.plots = function() {
@@ -4975,7 +5000,8 @@
           if (data.guid !== _this.guid) {
             _this.scene.fire("game:army:attacked", {
               amount: data.amount,
-              country: data.country
+              country: data.country,
+              player: data.player
             });
             return snapshot.ref().remove();
           }
@@ -5007,8 +5033,28 @@
             }
           }
         });
+        this.ref.child('country_captured').on('child_added', function(snapshot) {
+          var data;
+          data = snapshot.val();
+          if (data.guid !== _this.guid) {
+            data.remote = true;
+            _this.scene.fire("game:country:captured", data);
+            return snapshot.ref().remove();
+          }
+        });
       }
     }
+
+    MultiplayerController.prototype["event(game:country:captured)"] = function(data) {
+      if (data.remote !== true) {
+        return this.ref.child('country_captured').push({
+          guid: this.guid,
+          victor: data.victor,
+          defeated: data.defeated,
+          country: data.country
+        });
+      }
+    };
 
     MultiplayerController.prototype["event(game:lose)"] = function(population) {
       this.ref.child('population_update').push({
@@ -5028,7 +5074,8 @@
       return this.ref.child('attacks').push({
         guid: this.guid,
         amount: data.amount,
-        country: data.country
+        country: data.country,
+        player: this.playerManager.model.get('playerNumber')
       });
     };
 
@@ -5070,9 +5117,10 @@
       this.attacking = false;
       this.active = false;
       this.model.selectedCountry = 0;
+      this.playerManager = scene.getEntity(entities.PlayerManager);
     }
 
-    Player.prototype.onAttacked = function(id, amount) {
+    Player.prototype.onAttacked = function(id, amount, playerNumber) {
       var country, found, _i, _len, _ref;
       found = false;
       _ref = this.countries();
@@ -5081,15 +5129,15 @@
         if (country.model.id === id) {
           found = true;
           country.resources().onAttacked(amount);
-          if (country.resources().get('peasants') <= 0) {
-            if (this.countries.length !== 1) {
+          if (country.population() <= 0) {
+            if (this.model.countries.length !== 1) {
               this.scene.fire("game:country:captured", {
-                victor: null,
-                defeated: this,
-                country: country
+                victor: playerNumber,
+                defeated: this.model.number,
+                country: country.model.id
               });
             } else {
-              this.scene.fire("game:lose", 0);
+              this.scene.fire("game:lose", country.population());
             }
           }
         }
@@ -5106,13 +5154,16 @@
     };
 
     Player.prototype.addCountry = function(country) {
-      this.countries.push(country);
-      return country.model.flag = this.countries[0].model.flag;
+      this.model.countries.push(country);
+      country.model.flag.src = this.model.countries[0].model.flag.src;
+      country.model.owner = this.model.number;
+      return this.scene.fire("game:country:updated");
     };
 
     Player.prototype.removeCountry = function(country) {
       this.model.selectedCountry = 0;
-      return this.countries.splice(this.countries.indexOf(country), 1);
+      country.model.owner = null;
+      return this.model.countries.splice(this.model.countries.indexOf(country), 1);
     };
 
     Player.prototype.country = function() {
@@ -5122,7 +5173,7 @@
     Player.prototype.selectCountry = function(id) {
       var idx, _i, _ref, _results;
       _results = [];
-      for (idx = _i = 0, _ref = this.model.countries.length; 0 <= _ref ? _i <= _ref : _i >= _ref; idx = 0 <= _ref ? ++_i : --_i) {
+      for (idx = _i = 0, _ref = this.model.countries.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; idx = 0 <= _ref ? ++_i : --_i) {
         if (this.model.countries[idx].model.id === id) {
           this.model.selectedCountry = idx;
           break;
@@ -5247,7 +5298,7 @@
     };
 
     PlayerManager.prototype["event(game:army:attacked)"] = function(data) {
-      return this.clientPlayer().onAttacked(data.country, data.amount);
+      return this.clientPlayer().onAttacked(data.country, data.amount, data.player);
     };
 
     PlayerManager.prototype["event(game:army:send)"] = function(data) {
@@ -5311,6 +5362,29 @@
       console.log("TURN =", this.model.turn);
       this.scene.fire("game:player:assigned");
       return this.currentPlayer().beginTurn();
+    };
+
+    PlayerManager.prototype.getPlayerByNumber = function(number) {
+      var player, _i, _len, _ref;
+      _ref = this.model.players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        if (player.model.get('number') === number) {
+          return player;
+        }
+      }
+      return null;
+    };
+
+    PlayerManager.prototype.getCountryById = function(id) {
+      var country, _i, _len, _ref;
+      _ref = this.countries;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        country = _ref[_i];
+        if (country.model.get('id') === id) {
+          return country;
+        }
+      }
     };
 
     PlayerManager.prototype.clientPlayer = function() {
@@ -5384,7 +5458,10 @@
     };
 
     PlayerManager.prototype["event(game:country:captured)"] = function(data) {
-      return data.defeated.removeCountry(data.country);
+      var country;
+      country = this.getCountryById(data.country);
+      this.getPlayerByNumber(data.defeated).removeCountry(country);
+      return this.getPlayerByNumber(data.victor).addCountry(country);
     };
 
     return PlayerManager;
@@ -5407,7 +5484,9 @@
       this.active = false;
     }
 
-    ResourceManager.prototype.calculateResources = function(lands) {};
+    ResourceManager.prototype.getPopulation = function() {
+      return this.model.get('peasants') + this.model.get('soldiers');
+    };
 
     ResourceManager.prototype.createArmy = function(value) {
       var gold, soldiers;
@@ -6244,7 +6323,7 @@
 
   uiFont = 'bold 16px sans-serif';
 
-  version = 'v0.0.7';
+  version = 'v0.0.8';
 
   realms.gameConfig = {
     canvas: {
