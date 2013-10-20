@@ -54,7 +54,7 @@ class entities.ResourceManager extends nv.Entity
       kills:
         soldiers: soldierKills
         peasants: peasantKills
-        attacker: countryId
+      attacker: countryId
 
   setLaborDistribution: (ratio) ->
     console.log "labor ratio", ratio
