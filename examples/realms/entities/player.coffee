@@ -38,18 +38,20 @@ class entities.Player extends nv.Entity
   addCountry: (country) ->
     @model.countries.push country
     country.model.flag.src = @model.countries[0].model.flag.src
+    country.model.owner = @model.number
     @scene.fire "game:country:updated"
 
   # country lost in battle - remove it
   removeCountry: (country) ->
     @model.selectedCountry = 0
+    country.model.owner = null
     @model.countries.splice @model.countries.indexOf(country), 1
 
   country: () ->
     @model.countries[@model.selectedCountry]
 
   selectCountry: (id) ->
-    for idx in [0..@model.countries.length]
+    for idx in [0..@model.countries.length-1]
       if @model.countries[idx].model.id is id
         @model.selectedCountry = idx
         break
