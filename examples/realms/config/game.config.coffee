@@ -212,7 +212,7 @@ realms.gameConfig =
               y: 350
         playerManager:
           entity: entities.PlayerManager
-          plugins: [ plugins.PlayerViewModel, renderers.PlayerManager ]
+          plugins: [ plugins.PlayerViewModel, renderers.PlayerManager, renderers.Seasons ]
           model:
             options:
               version: version

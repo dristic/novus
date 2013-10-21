@@ -83,6 +83,10 @@ class entities.MultiplayerController extends nv.Entity
           @scene.fire "game:country:captured", data
           # snapshot.ref().remove()
 
+      @ref.child('season').on 'value', (snapshot) =>
+        data = snapshot.val()
+        @scene.fire "game:season:changed", data
+
   "event(game:country:captured)": (data) ->
     unless data.remote is true
       @ref.child('country_captured').push
@@ -112,6 +116,9 @@ class entities.MultiplayerController extends nv.Entity
     @ref.child('attack_results').push
       guid: @guid
       kills: data.kills
+
+  "event(game:change:season)": (season) ->
+    @ref.child('season').set season
 
   generateHash: () ->
     text = ""

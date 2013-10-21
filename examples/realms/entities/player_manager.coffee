@@ -5,6 +5,7 @@ class entities.PlayerManager extends nv.Entity
     @model.set 'turn', 1
     @model.playerNumber = 1
     @attacking = false
+    @model.season = null
 
   "event(scene:initialized)": () ->
     @attackText = @scene.getEntityById('attack-text').getPlugin nv.TextUIPlugin
@@ -59,6 +60,7 @@ class entities.PlayerManager extends nv.Entity
     scenario = rootModel.get 'scenario'
     entityConfigs = rootModel.config.entities
     
+    @model.set 'clientPlayer', null
     @model.players = []
     # Create each player
     for playerNumber in [1..scenario.players]
@@ -88,11 +90,15 @@ class entities.PlayerManager extends nv.Entity
 
     @countries = @scene.getEntities(entities.Country)
 
-    @model.set 'currentPlayer', @model.players[@model.turn - 1]
-    console.log "PLAYER =", @model.currentPlayer.model.number
-    console.log "TURN =", @model.turn
+    # @model.set 'currentPlayer', @model.players[@model.turn - 1]
+    # console.log "PLAYER =", @model.currentPlayer.model.number
+    # console.log "TURN =", @model.turn
     @scene.fire "game:player:assigned"
-    @currentPlayer().beginTurn()
+    # @currentPlayer().beginTurn()
+
+    @model.set 'currentPlayer', null
+    @model.set 'turn', 0
+    @nextPlayersTurn()
 
   getPlayerByNumber: (number) ->
     for player in @model.players
@@ -119,7 +125,7 @@ class entities.PlayerManager extends nv.Entity
     if turn > @model.players.length
       turn = 1
 
-    @currentPlayer().endTurn()
+    @currentPlayer().endTurn() if @currentPlayer()
     @model.set 'turn', turn
     @model.set 'currentPlayer', @model.players[turn - 1]
     console.log "PLAYER =", @model.currentPlayer.model.number
@@ -128,7 +134,22 @@ class entities.PlayerManager extends nv.Entity
     if @clientPlayer().model.number is turn
       @clientPlayer().beginTurn()
 
+    @advanceSeason()
     @scene.fire "game:turn:end", turn
+
+  advanceSeason: () ->
+    # udpdate seasons on player one's turn only
+    return unless @model.turn is 1 && @clientPlayer().model.number is 1
+    if @model.season is null
+      @model.season = -1
+      console.log "[INIT] player #{@clientPlayer().model.number} initing season"
+    season = (@model.get('season') + 1) % 4 # seasons are 0 - 3 (SSFW)
+
+    console.log "SEASON CHANGE: #{season}"
+    @scene.fire "game:change:season", season
+
+  "event(game:season:changed)": (season) ->
+    @model.set 'season', season
 
   "event(engine:ui:slider:change)": (entity) ->
     if @currentPlayer() and entity.model.id is "population-slider"

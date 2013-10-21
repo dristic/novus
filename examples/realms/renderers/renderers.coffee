@@ -118,3 +118,25 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 				context.restore();
 			context.drawImage flag.image, flag.x, flag.y
 
+
+class renderers.Seasons extends nv.RenderingPlugin
+
+	constructor: (scene, entity) ->
+		super scene, entity
+		
+		model =
+			src: "/assets/season-wheel.png"
+			x: 557
+			y: 100
+			width: 64
+			height: 64
+			rotate: 0
+
+		@wheel = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
+		
+		@season = 0
+		@rotation = 0
+
+	"event(game:season:changed)": (season) ->
+		@season = season
+		@wheel.entity.model.rotate = (Math.PI / 2) * season
