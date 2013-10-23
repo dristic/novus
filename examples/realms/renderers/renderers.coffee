@@ -136,7 +136,19 @@ class renderers.Seasons extends nv.RenderingPlugin
 		
 		@season = 0
 		@rotation = 0
+		@animating = false
+		@increment = Math.PI / 32
 
 	"event(game:season:changed)": (season) ->
 		@season = season
-		@wheel.entity.model.rotate = (Math.PI / 2) * season
+		@current = @wheel.entity.model.rotate
+		@end = (Math.PI / 2) * season
+		@end += Math.PI * 2 if @end < @current
+		@animating = @current != @end
+		#@wheel.entity.model.rotate = (Math.PI / 2) * season
+
+	update: (dt) ->
+		return unless @animating
+		@current += @increment
+		@wheel.entity.model.rotate = Math.min(@current, @end) % (2 * Math.PI)
+		@animating = @current < @end

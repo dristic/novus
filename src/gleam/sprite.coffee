@@ -17,6 +17,8 @@ class gleam.Sprite
   onLoad: (width, height) ->
     @width = width unless @width
     @height = height unless @height
+    @halfWidth = @width / 2
+    @halfHeight = @height / 2
     @loaded = true
 
   draw: (context, canvas) ->
