@@ -143,7 +143,7 @@ class entities.PlayerManager extends nv.Entity
     if @model.season is null
       @model.season = -1
       console.log "[INIT] player #{@clientPlayer().model.number} initing season"
-    season = (@model.get('season') + 1) % 4 # seasons are 0 - 3 (SSFW)
+    season = (@model.get('season') + 1) % 4 # seasons are 0 - 3 (SFWS)
 
     console.log "SEASON CHANGE: #{season}"
     @scene.fire "game:change:season", season

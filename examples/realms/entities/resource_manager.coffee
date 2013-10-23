@@ -6,6 +6,51 @@ class entities.ResourceManager extends nv.Entity
     @prepareProjections()
     @active = false
 
+    @seasonData =
+      # summer, fall, winter, spring
+      farming: [ 
+          base: 0.8
+          range: 1.2
+        , 
+          base: 1.0
+          range: 1.5
+        , 
+          base: 0.2
+          range: 0.5
+        ,
+          base: 0.5
+          range: 1.0
+      ]
+      mining: [ 
+          base: 0.7
+          range: 1.5
+        ,
+          base: 0.7
+          range: 1.5
+        ,
+          base: 0.5
+          range: 0.5
+        , 
+          base: 0.6
+          range: 1.0
+      ]
+      attacking: [ 
+          base: 0.85
+          range: 0.3
+        ,
+          base: 0.75
+          range: 0.3
+        ,
+          base: 0.3
+          range: 0.3
+        ,
+          base: 0.85
+          range: 0.3
+      ]
+
+  "event(game:season:changed)": (season) ->
+    @season = season
+
   getPopulation: () ->
     @model.get('peasants') + @model.get('soldiers')
 
@@ -30,7 +75,8 @@ class entities.ResourceManager extends nv.Entity
     soldierKills = 0
 
     # Randomize the battles a bit
-    morale = (Math.random() * 0.3) + 0.85
+    seasonVars = @seasonData.attacking[ @season ]
+    morale = (Math.random() * seasonVars.range) + seasonVars.base
     value = Math.floor(morale * value)
 
     soldiers = @model.get('soldiers') - value
@@ -108,7 +154,9 @@ class entities.ResourceManager extends nv.Entity
     food = 0
     grainPlots = @owner.numberOfPlots('grain')
     if grainPlots > 0
-      @grainYield = @grainYield ? (Math.random() * 1.5 + 0.7)
+      seasonVars = @seasonData.farming[ @season ]
+      console.log "season adjustments: #{seasonVars.base}, #{seasonVars.range}"
+      @grainYield = @grainYield ? (Math.random() * seasonVars.range + seasonVars.base)
       laborRatio = 1 - @projections.get('ratio')
       console.log "grain yield:", @grainYield
       console.log "ratio: ", laborRatio
@@ -132,7 +180,9 @@ class entities.ResourceManager extends nv.Entity
     gold = 0
     goldPlots = @owner.numberOfPlots('gold')
     if goldPlots > 0
-      @goldYield = @goldYield ? (Math.random() * 1.5 + 0.7)
+      seasonVars = @seasonData.mining[ @season ]
+      console.log "season adjustments: #{seasonVars.base}, #{seasonVars.range}"
+      @goldYield = @goldYield ? (Math.random() * seasonVars.range + seasonVars.base)
       laborRatio = @projections.get('ratio')
       console.log "gold yield:", @goldYield
       minersPerPlot = Math.floor(@model.get('peasants') * laborRatio / goldPlots)
