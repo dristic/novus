@@ -446,6 +446,8 @@
       if (!this.height) {
         this.height = height;
       }
+      this.halfWidth = this.width / 2;
+      this.halfHeight = this.height / 2;
       return this.loaded = true;
     };
 
@@ -4086,15 +4088,18 @@
     };
 
     SpriteUIPlugin.prototype.draw = function(context, canvas) {
-      var _this = this;
       if (this.hidden !== true) {
-        this.sprite.x = this.entity.model.x;
-        this.sprite.y = this.entity.model.y;
         if (this.entity.model.rotate != null) {
-          return context.rotateAround(this.sprite.x, this.sprite.y, this.entity.model.rotate, function() {
-            return _this.sprite.draw(context, canvas);
-          });
+          this.sprite.x = -this.sprite.halfWidth;
+          this.sprite.y = -this.sprite.halfHeight;
+          context.save();
+          context.translate(this.entity.model.x + this.sprite.halfWidth, this.entity.model.y + this.sprite.halfHeight);
+          context.source.rotate(this.entity.model.rotate);
+          this.sprite.draw(context, canvas);
+          return context.restore();
         } else {
+          this.sprite.x = this.entity.model.x;
+          this.sprite.y = this.entity.model.y;
           return this.sprite.draw(context, canvas);
         }
       }
@@ -4530,6 +4535,50 @@
     };
 
     return PlayerManager;
+
+  })(nv.RenderingPlugin);
+
+  renderers.Seasons = (function(_super) {
+    __extends(Seasons, _super);
+
+    function Seasons(scene, entity) {
+      var model;
+      Seasons.__super__.constructor.call(this, scene, entity);
+      model = {
+        src: "/assets/season-wheel.png",
+        x: 557,
+        y: 100,
+        width: 64,
+        height: 64,
+        rotate: 0
+      };
+      this.wheel = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+      this.season = 0;
+      this.rotation = 0;
+      this.animating = false;
+      this.increment = Math.PI / 32;
+    }
+
+    Seasons.prototype["event(game:season:changed)"] = function(season) {
+      this.season = season;
+      this.current = this.wheel.entity.model.rotate;
+      this.end = (Math.PI / 2) * season;
+      if (this.end < this.current) {
+        this.end += Math.PI * 2;
+      }
+      return this.animating = this.current !== this.end;
+    };
+
+    Seasons.prototype.update = function(dt) {
+      if (!this.animating) {
+        return;
+      }
+      this.current += this.increment;
+      this.wheel.entity.model.rotate = Math.min(this.current, this.end) % (2 * Math.PI);
+      return this.animating = this.current < this.end;
+    };
+
+    return Seasons;
 
   })(nv.RenderingPlugin);
 
@@ -5041,6 +5090,11 @@
             return _this.scene.fire("game:country:captured", data);
           }
         });
+        this.ref.child('season').on('value', function(snapshot) {
+          var data;
+          data = snapshot.val();
+          return _this.scene.fire("game:season:changed", data);
+        });
       }
     }
 
@@ -5083,6 +5137,10 @@
         guid: this.guid,
         kills: data.kills
       });
+    };
+
+    MultiplayerController.prototype["event(game:change:season)"] = function(season) {
+      return this.ref.child('season').set(season);
     };
 
     MultiplayerController.prototype.generateHash = function() {
@@ -5249,6 +5307,7 @@
       this.model.set('turn', 1);
       this.model.playerNumber = 1;
       this.attacking = false;
+      this.model.season = null;
     }
 
     PlayerManager.prototype["event(scene:initialized)"] = function() {
@@ -5329,6 +5388,7 @@
       rootModel = this.scene.rootModel;
       scenario = rootModel.get('scenario');
       entityConfigs = rootModel.config.entities;
+      this.model.set('clientPlayer', null);
       this.model.players = [];
       for (playerNumber = _i = 1, _ref = scenario.players; 1 <= _ref ? _i <= _ref : _i >= _ref; playerNumber = 1 <= _ref ? ++_i : --_i) {
         playerConfig = nv.extend({}, entityConfigs.player);
@@ -5358,11 +5418,10 @@
         }
       }
       this.countries = this.scene.getEntities(entities.Country);
-      this.model.set('currentPlayer', this.model.players[this.model.turn - 1]);
-      console.log("PLAYER =", this.model.currentPlayer.model.number);
-      console.log("TURN =", this.model.turn);
       this.scene.fire("game:player:assigned");
-      return this.currentPlayer().beginTurn();
+      this.model.set('currentPlayer', null);
+      this.model.set('turn', 0);
+      return this.nextPlayersTurn();
     };
 
     PlayerManager.prototype.getPlayerByNumber = function(number) {
@@ -5406,7 +5465,9 @@
       if (turn > this.model.players.length) {
         turn = 1;
       }
-      this.currentPlayer().endTurn();
+      if (this.currentPlayer()) {
+        this.currentPlayer().endTurn();
+      }
       this.model.set('turn', turn);
       this.model.set('currentPlayer', this.model.players[turn - 1]);
       console.log("PLAYER =", this.model.currentPlayer.model.number);
@@ -5414,7 +5475,26 @@
       if (this.clientPlayer().model.number === turn) {
         this.clientPlayer().beginTurn();
       }
+      this.advanceSeason();
       return this.scene.fire("game:turn:end", turn);
+    };
+
+    PlayerManager.prototype.advanceSeason = function() {
+      var season;
+      if (!(this.model.turn === 1 && this.clientPlayer().model.number === 1)) {
+        return;
+      }
+      if (this.model.season === null) {
+        this.model.season = -1;
+        console.log("[INIT] player " + (this.clientPlayer().model.number) + " initing season");
+      }
+      season = (this.model.get('season') + 1) % 4;
+      console.log("SEASON CHANGE: " + season);
+      return this.scene.fire("game:change:season", season);
+    };
+
+    PlayerManager.prototype["event(game:season:changed)"] = function(season) {
+      return this.model.set('season', season);
     };
 
     PlayerManager.prototype["event(engine:ui:slider:change)"] = function(entity) {
@@ -5487,7 +5567,58 @@
       this.projections = new nv.Model({});
       this.prepareProjections();
       this.active = false;
+      this.seasonData = {
+        farming: [
+          {
+            base: 0.8,
+            range: 1.2
+          }, {
+            base: 1.0,
+            range: 1.5
+          }, {
+            base: 0.2,
+            range: 0.5
+          }, {
+            base: 0.5,
+            range: 1.0
+          }
+        ],
+        mining: [
+          {
+            base: 0.7,
+            range: 1.5
+          }, {
+            base: 0.7,
+            range: 1.5
+          }, {
+            base: 0.5,
+            range: 0.5
+          }, {
+            base: 0.6,
+            range: 1.0
+          }
+        ],
+        attacking: [
+          {
+            base: 0.85,
+            range: 0.3
+          }, {
+            base: 0.75,
+            range: 0.3
+          }, {
+            base: 0.3,
+            range: 0.3
+          }, {
+            base: 0.85,
+            range: 0.3
+          }
+        ]
+      };
     }
+
+    ResourceManager.prototype["event(game:season:changed)"] = function(season) {
+      return this.season = season;
+    };
 
     ResourceManager.prototype.getPopulation = function() {
       return this.model.get('peasants') + this.model.get('soldiers');
@@ -5514,10 +5645,11 @@
     };
 
     ResourceManager.prototype.onAttacked = function(value, countryId) {
-      var morale, peasantKills, peasants, soldierKills, soldiers;
+      var morale, peasantKills, peasants, seasonVars, soldierKills, soldiers;
       peasantKills = 0;
       soldierKills = 0;
-      morale = (Math.random() * 0.3) + 0.85;
+      seasonVars = this.seasonData.attacking[this.season];
+      morale = (Math.random() * seasonVars.range) + seasonVars.base;
       value = Math.floor(morale * value);
       soldiers = this.model.get('soldiers') - value;
       this.model.set('soldiers', Math.max(soldiers, 0));
@@ -5603,11 +5735,13 @@
     };
 
     ResourceManager.prototype.projectFarming = function() {
-      var farmersPerPlot, food, grainPlots, i, laborRatio, qty, _i, _ref;
+      var farmersPerPlot, food, grainPlots, i, laborRatio, qty, seasonVars, _i, _ref;
       food = 0;
       grainPlots = this.owner.numberOfPlots('grain');
       if (grainPlots > 0) {
-        this.grainYield = (_ref = this.grainYield) != null ? _ref : Math.random() * 1.5 + 0.7;
+        seasonVars = this.seasonData.farming[this.season];
+        console.log("season adjustments: " + seasonVars.base + ", " + seasonVars.range);
+        this.grainYield = (_ref = this.grainYield) != null ? _ref : Math.random() * seasonVars.range + seasonVars.base;
         laborRatio = 1 - this.projections.get('ratio');
         console.log("grain yield:", this.grainYield);
         console.log("ratio: ", laborRatio);
@@ -5630,11 +5764,13 @@
     };
 
     ResourceManager.prototype.projectMining = function() {
-      var gold, goldPlots, i, laborRatio, minersPerPlot, _i, _ref;
+      var gold, goldPlots, i, laborRatio, minersPerPlot, seasonVars, _i, _ref;
       gold = 0;
       goldPlots = this.owner.numberOfPlots('gold');
       if (goldPlots > 0) {
-        this.goldYield = (_ref = this.goldYield) != null ? _ref : Math.random() * 1.5 + 0.7;
+        seasonVars = this.seasonData.mining[this.season];
+        console.log("season adjustments: " + seasonVars.base + ", " + seasonVars.range);
+        this.goldYield = (_ref = this.goldYield) != null ? _ref : Math.random() * seasonVars.range + seasonVars.base;
         laborRatio = this.projections.get('ratio');
         console.log("gold yield:", this.goldYield);
         minersPerPlot = Math.floor(this.model.get('peasants') * laborRatio / goldPlots);
@@ -6563,7 +6699,7 @@
           },
           playerManager: {
             entity: entities.PlayerManager,
-            plugins: [plugins.PlayerViewModel, renderers.PlayerManager],
+            plugins: [plugins.PlayerViewModel, renderers.PlayerManager, renderers.Seasons],
             model: {
               options: {
                 version: version,
