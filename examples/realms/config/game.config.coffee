@@ -114,7 +114,7 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              id: "twoByTwo"
+              id: "twoByTwoLG"
               text: "2x2"
               x: 204
               y: 260
