@@ -107,6 +107,11 @@ class entities.ResourceManager extends nv.Entity
     @projections.set 'ratio', ratio
     @updateProjections()
 
+  setFoodRations: (value) ->
+    console.log "food rations", value
+    @projections.set 'rations', value
+    @updateProjections()
+
   setOwner: (owner) ->
     @owner = owner
 
@@ -127,6 +132,7 @@ class entities.ResourceManager extends nv.Entity
       food: 0 
       gold: 0 
       ratio: @model.ratio
+      rations: @model.rations
     if @model.food < @model.get('peasants') + @model.get('soldiers')
       @scene.fire 'game:ui:alert',
         type: 'warning'
@@ -140,6 +146,7 @@ class entities.ResourceManager extends nv.Entity
       gold: @goldCalc( @model.get('gold') + @projections.gold )
       food: Math.max(@model.get('food') + @projections.food, 0)
       ratio: @projections.ratio
+      rations: @projections.rations
     @grainYield = null
     @goldYield = null
 

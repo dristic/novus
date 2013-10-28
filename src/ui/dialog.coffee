@@ -41,7 +41,7 @@ class nv.DialogUIPlugin extends nv.UIPlugin
       @scene.fire "engine:ui:dialog:confirm", this
     else if entity is @cancel
       @scene.fire "engine:ui:dialog:cancel", this
-    @hide()
+    # @hide()
 
   destroy: () ->
     @panel.destroy()

@@ -40,7 +40,7 @@ class entities.MultiplayerController extends nv.Entity
         if snapshot.val() is 2
           @scene.fire 'game:ui:alert',
             type: 'info'
-            message: "Other player has joined the game!"
+            message: "A player has joined the game!"
 
       # Lose peasants and soldiers when attacked
       @ref.child('attacks').on 'child_added', (snapshot) =>

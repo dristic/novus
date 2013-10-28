@@ -197,7 +197,7 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              text: "Create Army"
+              text: "Train Soldiers"
               id: "create-army-button"
               x: 20
               y: 410
@@ -210,6 +210,15 @@ realms.gameConfig =
               id: "attack-button"
               x: 20
               y: 350
+        rationsButton:
+          entity: nv.Entity
+          plugins: [ nv.ButtonUIPlugin ]
+          model:
+            options:
+              text: "Rations"
+              id: "rations-button"
+              x: 20
+              y: 290
         playerManager:
           entity: entities.PlayerManager
           plugins: [ plugins.PlayerViewModel, renderers.PlayerManager, renderers.Seasons ]
@@ -432,7 +441,7 @@ realms.gameConfig =
           model:
             options:
               position: 'center'
-              y: 10
+              y: 200
               width: 300
               height: 25
               lineHeight: 18
@@ -450,6 +459,13 @@ realms.gameConfig =
                 color: '#fff'
         armyCreator:
           entity: entities.ArmyCreator
+          plugins: []
+          model:
+            options:
+              x: 190
+              y: 200
+        rationManager:
+          entity: entities.RationManager
           plugins: []
           model:
             options:

@@ -156,6 +156,9 @@ class entities.PlayerManager extends nv.Entity
       value = Math.floor(entity.model.value) / 100
       @currentPlayer().resources().setLaborDistribution value
 
+  "event(game:rations:set)": (value) ->
+      @currentPlayer().resources().setFoodRations value
+
   "event(engine:ui:clicked)": (element) ->
     currentTurn = @model.turn
     turn = @model.turn + 1
@@ -179,6 +182,9 @@ class entities.PlayerManager extends nv.Entity
         if currentTurn is @model.playerNumber
           @attacking = true
           @attackText.show()
+
+      when "rations-button"
+        @scene.fire "game:rationmanager:show", 1 #@clientPlayer().model.rations
 
   "event(game:turn:next)": () ->
     @nextPlayersTurn()

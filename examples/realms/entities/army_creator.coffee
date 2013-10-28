@@ -13,8 +13,8 @@ class entities.ArmyCreator extends nv.Entity
 
     @slider = new nv.SliderUIPlugin scene,
       model: new nv.Model
-        leftImage: "/assets/farmer-16.wh.png"
-        rightImage: "/assets/miner-16.wh.png"
+        leftImage: "/assets/soldier-16.wh.png"
+        rightImage: "/assets/soldier-16.wh.png"
         x: 190
         y: 190
         value: 50

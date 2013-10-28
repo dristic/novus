@@ -39,7 +39,6 @@ class nv.AssignedLaborRenderer extends nv.RenderingPlugin
 		context.restore()
 
 
-
 class renderers.PlayerManager extends nv.RenderingPlugin
 	constructor: (scene, entity) ->
 		super scene, entity
@@ -59,12 +58,6 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 			height: 72
 		@border = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
-		# for player in @entity.model.players
-		# 	for country in player.countries()
-
-		# 		image = new Image()
-		# 		image.src = country.model.flag.src
-		# 		@flags.push nv.extend {image: image, countryId: country.model.id}, country.model.flag
 		@loadFlags()
 
 		for player in @entity.model.players

@@ -52,3 +52,6 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
 
     @button.draw context, canvas
     @text.draw context, canvas
+
+  fillStyle: (style) ->
+    @button.fillStyle = style || "#FFF"

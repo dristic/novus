@@ -20,6 +20,7 @@ realms.scenarios =
         soldiers: 0
         gold: 0
         ratio: 0.5
+        rations: 1
       countries:
         Darkland:
           id: 1026
@@ -56,6 +57,7 @@ realms.scenarios =
         soldiers: 2
         gold: 0
         ratio: 0.5
+        rations: 1
       countries:
         Cromag:
           id: 258
@@ -91,6 +93,7 @@ realms.scenarios =
         soldiers: 0
         gold: 0
         ratio: 0.5
+        rations: 1
       countries:
         Darkland:
           id: 1026
@@ -133,6 +136,7 @@ realms.scenarios =
         soldiers: 0
         gold: 0
         ratio: 0.5
+        rations: 1
       countries:
         Darkland:
           id: 1026
@@ -188,8 +192,9 @@ realms.scenarios =
         food: 120
         peasants: 50
         soldiers: 5
-        gold: 0
+        gold: 10
         ratio: 0.5
+        rations: 1
       countries:
         Darkland:
           id: 1026
