@@ -62,6 +62,7 @@ class entities.PlayerManager extends nv.Entity
     
     @model.set 'clientPlayer', null
     @model.players = []
+
     # Create each player
     for playerNumber in [1..scenario.players]
       playerConfig = nv.extend {}, entityConfigs.player
@@ -72,21 +73,40 @@ class entities.PlayerManager extends nv.Entity
       if playerNumber is @model.playerNumber
         @model.set 'clientPlayer', player
 
+    # Create neutral player to hold neutral countries
+    playerConfig = nv.extend {}, entityConfigs.player
+    playerConfig.model.options.number = 99
+    player = @scene.createEntity playerConfig
+    @neutralPlayer = player
+
     # Create each country and add it to a player if it is owned
     for name of scenario.countries
-      for player in @model.players
-        if player.model.number is scenario.countries[name].owner
-          flag = nv.extend {}, scenario.countries[name].flag
-          flag = nv.extend flag, rootModel.config.playerMetadata[player.model.number - 1].flag
+      if scenario.countries[name].owner isnt "neutral"
+        for player in @model.players
+          if player.model.number is scenario.countries[name].owner
+            flag = nv.extend {}, scenario.countries[name].flag
+            flag = nv.extend flag, rootModel.config.playerMetadata[player.model.number - 1].flag
 
-          data = nv.extend {}, scenario.countries[name]
-          data = nv.extend data,
-            country: name
-            resources: scenario.resources
-            ratio: 0.5
-            flag: flag
+            data = nv.extend {}, scenario.countries[name]
+            data = nv.extend data,
+              country: name
+              resources: scenario.resources
+              ratio: 0.5
+              flag: flag
 
-          player.createCountry data
+            player.createCountry data
+      else
+        flag = nv.extend {}, scenario.countries[name].flag
+        flag = nv.extend flag, rootModel.config.playerMetadata[player.model.number - 1].flag
+
+        data = nv.extend {}, scenario.countries[name]
+        data = nv.extend data,
+          country: name
+          resources: scenario.resources
+          ratio: 0.5
+          flag: flag
+
+        @neutralPlayer.createCountry data
 
     @countries = @scene.getEntities(entities.Country)
 

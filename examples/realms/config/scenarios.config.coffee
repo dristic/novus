@@ -212,14 +212,14 @@ realms.scenarios =
             y: 240
         Lighton:
           id: 1028
-          owner: 1
+          owner: "neutral"
           plots: [new nv.Point(672,450), new nv.Point(720,450), new nv.Point(768,450), new nv.Point(776,592), new nv.Point(824,592)]
           flag:
             x: 620
             y: 620
         Danshire:
           id: 1029
-          owner: 2
+          owner: "neutral"
           plots: [new nv.Point(192,768), new nv.Point(240,768), new nv.Point(288,768), new nv.Point(422,878), new nv.Point(474,878)]
           flag:
             x: 460
