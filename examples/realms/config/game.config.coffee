@@ -46,6 +46,11 @@ realms.gameConfig =
         src: "/assets/shield-yellow-48.png"
         width: 48
         height: 48
+    ,
+      flag:
+        src: "/assets/shield-gray-48.png"
+        width: 48
+        height: 48
   ]
 
   scenes:
