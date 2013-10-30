@@ -3,26 +3,26 @@ class entities.ResourceManager extends nv.Entity
     super scene, plugins, model
     @projections = new nv.Model {}
       
-    @prepareProjections()
     @active = false
+    @season = 0
 
     @seasonData =
       # summer, fall, winter, spring
       farming: [ 
-          base: 0.8
-          range: 1.2
-        , 
-          base: 1.0
+          base: 1.5
           range: 1.5
+        , 
+          base: 1.75
+          range: 2.25
         , 
           base: 0.2
           range: 0.5
         ,
-          base: 0.5
+          base: 0.8
           range: 1.0
       ]
       mining: [ 
-          base: 0.7
+          base: 0.9
           range: 1.5
         ,
           base: 0.7
@@ -48,8 +48,14 @@ class entities.ResourceManager extends nv.Entity
           range: 0.3
       ]
 
+    @prepareProjections()
+
+
   "event(game:season:changed)": (season) ->
+    console.log "season changed", season
     @season = season
+    @calcYields()
+    @updateProjections()
 
   getPopulation: () ->
     @model.get('peasants') + @model.get('soldiers')
@@ -124,7 +130,17 @@ class entities.ResourceManager extends nv.Entity
   activate: (state) ->
     @active = state
 
+  calcYields: () ->
+    @grainYield = (Math.random() * @seasonData.farming[ @season ].range + @seasonData.farming[ @season ].base)
+    @goldYield = (Math.random() * @seasonData.mining[ @season ].range + @seasonData.mining[ @season ].base)
+    @populationYield = null
+    
+    console.log "grainYield:", @seasonData.farming[@season].base, @seasonData.farming[ @season ].range, @grainYield
+    console.log "goldYield:", @seasonData.mining[@season].base, @seasonData.mining[ @season ].range, @goldYield
+
   prepareProjections: () ->
+    @calcYields()
+
     @projections.setMany
       peasants: 0 
       soldiers: 0 
@@ -149,6 +165,7 @@ class entities.ResourceManager extends nv.Entity
       rations: @projections.rations
     @grainYield = null
     @goldYield = null
+    @populationYield = null
 
   updateProjections: () ->
     @projectFarming()
@@ -161,9 +178,6 @@ class entities.ResourceManager extends nv.Entity
     food = 0
     grainPlots = @owner.numberOfPlots('grain')
     if grainPlots > 0
-      seasonVars = @seasonData.farming[ @season ]
-      console.log "season adjustments: #{seasonVars.base}, #{seasonVars.range}"
-      @grainYield = @grainYield ? (Math.random() * seasonVars.range + seasonVars.base)
       laborRatio = 1 - @projections.get('ratio')
       console.log "grain yield:", @grainYield
       console.log "ratio: ", laborRatio
@@ -178,7 +192,7 @@ class entities.ResourceManager extends nv.Entity
     # cap food production at 300 mouths
     food = Math.min(food, 300)
     console.log "food to grow:", food
-    @projections.set 'food', Math.round(food) - @model.get('peasants') - @model.get('soldiers')
+    @projections.set 'food', Math.round(food - (( @model.get('peasants') + @model.get('soldiers') ) * @projections.get('rations')))
 
   goldCalc: (gold) ->
     Math.round((gold * 10)) / 10
@@ -188,8 +202,6 @@ class entities.ResourceManager extends nv.Entity
     goldPlots = @owner.numberOfPlots('gold')
     if goldPlots > 0
       seasonVars = @seasonData.mining[ @season ]
-      console.log "season adjustments: #{seasonVars.base}, #{seasonVars.range}"
-      @goldYield = @goldYield ? (Math.random() * seasonVars.range + seasonVars.base)
       laborRatio = @projections.get('ratio')
       console.log "gold yield:", @goldYield
       minersPerPlot = Math.floor(@model.get('peasants') * laborRatio / goldPlots)
@@ -209,9 +221,12 @@ class entities.ResourceManager extends nv.Entity
 
     console.log "cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining
 
-    growthTarget = Math.round(currentPopulation * 0.075)
+    @populationYield = @populationYield ? (Math.random() * 0.08)
+    console.log "population yield", @populationYield
+
+    growthTarget = Math.round(currentPopulation * (@populationYield * @projections.get('rations') + 0.02))
     projectedPopulation = currentPopulation + growthTarget
-    foodAvailable = @model.get('food') #+ @projections.get('food')
+    foodAvailable = if @projections.get('rations') > 0 then @model.get('food') / @projections.get('rations') else 0 #+ @projections.get('food')
 
     console.log "growth:", growthTarget, projectedPopulation, foodAvailable
 

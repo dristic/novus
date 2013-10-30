@@ -32,12 +32,12 @@ class plugins.PlayerViewModel extends nv.Plugin
     @turnControls = []
     for id, type of turnControls
       control = @scene.getEntityById id
-      @turnControls.push control.getPlugin(type)
+      @turnControls.push control.getPlugin(type) if control
 
     @doneControls = []
     for id, type of doneControls
       control = @scene.getEntityById id
-      @doneControls.push control.getPlugin(type)
+      @doneControls.push control.getPlugin(type) if control
 
     @entity.model.on 'change:turn', (value) =>
       switch value
@@ -73,10 +73,12 @@ class plugins.PlayerViewModel extends nv.Plugin
       food: @resources.food
       gold: @resources.gold
       soldiers: @resources.soldiers
+      rations: @resources.rations
       p_peasants: @projections.peasants
       p_soldiers: @projections.soldiers
       p_food: @projections.food
       p_gold: @projections.gold
+      p_rations: @projections.rations
       name: clientPlayer.country().name()
 
   "event(game:player:assigned)": () ->

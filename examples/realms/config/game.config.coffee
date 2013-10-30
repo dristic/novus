@@ -210,15 +210,15 @@ realms.gameConfig =
               id: "attack-button"
               x: 20
               y: 350
-        rationsButton:
-          entity: nv.Entity
-          plugins: [ nv.ButtonUIPlugin ]
-          model:
-            options:
-              text: "Rations"
-              id: "rations-button"
-              x: 20
-              y: 290
+        # rationsButton:
+        #   entity: nv.Entity
+        #   plugins: [ nv.ButtonUIPlugin ]
+        #   model:
+        #     options:
+        #       text: "Rations"
+        #       id: "rations-button"
+        #       x: 20
+        #       y: 290
         playerManager:
           entity: entities.PlayerManager
           plugins: [ plugins.PlayerViewModel, renderers.PlayerManager, renderers.Seasons ]
