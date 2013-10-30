@@ -48,6 +48,21 @@ realms.gameConfig =
         height: 48
     ,
       flag:
+        src: "/assets/shield-green-48.png"
+        width: 48
+        height: 48
+    ,
+      flag:
+        src: "/assets/shield-orange-48.png"
+        width: 48
+        height: 48
+    ,
+      flag:
+        src: "/assets/shield-black-48.png"
+        width: 48
+        height: 48
+    ,
+      flag:
         src: "/assets/shield-gray-48.png"
         width: 48
         height: 48

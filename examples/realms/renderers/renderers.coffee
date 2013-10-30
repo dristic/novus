@@ -84,6 +84,11 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 				image.src = country.model.flag.src
 				@flags.push nv.extend {image: image, countryId: country.model.id}, country.model.flag
 
+		if @entity.neutralPlayer.countries().length > 0
+			for country in @entity.neutralPlayer.countries()
+				image = new Image()
+				image.src = country.model.flag.src
+				@flags.push nv.extend {image: image, countryId: country.model.id}, country.model.flag
 
 	"event(game:turn:end)": (turn) ->
 		for indicator in @turns

@@ -97,7 +97,7 @@ class entities.PlayerManager extends nv.Entity
             player.createCountry data
       else
         flag = nv.extend {}, scenario.countries[name].flag
-        flag = nv.extend flag, rootModel.config.playerMetadata[player.model.number - 1].flag
+        flag = nv.extend flag, rootModel.config.playerMetadata[6].flag
 
         data = nv.extend {}, scenario.countries[name]
         data = nv.extend data,
