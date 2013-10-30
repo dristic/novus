@@ -17,7 +17,23 @@ var args = process.argv.slice(2);
 
 function log() {
   console.log.apply(console, arguments);
-}
+};
+
+function copyDir(dir, otherDir) {
+  fs.readdir(dir, function (err, items) {
+    if (err) {
+      return onError(err);
+    }
+
+    items.forEach(function (item) {
+      if (fs.lstatSync(dir + item).isDirectory()) {
+        copyDir(dir + item + '/', otherDir + item + '/');
+      } else {
+        fs.createReadStream(dir + item).pipe(fs.createWriteStream(otherDir + item));
+      }
+    });
+  });
+};
 
 if (args[0] === undefined) {
   /////////////////////////
@@ -115,11 +131,19 @@ if (args[0] === undefined) {
   }
 
   // Get game javascript
+  log("Building JavaScript...");
   var data = new snockets().getConcatenation('game.coffee', { minify: false, async: false });
   fs.writeFileSync('build/game.js', data);
 
   // Copy in index file
+  log("Copying index file");
   fs.createReadStream('assets/index.html').pipe(fs.createWriteStream('build/index.html'));
+
+  // Copy in asset files
+  log("Copying assets/* directory");
+  copyDir('assets/', 'build/assets/');
+
+  log("Finished!");
 } else if (args[0] === "watch") {
   //////////////
   // Novus Watch

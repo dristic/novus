@@ -3850,6 +3850,10 @@
       return this.text.draw(context, canvas);
     };
 
+    ButtonUIPlugin.prototype.fillStyle = function(style) {
+      return this.button.fillStyle = style || "#FFF";
+    };
+
     return ButtonUIPlugin;
 
   })(nv.UIPlugin);
@@ -4162,11 +4166,10 @@
 
     DialogUIPlugin.prototype["event(engine:ui:clicked)"] = function(entity) {
       if (entity === this.confirm) {
-        this.scene.fire("engine:ui:dialog:confirm", this);
+        return this.scene.fire("engine:ui:dialog:confirm", this);
       } else if (entity === this.cancel) {
-        this.scene.fire("engine:ui:dialog:cancel", this);
+        return this.scene.fire("engine:ui:dialog:cancel", this);
       }
-      return this.hide();
     };
 
     DialogUIPlugin.prototype.destroy = function() {
@@ -4410,7 +4413,9 @@
         context.drawImage(this.miner, this.entity.model.x, this.entity.model.y + 1);
       }
       idx = Math.floor(((this.entity.model["yield"] - 0.7) * 10) / 5);
-      context.drawImage(this.yields[idx], this.entity.model.x + 15, this.entity.model.y + 15);
+      if ([0, 1, 2].indexOf(idx) !== -1) {
+        context.drawImage(this.yields[idx], this.entity.model.x + 15, this.entity.model.y + 15);
+      }
       context.save();
       context.setFillStyle("#f1f1f1");
       context.setStrokeStyle("black");
@@ -4610,8 +4615,8 @@
       });
       this.slider = new nv.SliderUIPlugin(scene, {
         model: new nv.Model({
-          leftImage: "/assets/farmer-16.wh.png",
-          rightImage: "/assets/miner-16.wh.png",
+          leftImage: "/assets/soldier-16.wh.png",
+          rightImage: "/assets/soldier-16.wh.png",
           x: 190,
           y: 190,
           value: 50,
@@ -5042,7 +5047,7 @@
           if (snapshot.val() === 2) {
             return _this.scene.fire('game:ui:alert', {
               type: 'info',
-              message: "Other player has joined the game!"
+              message: "A player has joined the game!"
             });
           }
         });
@@ -5505,6 +5510,10 @@
       }
     };
 
+    PlayerManager.prototype["event(game:rations:set)"] = function(value) {
+      return this.currentPlayer().resources().setFoodRations(value);
+    };
+
     PlayerManager.prototype["event(engine:ui:clicked)"] = function(element) {
       var currentTurn, gold, turn;
       currentTurn = this.model.turn;
@@ -5535,6 +5544,9 @@
             this.attacking = true;
             return this.attackText.show();
           }
+          break;
+        case "rations-button":
+          return this.scene.fire("game:rationmanager:show", 1);
       }
     };
 
@@ -5550,6 +5562,169 @@
     };
 
     return PlayerManager;
+
+  })(nv.Entity);
+
+}).call(this);
+
+(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  entities.RationManager = (function(_super) {
+    __extends(RationManager, _super);
+
+    function RationManager(scene, plugins, model) {
+      RationManager.__super__.constructor.call(this, scene, plugins, model);
+      this.max = 100;
+      this.value = 0;
+      this.buttons = {};
+      this.ration = 1;
+      this.dialog = new nv.DialogUIPlugin(scene, {
+        model: new nv.Model({
+          x: this.model.get('x'),
+          y: this.model.get('y')
+        })
+      });
+      this.buttons['ration-0'] = new nv.ButtonUIPlugin(scene, {
+        model: new nv.Model({
+          id: 'ration-0',
+          ration: 0,
+          color: '#CCC',
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          text: '0x',
+          x: 200,
+          y: 162,
+          width: 50
+        })
+      });
+      this.buttons['ration-0_5'] = new nv.ButtonUIPlugin(scene, {
+        model: new nv.Model({
+          id: 'ration-0_5',
+          ration: 0.5,
+          color: '#CCC',
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          text: '0.5x',
+          x: 260,
+          y: 162,
+          width: 50
+        })
+      });
+      this.buttons['ration-1'] = new nv.ButtonUIPlugin(scene, {
+        model: new nv.Model({
+          id: 'ration-1',
+          ration: 1,
+          color: '#CCC',
+          fillStyle: 'green',
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          text: '1x',
+          x: 320,
+          y: 162,
+          width: 50
+        })
+      });
+      this.buttons['ration-2'] = new nv.ButtonUIPlugin(scene, {
+        model: new nv.Model({
+          id: 'ration-2',
+          ration: 2,
+          color: '#CCC',
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          text: '2x',
+          x: 380,
+          y: 162,
+          width: 50
+        })
+      });
+      this.buttons['ration-3'] = new nv.ButtonUIPlugin(scene, {
+        model: new nv.Model({
+          id: 'ration-3',
+          ration: 3,
+          color: '#CCC',
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          text: '3x',
+          x: 440,
+          y: 162,
+          width: 50
+        })
+      });
+      this.label = new nv.TextUIPlugin(scene, {
+        model: new nv.Model({
+          color: '#eee',
+          font: 'bold 20px sans-serif',
+          textBaseline: 'bottom',
+          text: 'Ration food at what rate?',
+          x: 190,
+          y: 160
+        })
+      });
+      this.hide();
+    }
+
+    RationManager.prototype.show = function() {
+      var button, id, _ref;
+      this.dialog.show();
+      _ref = this.buttons;
+      for (id in _ref) {
+        button = _ref[id];
+        button.show();
+      }
+      return this.label.show();
+    };
+
+    RationManager.prototype.hide = function() {
+      var button, id, _ref;
+      this.dialog.hide();
+      _ref = this.buttons;
+      for (id in _ref) {
+        button = _ref[id];
+        button.hide();
+      }
+      return this.label.hide();
+    };
+
+    RationManager.prototype["event(game:rationmanager:show)"] = function(rations) {
+      return this.show();
+    };
+
+    RationManager.prototype["event(engine:ui:clicked)"] = function(element) {
+      var button, id, _ref;
+      if (this.buttons[element.id] === void 0) {
+        return;
+      }
+      _ref = this.buttons;
+      for (id in _ref) {
+        button = _ref[id];
+        button.fillStyle(null);
+      }
+      this.buttons[element.id].fillStyle('green');
+      return this.ration = this.buttons[element.id].entity.model.ration;
+    };
+
+    RationManager.prototype["event(engine:ui:dialog:confirm)"] = function(element) {
+      if (element === this.dialog) {
+        this.scene.fire("game:rations:set", this.ration);
+        return this.hide();
+      }
+    };
+
+    RationManager.prototype["event(engine:ui:dialog:cancel)"] = function(element) {
+      if (element === this.dialog) {
+        return this.hide();
+      }
+    };
+
+    RationManager.prototype["event(engine:ui:dialog:show)"] = function(id) {
+      if (id === this.model.get('id')) {
+        return this.show();
+      }
+    };
+
+    return RationManager;
 
   })(nv.Entity);
 
@@ -5680,6 +5855,12 @@
       return this.updateProjections();
     };
 
+    ResourceManager.prototype.setFoodRations = function(value) {
+      console.log("food rations", value);
+      this.projections.set('rations', value);
+      return this.updateProjections();
+    };
+
     ResourceManager.prototype.setOwner = function(owner) {
       return this.owner = owner;
     };
@@ -5703,7 +5884,8 @@
         soldiersInTraining: 0,
         food: 0,
         gold: 0,
-        ratio: this.model.ratio
+        ratio: this.model.ratio,
+        rations: this.model.rations
       });
       if (this.model.food < this.model.get('peasants') + this.model.get('soldiers')) {
         return this.scene.fire('game:ui:alert', {
@@ -5721,7 +5903,8 @@
         soldiers: Math.max(this.model.get('soldiers') + this.projections.soldiers, 0),
         gold: this.goldCalc(this.model.get('gold') + this.projections.gold),
         food: Math.max(this.model.get('food') + this.projections.food, 0),
-        ratio: this.projections.ratio
+        ratio: this.projections.ratio,
+        rations: this.projections.rations
       });
       this.grainYield = null;
       return this.goldYield = null;
@@ -5953,6 +6136,7 @@
       turnControls = {
         "attack-button": nv.ButtonUIPlugin,
         "create-army-button": nv.ButtonUIPlugin,
+        "rations-button": nv.ButtonUIPlugin,
         "next-turn-button": nv.ButtonUIPlugin,
         "projected-population": nv.TextUIPlugin,
         "projected-soldiers": nv.TextUIPlugin,
@@ -6251,7 +6435,8 @@
           peasants: 50,
           soldiers: 0,
           gold: 0,
-          ratio: 0.5
+          ratio: 0.5,
+          rations: 1
         },
         countries: {
           Darkland: {
@@ -6295,7 +6480,8 @@
           peasants: 30,
           soldiers: 2,
           gold: 0,
-          ratio: 0.5
+          ratio: 0.5,
+          rations: 1
         },
         countries: {
           Cromag: {
@@ -6338,7 +6524,8 @@
           peasants: 50,
           soldiers: 0,
           gold: 0,
-          ratio: 0.5
+          ratio: 0.5,
+          rations: 1
         },
         countries: {
           Darkland: {
@@ -6390,7 +6577,8 @@
           peasants: 50,
           soldiers: 0,
           gold: 0,
-          ratio: 0.5
+          ratio: 0.5,
+          rations: 1
         },
         countries: {
           Darkland: {
@@ -6451,8 +6639,9 @@
           food: 120,
           peasants: 50,
           soldiers: 5,
-          gold: 0,
-          ratio: 0.5
+          gold: 10,
+          ratio: 0.5,
+          rations: 1
         },
         countries: {
           Darkland: {
@@ -6722,7 +6911,7 @@
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
-                text: "Create Army",
+                text: "Train Soldiers",
                 id: "create-army-button",
                 x: 20,
                 y: 410
@@ -6738,6 +6927,18 @@
                 id: "attack-button",
                 x: 20,
                 y: 350
+              }
+            }
+          },
+          rationsButton: {
+            entity: nv.Entity,
+            plugins: [nv.ButtonUIPlugin],
+            model: {
+              options: {
+                text: "Rations",
+                id: "rations-button",
+                x: 20,
+                y: 290
               }
             }
           },
@@ -7017,7 +7218,7 @@
             model: {
               options: {
                 position: 'center',
-                y: 10,
+                y: 200,
                 width: 300,
                 height: 25,
                 lineHeight: 18,
@@ -7041,6 +7242,16 @@
           },
           armyCreator: {
             entity: entities.ArmyCreator,
+            plugins: [],
+            model: {
+              options: {
+                x: 190,
+                y: 200
+              }
+            }
+          },
+          rationManager: {
+            entity: entities.RationManager,
             plugins: [],
             model: {
               options: {
