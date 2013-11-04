@@ -29,15 +29,8 @@ class nv.AssignedLaborRenderer extends nv.RenderingPlugin
 			context.drawImage @miner, @entity.model.x, @entity.model.y + 1
 			divisor = 0.8
 
-<<<<<<< Updated upstream
-		idx = Math.floor( ((@entity.model.yield - 0.7) * 10) / 5 )
-
-		if [0, 1, 2].indexOf(idx) isnt -1
-			context.drawImage @yields[idx], @entity.model.x + 15, @entity.model.y + 15
-=======
 		idx = Math.floor( @entity.model.yield / divisor ) #Math.floor( ((@entity.model.yield - 0.2) * 10) / 8 )
 		context.drawImage @yields[idx], @entity.model.x + 15, @entity.model.y + 15
->>>>>>> Stashed changes
 
 		context.save()
 		context.setFillStyle "#f1f1f1"
