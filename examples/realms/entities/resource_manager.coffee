@@ -9,11 +9,11 @@ class entities.ResourceManager extends nv.Entity
     @seasonData =
       # summer, fall, winter, spring
       farming: [ 
-          base: 1.5
-          range: 1.5
+          base: 2.0
+          range: 1.0
         , 
-          base: 1.75
-          range: 2.25
+          base: 2.25
+          range: 1.75
         , 
           base: 0.2
           range: 0.5
@@ -190,7 +190,7 @@ class entities.ResourceManager extends nv.Entity
         qty =  @grainYield * farmersPerPlot
         food += qty
     # cap food production at 300 mouths
-    food = Math.min(food, 300)
+    # food = Math.min(food, 300)
     console.log "food to grow:", food
     @projections.set 'food', Math.round(food - (( @model.get('peasants') + @model.get('soldiers') ) * @projections.get('rations')))
 
@@ -224,7 +224,7 @@ class entities.ResourceManager extends nv.Entity
     @populationYield = @populationYield ? (Math.random() * 0.08)
     console.log "population yield", @populationYield
 
-    growthTarget = Math.round(currentPopulation * (@populationYield * @projections.get('rations') + 0.02))
+    growthTarget = Math.round(currentPopulation * (@populationYield * @projections.get('rations')))
     projectedPopulation = currentPopulation + growthTarget
     foodAvailable = if @projections.get('rations') > 0 then @model.get('food') / @projections.get('rations') else 0 #+ @projections.get('food')
 
@@ -233,11 +233,12 @@ class entities.ResourceManager extends nv.Entity
     @projections.set 'soldiers', soldiersInTraining
 
     if projectedPopulation < foodAvailable
-      @projections.set 'peasants', growthTarget - soldiersInTraining
+      @projections.set 'peasants', Math.round(growthTarget - soldiersInTraining)
     else if currentPopulation <= foodAvailable
-      @projections.set 'peasants', foodAvailable - currentPopulation - soldiersInTraining
+      @projections.set 'peasants', Math.round(foodAvailable - currentPopulation - soldiersInTraining)
     else
       deaths = Math.min(Math.round(currentPopulation * .1), currentPopulation - foodAvailable)
+      deaths = 1 if deaths is 0
 
       peasantDeaths = Math.round(deaths / 2)
       soldierDeaths = deaths - peasantDeaths
