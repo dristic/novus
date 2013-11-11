@@ -4402,20 +4402,20 @@
     }
 
     AssignedLaborRenderer.prototype.draw = function(context, canvas) {
-      var idx, type;
+      var divisor, idx, type;
       type = this.entity.model.value;
       if (type === "field" || type === "dirt") {
         return;
       }
       if (type === "grain") {
         context.drawImage(this.farmer, this.entity.model.x, this.entity.model.y + 1);
+        divisor = 1.33;
       } else {
         context.drawImage(this.miner, this.entity.model.x, this.entity.model.y + 1);
+        divisor = 0.8;
       }
-      idx = Math.floor(((this.entity.model["yield"] - 0.7) * 10) / 5);
-      if ([0, 1, 2].indexOf(idx) !== -1) {
-        context.drawImage(this.yields[idx], this.entity.model.x + 15, this.entity.model.y + 15);
-      }
+      idx = Math.floor(this.entity.model["yield"] / divisor);
+      context.drawImage(this.yields[idx], this.entity.model.x + 15, this.entity.model.y + 15);
       context.save();
       context.setFillStyle("#f1f1f1");
       context.setStrokeStyle("black");
@@ -5740,27 +5740,27 @@
     function ResourceManager(scene, plugins, model) {
       ResourceManager.__super__.constructor.call(this, scene, plugins, model);
       this.projections = new nv.Model({});
-      this.prepareProjections();
       this.active = false;
+      this.season = 0;
       this.seasonData = {
         farming: [
           {
-            base: 0.8,
-            range: 1.2
+            base: 2.0,
+            range: 1.0
           }, {
-            base: 1.0,
-            range: 1.5
+            base: 2.25,
+            range: 1.75
           }, {
             base: 0.2,
             range: 0.5
           }, {
-            base: 0.5,
+            base: 0.8,
             range: 1.0
           }
         ],
         mining: [
           {
-            base: 0.7,
+            base: 0.9,
             range: 1.5
           }, {
             base: 0.7,
@@ -5789,10 +5789,14 @@
           }
         ]
       };
+      this.prepareProjections();
     }
 
     ResourceManager.prototype["event(game:season:changed)"] = function(season) {
-      return this.season = season;
+      console.log("season changed", season);
+      this.season = season;
+      this.calcYields();
+      return this.updateProjections();
     };
 
     ResourceManager.prototype.getPopulation = function() {
@@ -5877,7 +5881,16 @@
       return this.active = state;
     };
 
+    ResourceManager.prototype.calcYields = function() {
+      this.grainYield = Math.random() * this.seasonData.farming[this.season].range + this.seasonData.farming[this.season].base;
+      this.goldYield = Math.random() * this.seasonData.mining[this.season].range + this.seasonData.mining[this.season].base;
+      this.populationYield = null;
+      console.log("grainYield:", this.seasonData.farming[this.season].base, this.seasonData.farming[this.season].range, this.grainYield);
+      return console.log("goldYield:", this.seasonData.mining[this.season].base, this.seasonData.mining[this.season].range, this.goldYield);
+    };
+
     ResourceManager.prototype.prepareProjections = function() {
+      this.calcYields();
       this.projections.setMany({
         peasants: 0,
         soldiers: 0,
@@ -5907,7 +5920,8 @@
         rations: this.projections.rations
       });
       this.grainYield = null;
-      return this.goldYield = null;
+      this.goldYield = null;
+      return this.populationYield = null;
     };
 
     ResourceManager.prototype.updateProjections = function() {
@@ -5918,13 +5932,10 @@
     };
 
     ResourceManager.prototype.projectFarming = function() {
-      var farmersPerPlot, food, grainPlots, i, laborRatio, qty, seasonVars, _i, _ref;
+      var farmersPerPlot, food, grainPlots, i, laborRatio, qty, _i;
       food = 0;
       grainPlots = this.owner.numberOfPlots('grain');
       if (grainPlots > 0) {
-        seasonVars = this.seasonData.farming[this.season];
-        console.log("season adjustments: " + seasonVars.base + ", " + seasonVars.range);
-        this.grainYield = (_ref = this.grainYield) != null ? _ref : Math.random() * seasonVars.range + seasonVars.base;
         laborRatio = 1 - this.projections.get('ratio');
         console.log("grain yield:", this.grainYield);
         console.log("ratio: ", laborRatio);
@@ -5937,9 +5948,8 @@
           food += qty;
         }
       }
-      food = Math.min(food, 300);
       console.log("food to grow:", food);
-      return this.projections.set('food', Math.round(food) - this.model.get('peasants') - this.model.get('soldiers'));
+      return this.projections.set('food', Math.round(food - ((this.model.get('peasants') + this.model.get('soldiers')) * this.projections.get('rations'))));
     };
 
     ResourceManager.prototype.goldCalc = function(gold) {
@@ -5947,13 +5957,11 @@
     };
 
     ResourceManager.prototype.projectMining = function() {
-      var gold, goldPlots, i, laborRatio, minersPerPlot, seasonVars, _i, _ref;
+      var gold, goldPlots, i, laborRatio, minersPerPlot, seasonVars, _i;
       gold = 0;
       goldPlots = this.owner.numberOfPlots('gold');
       if (goldPlots > 0) {
         seasonVars = this.seasonData.mining[this.season];
-        console.log("season adjustments: " + seasonVars.base + ", " + seasonVars.range);
-        this.goldYield = (_ref = this.goldYield) != null ? _ref : Math.random() * seasonVars.range + seasonVars.base;
         laborRatio = this.projections.get('ratio');
         console.log("gold yield:", this.goldYield);
         minersPerPlot = Math.floor(this.model.get('peasants') * laborRatio / goldPlots);
@@ -5969,23 +5977,28 @@
     };
 
     ResourceManager.prototype.projectPopulation = function() {
-      var currentPopulation, deaths, diff, foodAvailable, growthTarget, peasantDeaths, peasants, projectedPopulation, soldierDeaths, soldiers, soldiersInTraining;
+      var currentPopulation, deaths, diff, foodAvailable, growthTarget, peasantDeaths, peasants, projectedPopulation, soldierDeaths, soldiers, soldiersInTraining, _ref;
       peasants = this.model.get('peasants');
       soldiers = this.model.get('soldiers');
       soldiersInTraining = this.projections.get('soldiersInTraining');
       currentPopulation = peasants + soldiers;
       console.log("cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining);
-      growthTarget = Math.round(currentPopulation * 0.075);
+      this.populationYield = (_ref = this.populationYield) != null ? _ref : Math.random() * 0.08;
+      console.log("population yield", this.populationYield);
+      growthTarget = Math.round(currentPopulation * (this.populationYield * this.projections.get('rations')));
       projectedPopulation = currentPopulation + growthTarget;
-      foodAvailable = this.model.get('food');
+      foodAvailable = this.projections.get('rations') > 0 ? this.model.get('food') / this.projections.get('rations') : 0;
       console.log("growth:", growthTarget, projectedPopulation, foodAvailable);
       this.projections.set('soldiers', soldiersInTraining);
       if (projectedPopulation < foodAvailable) {
-        this.projections.set('peasants', growthTarget - soldiersInTraining);
+        this.projections.set('peasants', Math.round(growthTarget - soldiersInTraining));
       } else if (currentPopulation <= foodAvailable) {
-        this.projections.set('peasants', foodAvailable - currentPopulation - soldiersInTraining);
+        this.projections.set('peasants', Math.round(foodAvailable - currentPopulation - soldiersInTraining));
       } else {
         deaths = Math.min(Math.round(currentPopulation * .1), currentPopulation - foodAvailable);
+        if (deaths === 0) {
+          deaths = 1;
+        }
         peasantDeaths = Math.round(deaths / 2);
         soldierDeaths = deaths - peasantDeaths;
         if (soldiers === 0) {
@@ -6080,7 +6093,7 @@
     __extends(Main, _super);
 
     function Main(name, game, rootModel) {
-      rootModel.scenario = realms.gameConfig.scenarios.pvp.twoByTwo;
+      rootModel.scenario = realms.gameConfig.scenarios.pvp.twoByTwoLG;
       Main.__super__.constructor.call(this, name, game, rootModel);
       this.send("engine:timing:start");
     }
@@ -6150,13 +6163,17 @@
       for (id in turnControls) {
         type = turnControls[id];
         control = this.scene.getEntityById(id);
-        this.turnControls.push(control.getPlugin(type));
+        if (control) {
+          this.turnControls.push(control.getPlugin(type));
+        }
       }
       this.doneControls = [];
       for (id in doneControls) {
         type = doneControls[id];
         control = this.scene.getEntityById(id);
-        this.doneControls.push(control.getPlugin(type));
+        if (control) {
+          this.doneControls.push(control.getPlugin(type));
+        }
       }
       return this.entity.model.on('change:turn', function(value) {
         switch (value) {
@@ -6200,10 +6217,12 @@
         food: this.resources.food,
         gold: this.resources.gold,
         soldiers: this.resources.soldiers,
+        rations: this.resources.rations,
         p_peasants: this.projections.peasants,
         p_soldiers: this.projections.soldiers,
         p_food: this.projections.food,
         p_gold: this.projections.gold,
+        p_rations: this.projections.rations,
         name: clientPlayer.country().name()
       });
     };
