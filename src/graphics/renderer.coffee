@@ -22,7 +22,6 @@ class nv.RenderingEngine extends nv.Engine
       camera: rootModel.camera
       width: rootModel.canvas.width
       height: rootModel.canvas.height
-      autoRendering: true
 
     if rootModel.config.preload
       for src in rootModel.config.preload
@@ -55,7 +54,6 @@ class nv.RenderingEngine extends nv.Engine
       drawable.update dt unless not drawable.update
     
   draw: (dt) ->
-    return unless @config.autoRendering
     @_render dt
 
   _render: (dt) ->
@@ -176,6 +174,11 @@ class nv.SpriteMapRenderingPlugin extends nv.RenderingPlugin
 
   getTileFromScreenXY: (x, y) ->
     @sprite.getTileFromScreenXY(x, y)
+
+  loadData: (data, width, height) ->
+    @sprite.data = data
+    @sprite.width = width
+    @sprite.height = height
 
   draw: (context, canvas) ->
     @sprite.x = @entity.model.x
