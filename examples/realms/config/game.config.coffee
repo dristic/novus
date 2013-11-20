@@ -8,9 +8,10 @@ version = 'v0.0.8'
 realms.gameConfig =
   canvas:
     id: '#game-canvas'
-    width: 640
-    height: 480
-    responsive: true
+    width: 960
+    height: 640
+    #responsive: true
+    fullscreen: true
     css:
       background: '000'
       margin: '0 auto 0 auto'
@@ -65,15 +66,15 @@ realms.gameConfig =
       ]
       entities:
         map:
-          include: "map"
+          include: "imageMap"
         scroll:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
           model:
             options:
               src: "/assets/paper-scroll-solid.png"
-              x: 120
-              y: 70
+              x: "50%"
+              y: 200
               width: 392
               height: 297
         castle:
@@ -82,8 +83,8 @@ realms.gameConfig =
           model:
             options:
               src: "/assets/castle.png"
-              x: 160
-              y: 130
+              x: "50%"
+              y: 250
               width: 310
               height: 210
               alpha: 0.3
@@ -95,9 +96,9 @@ realms.gameConfig =
               color: '#000'
               font: 'bold 30px serif'
               textBaseline: 'bottom'
-              text: 'Rords of the Lealm'
-              x: 190
-              y: 140
+              text: 'Lords of the Hundred'
+              x: "50%"
+              y: 263
         startText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -107,43 +108,67 @@ realms.gameConfig =
               font: 'bold 20px sans-serif'
               textBaseline: 'bottom'
               text: 'How many players?'
-              x: 215
-              y: 220
-        twoP2C:
+              x: "50%"
+              y: 395
+        twoPlayer:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
               id: "twoByTwoLG"
-              text: "2x2"
-              x: 204
-              y: 260
-              width: 64
-              height: 64
+              text: "2"
+              x: "42%"
+              y: 400
+              width: 45
+              height: 40
               fillStyle: false
-        twoP4C:
+        threePlayer:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
               id: "twoByFour"
-              text: "2x4"
-              x: 284
-              y: 260
-              width: 64
-              height: 64
+              text: "3"
+              x: "46%"
+              y: 400
+              width: 45
+              height: 40
               fillStyle: false
-        threeP3C:
+        fourPlayer:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
               id: "threeByThree"
-              text: "3x3"
-              x: 364
-              y: 260
-              width: 64
-              height: 64
+              text: "4"
+              x: "50%"
+              y: 400
+              width: 45
+              height: 40
+              fillStyle: false
+        fivePlayer:
+          entity: nv.Entity
+          plugins: [ nv.ButtonUIPlugin ]
+          model:
+            options:
+              id: "threeByThree"
+              text: "5"
+              x: "54%"
+              y: 400
+              width: 45
+              height: 40
+              fillStyle: false
+        sixPlayer:
+          entity: nv.Entity
+          plugins: [ nv.ButtonUIPlugin ]
+          model:
+            options:
+              id: "threeByThree"
+              text: "6"
+              x: "58%"
+              y: 400
+              width: 45
+              height: 40
               fillStyle: false
 
     game:
@@ -163,7 +188,7 @@ realms.gameConfig =
       ]
       entities:
         map:
-          include: "map"
+          include: "tileMap"
         panel:
           entity: nv.Entity
           plugins: [ nv.PanelUIPlugin ]
@@ -488,7 +513,7 @@ realms.gameConfig =
       ]
       entities:
         map:
-          include: "map"
+          include: "tileMap"
         title:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

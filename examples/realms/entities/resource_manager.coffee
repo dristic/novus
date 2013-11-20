@@ -5,6 +5,9 @@ class entities.ResourceManager extends nv.Entity
       
     @active = false
     @season = 0
+    @populationYieldMultiplier = 0.1
+    @maxFoodPerSeason = 400
+    @maxGoldPerSeason = 40
 
     @seasonData =
       # summer, fall, winter, spring
@@ -176,21 +179,24 @@ class entities.ResourceManager extends nv.Entity
 
   projectFarming: () ->
     food = 0
-    grainPlots = @owner.numberOfPlots('grain')
-    if grainPlots > 0
-      laborRatio = 1 - @projections.get('ratio')
-      console.log "grain yield:", @grainYield
-      console.log "ratio: ", laborRatio
-      # spread peasants out across fields with 50 per plot max
-      farmersPerPlot = Math.floor(@model.get('peasants') * laborRatio / grainPlots)
-      farmersPerPlot = Math.min( farmersPerPlot, 50 )
-      @owner.setPlotData 'grain', farmersPerPlot, @grainYield
-      console.log "farmers per plot:", farmersPerPlot
-      for i in [1..grainPlots]
-        qty =  @grainYield * farmersPerPlot
-        food += qty
+    unless @model.plotsEnabled
+      food = @model.get('peasants') * laborRatio * @grainYield
+    else
+      grainPlots = @owner.numberOfPlots('grain')
+      if grainPlots > 0
+        laborRatio = 1 - @projections.get('ratio')
+        console.log "grain yield:", @grainYield
+        console.log "ratio: ", laborRatio
+        # spread peasants out across fields with 50 per plot max
+        farmersPerPlot = Math.floor(@model.get('peasants') * laborRatio / grainPlots)
+        farmersPerPlot = Math.min( farmersPerPlot, 50 )
+        @owner.setPlotData 'grain', farmersPerPlot, @grainYield
+        console.log "farmers per plot:", farmersPerPlot
+        for i in [1..grainPlots]
+          qty =  @grainYield * farmersPerPlot
+          food += qty
     # cap food production at 300 mouths
-    # food = Math.min(food, 300)
+    food = Math.min(food, @maxFoodPerSeason)
     console.log "food to grow:", food
     @projections.set 'food', Math.round(food - (( @model.get('peasants') + @model.get('soldiers') ) * @projections.get('rations')))
 
@@ -199,18 +205,21 @@ class entities.ResourceManager extends nv.Entity
 
   projectMining: () ->
     gold = 0
-    goldPlots = @owner.numberOfPlots('gold')
-    if goldPlots > 0
-      seasonVars = @seasonData.mining[ @season ]
-      laborRatio = @projections.get('ratio')
-      console.log "gold yield:", @goldYield
-      minersPerPlot = Math.floor(@model.get('peasants') * laborRatio / goldPlots)
-      minersPerPlot = Math.min( minersPerPlot, 50 )
-      @owner.setPlotData 'gold', minersPerPlot, @goldYield
-      console.log "miners per plot:", minersPerPlot
-      for i in [1..goldPlots]
-        gold += @goldYield * 0.1 * minersPerPlot
-    gold = Math.min(gold, 30)
+    unless @model.plotsEnabled
+      food = @model.get('peasants') * laborRatio * @goldYield
+    else
+      goldPlots = @owner.numberOfPlots('gold')
+      if goldPlots > 0
+        seasonVars = @seasonData.mining[ @season ]
+        laborRatio = @projections.get('ratio')
+        console.log "gold yield:", @goldYield
+        minersPerPlot = Math.floor(@model.get('peasants') * laborRatio / goldPlots)
+        minersPerPlot = Math.min( minersPerPlot, 50 )
+        @owner.setPlotData 'gold', minersPerPlot, @goldYield
+        console.log "miners per plot:", minersPerPlot
+        for i in [1..goldPlots]
+          gold += @goldYield * 0.1 * minersPerPlot
+    gold = Math.min(gold, @maxGoldPerSeason)
     @projections.set 'gold', @goldCalc(gold)
 
   projectPopulation: () ->
@@ -221,7 +230,7 @@ class entities.ResourceManager extends nv.Entity
 
     console.log "cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining
 
-    @populationYield = @populationYield ? (Math.random() * 0.08)
+    @populationYield = @populationYield ? (Math.random() * @populationYieldMultiplier)
     console.log "population yield", @populationYield
 
     growthTarget = Math.round(currentPopulation * (@populationYield * @projections.get('rations')))

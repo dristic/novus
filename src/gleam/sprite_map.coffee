@@ -10,6 +10,7 @@ class gleam.SpriteMap extends gleam.Sprite
       x: 0
       y: 0
       data: [0, 1, 1, 0]
+      scale: 1
     gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
@@ -33,14 +34,14 @@ class gleam.SpriteMap extends gleam.Sprite
       index = -1
       framesInARow = @image.width / @tileWidth
 
-      while y < @height
-        while x < @width
+      while y < @height * @scale
+        while x < @width * @scale
           cell = @data[++index]
           tileX = ((cell - 1) % framesInARow) * @tileWidth
           tileY = Math.floor((cell - 1) / framesInARow) * @tileHeight
 
-          context.drawImage @image, tileX, tileY, @tileWidth, @tileHeight, Math.floor(x + @x), Math.floor(y + @y), @tileWidth, @tileHeight
+          context.drawImage @image, tileX, tileY, @tileWidth, @tileHeight, Math.floor(x + @x), Math.floor(y + @y), @tileWidth * @scale, @tileHeight * @scale
 
-          x += @tileWidth
-        y += @tileHeight
+          x += @tileWidth * @scale
+        y += @tileHeight * @scale
         x = 0

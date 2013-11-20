@@ -42,6 +42,6 @@ class nv.TextUIPlugin extends nv.UIPlugin
     @width = @width || @text.measureText(context, canvas)
     unless @hidden is true
       @updateText()
-      @text.x = @entity.model.x
-      @text.y = @entity.model.y
+      @text.x = @xFunc(@width) #@entity.model.x
+      @text.y = @yFunc() #@entity.model.y
       @text.draw context, canvas

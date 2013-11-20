@@ -57,6 +57,7 @@ class gleam.Canvas
       document.body.style.overflow = "hidden"
 
       @fullscreenListener = (event) =>
+        console.log "set fullscreen", document.body.clientWidth, document.body.clientHeight
         @setSize document.body.clientWidth, document.body.clientHeight
       window.addEventListener 'resize', @fullscreenListener
     else
@@ -82,8 +83,11 @@ class gleam.Canvas
     height = document.body.clientHeight
 
     # Calculate the best scaling ratio
+    #@ratio = Math.min(@width / @height, @height / @width) # Math.max(@width / width, @height / height)
     @ratio = Math.min(width / @width, height / @height)
-    @source.style.webkitTransform = "scale(#{@ratio})"
+    console.log "resonsve", @width, width, @height, height, @ratio
+    #@setSize @width / @ratio, @height / @ratio
+    @source.style.webkitTransform = "scale(#{@ratio})" 
 
   # Draws the objects given with the camera on this canvas
   draw: (objects, camera) ->

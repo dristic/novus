@@ -46,6 +46,9 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
   draw: (context, canvas) ->
     return if @hidden is true
 
+    @button.x = @xFunc()
+    @button.y = @yFunc()
+
     # Calculate text position based on button
     @text.x = @button.x + (@button.width / 2)
     @text.y = @button.y + (@button.height / 2)

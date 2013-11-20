@@ -21,6 +21,6 @@ class nv.SpriteUIPlugin extends nv.UIPlugin
         # context.rotateAround @sprite.x, @sprite.y, @entity.model.rotate, () =>
         #   @sprite.draw context, canvas
       else
-        @sprite.x = @entity.model.x
-        @sprite.y = @entity.model.y
+        @sprite.x = @xFunc() #@entity.model.x
+        @sprite.y = @yFunc() #@entity.model.y
         @sprite.draw context, canvas

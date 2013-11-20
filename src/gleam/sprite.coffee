@@ -8,6 +8,7 @@ class gleam.Sprite
       height: null
       origin: null
       alpha: 1.0
+      scale: 1.0
     gleam.extend defaults, options unless not options
     gleam.extend this, defaults
 
@@ -26,9 +27,9 @@ class gleam.Sprite
       context.save()
       context.source.globalAlpha = @alpha
       unless @origin
-        context.drawImage @image, @x, @y, @width, @height
+        context.drawImage @image, @x, @y, @width * @scale, @height * @scale
       else
-        context.drawImage @image, @origin.x, @origin.y, @origin.width, @origin.height, @x, @y, @width, @height
+        context.drawImage @image, @origin.x, @origin.y, @origin.width, @origin.height, @x, @y, @width * @scale, @height * @scale
       context.restore()
 
   destroy: () ->

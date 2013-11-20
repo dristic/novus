@@ -5983,7 +5983,7 @@
       soldiersInTraining = this.projections.get('soldiersInTraining');
       currentPopulation = peasants + soldiers;
       console.log("cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining);
-      this.populationYield = (_ref = this.populationYield) != null ? _ref : Math.random() * 0.08;
+      this.populationYield = (_ref = this.populationYield) != null ? _ref : Math.random() * 0.1;
       console.log("population yield", this.populationYield);
       growthTarget = Math.round(currentPopulation * (this.populationYield * this.projections.get('rations')));
       projectedPopulation = currentPopulation + growthTarget;
