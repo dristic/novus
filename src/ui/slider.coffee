@@ -46,7 +46,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
 
     @boxLeftX = x + 1
     @box = new gleam.Square
-      color: "#FFF"
+      color: @entity.model.thumbColor || "#FFF"
       width: 10
       height: @height
       x: @boxLeftX

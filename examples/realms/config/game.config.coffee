@@ -272,38 +272,39 @@ realms.gameConfig =
             options:
               x: 70
               y: 200
-        laborBoard:
-          entity: nv.Entity
-          plugins: [ nv.PanelUIPlugin ]
-          model:
-            options:
-              color: 'rgba(0, 0, 0, 0.5)'
-              width: 196
-              height: 26
-              x: 49
-              y: 119
-        laborDistributionText:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: '14px sans-serif'
-              textBaseline: 'bottom'
-              text: 'Labor'
-              x: 54
-              y: 140
+        # laborBoard:
+        #   entity: nv.Entity
+        #   plugins: [ nv.PanelUIPlugin ]
+        #   model:
+        #     options:
+        #       color: 'rgba(0, 0, 0, 0.5)'
+        #       width: 196
+        #       height: 26
+        #       x: 49
+        #       y: 119
+        # laborDistributionText:
+        #   entity: nv.Entity
+        #   plugins: [ nv.TextUIPlugin ]
+        #   model:
+        #     options:
+        #       color: '#CCC'
+        #       font: '14px sans-serif'
+        #       textBaseline: 'bottom'
+        #       text: 'Labor'
+        #       x: 54
+        #       y: 140
         sliderControl:
           entity: nv.Entity
           plugins: [ nv.SliderUIPlugin ]
           model:
             options:
               id: "population-slider"
-              leftImage: "/assets/farmer-16.wh.png"
-              rightImage: "/assets/miner-16.wh.png"
+              leftImage: "/assets/farmer-16.png"
+              rightImage: "/assets/miner-16.png"
               font: uiFont
-              x: 98
-              y: 122
+              thumbColor: "#151515"
+              x: 150
+              y: 96
               value: 50
               gap: 3
               height: 20
@@ -384,14 +385,24 @@ realms.gameConfig =
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
+              color: '#222'
               font: uiFont
               textBaseline: 'bottom'
               textAlign: 'right'
               text: '{{food}}'
               bind: entities.PlayerManager
-              x: 150
-              y: 95
+              x: 95
+              y: 164
+        foodIcon:
+          entity: nv.Entity
+          plugins: [ nv.SpriteUIPlugin ]
+          model:
+            options:
+              src: "/assets/corn.png"
+              x: 40
+              y: 145
+              width: 18
+              height: 18
         goldText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
