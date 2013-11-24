@@ -53,27 +53,27 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 		playerMetadata = @scene.rootModel.config.playerMetadata
 
 		model =
-			src: "/assets/turn-box.png"
-			x: 560
-			y: 5
-			width: 59
-			height: 72
+			src: "/assets/beveled-round.png"
+			x: "95%"
+			y: 10
+			width: 120
+			height: 120
 		@border = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
 		@loadFlags()
 
 		for player in @entity.model.players
-			model = nv.extend playerMetadata[player.model.number-1].flag, {hidden: true, x: 567, y: 17}
+			model = nv.extend playerMetadata[player.model.number-1].flag, {hidden: true, x: "95.2%", y: 50}
 
 			@turns.push new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 			@turns[@entity.model.turn - 1].hidden = false
 
 		model =
 			src: playerMetadata[ @entity.model.playerNumber - 1 ].flag.src
-			x: 5
-			y: 5
-			width: 32
-			height: 32
+			x: 38
+			y: 42
+			width: 72
+			height: 72
 		@shield = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
 		@selectedCountry = @entity.clientPlayer().selectedCountry().model.id
@@ -111,7 +111,7 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 				context.stroke();
 				context.closePath();
 				context.restore();
-			context.drawImage flag.image, flag.x, flag.y
+			context.drawImage flag.image, flag.x, flag.y, flag.width, flag.height
 
 
 class renderers.Seasons extends nv.RenderingPlugin

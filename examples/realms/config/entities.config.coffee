@@ -20,6 +20,18 @@ realms.entities =
         height: 1200
         src: '/assets/green_island_map.png'
 
+  splashScreen:
+    entity: entities.ImageMap
+    plugins: [ nv.SpriteRenderingPlugin ]
+    model:
+      options:
+        speed: 1.5
+        x: 0
+        y: 0
+        width: 1920
+        height: 1080
+        src: '/assets/splash-screen.jpg'
+
   player:
     entity: entities.Player
     plugins: []

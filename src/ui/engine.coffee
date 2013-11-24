@@ -66,11 +66,11 @@ class nv.UIPlugin extends nv.Plugin
 
     @xFunc = switch typeof entity.model.x
       when "number" then () => @entity.model.x
-      when "string" then (width) => window.innerWidth * (parseInt(@entity.model.x) / 100) - ( (width || @entity.model.width) / 2)
+      when "string" then (width) => window.innerWidth * (parseFloat(@entity.model.x) / 100) - ( (width || @entity.model.width) / 2)
 
     @yFunc = switch typeof entity.model.y
       when "number" then () => @entity.model.y
-      when "string" then () => window.innerHeight * (parseInt(@entity.model.y) / 100) - (@entity.model.height / 2)    
+      when "string" then () => window.innerHeight * (parseFloat(@entity.model.y) / 100) - (@entity.model.height / 2)    
 
   hide: () ->
     @hidden = true

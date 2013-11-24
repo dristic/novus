@@ -86,8 +86,6 @@ class entities.TileMap extends entities.MapBase
     @gamepad = scene.get 'gamepad'
     @canvas = scene.get 'canvas'
     @camera = scene.get 'camera'
-    @camera.x = -160
-    @camera.y = -230
 
     @layers = [ @getPlugin(nv.SpriteMapRenderingPlugin) ]
     for level in [1..4]
@@ -119,6 +117,9 @@ class entities.ImageMap extends entities.MapBase
     super scene, plugins, model
     @image = @getPlugin(nv.SpriteRenderingPlugin)
     @scaleLayers()
+
+    @camera.x = -150
+    @camera.y = -1
 
   scaleLayers: () ->
     super

@@ -78,6 +78,8 @@ class entities.PlayerManager extends nv.Entity
         if player.model.number is scenario.countries[name].owner
           flag = nv.extend {}, scenario.countries[name].flag
           flag = nv.extend flag, rootModel.config.playerMetadata[player.model.number - 1].flag
+          flag.width = 16
+          flag.height = 16
 
           data = nv.extend {}, scenario.countries[name]
           data = nv.extend data,

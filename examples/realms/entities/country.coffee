@@ -10,11 +10,11 @@ class entities.Country extends nv.Entity
     @model.resourceManager.setOwner this
 
     plots = []
-    for position in @model.plots
-      landConfig = nv.extend {}, entityConfigs.land
-      landConfig.model.options.x = position.x
-      landConfig.model.options.y = position.y
-      plots.push @scene.createEntity(landConfig)
+    # for position in @model.plots
+    #   landConfig = nv.extend {}, entityConfigs.land
+    #   landConfig.model.options.x = position.x
+    #   landConfig.model.options.y = position.y
+    #   plots.push @scene.createEntity(landConfig)
 
     @model.plots = plots
 

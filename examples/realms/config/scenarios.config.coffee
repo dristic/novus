@@ -1,8 +1,8 @@
 realms.scenarios =
   pvp:
     description: "Player v. Player"
-    twoBy2:
-      description: "2-players, 2-countries"
+    twoPlayer:
+      description: "2-players"
       players: 2
       map:
         width: 1600
@@ -20,17 +20,17 @@ realms.scenarios =
         Darkland:
           id: 1026
           owner: 1
-          plots: [new nv.Point(544,320), new nv.Point(576,320), new nv.Point(544,352), new nv.Point(352,416), new nv.Point(352,448)]
+          # plots: [new nv.Point(544,320), new nv.Point(576,320), new nv.Point(544,352), new nv.Point(352,416), new nv.Point(352,448)]
           flag:
-            x: 440
-            y: 360
+            x: 562
+            y: 390
         Danville:
           id: 1027
           owner: 2
-          plots: [new nv.Point(576,480), new nv.Point(608,480), new nv.Point(608,512), new nv.Point(480,576), new nv.Point(512,576)]
+          # plots: [new nv.Point(576,480), new nv.Point(608,480), new nv.Point(608,512), new nv.Point(480,576), new nv.Point(512,576)]
           flag:
-            x: 490
-            y: 490
+            x: 460
+            y: 734
 
     description: "Player v. Player"
     twoByTwo:

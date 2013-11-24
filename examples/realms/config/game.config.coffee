@@ -2,7 +2,7 @@
 #= require levels.config
 #= require scenarios.config
 
-uiFont = 'bold 16px sans-serif'
+uiFont = '16px sans-serif'
 version = 'v0.0.8'
 
 realms.gameConfig =
@@ -66,7 +66,7 @@ realms.gameConfig =
       ]
       entities:
         map:
-          include: "imageMap"
+          include: "splashScreen"
         scroll:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
@@ -115,7 +115,7 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              id: "twoByTwoLG"
+              id: "twoPlayer"
               text: "2"
               x: "42%"
               y: 400
@@ -188,26 +188,38 @@ realms.gameConfig =
       ]
       entities:
         map:
-          include: "tileMap"
-        panel:
+          include: "imageMap"
+        # panel:
+        #   entity: nv.Entity
+        #   plugins: [ nv.PanelUIPlugin ]
+        #   model:
+        #     options:
+        #       color: 'rgba(0, 0, 0, 0.5)'
+        #       width: 250
+        #       height: 150
+        #       x: 0
+        #       y: 0
+        playerStats:
           entity: nv.Entity
-          plugins: [ nv.PanelUIPlugin ]
+          plugins: [ nv.SpriteUIPlugin ]
           model:
             options:
-              color: 'rgba(0, 0, 0, 0.5)'
-              width: 250
-              height: 150
+              src: "/assets/controls-chrome.png"
               x: 0
               y: 0
+              width: 357
+              height: 250
         endTurnButton:
           entity: nv.Entity
-          plugins: [ nv.ButtonUIPlugin ]
+          plugins: [ nv.SpriteButtonUIPlugin ]
           model:
             options:
-              text: "End Turn"
+              src: "/assets/end-turn-button.png"
               id: "next-turn-button"
-              x: 480
-              y: 410
+              x: "95%"
+              y: 130
+              width: 120
+              height: 120
         endOtherTurnButton:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
@@ -215,8 +227,8 @@ realms.gameConfig =
             options:
               text: "End Other Turn"
               id: "next-turn-other-button"
-              x: 480
-              y: 410
+              x: "93%"
+              y: 310
         createArmy:
           entity: nv.Entity
           plugins: [ nv.ButtonUIPlugin ]
@@ -301,39 +313,72 @@ realms.gameConfig =
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
-              font: 'bold 20px sans-serif'
+              color: '#222'
+              font: 'bold 18px sans-serif'
               textBaseline: 'bottom'
               text: '{{name}}'
               bind: entities.PlayerManager
-              x: 35
-              y: 32
-        labels:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: uiFont
-              textBaseline: 'bottom'
-              textAlign: 'right'
-              lineHeight: 20
-              text: [ "Peasants", "Soldiers", "Food", "Gold" ]
-              x: 110
-              y: 55
+              x: 135
+              y: 43
+        # labels:
+        #   entity: nv.Entity
+        #   plugins: [ nv.TextUIPlugin ]
+        #   model:
+        #     options:
+        #       color: '#CCC'
+        #       font: uiFont
+        #       textBaseline: 'bottom'
+        #       textAlign: 'right'
+        #       lineHeight: 20
+        #       text: [ "Peasants", "Soldiers", "Food", "Gold" ]
+        #       x: 110
+        #       y: 55
         population:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
           model:
             options:
-              color: '#CCC'
+              color: '#222'
               font: uiFont
               textBaseline: 'bottom'
               textAlign: 'right'
               text: "{{peasants}}"
               bind: entities.PlayerManager
-              x: 150
-              y: 55
+              x: 190
+              y: 79
+        popIcon:
+          entity: nv.Entity
+          plugins: [ nv.SpriteUIPlugin ]
+          model:
+            options:
+              src: "/assets/peasant-16.png"
+              x: 191
+              y: 61
+              width: 12
+              height: 16
+        armyText:
+          entity: nv.Entity
+          plugins: [ nv.TextUIPlugin ]
+          model:
+            options:
+              color: '#222'
+              font: uiFont
+              textBaseline: 'bottom'
+              textAlign: 'right'
+              text: '{{soldiers}}'
+              bind: entities.PlayerManager
+              x: 250
+              y: 79
+        armyIcon:
+          entity: nv.Entity
+          plugins: [ nv.SpriteUIPlugin ]
+          model:
+            options:
+              src: "/assets/soldier-16.png"
+              x: 251
+              y: 61
+              width: 12
+              height: 16
         foodText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -360,19 +405,6 @@ realms.gameConfig =
               bind: entities.PlayerManager
               x: 150
               y: 115
-        armyText:
-          entity: nv.Entity
-          plugins: [ nv.TextUIPlugin ]
-          model:
-            options:
-              color: '#CCC'
-              font: uiFont
-              textBaseline: 'bottom'
-              textAlign: 'right'
-              text: '{{soldiers}}'
-              bind: entities.PlayerManager
-              x: 150
-              y: 75
         populationProjected:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -386,7 +418,7 @@ realms.gameConfig =
               text: "{{p_peasants}}"
               bind: entities.PlayerManager
               x: 190
-              y: 55
+              y: 455
         populationArmy:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -400,7 +432,7 @@ realms.gameConfig =
               text: "{{p_soldiers}}"
               bind: entities.PlayerManager
               x: 190
-              y: 75
+              y: 475
         foodProjected:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -414,7 +446,7 @@ realms.gameConfig =
               text: '{{p_food}}'
               bind: entities.PlayerManager
               x: 190
-              y: 95
+              y: 495
         goldProjected:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -428,7 +460,7 @@ realms.gameConfig =
               text: '{{p_gold}}'
               bind: entities.PlayerManager
               x: 190
-              y: 115
+              y: 515
         attackText:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]

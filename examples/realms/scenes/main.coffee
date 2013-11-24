@@ -1,7 +1,7 @@
 class scenes.Main extends nv.Scene
   constructor: (name, game, rootModel) ->
     # load the 2x2 game model for background only
-    rootModel.scenario = realms.gameConfig.scenarios.pvp.twoBy2
+    rootModel.scenario = realms.gameConfig.scenarios.pvp.twoPlayer
 
     super name, game, rootModel
 

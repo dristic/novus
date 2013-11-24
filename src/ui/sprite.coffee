@@ -24,3 +24,23 @@ class nv.SpriteUIPlugin extends nv.UIPlugin
         @sprite.x = @xFunc() #@entity.model.x
         @sprite.y = @yFunc() #@entity.model.y
         @sprite.draw context, canvas
+
+
+class nv.SpriteButtonUIPlugin extends nv.SpriteUIPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+    # Used for telling what is interacted with
+    @id = @entity.model.id
+    @down = false
+
+  "event(engine:ui:mouse:down)": (data) ->
+    unless @hidden is true
+      if @bounds().contains new nv.Point(data.x, data.y)
+        @down = true
+  
+  "event(engine:ui:mouse:up)": (data) ->
+    if @down is true
+      if @bounds().contains new nv.Point(data.x, data.y)
+        @down = false
+        @scene.fire "engine:ui:clicked", this

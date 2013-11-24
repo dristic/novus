@@ -9,13 +9,16 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
       if ['x','y','width','height'].indexOf(key) > -1
         @button[key] = value
 
+    @entity.model.width = @entity.model.width ? 150
+    @entity.model.height = @entity.model.height ? 50
+
     @button = new gleam.Rectangle
       strokeStyle: @entity.model.strokeStyle ? "#000"
       strokeWidth: @entity.model.strokeWidth ? 4
       cornerRadius: @entity.model.cornerRadius ? 16
       fillStyle: if typeof @entity.model.fillStyle isnt "undefined" then @entity.model.fillStyle else "#FFF"
-      width: @entity.model.width ? 150
-      height: @entity.model.height ? 50
+      width: @entity.model.width
+      height: @entity.model.height
       x: @entity.model.x
       y: @entity.model.y
 
@@ -41,6 +44,8 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
         @scene.fire "engine:ui:clicked", this
 
   bounds: () ->
+    @button.x = @xFunc()
+    @button.y = @yFunc()
     new nv.Rect @button.x, @button.y, @button.x + @button.width, @button.y + @button.height
 
   draw: (context, canvas) ->
@@ -58,3 +63,5 @@ class nv.ButtonUIPlugin extends nv.UIPlugin
 
   fillStyle: (style) ->
     @button.fillStyle = style || "#FFF"
+
+

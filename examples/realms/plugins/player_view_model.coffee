@@ -20,7 +20,7 @@ class plugins.PlayerViewModel extends nv.Plugin
       "attack-button": nv.ButtonUIPlugin
       "create-army-button": nv.ButtonUIPlugin
       "rations-button": nv.ButtonUIPlugin
-      "next-turn-button": nv.ButtonUIPlugin
+      "next-turn-button": nv.SpriteButtonUIPlugin
       "projected-population": nv.TextUIPlugin
       "projected-soldiers": nv.TextUIPlugin
       "projected-food": nv.TextUIPlugin
