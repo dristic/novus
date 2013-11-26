@@ -18,3 +18,4 @@ class @Application extends nv.Game
     start = () =>
       @start('Main')
     setTimeout start, 0
+
