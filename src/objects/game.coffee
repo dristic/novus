@@ -10,7 +10,7 @@ class nv.Game
         @registerEngine engine
 
     if config.scenes?
-      for scene of config.scenes
+      for scene in config.scenes
         @registerScene scene
 
     @rootModel.setMany
@@ -34,6 +34,9 @@ class nv.Game
     @scenes[@scenes.length - 1].on "scene:close", () =>
       @closeScene name
 
+  scenes: () ->
+    @scenes
+
   closeScene: (name) ->
     unless name?
       if @scenes.length > 0
@@ -46,6 +49,4 @@ class nv.Game
       if scene instanceof @sceneClasses[name]
         scene.destroy()
         @scenes.splice index, 1
-    
-  start: (scene) ->
-    @openScene scene
+

@@ -1,15 +1,15 @@
 #= require entities.config
 #= require levels.config
 
-breakout.gameConfig =
-  canvas:
+breakout.config =
+  graphics:
     id: '#game-canvas'
     width: 320
-    height: 416
-    responsive: true
+    height: 410
+    scaled: true
     css:
-      background: '000'
-      margin: '0 auto 0 auto'
+      backgrund: '#000'
+      margin: '0 auto'
       display: 'block'
 
   preload: [
@@ -19,6 +19,27 @@ breakout.gameConfig =
 
   engines: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine, nv.SoundEngine, nv.ParticleEngine ]
 
+breakout.maps =
+  main:
+    layers: [{
+      name: "UI",
+      objects: [
+        {
+          type: "TiledBackground"
+          name: "Background"
+          x: 0
+          y: 0
+        },
+        {
+          type: "Title"
+          name: "Title"
+          x: 94.5
+          y: 50
+        }
+      ]
+    }]
+
+breakout.gameConfig =
   scenes:
     main:
       config:

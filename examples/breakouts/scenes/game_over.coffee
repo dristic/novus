@@ -1,4 +1,4 @@
-class scenes.Gameover extends nv.Scene
+class scenes.GameOver extends nv.Scene
   constructor: (name, game, rootModel) ->
     super name, game, rootModel
 

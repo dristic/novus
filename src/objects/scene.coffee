@@ -2,9 +2,9 @@ class nv.Scene extends nv.EventDispatcher
   constructor: (name, @game, @rootModel, @options) ->
     super
 
-    @sceneName = name.toLowerCase()
     @engines = []
     @entities = []
+    @factory = new nv.Factory()
     @deletedEntities = []
  
     @options = @options ? {}
@@ -19,13 +19,7 @@ class nv.Scene extends nv.EventDispatcher
       @addEntity entity
 
     @on "entity:create", (options) =>
-      entityName = options.entity
-      # Ensure we only create one this time
-      config = @rootModel.config.scenes[@sceneName].entities[entityName]
-      if config.include?
-        config = @rootModel.config.entities[entityName]
-      unless not config
-        @createEntity config, options
+      @createEntity options
 
     @on "scene:destroy", (options) =>
       @destruct()
@@ -37,13 +31,11 @@ class nv.Scene extends nv.EventDispatcher
         @on key[6..-2], nv.bind(this, this[key])
 
     @prepareEngines()
-    @createEntities @rootModel.config.scenes[@sceneName].entities
-    @createSoundFxs()
 
     @fire "scene:initialized"
 
   get: (key) ->
-    @options[key] ? @rootModel[key]
+    @options[key]
 
   set: (key, value) ->
     @options[key] = value
@@ -64,15 +56,6 @@ class nv.Scene extends nv.EventDispatcher
       initializer config, @game.model()
 
     @engines.push new engineObj.klass this, config  
-
-  createEntities: (entities) ->
-    for entity, config of entities
-      if config.count?
-        index = config.count
-        while (index -= 1) >= 0
-          @createEntity config, {}, index
-      else
-        @createEntity config
 
   createEntity: (config, options = {}, index = 0) ->
     # If a reference to a common entity exists, get config from there
@@ -109,24 +92,11 @@ class nv.Scene extends nv.EventDispatcher
 
     model
 
-  addEntities: (entities...) ->
-    @addEntity entity for entity in entities
-
   addEntity: (entity) ->
     @entities.push entity
     entity
 
-  createSoundFxs: () ->
-    return if @rootModel.config.scenes[@sceneName].soundfx is undefined
-    new nv.SoundFactory().wire this, @rootModel.config.scenes[@sceneName].soundfx
-
-  getEntity: (type) ->
-    for entity in @entities
-      if entity instanceof type
-        return entity
-    null
-
-  getEntities: (type) ->
+  getEntitiesByType: (type) ->
     entities = []
     for entity in @entities
       if entity instanceof type
@@ -144,16 +114,17 @@ class nv.Scene extends nv.EventDispatcher
       entity.destroy() unless not entity.destroy
       @entities.splice @entities.indexOf(entity), 1
     else
-      console.log "Could not find entity", entity
+      nv.log "Could not find entity", entity
 
   onRemoveEntity: (entity) ->
     @deletedEntities.push entity
 
-  getEngine: (type) ->
+  getEnginesByType: (type) ->
+    engines = []
     for engine in @engines
       if engine instanceof type
-        return engine
-    null
+        engines.push engine
+    engines
 
   fire: (event, data) ->
     super event, data

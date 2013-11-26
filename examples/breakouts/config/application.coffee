@@ -12,10 +12,12 @@ nv.configure
 
 class @Application extends nv.Game
   constructor: () ->
-    super breakout.gameConfig
+    super
+      engines: breakout.gameConfig.engines
+      scenes: [ scenes.Main, scenes.Game, scenes.GameOver ]
 
     # Start the game on a new thread
     start = () =>
-      @start('Main')
+      @openScene scenes.Main
     setTimeout start, 0
 
