@@ -6,13 +6,13 @@
 
 @breakout = {}
 
+# Configure global engine settings
+nv.configure
+  debug: true
+
 class @Application extends nv.Game
   constructor: () ->
     super breakout.gameConfig
-
-    # Configure global novus settings
-    nv.configure
-      debug: true
 
     # Start the game on a new thread
     start = () =>

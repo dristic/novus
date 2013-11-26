@@ -6,10 +6,10 @@
 #= require_tree data/
 #= require_tree math/
 #= require_tree objects/
+#= require_tree debug/
 #= require_tree physics/
 #= require_tree timing/
 #= require_tree audio/
-#= require_tree debug/
 #= require_tree graphics/
 #= require_tree input/
 

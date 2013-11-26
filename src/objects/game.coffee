@@ -10,10 +10,8 @@ class nv.Game
         @registerEngine engine
 
     if config.scenes?
-      for name of config.scenes
-        scene = name[0].toUpperCase() + name.toLowerCase().slice(1)
-        klass = "scenes." + scene
-        @registerScene scene, getClass(klass)
+      for scene of config.scenes
+        @registerScene scene
 
     @rootModel.setMany
       config: config
@@ -27,12 +25,8 @@ class nv.Game
       klass: klass
       initializer: initializer
 
-  registerScenes: (object) ->
-    for key of object
-      @registerScene key, object[key]
-
-  registerScene: (name, klass) ->
-    console.log "Registering", name, klass
+  registerScene: (klass) ->
+    name = klass.name
     @sceneClasses[name] = klass
 
   openScene: (name, args...) ->
@@ -41,7 +35,13 @@ class nv.Game
       @closeScene name
 
   closeScene: (name) ->
-    name = name ? @scenes[@scenes.length - 1].constructor.name
+    unless name?
+      if @scenes.length > 0
+        name = @scenes[@scenes.length - 1].constructor.name
+      else
+        nv.log "Unable to close scene: ", name
+        return false
+
     for scene, index in @scenes
       if scene instanceof @sceneClasses[name]
         scene.destroy()
