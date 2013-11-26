@@ -47,6 +47,7 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 		@flags = []
 		@turns = []
 		@selectedCountry = 0
+		@scale = @scene.getEntity(entities.ImageMap).scale
 
 	"event(game:player:assigned)": () ->
 		scenario = @scene.rootModel.get 'scenario'
@@ -54,26 +55,27 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 
 		model =
 			src: "/assets/beveled-round.png"
-			x: "95%"
+			x: -164
 			y: 10
-			width: 120
-			height: 120
+			width: 144
+			height: 144
+			anchor: "topRight"
 		@border = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
 		@loadFlags()
 
 		for player in @entity.model.players
-			model = nv.extend playerMetadata[player.model.number-1].flag, {hidden: true, x: "95.2%", y: 50}
+			model = nv.extend playerMetadata[player.model.number-1].flag, {hidden: true, x: -120, y: 55, width: 64, height: 64, anchor: "topRight"}
 
 			@turns.push new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 			@turns[@entity.model.turn - 1].hidden = false
 
 		model =
 			src: playerMetadata[ @entity.model.playerNumber - 1 ].flag.src
-			x: 38
-			y: 42
-			width: 72
-			height: 72
+			x: 40
+			y: 44
+			width: 64
+			height: 64
 		@shield = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 
 		@selectedCountry = @entity.clientPlayer().selectedCountry().model.id
@@ -98,35 +100,50 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 	"event(game:country:updated)": () ->
 		@loadFlags()
 
+	"event(game:map:scaled)": (scale) ->
+		@scale = scale
+
 
 	draw: (context, canvas) ->
 		for flag in @flags
+			scaledX = flag.x * @scale
+			scaledY = flag.y * @scale
+
 			if flag.countryId is @selectedCountry
 				context.save();
 				context.source.scale(1, 0.5);
 				context.setStrokeStyle "yellow"
 				context.setStrokeWidth 4
 				context.source.beginPath();
-				context.source.arc(flag.x + (flag.width/2) - 2.5, 2*(flag.y + flag.height) - 10, 20, 0, Math.PI*2, false);
+				context.source.arc(scaledX + (flag.width/2) - 2.5, 2*(scaledY + flag.height) - 10, 20, 0, Math.PI*2, false);
 				context.stroke();
 				context.closePath();
 				context.restore();
-			context.drawImage flag.image, flag.x, flag.y, flag.width, flag.height
+
+			context.drawImage flag.image, scaledX, scaledY, flag.width, flag.height
 
 
 class renderers.Seasons extends nv.RenderingPlugin
-
 	constructor: (scene, entity) ->
 		super scene, entity
 		
 		model =
+			src: "/assets/beveled-round.png"
+			x: -144
+			y: -144
+			width: 104
+			height: 104
+			anchor: "bottomRight"
+		@border = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
+
+		model =
 			src: "/assets/season-wheel.png"
-			x: 557
-			y: 100
+			x: -123
+			y: -123
 			width: 64
 			height: 64
 			rotate: 0
-
+			anchor: "bottomRight"
 		@wheel = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
 		
 		@season = 0

@@ -65,12 +65,26 @@ class nv.UIPlugin extends nv.Plugin
     @scene.fire "engine:ui:create", this
 
     @xFunc = switch typeof entity.model.x
-      when "number" then () => @entity.model.x
-      when "string" then (width) => window.innerWidth * (parseFloat(@entity.model.x) / 100) - ( (width || @entity.model.width) / 2)
+      when "number" then () => 
+        unless @entity.model.anchor?
+          @entity.model.x
+        else
+          switch @entity.model.anchor
+            when "topLeft", "bottomLeft" then @entity.model.x
+            else window.innerWidth + @entity.model.x
+      when "string" then (width) => 
+        window.innerWidth * (parseFloat(@entity.model.x) / 100) - ( (width || @entity.model.width) / 2)
 
     @yFunc = switch typeof entity.model.y
-      when "number" then () => @entity.model.y
-      when "string" then () => window.innerHeight * (parseFloat(@entity.model.y) / 100) - (@entity.model.height / 2)    
+      when "number" then () => 
+        unless @entity.model.anchor?
+          @entity.model.y
+        else
+          switch @entity.model.anchor
+            when "topLeft", "topRight" then @entity.model.y
+            else window.innerHeight + @entity.model.y
+      when "string" then () =>
+        window.innerHeight * (parseFloat(@entity.model.y) / 100) - (@entity.model.height / 2)    
 
   hide: () ->
     @hidden = true

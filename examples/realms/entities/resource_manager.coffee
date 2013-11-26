@@ -179,12 +179,12 @@ class entities.ResourceManager extends nv.Entity
 
   projectFarming: () ->
     food = 0
+    laborRatio = 1 - @projections.get('ratio')
     unless @model.plotsEnabled
       food = @model.get('peasants') * laborRatio * @grainYield
     else
       grainPlots = @owner.numberOfPlots('grain')
       if grainPlots > 0
-        laborRatio = 1 - @projections.get('ratio')
         console.log "grain yield:", @grainYield
         console.log "ratio: ", laborRatio
         # spread peasants out across fields with 50 per plot max
@@ -205,13 +205,13 @@ class entities.ResourceManager extends nv.Entity
 
   projectMining: () ->
     gold = 0
+    laborRatio = @projections.get('ratio')
     unless @model.plotsEnabled
       food = @model.get('peasants') * laborRatio * @goldYield
     else
       goldPlots = @owner.numberOfPlots('gold')
       if goldPlots > 0
         seasonVars = @seasonData.mining[ @season ]
-        laborRatio = @projections.get('ratio')
         console.log "gold yield:", @goldYield
         minersPerPlot = Math.floor(@model.get('peasants') * laborRatio / goldPlots)
         minersPerPlot = Math.min( minersPerPlot, 50 )

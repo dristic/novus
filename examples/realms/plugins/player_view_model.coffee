@@ -17,9 +17,9 @@ class plugins.PlayerViewModel extends nv.Plugin
 
   "event(scene:initialized)": () ->
     turnControls =
-      "attack-button": nv.ButtonUIPlugin
-      "create-army-button": nv.ButtonUIPlugin
-      "rations-button": nv.ButtonUIPlugin
+      "attack-button": nv.SpriteButtonUIPlugin
+      "create-army-button": nv.SpriteButtonUIPlugin
+      "rations-button": nv.SpriteButtonUIPlugin
       "next-turn-button": nv.SpriteButtonUIPlugin
       "projected-population": nv.TextUIPlugin
       "projected-soldiers": nv.TextUIPlugin

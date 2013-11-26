@@ -28,6 +28,8 @@ class entities.MapBase extends nv.Entity
     @camera.x = 0 #(@mapWidth - window.innerWidth) / -2
     @camera.y =  (@mapHeight * @scale - window.innerHeight) / -2
 
+    @scene.fire 'game:map:scaled', @scale
+
   update: (dt) ->
     super dt
 
@@ -118,8 +120,8 @@ class entities.ImageMap extends entities.MapBase
     @image = @getPlugin(nv.SpriteRenderingPlugin)
     @scaleLayers()
 
-    @camera.x = -150
-    @camera.y = -1
+    @camera.x = @model.camera?.x || 0
+    @camera.y = @model.camera?.y || 0
 
   scaleLayers: () ->
     super

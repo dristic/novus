@@ -14,7 +14,7 @@ class nv.SpriteUIPlugin extends nv.UIPlugin
         @sprite.y = - @sprite.halfHeight
 
         context.save()
-        context.translate @entity.model.x + @sprite.halfWidth, @entity.model.y + @sprite.halfHeight
+        context.translate @xFunc() + @sprite.halfWidth, @yFunc() + @sprite.halfHeight
         context.source.rotate(@entity.model.rotate)
         @sprite.draw context, canvas
         context.restore()

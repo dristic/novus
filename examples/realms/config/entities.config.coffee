@@ -28,6 +28,9 @@ realms.entities =
         speed: 1.5
         x: 0
         y: 0
+        camera:
+          x: -150
+          y: -1
         width: 1920
         height: 1080
         src: '/assets/splash-screen.jpg'
