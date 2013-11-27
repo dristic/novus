@@ -1,6 +1,4 @@
 class nv.Engine
-  initializer: () ->
-
   constructor: (@scene, @config) ->
     @config = @config ? {}
     @listeners = []

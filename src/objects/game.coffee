@@ -1,40 +1,18 @@
 class nv.Game
-  constructor: (config) ->
-    @rootModel = new nv.Model
+  constructor: (@config) ->
     @scenes = []
-    @sceneClasses = {}
-    @engines = {}
-    
-    if config.engines?
-      for engine in config.engines
-        @registerEngine engine
+    @factory = new nv.Factory()
 
-    if config.scenes?
-      for scene in config.scenes
-        @registerScene scene
-
-    @rootModel.setMany
-      config: config
-
-  model: () ->
-    @rootModel
-
-  registerEngine: (klass, initializer) ->
-    name = klass.name
-    @engines[name] =
-      klass: klass
-      initializer: initializer
-
-  registerScene: (klass) ->
-    name = klass.name
-    @sceneClasses[name] = klass
+    if @config.scenes?
+      for scene in @config.scenes
+        @factory.registerClass scene.name, scene
 
   openScene: (name, args...) ->
-    @scenes.push new @sceneClasses[name] name, this, @rootModel, args...
+    @scenes.push new (@factory.getClass(name)) name, this, args...
     @scenes[@scenes.length - 1].on "scene:close", () =>
       @closeScene name
 
-  scenes: () ->
+  getScenes: () ->
     @scenes
 
   closeScene: (name) ->
@@ -42,11 +20,21 @@ class nv.Game
       if @scenes.length > 0
         name = @scenes[@scenes.length - 1].constructor.name
       else
-        nv.log "Unable to close scene: ", name
+        nv.log "Unable to find scene to close: ", name
         return false
 
     for scene, index in @scenes
-      if scene instanceof @sceneClasses[name]
+      if scene instanceof @factory.getClass(name)
         scene.destroy()
         @scenes.splice index, 1
+
+  destroy: () ->
+    for scene in @scenes
+      @closeScene()
+
+    @factory.destroy()
+
+    delete @scenes
+    delete @factory
+    delete @config
 

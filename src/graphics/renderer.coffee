@@ -1,40 +1,40 @@
 class nv.RenderingEngine extends nv.Engine
-  initializer: (config, rootModel) ->
-    unless rootModel.get 'canvas'
-      rootConfig = rootModel.config
-      canvas = new gleam.Canvas rootConfig.canvas.id
-      canvas.setSize rootConfig.canvas.width, rootConfig.canvas.height
-      canvas.setMaxSize rootConfig.canvas.maxWidth, rootConfig.canvas.maxHeight
-      canvas.setStyle property, value for property, value of rootConfig.canvas.css
-      canvas.setFullscreen rootConfig.canvas.fullscreen
-      canvas.setResponsive rootConfig.canvas.responsive
+  initialized: false
+  canvas: null
+  camera: null
+
+  init: (config) ->
+    if config.id
+      canvas = new gleam.Canvas config.id
+      canvas.setSize config.width, config.height
+      canvas.setMaxSize config.maxWidth, config.maxHeight
+      canvas.setStyle property, value for property, value of config.css
+      canvas.setFullscreen config.fullscreen
+      canvas.setResponsive config.responsive
 
       # Do not re-add the canvas if it is already on the screen
       unless document.contains and document.contains(canvas.source)
         document.body.appendChild canvas.source
 
-      rootModel.set 'canvas', canvas
-      rootModel.set 'origin', canvas.source
-      rootModel.set 'camera', new gleam.Camera
+      nv.RenderingEngine.prototype.canvas = canvas
+      nv.RenderingEngine.prototype.camera = new gleam.Camera
 
-    nv.extend config,
-      canvas: rootModel.canvas
-      camera: rootModel.camera
-      width: rootModel.canvas.width
-      height: rootModel.canvas.height
-
-    if rootModel.config.preload
-      for src in rootModel.config.preload
+    if config.preload
+      for src in config.preload
         gleam.image.get src
 
   constructor: (scene, config) ->
     super scene, config
 
-    @canvas = config.canvas
+    if nv.RenderingEngine.prototype.initialized is false
+      @init config
+      nv.RenderingEngine.prototype.initialized = true
+
+    @canvas = nv.RenderingEngine.prototype.canvas
     @context = @canvas.context
     @drawables = []
 
-    @camera = config.camera ? new gleam.Camera
+    @camera = nv.RenderingEngine.prototype.camera
 
   "event(engine:rendering:create)": (drawable) ->
     @drawables.push drawable

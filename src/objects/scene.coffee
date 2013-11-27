@@ -1,16 +1,11 @@
 class nv.Scene extends nv.EventDispatcher
-  constructor: (name, @game, @rootModel, @options) ->
+  constructor: (name, @game, @options = {}) ->
     super
 
     @engines = []
     @entities = []
-    @factory = new nv.Factory()
+    @factory = nv.factory
     @deletedEntities = []
- 
-    @options = @options ? {}
-    if @rootModel.config.scenes[@sceneName].config.scene?
-      @options = nv.extend @options, @rootModel.config.scenes[@sceneName].config.scene
-    @options = nv.extend @options, @rootModel
 
     @on "entity:remove", (entity) =>
       @removeEntity entity
@@ -30,8 +25,6 @@ class nv.Scene extends nv.EventDispatcher
       if /event\(.*\)/.test(key)
         @on key[6..-2], nv.bind(this, this[key])
 
-    @prepareEngines()
-
     @fire "scene:initialized"
 
   get: (key) ->
@@ -40,57 +33,20 @@ class nv.Scene extends nv.EventDispatcher
   set: (key, value) ->
     @options[key] = value
 
-  prepareEngines: () ->
-    @useEngine klass.name for klass in @rootModel.config.scenes[@sceneName].engines
-    engine.prepare() for engine in @engines
+  loadEngine: (engine, options = {}) ->
+    @engines.push new engine this, options
 
-  useEngine: (engineName, initializer) ->
-    engineObj = @game.engines[engineName]
-    configKey = engineName.replace("nv.","").replace("Engine","").toLowerCase()
-    config = @rootModel.config.scenes[@sceneName].config[configKey] ? {}
+  loadMap: (mapData) ->
+    map = new nv.Map mapData
+    entities = map.parse()
 
-    if engineObj.klass.prototype.initializer?
-      engineObj.klass.prototype.initializer config, @game.model()
+    console.log "Parsing", entities
 
-    if initializer?
-      initializer config, @game.model()
+    for entity in entities
+      @createEntity entity.name, entity.options
 
-    @engines.push new engineObj.klass this, config  
-
-  createEntity: (config, options = {}, index = 0) ->
-    # If a reference to a common entity exists, get config from there
-    if config.include?
-      config = @rootModel.config.entities[config.include]
-    if config.model?
-      # Else just one instance from the entity config
-      @addEntity new config.entity this, config.plugins, @loadModelFromConfig(config, options, index)
-    else
-      # If no model is passed in, instance the entity without a model
-      @addEntity new config.entity this, config.plugins
-
-  loadModelFromConfig: (config, options, index = 0) ->
-    model = {}
-
-    # Extend the initialized values onto the model
-    model = nv.extend model, config.model.options
-
-    # Extend the extra options onto the model
-    model = nv.extend model, options
-
-    # Load the initializers up in order and add their results
-    # as properties on the model
-    if config.model.initializers?
-      for key of config.model.initializers
-        initializer = config.model.initializers[key]
-        model[key] = nv.bind(model, initializer)(this, index) unless model[key] isnt undefined
-
-    # Load the model class if given
-    if config.model.klass?
-      model = new config.model.klass(model)
-    else
-      model = new nv.Model(model)
-
-    model
+  createEntity: (name, options = {}) ->
+    @addEntity new (@factory.getClass(name)) this, options
 
   addEntity: (entity) ->
     @entities.push entity

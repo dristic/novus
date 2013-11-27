@@ -11,25 +11,26 @@ breakout.config =
       backgrund: '#000'
       margin: '0 auto'
       display: 'block'
+    preload: [
+      'assets/logo.png',
+      'assets/tiles.png'
+    ]
+  gamepad:
+    keys:
+      left: nv.Key.A
+      right: nv.Key.D
+      activate: nv.Key.Spacebar
 
   preload: [
     'assets/logo.png',
     'assets/tiles.png'
   ]
 
-  engines: [ nv.RenderingEngine, nv.GamepadEngine, nv.PhysicsEngine, nv.TimingEngine, nv.DebugEngine, nv.SoundEngine, nv.ParticleEngine ]
-
 breakout.maps =
   main:
     layers: [{
       name: "UI",
       objects: [
-        {
-          type: "TiledBackground"
-          name: "Background"
-          x: 0
-          y: 0
-        },
         {
           type: "Title"
           name: "Title"

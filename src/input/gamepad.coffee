@@ -1,27 +1,13 @@
 class nv.GamepadEngine extends nv.Engine
-  initializer: (config, rootModel) ->
-    # We need access to the game width and height to calculate what the user clicks on
-    nv.extend config,
-      width: rootModel.canvas.width
-      height: rootModel.canvas.height
-
   constructor: (scene, config) ->
     super scene, config
 
     @gamepad = new nv.Gamepad()
-    @options = scene.options
-    @options.setMany config
+    @options = config
 
     # Grab values here to calculate the current ratio of the screen
     @originalWidth = config.width
     @originalHeight = config.height
-
-    scene.set 'gamepad', @gamepad
-
-    # Try to get a canvas object to set as the origin object
-    origin = scene.get 'origin'
-    if origin
-      @gamepad.setOrigin origin
 
     @gamepad.trackMouse() if @options.trackMouse?
     @gamepad.keyRepeatEvents = true if @options.keyRepeatEvents
