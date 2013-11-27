@@ -36,6 +36,9 @@ class nv.RenderingEngine extends nv.Engine
 
     @camera = nv.RenderingEngine.prototype.camera
 
+    @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
+    @scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
+
   "event(engine:rendering:create)": (drawable) ->
     @drawables.push drawable
 
@@ -44,10 +47,6 @@ class nv.RenderingEngine extends nv.Engine
 
   "event(engine:rendering:draw)": () ->
     @_render 0
-
-  prepare: () ->
-    @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
-    @scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
 
   update: (dt) ->
     for drawable in @drawables
