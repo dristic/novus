@@ -71,6 +71,10 @@ module.exports = (grunt) ->
         src: 'src/novus.coffee'
         output: 'dist/novus-<%= meta.version %>.js'
 
+    karma:
+      unit:
+        configFile: 'karma.conf.js'
+
     dox:
       glob_to_multiple:
         expand: true
@@ -85,6 +89,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-concat'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-dox'
+  grunt.loadNpmTasks 'grunt-karma'
 
   # Default task lints, tests, and builds everything.
   grunt.registerTask 'default', ['test']
