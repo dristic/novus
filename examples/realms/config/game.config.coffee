@@ -325,8 +325,9 @@ realms.gameConfig =
               rightImage: "/assets/miner-16.png"
               font: uiFont
               thumbColor: "#151515"
-              x: 150
-              y: 96
+              x: 75
+              y: -50
+              anchor: "bottomLeft"
               value: 50
               gap: 3
               height: 20
@@ -342,7 +343,7 @@ realms.gameConfig =
               text: '{{name}}'
               bind: entities.PlayerManager
               x: 135
-              y: 43
+              y: 38
         labels:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -355,7 +356,7 @@ realms.gameConfig =
               lineHeight: 20
               text: [ "Peasants", "Soldiers", "Food", "Gold" ]
               x: 115
-              y: -105
+              y: -120
               anchor: "bottomLeft"
         population:
           entity: nv.Entity
@@ -368,16 +369,16 @@ realms.gameConfig =
               textAlign: 'right'
               text: "{{peasants}}"
               bind: entities.PlayerManager
-              x: 190
-              y: 79
+              x: 195
+              y: 82
         popIcon:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
           model:
             options:
               src: "/assets/peasant-16.png"
-              x: 191
-              y: 61
+              x: 197
+              y: 64
               width: 12
               height: 16
         armyText:
@@ -391,16 +392,16 @@ realms.gameConfig =
               textAlign: 'right'
               text: '{{soldiers}}'
               bind: entities.PlayerManager
-              x: 250
-              y: 79
+              x: 270
+              y: 82
         armyIcon:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
           model:
             options:
               src: "/assets/soldier-16.png"
-              x: 251
-              y: 61
+              x: 272
+              y: 64
               width: 12
               height: 16
         foodText:
@@ -414,16 +415,16 @@ realms.gameConfig =
               textAlign: 'right'
               text: '{{food}}'
               bind: entities.PlayerManager
-              x: 95
-              y: 164
+              x: 195
+              y: 129
         foodIcon:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
           model:
             options:
               src: "/assets/corn.png"
-              x: 40
-              y: 145
+              x: 195
+              y: 110
               width: 18
               height: 18
         goldText:
@@ -437,16 +438,16 @@ realms.gameConfig =
               textAlign: 'right'
               text: '{{gold}}'
               bind: entities.PlayerManager
-              x: 95
-              y: 190
+              x: 272
+              y: 129
         goldIcon:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
           model:
             options:
               src: "/assets/gold.png"
-              x: 40
-              y: 171
+              x: 272
+              y: 110
               width: 18
               height: 18
         populationProjected:
@@ -462,7 +463,7 @@ realms.gameConfig =
               text: "{{p_peasants}}"
               bind: entities.PlayerManager
               x: 170
-              y: -105
+              y: -120
               anchor: "bottomLeft"
         populationArmy:
           entity: nv.Entity
@@ -477,7 +478,7 @@ realms.gameConfig =
               text: "{{p_soldiers}}"
               bind: entities.PlayerManager
               x: 170
-              y: -85
+              y: -100
               anchor: "bottomLeft"
         foodProjected:
           entity: nv.Entity
@@ -492,7 +493,7 @@ realms.gameConfig =
               text: '{{p_food}}'
               bind: entities.PlayerManager
               x: 170
-              y: -65
+              y: -80
               anchor: "bottomLeft"
         goldProjected:
           entity: nv.Entity
@@ -507,7 +508,7 @@ realms.gameConfig =
               text: '{{p_gold}}'
               bind: entities.PlayerManager
               x: 170
-              y: -45
+              y: -60
               anchor: "bottomLeft"
         attackText:
           entity: nv.Entity

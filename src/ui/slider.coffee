@@ -11,6 +11,9 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @height = entity.model.height ? 30
     @offset = 0
 
+    entity.model.x = @xFunc()
+    entity.model.y = @yFunc()
+
     if @entity.model.leftText
       @down = new nv.TextUIPlugin scene,
         model:
@@ -32,6 +35,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     return unless @down.width
 
     model = @entity.model
+
     x = @entity.model.x + @down.width + @gap
 
     if @down.onLoad?

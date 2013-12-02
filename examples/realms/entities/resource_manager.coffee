@@ -207,7 +207,7 @@ class entities.ResourceManager extends nv.Entity
     gold = 0
     laborRatio = @projections.get('ratio')
     unless @model.plotsEnabled
-      food = @model.get('peasants') * laborRatio * @goldYield
+      gold = @model.get('peasants') * laborRatio * @goldYield * .1
     else
       goldPlots = @owner.numberOfPlots('gold')
       if goldPlots > 0

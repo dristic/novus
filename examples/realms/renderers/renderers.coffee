@@ -94,8 +94,9 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 			indicator.hidden = true
 		@turns[turn - 1].hidden = false
 
-	"event(game:selected:country)": (id) ->
-		@selectedCountry = id
+	"event(game:selected:country)": (data) ->
+		@selectedCountry = data.id
+		@countryCount = @data.count
 
 	"event(game:country:updated)": () ->
 		@loadFlags()
@@ -109,13 +110,13 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 			scaledX = flag.x * @scale
 			scaledY = flag.y * @scale
 
-			if flag.countryId is @selectedCountry
+			if flag.countryId is @selectedCountry and @countryCount > 1
 				context.save();
 				context.source.scale(1, 0.5);
 				context.setStrokeStyle "yellow"
-				context.setStrokeWidth 4
+				context.setStrokeWidth 3
 				context.source.beginPath();
-				context.source.arc(scaledX + (flag.width/2) - 2.5, 2*(scaledY + flag.height) - 10, 20, 0, Math.PI*2, false);
+				context.source.arc(scaledX + (flag.width/2) - 1, 2*(scaledY + flag.height) - 10, 20, 0, Math.PI*2, false);
 				context.stroke();
 				context.closePath();
 				context.restore();
