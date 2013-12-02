@@ -89,6 +89,7 @@ class entities.PlayerManager extends nv.Entity
             resources: scenario.resources
             ratio: 0.5
             flag: flag
+            bounds: new nv.Rect(flag.x, flag.y, flag.x + flag.width, flag.y + flag.height).outset(32,32)
 
           player.createCountry data
 

@@ -20,14 +20,12 @@ realms.scenarios =
         Darkland:
           id: 1026
           owner: 1
-          # plots: [new nv.Point(544,320), new nv.Point(576,320), new nv.Point(544,352), new nv.Point(352,416), new nv.Point(352,448)]
           flag:
             x: 620
             y: 435
         Danville:
           id: 1027
           owner: 2
-          # plots: [new nv.Point(576,480), new nv.Point(608,480), new nv.Point(608,512), new nv.Point(480,576), new nv.Point(512,576)]
           flag:
             x: 510
             y: 810

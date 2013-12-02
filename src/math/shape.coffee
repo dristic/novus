@@ -57,3 +57,21 @@ class nv.Rect
   translate: (dx,dy) ->
     @x += dx
     @y += dy
+    this
+
+  width: () ->
+    @x2 - @x
+
+  height: () ->
+    @y2 - @y
+
+  outset: (dx, dy) ->
+    @x -= dx
+    @x2 += dx
+    @y -= dy
+    @y2 += dy
+    this
+
+  inset: (dx, dy) ->
+    @outset -dx, -dy
+    this

@@ -71,7 +71,6 @@ class entities.MapBase extends nv.Entity
     clearTimeout @timeout
 
 
-
 class entities.TileMap extends entities.MapBase
   constructor: (scene, plugins, model) ->
     # load map from player chosen game scenario
