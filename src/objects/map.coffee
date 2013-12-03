@@ -10,8 +10,9 @@ class nv.Map
       for object in layer.objects
         objects.push
           name: object.type
-          x: object.x
-          y: object.y
+          options:
+            x: object.x
+            y: object.y
 
     objects
 

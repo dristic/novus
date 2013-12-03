@@ -10,6 +10,7 @@ class nv.Entity extends nv.SceneDispatcher
 
     @scene.fire "entity:create:#{@constructor.name}"
 
+  # Creates a new component, adds it to this entity, and tells the scene
   addComponent: (klass, options = {}) ->
     if @getComponentByType(klass)?
       nv.log "nv.Entity.addComponent", "Cannot add two components of the same type: ", klass
@@ -19,6 +20,7 @@ class nv.Entity extends nv.SceneDispatcher
       @scene.fire "entity:component:new", component
       component
 
+  # Destroys a component, removes it from this entity, and tells the scene
   removeComponent: (klass) ->
     for component in @components
       if component instanceof klass
@@ -26,14 +28,17 @@ class nv.Entity extends nv.SceneDispatcher
         @scene.fire "entity:component:destroy", component
         components.splice components.indexOf(component), 1
 
+  # Gets a reference to a component by type
   getComponentByType: (klass) ->
     for component in @components
       if component instanceof klass
         return component
     null
 
+  # Placeholder for scene to call
   update: (dt) ->
 
+  # Removes all components and events from this entity
   destroy: () ->
     unless @destroyed
       @destroyed = true
@@ -44,3 +49,4 @@ class nv.Entity extends nv.SceneDispatcher
       delete @model
       delete @components
       delete @scene
+

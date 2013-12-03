@@ -30,14 +30,15 @@ breakout.maps =
   main:
     layers: [{
       name: "UI",
-      objects: [
-        {
+      objects: [{
+          type: "Background",
+          x: 0
+          y: 0
+        }, {
           type: "Title"
-          name: "Title"
-          x: 94.5
-          y: 50
-        }
-      ]
+          x: 85
+          y: 350
+        }]
     }]
 
 breakout.gameConfig =
@@ -62,16 +63,6 @@ breakout.gameConfig =
               height: 200
               x: 94.5
               y: 50
-        title:
-          entity: nv.Entity
-          plugins: [ nv.TextRenderingPlugin ]
-          model:
-            options:
-              color: "#000"
-              x: 85
-              y: 350
-              font: "bold 25px sans-serif"
-              text: "Click to Start"
         start_button:
           entity: nv.Entity
           plugins: [ nv.TouchTargetPlugin ]

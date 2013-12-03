@@ -3,12 +3,13 @@ class entities.Title extends nv.Entity
     super scene, options
 
     @addComponent nv.TextRenderingComponent,
-      color: "#FFF"
+      color: "#000"
       font: "bold 25px sans-serif"
       text: "Click to Start"
 
 nv.factory.register 'Title', (scene, options = {}) ->
-  new entities.Title scene,
-    x: options.x ? 85
-    y: options.y ? 350
+  options.x = options.x ? 85
+  options.y = options.y ? 350
+
+  new entities.Title scene, options
 

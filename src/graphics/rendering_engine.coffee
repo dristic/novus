@@ -48,16 +48,16 @@ class nv.RenderingEngine extends nv.Engine
       @drawables.splice @drawables.indexOf(component), 1
 
   "event(engine:rendering:draw)": () ->
-    @_render 0
+    @render 0
 
   update: (dt) ->
     for drawable in @drawables
       drawable.update dt unless not drawable.update
     
   draw: (dt) ->
-    @_render dt
+    @render dt
 
-  _render: (dt) ->
+  render: (dt) ->
     @context.save()
     @context.clearRect()
 
@@ -90,6 +90,9 @@ class nv.RenderingComponent extends nv.Component
   constructor: (scene, model, options) ->
     super scene, model, options
 
+# ##############
+# DEPRECATED
+# ###############
 class nv.RenderingPlugin extends nv.Plugin
   constructor: (scene, entity) ->
     super scene, entity
