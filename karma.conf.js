@@ -15,7 +15,6 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'dist/*.js',
-      'test/*.js',
       'test/dist/**/*.js'
     ],
 
@@ -65,6 +64,6 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false
+    singleRun: true
   });
 };
