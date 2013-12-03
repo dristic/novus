@@ -343,7 +343,7 @@ realms.gameConfig =
               text: '{{name}}'
               bind: entities.PlayerManager
               x: 135
-              y: 38
+              y: 42
         labels:
           entity: nv.Entity
           plugins: [ nv.TextUIPlugin ]
@@ -370,7 +370,7 @@ realms.gameConfig =
               text: "{{peasants}}"
               bind: entities.PlayerManager
               x: 195
-              y: 82
+              y: 83
         popIcon:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
@@ -378,7 +378,7 @@ realms.gameConfig =
             options:
               src: "/assets/peasant-16.png"
               x: 197
-              y: 64
+              y: 65
               width: 12
               height: 16
         armyText:
@@ -393,7 +393,7 @@ realms.gameConfig =
               text: '{{soldiers}}'
               bind: entities.PlayerManager
               x: 270
-              y: 82
+              y: 83
         armyIcon:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
@@ -401,7 +401,7 @@ realms.gameConfig =
             options:
               src: "/assets/soldier-16.png"
               x: 272
-              y: 64
+              y: 65
               width: 12
               height: 16
         foodText:
@@ -416,7 +416,7 @@ realms.gameConfig =
               text: '{{food}}'
               bind: entities.PlayerManager
               x: 195
-              y: 129
+              y: 125
         foodIcon:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
@@ -424,7 +424,7 @@ realms.gameConfig =
             options:
               src: "/assets/corn.png"
               x: 195
-              y: 110
+              y: 106
               width: 18
               height: 18
         goldText:
@@ -439,7 +439,7 @@ realms.gameConfig =
               text: '{{gold}}'
               bind: entities.PlayerManager
               x: 272
-              y: 129
+              y: 125
         goldIcon:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
@@ -447,7 +447,7 @@ realms.gameConfig =
             options:
               src: "/assets/gold.png"
               x: 272
-              y: 110
+              y: 106
               width: 18
               height: 18
         populationProjected:

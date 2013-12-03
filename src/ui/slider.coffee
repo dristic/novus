@@ -11,8 +11,8 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     @height = entity.model.height ? 30
     @offset = 0
 
-    entity.model.x = @xFunc()
-    entity.model.y = @yFunc()
+    modelX = @xFunc()
+    modelY = @yFunc()
 
     if @entity.model.leftText
       @down = new nv.TextUIPlugin scene,
@@ -20,23 +20,27 @@ class nv.SliderUIPlugin extends nv.UIPlugin
           text: entity.model.leftText
           font: entity.model.font
           textBaseline: 'bottom'
-          x: entity.model.x
-          y: entity.model.y + @entity.model.lineHeight + (@height - entity.model.lineHeight)/2
+          x: modelX
+          y: modelY + @entity.model.lineHeight + (@height - entity.model.lineHeight)/2
     else
       @down = new gleam.Sprite
         src: entity.model.leftImage
-        x: entity.model.x
-        y: entity.model.y
+        x: modelX
+        y: modelY
 
     @entity.model.on 'change:value', nv.bind this, @onValueChange
     @onValueChange(@value)
+
+    window.addEventListener 'resize', () => @moveControls()
 
   createControls: () ->
     return unless @down.width
 
     model = @entity.model
+    modelX = @xFunc()
+    modelY = @yFunc()
 
-    x = @entity.model.x + @down.width + @gap
+    x = modelX + @down.width + @gap
 
     if @down.onLoad?
       @down.y += (@height - @down.height)/2
@@ -46,15 +50,15 @@ class nv.SliderUIPlugin extends nv.UIPlugin
       width: 1
       height: @height
       x: x
-      y: @entity.model.y
+      y: modelY
 
-    @boxLeftX = x + 1
+    boxLeftX = x + 1
     @box = new gleam.Square
-      color: @entity.model.thumbColor || "#FFF"
+      color: model.thumbColor || "#FFF"
       width: 10
       height: @height
-      x: @boxLeftX
-      y: @entity.model.y
+      x: boxLeftX
+      y: modelY
 
     lineWidth = @max + @box.width
     @line = new gleam.Square
@@ -62,29 +66,53 @@ class nv.SliderUIPlugin extends nv.UIPlugin
       width: lineWidth
       height: 1
       x: x
-      y: @entity.model.y + @height/2
+      y: modelY + @height/2
 
     @maxBox = new gleam.Square
       color: "#555"
       width: 1
       height: @height
       x: x + lineWidth
-      y: @entity.model.y
+      y: modelY
 
-    if @entity.model.rightText
+    if model.rightText
       @up = new nv.TextUIPlugin @scene,
         model:
-          text: @entity.model.rightText
-          font: @entity.model.font
+          text: model.rightText
+          font: model.font
           textBaseline: 'bottom'
           x: x + lineWidth + @gap
-          y: @entity.model.y + @entity.model.lineHeight + (@height - @entity.model.lineHeight)/2
+          y: modelY + model.lineHeight + (@height - model.lineHeight)/2
     else
       @up = new gleam.Sprite
-        src: @entity.model.rightImage
+        src: model.rightImage
         x: x + lineWidth + @gap
         y: -100 #@entity.model.y + (@height - @down.height)/2
 
+  moveControls: () ->
+    modelX = @xFunc()
+    modelY = @yFunc()
+
+    @down.x = modelX
+    @down.y = modelY
+
+    x = modelX + @down.width + @gap
+
+    @minBox.x = x
+    @minBox.y = modelY
+
+    @box.x = x + 1
+    @box.y = modelY
+
+    lineWidth = @max + @box.width
+    @line.x = x
+    @line.y = modelY + @height/2
+
+    @maxBox.x = x + lineWidth
+    @maxBox.y = modelY
+
+    @up.x = x + lineWidth + @gap
+    @up.y = modelY + (@height - @up.height)/2
 
   onValueChange: (value) ->
     @scene.fire "engine:ui:slider:change", this.entity
@@ -124,7 +152,7 @@ class nv.SliderUIPlugin extends nv.UIPlugin
     return unless not @hidden
 
     if @up.y < 0 and @up.loaded
-      @up.y = @entity.model.y + (@height - @up.height)/2
+      @up.y = @yFunc() + (@height - @up.height)/2
 
     if @dragging is true
       mouseX = @gamepad.getState().mouse.x
