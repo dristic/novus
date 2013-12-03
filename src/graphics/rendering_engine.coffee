@@ -39,11 +39,13 @@ class nv.RenderingEngine extends nv.Engine
     @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
     @scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
 
-  "event(engine:rendering:create)": (drawable) ->
-    @drawables.push drawable
+  "event(entity:component:new)": (component) ->
+    if component instanceof nv.RenderingComponent
+      @drawables.push component
 
-  "event(engine:rendering:destroy)": (drawable) ->
-    @drawables.splice @drawables.indexOf(drawable), 1
+  "event(entity:component:destroy)": (component) ->
+    if component instanceof nv.RenderingComponent
+      @drawables.splice @drawables.indexOf(component), 1
 
   "event(engine:rendering:draw)": () ->
     @_render 0
@@ -82,6 +84,11 @@ class nv.RenderingEngine extends nv.Engine
     delete @drawables
 
     super
+
+# Class to determine if a component is renderable
+class nv.RenderingComponent extends nv.Component
+  constructor: (scene, model, options) ->
+    super scene, model, options
 
 class nv.RenderingPlugin extends nv.Plugin
   constructor: (scene, entity) ->

@@ -1,15 +1,14 @@
 class entities.Title extends nv.Entity
-  constructor: (scene, plugins, model) ->
-    model = new nv.Model
+  constructor: (scene, options = {}) ->
+    super scene, options
+
+    @addComponent nv.TextRenderingComponent,
       color: "#FFF"
-      x: 85
-      y: 350
       font: "bold 25px sans-serif"
       text: "Click to Start"
 
-    plugins = [ nv.TextRenderingPlugin ]
-
-    super scene, plugins, model
-
-nv.factory.class 'Title', entities.Title
+nv.factory.register 'Title', (scene, options = {}) ->
+  new entities.Title scene,
+    x: options.x ? 85
+    y: options.y ? 350
 

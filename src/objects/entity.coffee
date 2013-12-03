@@ -1,38 +1,35 @@
-class nv.Entity
-  constructor: (@scene, pluginClasses, @model) ->
-    @plugins = []
-    @listeners = []
-    @destroyed = false
-    @model = @model ? new nv.Model
+# The base class for all Game Objects
+# This holds a set of components and state about the entity in the form of a model
+class nv.Entity extends nv.SceneDispatcher
+  constructor: (scene, options = {}) ->
+    super scene
 
-    @plugins.push new klass(@scene, this) for klass in pluginClasses
+    @components = []
+    @destroyed = false
+    @model = new nv.Model options
 
     @scene.fire "entity:create:#{@constructor.name}"
 
-    # If any functions are defined using the prefix "on:"
-    # then we auto add it as an event listener
-    for key of this
-      if /event\(.*\)/.test(key)
-        @on key[6..-2], nv.bind(this, this[key])
+  addComponent: (klass, options = {}) ->
+    if @getComponentByType(klass)?
+      nv.log "nv.Entity.addComponent", "Cannot add two components of the same type: ", klass
+    else
+      component = new klass @scene, @model, options
+      @components.push component
+      @scene.fire "entity:component:new", component
+      component
 
-  on: (name, callback) ->
-    @scene.on name, callback
-    @listeners.push {
-      name: name
-      callback: callback
-    }
+  removeComponent: (klass) ->
+    for component in @components
+      if component instanceof klass
+        component.destroy()
+        @scene.fire "entity:component:destroy", component
+        components.splice components.indexOf(component), 1
 
-  off: (name, callback) ->
-    @scene.off name, callback
-    for listener, i in @listeners
-      if listener.name is name and listener.callback is callback
-        @listeners.splice i, 1
-        break
-
-  getPlugin: (type) ->
-    for plugin in @plugins
-      if plugin instanceof type
-        return plugin
+  getComponentByType: (klass) ->
+    for component in @components
+      if component instanceof klass
+        return component
     null
 
   update: (dt) ->
@@ -40,11 +37,10 @@ class nv.Entity
   destroy: () ->
     unless @destroyed
       @destroyed = true
-      plugin.destroy() for plugin in @plugins
-      i = @listeners.length
-      while i--
-        listener = @listeners[i]
-        @off listener.name, listener.callback
+      super
+
+      @removeComponent component.constructor for component in @components
+
       delete @model
-      delete @plugins
+      delete @components
       delete @scene
