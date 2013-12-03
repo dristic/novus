@@ -11,5 +11,5 @@ class entities.Title extends nv.Entity
 
     super scene, plugins, model
 
-nv.factory.registerClass 'Title', entities.Title
+nv.factory.class 'Title', entities.Title
 

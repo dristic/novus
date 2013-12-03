@@ -1,5 +1,4 @@
 (function() {
-
   describe("gleam.base", function() {
     it("should create the main object with request frame functions", function() {
       expect(gleam).toBeDefined();

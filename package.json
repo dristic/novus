@@ -33,6 +33,7 @@
     "grunt-contrib-coffee": "*",
     "grunt-contrib-concat": "~0.1.1",
     "grunt-contrib-uglify": "*",
-    "grunt-dox": "*"
+    "grunt-dox": "*",
+    "grunt-concurrent": "~0.4.2"
   }
 }

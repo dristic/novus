@@ -1585,28 +1585,38 @@
   nv.Factory = (function() {
     function Factory() {
       this.objects = {};
+      this.classes = {};
     }
 
-    Factory.prototype.registerClass = function(name, klass) {
-      return this.objects[name] = klass;
+    Factory.prototype["class"] = function(name, klass) {
+      this.register(name, function() {
+        var args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        return (function(func, args, ctor) {
+          ctor.prototype = func.prototype;
+          var child = new ctor, result = func.apply(child, args);
+          return Object(result) === result ? result : child;
+        })(klass, args, function(){});
+      });
+      return this.classes[name] = klass;
     };
 
-    Factory.prototype.deregisterClass = function(name) {
+    Factory.prototype.register = function(name, factory) {
+      return this.objects[name] = factory;
+    };
+
+    Factory.prototype.deregister = function(name) {
       return delete this.objects[name];
     };
 
-    Factory.prototype.getClass = function(name) {
+    Factory.prototype.getFactory = function(name) {
       return this.objects[name];
     };
 
     Factory.prototype.create = function() {
-      var args, name;
+      var args, name, _ref;
       name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      return (function(func, args, ctor) {
-        ctor.prototype = func.prototype;
-        var child = new ctor, result = func.apply(child, args);
-        return Object(result) === result ? result : child;
-      })(this.objects[name], args, function(){});
+      return (_ref = this.objects)[name].apply(_ref, args);
     };
 
     Factory.prototype.destroy = function() {
@@ -1634,20 +1644,16 @@
         _ref = this.config.scenes;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           scene = _ref[_i];
-          this.factory.registerClass(scene.name, scene);
+          this.factory["class"](scene.name, scene);
         }
       }
     }
 
     Game.prototype.openScene = function() {
-      var args, name,
+      var args, name, _ref,
         _this = this;
       name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      this.scenes.push((function(func, args, ctor) {
-        ctor.prototype = func.prototype;
-        var child = new ctor, result = func.apply(child, args);
-        return Object(result) === result ? result : child;
-      })(this.factory.getClass(name), [name, this].concat(__slice.call(args)), function(){}));
+      this.scenes.push((_ref = this.factory).create.apply(_ref, [name, this].concat(__slice.call(args))));
       return this.scenes[this.scenes.length - 1].on("scene:close", function() {
         return _this.closeScene(name);
       });
@@ -1848,7 +1854,6 @@
       var entities, entity, map, _i, _len, _results;
       map = new nv.Map(mapData);
       entities = map.parse();
-      console.log("Parsing", entities);
       _results = [];
       for (_i = 0, _len = entities.length; _i < _len; _i++) {
         entity = entities[_i];
@@ -1861,7 +1866,7 @@
       if (options == null) {
         options = {};
       }
-      return this.addEntity(new (this.factory.getClass(name))(this, options));
+      return this.addEntity(this.factory.create(name, this, options));
     };
 
     Scene.prototype.addEntity = function(entity) {

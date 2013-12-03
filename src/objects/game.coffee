@@ -5,10 +5,10 @@ class nv.Game
 
     if @config.scenes?
       for scene in @config.scenes
-        @factory.registerClass scene.name, scene
+        @factory.class scene.name, scene
 
   openScene: (name, args...) ->
-    @scenes.push new (@factory.getClass(name)) name, this, args...
+    @scenes.push @factory.create name, this, args...
     @scenes[@scenes.length - 1].on "scene:close", () =>
       @closeScene name
 

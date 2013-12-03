@@ -1,5 +1,4 @@
 (function() {
-
   describe("gleam.Square", function() {
     var canvas, square;
     square = null;

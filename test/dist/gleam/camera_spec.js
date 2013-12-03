@@ -1,5 +1,4 @@
 (function() {
-
   describe("gleam.Camera", function() {
     var camera, canvas;
     camera = null;

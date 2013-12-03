@@ -83,7 +83,14 @@ module.exports = (grunt) ->
         dest: 'docs'
         ext: '.js'
 
+    concurrent:
+      test:
+        tasks: [ 'coffee', 'karma' ]
+        options:
+          logConcurrentOutput: true
+
   # Load up grunt libraries
+  grunt.loadNpmTasks 'grunt-concurrent'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-jasmine'
   grunt.loadNpmTasks 'grunt-contrib-concat'
@@ -98,7 +105,7 @@ module.exports = (grunt) ->
   grunt.registerTask 'build', ['generate', 'concat', 'uglify']
 
   # Builds and tests the engine.
-  grunt.registerTask 'test', ['build', 'coffee', 'jasmine']
+  grunt.registerTask 'test', ['build', 'concurrent:test']
 
   # Coffee task builds the main novus engine and game.
   grunt.registerTask 'generate', 'Compiles coffeescript into js files', () ->

@@ -1,5 +1,4 @@
 (function() {
-
   describe("gleam.Canvas", function() {
     describe("without a canvas", function() {
       var canvas;

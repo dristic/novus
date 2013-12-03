@@ -1,5 +1,4 @@
 (function() {
-
   describe("nv.Common", function() {
     return it("should be able to bind functions", function() {
       var changeFoo, object;

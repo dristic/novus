@@ -1,5 +1,4 @@
 (function() {
-
   describe("gleam.Context", function() {
     var canvas, context;
     canvas = null;

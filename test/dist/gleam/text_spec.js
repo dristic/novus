@@ -1,5 +1,4 @@
 (function() {
-
   describe("gleam.Text", function() {
     var canvas, text;
     text = null;

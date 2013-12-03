@@ -40,13 +40,11 @@ class nv.Scene extends nv.EventDispatcher
     map = new nv.Map mapData
     entities = map.parse()
 
-    console.log "Parsing", entities
-
     for entity in entities
       @createEntity entity.name, entity.options
 
   createEntity: (name, options = {}) ->
-    @addEntity new (@factory.getClass(name)) this, options
+    @addEntity @factory.create name, this, options
 
   addEntity: (entity) ->
     @entities.push entity
