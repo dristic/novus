@@ -30,14 +30,14 @@ nv.implement
         object[key] = other[key]
     object
 
-  keydown: (callback) ->
-    document.addEventListener 'keydown', callback, false
+  keydown: (origin, callback) ->
+    origin.addEventListener 'keydown', callback, false
 
-  keypress: (callback) ->
-    document.addEventListener 'keypress', callback, false
+  keypress: (origin, callback) ->
+    origin.addEventListener 'keypress', callback, false
 
-  keyup: (callback) ->
-    document.addEventListener 'keyup', callback, false
+  keyup: (origin, callback) ->
+    origin.addEventListener 'keyup', callback, false
 
   mousedown: (origin, callback) ->
     if typeof origin is "function"

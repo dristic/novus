@@ -40,14 +40,18 @@ class nv.RenderingEngine extends nv.Engine
     @gamepadEngine = scene.getEngineByType nv.GamepadEngine
 
     # Calculate screen ratio for mouse coordinates
-    @calculateScreenRatio()
+    @calculateScreenDimensions()
+    window.addEventListener 'resize', nv.bind(this, @calculateScreenDimensions)
 
     # Add event listeners for mouse and keyboard events
     nv.mousedown document, nv.bind(this, @onMouseDown)
     nv.mouseup document, nv.bind(this, @onMouseUp)
-    nv.mousemove document, nv.bind(this, @onMouseMove)
     nv.keydown document, nv.bind(this, @onKeyDown)
     nv.keyup document, nv.bind(this, @onKeyUp)
+
+    # This is expensive so only turn on if needed
+    if config.mouseMove is true
+      nv.mousemove document, nv.bind(this, @onMouseMove)
 
     @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
 
@@ -70,22 +74,28 @@ class nv.RenderingEngine extends nv.Engine
     @gamepadEngine.onKeyUp event.keyCode, event
 
   onMouseDown: (event) ->
+    coords = @toGameCoords event.pageX, event.pageY
+    console.log event
+    @gamepadEngine.onMouseDown event.button, coords.x, coords.y, event
 
   onMouseUp: (event) ->
+    coords = @toGameCoords event.pageX, event.pageY
+    @gamepadEngine.onMouseUp event.button, coords.x, coords.y, event
 
   onMouseMove: (event) ->
+    coords = @toGameCoords event.pageX, event.pageY
+    @gamepadEngine.onMouseMove coords.x, coords.y, event
 
-  calculateScreenRatio: () ->
+  calculateScreenDimensions: () ->
     width = document.body.clientWidth
     height = document.body.clientHeight
     ratio = Math.min(width / @canvas.width, height / @canvas.height)
     @ratio = ratio
+    @bounds = @canvas.source.getBoundingClientRect()
 
   toGameCoords: (x, y) ->
-    if @canvas.getBoundingClientRect
-      rect = @canvas.getBoundingClientRect()
-      x -= rect.left
-      y -= rect.top
+    x -= @bounds.left
+    y -= @bounds.top
 
     x /= @ratio
     y /= @ratio
@@ -115,7 +125,7 @@ class nv.RenderingEngine extends nv.Engine
 
     @context.restore()
 
-  onMouseDown: (data) ->
+  onMouseDown_old: (data) ->
     # Use the camera to convert to "in-game" coordinates
     coords = nv.clone data
     coords.x -= @camera.x

@@ -19,7 +19,7 @@ breakout.config =
     keys:
       left: nv.Key.A
       right: nv.Key.D
-      activate: nv.Key.Spacebar
+      activate: [nv.Key.Spacebar, nv.Key.Mouse1]
 
   preload: [
     'assets/logo.png',

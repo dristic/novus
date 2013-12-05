@@ -9,9 +9,11 @@ class nv.GamepadEngine extends nv.Engine
     @buttons = {}
 
     for key of @config.keys
-      @setButton key, @config.keys[key]
-
-    @setButton "omg", nv.Key.Space
+      if nv.isArray @config.keys[key]
+        for button in @config.keys[key]
+          @setButton key, button
+      else
+        @setButton key, @config.keys[key]
 
   onMouseDown: (button, x, y, event) ->
     @state.mouse.x = x
@@ -44,12 +46,14 @@ class nv.GamepadEngine extends nv.Engine
     if buttons?
       for button in buttons
         @state[button] = true
+        @scene.fire "engine:gamepad:down:#{button}"
 
   onKeyUp: (key, event) ->
-    buttons = buttons[key]
+    buttons = @buttons[key]
     if buttons?
       for button in buttons
         @state[button] = false
+        @scene.fire "engine:gamepad:up:#{button}"
 
   setButton: (button, key) ->
     @buttons[key] = [] unless @buttons[key]
