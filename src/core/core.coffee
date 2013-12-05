@@ -30,44 +30,35 @@ nv.implement
         object[key] = other[key]
     object
 
-  keydown: (key, callback) ->
-    func = (event) ->
-      if event.keyCode is key then callback()
-    document.addEventListener 'keydown', func
-    func
+  keydown: (callback) ->
+    document.addEventListener 'keydown', callback, false
 
-  keypress: (key, callback) ->
-    func = (event) ->
-      if event.keyCode is key then callback()
-    document.addEventListener 'keypress', func
-    func
+  keypress: (callback) ->
+    document.addEventListener 'keypress', callback, false
 
-  keyup: (key, callback) ->
-    func = (event) ->
-      if event.keyCode is key then callback()
-    document.addEventListener 'keyup', func
-    func
+  keyup: (callback) ->
+    document.addEventListener 'keyup', callback, false
 
   mousedown: (origin, callback) ->
     if typeof origin is "function"
       callback = origin
       origin = document
     origin.addEventListener 'mousedown', callback
-    origin.addEventListener 'touchstart', callback
+    # origin.addEventListener 'touchstart', callback
 
   mouseup: (origin, callback) ->
     if typeof origin is "function"
       callback = origin
       origin = document
     origin.addEventListener 'mouseup', callback
-    origin.addEventListener 'touchend', callback
+    # origin.addEventListener 'touchend', callback
 
   mousemove: (origin, callback) ->
     if typeof origin is "function"
       callback = origin
       origin = document
     origin.addEventListener 'mousemove', callback
-    origin.addEventListener 'touchmove', callback
+    # origin.addEventListener 'touchmove', callback
 
   isMobile: () ->
     agent = navigator.userAgent.toLowerCase()

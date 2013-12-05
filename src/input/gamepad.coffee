@@ -2,73 +2,74 @@ class nv.GamepadEngine extends nv.Engine
   constructor: (scene, config) ->
     super scene, config
 
-    @gamepad = new nv.Gamepad()
-    @options = config
+    @state =
+      mouse:
+        x: -1
+        y: -1
+    @buttons = {}
 
-    # Grab values here to calculate the current ratio of the screen
-    @originalWidth = config.width
-    @originalHeight = config.height
+    for key of @config.keys
+      @setButton key, @config.keys[key]
 
-    @gamepad.trackMouse() if @options.trackMouse?
-    @gamepad.keyRepeatEvents = true if @options.keyRepeatEvents
+    @setButton "omg", nv.Key.Space
 
-    for key of @options.keys
-      @gamepad.aliasKey key, @options.keys[key]
+  onMouseDown: (button, x, y, event) ->
+    @state.mouse.x = x
+    @state.mouse.y = y
 
-    for key of @config.controller
-      @gamepad.aliasGamepadButton key, @config.controller[key]
+    if button is 0
+      button = nv.Key.Mouse1
+    else
+      button = nv.Key.Mouse2
 
-    @buttonPressFunction = nv.bind(this, @onButtonPress)
-    @buttonReleaseFunction = nv.bind(this, @onButtonRelease)
-    @buttonRepeatFunction = nv.bind(this, @onButtonRepeat)
-    @mouseDownFunction = nv.bind(this, @onMouseDown)
-    @mouseUpFunction = nv.bind(this, @onMouseUp)
+    @onKeyDown(button, event)
 
-    @gamepad.on "press", @buttonPressFunction
-    @gamepad.on "release", @buttonReleaseFunction
-    @gamepad.on "repeat", @buttonRepeatFunction
-    @gamepad.on "gamepad:connected", () =>
-      @scene.fire "engine:gamepad:controller:connected"
-    @gamepad.on "mousedown", @mouseDownFunction
-    @gamepad.on "mouseup", @mouseUpFunction
+  onMouseUp: (button, x, y, event) ->
+    @state.mouse.x = x
+    @state.mouse.y = y
 
-  onButtonPress: (button) ->
-    @scene.fire "engine:gamepad:press:#{button}"
+    if button is 0
+      button = nv.Key.Mouse1
+    else
+      button = nv.Key.Mouse2
 
-  onButtonRelease: (button) ->
-    @scene.fire "engine:gamepad:release:#{button}"
+    @onKeyUp(button, event)
 
-  onButtonRepeat: (button) ->
-    @scene.fire "engine:gamepad:repeat:#{button}"
+  onMouseMove: (x, y, event) ->
+    @state.mouse.x = x
+    @state.mouse.y = y
 
-  onMouseDown: (data) ->
-    @scene.fire "engine:gamepad:mouse:down", data unless not @config.trackMouse
+  onKeyDown: (key, event) ->
+    buttons = @buttons[key]
+    if buttons?
+      for button in buttons
+        @state[button] = true
 
-  onMouseUp: (data) ->
-    @scene.fire "engine:gamepad:mouse:up", data unless not @config.trackMouse
+  onKeyUp: (key, event) ->
+    buttons = buttons[key]
+    if buttons?
+      for button in buttons
+        @state[button] = false
+
+  setButton: (button, key) ->
+    @buttons[key] = [] unless @buttons[key]
+    @buttons[key].push button
+
+  unsetButton: (button, key) ->
+    if @buttons[key]?
+      @buttons[key].splice @buttons[key].indexOf(button), 1
+
+  getState: () ->
+    @state
 
   update: (dt) ->
-    # Calculate the current ratio of the screen
-    width = document.body.clientWidth
-    height = document.body.clientHeight
-    ratio = Math.min(width / @originalWidth, height / @originalHeight)
-    @gamepad.setRatio ratio
-
-    @gamepad.update dt
+    # Do nothing
 
   destroy: () ->
-    @gamepad.off "press", @buttonPressFunction
-    @gamepad.off "release", @buttonReleaseFunction
-    @gamepad.off "repeat", @buttonRepeatFunction
-    @gamepad.off "mousedown", @mouseDownFunction
-    @gamepad.off "mouseup", @mouseUpFunction
-    delete @buttonPressFunction
-    delete @buttonReleaseFunction
-    delete @buttonRepeatFunction
-    delete @gamepad
-    delete @config
-
     super
+
+    delete @state
+    delete @buttons
 
 class nv.TouchTargetPlugin extends nv.Plugin
   constructor: (scene, entity) ->

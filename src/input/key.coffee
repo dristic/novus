@@ -19,6 +19,11 @@ window.nv.Controller =
   RightStick: 11
 
 window.nv.Key =
+  Mouse1:      0,
+  Mouse2:      1,
+  MWheelUp:    2,
+  MWheelDown:  3,
+
   Backspace:   8,
   Tab:         9,
   Enter:      13,

@@ -73,12 +73,11 @@ class nv.Scene extends nv.EventDispatcher
   onRemoveEntity: (entity) ->
     @deletedEntities.push entity
 
-  getEnginesByType: (type) ->
-    engines = []
+  getEngineByType: (type) ->
     for engine in @engines
       if engine instanceof type
-        engines.push engine
-    engines
+        return engine
+    null
 
   fire: (event, data) ->
     super event, data

@@ -36,8 +36,20 @@ class nv.RenderingEngine extends nv.Engine
 
     @camera = nv.RenderingEngine.prototype.camera
 
+    # Get reference to the gamepad engine for eventing
+    @gamepadEngine = scene.getEngineByType nv.GamepadEngine
+
+    # Calculate screen ratio for mouse coordinates
+    @calculateScreenRatio()
+
+    # Add event listeners for mouse and keyboard events
+    nv.mousedown document, nv.bind(this, @onMouseDown)
+    nv.mouseup document, nv.bind(this, @onMouseUp)
+    nv.mousemove document, nv.bind(this, @onMouseMove)
+    nv.keydown document, nv.bind(this, @onKeyDown)
+    nv.keyup document, nv.bind(this, @onKeyUp)
+
     @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
-    @scene.on "engine:gamepad:mouse:down", nv.bind(this, @onMouseDown)
 
   "event(entity:component:new)": (component) ->
     if component instanceof nv.RenderingComponent
@@ -46,6 +58,42 @@ class nv.RenderingEngine extends nv.Engine
   "event(entity:component:destroy)": (component) ->
     if component instanceof nv.RenderingComponent
       @drawables.splice @drawables.indexOf(component), 1
+
+  onKeyDown: (event) ->
+    if event.target.type is 'text'
+      return
+    @gamepadEngine.onKeyDown event.keyCode, event
+
+  onKeyUp: (event) ->
+    if event.target.type is 'text'
+      return
+    @gamepadEngine.onKeyUp event.keyCode, event
+
+  onMouseDown: (event) ->
+
+  onMouseUp: (event) ->
+
+  onMouseMove: (event) ->
+
+  calculateScreenRatio: () ->
+    width = document.body.clientWidth
+    height = document.body.clientHeight
+    ratio = Math.min(width / @canvas.width, height / @canvas.height)
+    @ratio = ratio
+
+  toGameCoords: (x, y) ->
+    if @canvas.getBoundingClientRect
+      rect = @canvas.getBoundingClientRect()
+      x -= rect.left
+      y -= rect.top
+
+    x /= @ratio
+    y /= @ratio
+
+    {
+      x: x
+      y: y
+    }
 
   "event(engine:rendering:draw)": () ->
     @render 0

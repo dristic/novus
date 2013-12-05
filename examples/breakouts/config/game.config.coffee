@@ -38,6 +38,10 @@ breakout.maps =
           type: "Title"
           x: 85
           y: 350
+        }, {
+          type: "Logo"
+          x: 94.5
+          y: 50
         }]
     }]
 
