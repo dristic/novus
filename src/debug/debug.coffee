@@ -18,9 +18,5 @@ class nv.DebugEngine extends nv.Engine
 
       send.call scene, arguments...
 
-  log: () ->
-    messages = Array.prototype.slice.call arguments, 0
-    message = ""
-    message += part.toString() for part in messages
-    @messageLog.push message
-    console.log message
+  log: (args...) ->
+    nv.log args...

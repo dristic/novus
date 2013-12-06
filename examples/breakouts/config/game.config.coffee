@@ -2,7 +2,7 @@
 #= require levels.config
 
 breakout.config =
-  debug: true
+  debug: false
 
   graphics:
     id: '#game-canvas'
