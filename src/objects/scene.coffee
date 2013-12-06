@@ -84,9 +84,11 @@ class nv.Scene extends nv.EventDispatcher
 
   update: (dt) ->
     engine.update dt for engine in @engines
-    entity.update dt for entity in @entities
 
     super dt
+
+    if @entities
+      entity.update dt for entity in @entities
 
   destroy: () ->
     @fire "scene:destroy"

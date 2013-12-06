@@ -2,6 +2,8 @@
 #= require levels.config
 
 breakout.config =
+  debug: true
+
   graphics:
     id: '#game-canvas'
     width: 320
@@ -15,6 +17,7 @@ breakout.config =
       'assets/logo.png',
       'assets/tiles.png'
     ]
+
   gamepad:
     keys:
       left: nv.Key.A
@@ -48,18 +51,41 @@ breakout.maps.main =
 
 breakout.maps.game =
   layers: [{
-    name: "Background",
+    name: "Background"
     objects: [{
-      type: "Background",
+      type: "Background"
       x: 0,
       y: 0
     }]
   }, {
-    name: "Physics",
-    objects: []
+    name: "Physics"
+    objects: [{
+      type: "Wall"
+      x: 0
+      y: 0
+    }, {
+      type: "Wall"
+      x: 20
+      y: 0
+      properties:
+        width: 30 * 18
+        height: 20
+    }, {
+      type: "Wall"
+      x: 300
+      y: 0
+    }]
   }, {
     name: "Objects",
-    objects: []
+    objects: [{
+      type: "Player"
+      x: 100
+      y: 368
+    }, {
+      type: "Ball"
+      x: 150
+      y: 250
+    }]
   }]
 
 breakout.gameConfig =

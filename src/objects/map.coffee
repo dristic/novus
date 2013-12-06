@@ -13,6 +13,8 @@ class nv.Map
           options:
             x: object.x
             y: object.y
+        for key, value of object.properties
+          objects[objects.length - 1].options[key] = value
 
     objects
 

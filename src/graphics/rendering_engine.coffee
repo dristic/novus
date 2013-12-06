@@ -98,8 +98,8 @@ class nv.RenderingEngine extends nv.Engine
     x -= @bounds.left
     y -= @bounds.top
 
-    x /= @ratio
-    y /= @ratio
+    #x /= @ratio
+    #y /= @ratio
 
     {
       x: x

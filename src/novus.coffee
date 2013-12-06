@@ -10,7 +10,8 @@
 #= require_tree physics/
 #= require_tree timing/
 #= require_tree audio/
-#= require_tree graphics/
+#= require graphics/rendering
+#= require graphics/particles
 #= require_tree input/
 
 #= require_tree engines/

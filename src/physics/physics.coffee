@@ -5,6 +5,14 @@ class nv.PhysicsEngine extends nv.Engine
     @activeObjects = {}
     @physicsObjects = []
 
+  "event(entity:component:new)": (component) ->
+    if component instanceof nv.PhysicsComponent
+      @trackObject component
+
+  "event(entity:component:destroy)": (component) ->
+    if component instanceof nv.PhysicsComponent
+      @removeObject component
+
   "event(engine:physics:create)": (collidable) ->
     @trackObject collidable
 
@@ -30,9 +38,8 @@ class nv.PhysicsEngine extends nv.Engine
     drawObj obj for ida, obj of @passiveObjects
 
   trackObjects: (array) ->
-    self = this
-    $.each array, () ->
-      self.trackObject this
+    for object in array
+      @trackObject object
 
   trackObject: (obj) ->
     switch obj.type
@@ -59,11 +66,11 @@ class nv.PhysicsEngine extends nv.Engine
         if objpBounds.intersects(objaBounds)
           ivec = @impactVector objaBounds, objpBounds
           @scene.send "engine:collision:queued",
-            actor: obja.entity
-            target: objp.entity
-          @scene.fire "engine:collision:#{obja.entity.constructor.name}:#{objp.entity.constructor.name}",
-            actor: obja.entity
-            target: objp.entity
+            actor: obja.model
+            target: objp.model
+          @scene.fire "engine:collision:#{obja.options.name}:#{objp.options.name}",
+            actor: obja.model
+            target: objp.model
             impactVector: ivec
           break
 
@@ -72,23 +79,79 @@ class nv.PhysicsEngine extends nv.Engine
 
   impactVector: (colliderBounds, collideeBounds) ->
     iVec = new nv.Point(0,0)
-    left = (collideeBounds.x - colliderBounds.x2);
-    right = (collideeBounds.x2 - colliderBounds.x);
-    top = (collideeBounds.y - colliderBounds.y2);
-    bottom = (collideeBounds.y2 - colliderBounds.y);
+    left = (collideeBounds.x - colliderBounds.x2)
+    right = (collideeBounds.x2 - colliderBounds.x)
+    top = (collideeBounds.y - colliderBounds.y2)
+    bottom = (collideeBounds.y2 - colliderBounds.y)
 
-    # // box intersect. work out the mtd on both x and y axes.
+    # box intersect. work out the mtd on both x and y axes.
     iVec.x = -1 * if Math.abs(left) <= right then left else right
     iVec.y = -1 * if Math.abs(top) <= bottom then top else bottom
 
-    # // 0 the axis with the largest mtd value.
-    # if Math.abs(iVec.x) < Math.abs(iVec.y)
-    #   iVec.y = 0
-    # else
-    #   iVec.x = 0  
-    # console.log "PECalc", iVec
+    # 0 the axis with the largest mtd value.
+    if Math.abs(iVec.x) < Math.abs(iVec.y)
+      iVec.y = 0
+    else
+      iVec.x = 0
+
     iVec
 
+class nv.PhysicsComponent extends nv.Component
+  constructor: (scene, model, options) ->
+    super scene, model, options
+
+__objectId = 0
+class nv.PathPhysicsComponent extends nv.PhysicsComponent
+  constructor: (scene, model, options) ->
+    @id = __objectId++
+    @type = model.physicsObjectType
+    @boundingRect = new nv.Rect 0, 0, 0, 0
+
+    super scene, model, options
+
+    @updateBounds()
+
+  bounds: () ->
+    @updateBounds()
+    @boundingRect
+
+  updateBounds: () ->
+    x1 = x2 = y1 = y2 = null
+    for point in @model.points()
+      x1 = point.x if x1 == null || point.x < x1
+      x2 = point.x if x2 == null || point.x > x2
+      y1 = point.y if y1 == null || point.y < y1
+      y2 = point.y if y2 == null || point.y > y2
+    @boundingRect.reset x1, y1, x2, y2
+
+class nv.RectanglePhysicsComponent extends nv.PhysicsComponent
+  constructor: (scene, model, options) ->
+    @id = __objectId++
+    @type = model.physicsObjectType
+    @boundingRect = new nv.Rect 0, 0, 0, 0
+
+    super scene, model, options
+
+  bounds: () ->
+    new nv.Rect @model.x, @model.y, @model.x + @model.width, @model.y + @model.height
+
+class nv.GravityPhysicsComponent extends nv.PhysicsComponent
+  constructor: (scene, model, options) ->
+    @gravity = 0.003
+
+    super scene, model, options
+
+  update: (dt) ->
+    model = @model
+    unless model.thrusters
+      tx = @gravity * if model.thrustVector.x < 0 then 1 else -1
+      ty = @gravity * if model.thrustVector.y < 0 then 1 else -1
+
+      model.thrustVector.translate tx, ty
+
+# ###########
+# DEPRECATED
+# ###########
 class nv.PhysicsPlugin extends nv.Plugin
   constructor: (scene, entity) ->
     super scene, entity

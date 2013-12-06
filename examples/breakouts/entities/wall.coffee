@@ -1,19 +1,33 @@
 class entities.Wall extends nv.Entity
-  constructor: (scene, plugins, model) ->
-    super scene, plugins, model
+  constructor: (scene, options = {}) ->
+    super scene, options
+
+    @model.set 'width', options.width ? 20
+    @model.set 'height', options.height ? 30 * 22
+    @model.set 'physicsObjectType', 'passive'
+
+    @addComponent nv.RectanglePhysicsComponent,
+      width: options.width ? 48
+      height: options.height ? 16
+      name: 'Wall'
     
   "event(engine:collision:Ball:Wall)": (data) ->
-    return if data.target isnt this
-    @flash = false #true
+    return if data.target isnt this.model
 
   update: (dt) ->
-    return unless @flash or @restore
+    # Do nothing
 
-    if @flash and @restore is undefined
-      @restore = shallowClone @model.drawable
-      @model.drawable.color = 'yellow'
-      @flash = false
+nv.factory.register 'Wall', (scene, options = {}) ->
+  wall = new entities.Wall scene, options
 
-    else if @restore
-      @model.drawable.color = @restore.color
-      delete @restore
+  if breakout.config.debug is true
+    wall.addComponent nv.GleamRenderingComponent,
+      drawable: new gleam.Square
+        width: options.width ? 20
+        height: options.height ? 30 * 22
+        x: options.x
+        y: options.y
+        color: "darkBlue"
+
+  wall
+
