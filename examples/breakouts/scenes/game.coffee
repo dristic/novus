@@ -1,15 +1,21 @@
 class scenes.Game extends nv.Scene
-  constructor: (name, game, rootModel) ->
-    super name, game, rootModel
+  constructor: (game, options = {}) ->
+    super game, options
 
-    @level = 1
-    @createEntities rootModel.config.levels["level#{@level}"].entities
+    @loadEngine nv.TimingEngine
+    @loadEngine nv.GamepadEngine, breakout.config.gamepad
+    @loadEngine nv.RenderingEngine, breakout.config.graphics
+    @loadEngine nv.PhysicsEngine
+    @loadEngine nv.DebugEngine
+
+    @loadMap breakout.maps.game
+
+    # Spawn the level
+    @fire "spawn:level", 1
 
     # Start the scene
     @send "engine:timing:start"
 
-    # Spawn the level
-    @fire "spawn:level"
-
   destroy: () ->
+    @send "engine:timing:stop"
     super

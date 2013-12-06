@@ -10,6 +10,10 @@ class nv.Factory
       new klass args...
     @classes[name] = klass
 
+  # Returns a given registered class
+  getClass: (name) ->
+    @classes[name]
+
   # Register a new factory method
   register: (name, factory) ->
     @objects[name] = factory

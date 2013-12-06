@@ -26,7 +26,7 @@ class nv.Entity extends nv.SceneDispatcher
       if component instanceof klass
         component.destroy()
         @scene.fire "entity:component:destroy", component
-        components.splice components.indexOf(component), 1
+        @components.splice @components.indexOf(component), 1
 
   # Gets a reference to a component by type
   getComponentByType: (klass) ->

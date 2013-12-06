@@ -26,24 +26,41 @@ breakout.config =
     'assets/tiles.png'
   ]
 
-breakout.maps =
-  main:
-    layers: [{
-      name: "UI",
-      objects: [{
-          type: "Background",
-          x: 0
-          y: 0
-        }, {
-          type: "Title"
-          x: 85
-          y: 350
-        }, {
-          type: "Logo"
-          x: 94.5
-          y: 50
-        }]
+breakout.maps = {}
+
+breakout.maps.main =
+  layers: [{
+    name: "UI",
+    objects: [{
+      type: "Background",
+      x: 0
+      y: 0
+    }, {
+      type: "Title"
+      x: 85
+      y: 350
+    }, {
+      type: "Logo"
+      x: 94.5
+      y: 50
     }]
+  }]
+
+breakout.maps.game =
+  layers: [{
+    name: "Background",
+    objects: [{
+      type: "Background",
+      x: 0,
+      y: 0
+    }]
+  }, {
+    name: "Physics",
+    objects: []
+  }, {
+    name: "Objects",
+    objects: []
+  }]
 
 breakout.gameConfig =
   scenes:

@@ -1,6 +1,6 @@
 class scenes.Main extends nv.Scene
-  constructor: (name, game) ->
-    super name, game
+  constructor: (game, options = {}) ->
+    super game, options
     
     @loadEngine nv.TimingEngine
     @loadEngine nv.GamepadEngine, breakout.config.gamepad

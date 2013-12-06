@@ -91,6 +91,9 @@ class nv.TouchTargetPlugin extends nv.Plugin
         @pressed = false
         @scene.fire "engine:gamepad:release:#{@entity.model.action}"
 
+# #######
+# Deprecated class
+# ########
 class nv.Gamepad extends nv.EventDispatcher
   constructor: () ->
     super

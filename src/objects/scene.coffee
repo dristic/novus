@@ -1,5 +1,5 @@
 class nv.Scene extends nv.EventDispatcher
-  constructor: (name, @game, @options = {}) ->
+  constructor: (@game, @options = {}) ->
     super
 
     @engines = []

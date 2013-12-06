@@ -41,17 +41,18 @@ class nv.RenderingEngine extends nv.Engine
 
     # Calculate screen ratio for mouse coordinates
     @calculateScreenDimensions()
-    window.addEventListener 'resize', nv.bind(this, @calculateScreenDimensions)
+    @resizeListener = nv.bind(this, @calculateScreenDimensions)
+    window.addEventListener 'resize', @resizeListener
 
     # Add event listeners for mouse and keyboard events
-    nv.mousedown document, nv.bind(this, @onMouseDown)
-    nv.mouseup document, nv.bind(this, @onMouseUp)
-    nv.keydown document, nv.bind(this, @onKeyDown)
-    nv.keyup document, nv.bind(this, @onKeyUp)
+    @mouseDownListener = nv.mousedown document, nv.bind(this, @onMouseDown)
+    @mouseUpListener = nv.mouseup document, nv.bind(this, @onMouseUp)
+    @keyDownListener = nv.keydown document, nv.bind(this, @onKeyDown)
+    @keyUpListener = nv.keyup document, nv.bind(this, @onKeyUp)
 
     # This is expensive so only turn on if needed
     if config.mouseMove is true
-      nv.mousemove document, nv.bind(this, @onMouseMove)
+      @mouseMoveListener = nv.mousemove document, nv.bind(this, @onMouseMove)
 
     @scene.fire "engine:timing:register:after", nv.bind(this, @draw)
 
@@ -125,6 +126,7 @@ class nv.RenderingEngine extends nv.Engine
 
     @context.restore()
 
+  # Deprecated
   onMouseDown_old: (data) ->
     # Use the camera to convert to "in-game" coordinates
     coords = nv.clone data
@@ -140,6 +142,17 @@ class nv.RenderingEngine extends nv.Engine
 
   destroy: () ->
     delete @drawables
+
+    window.removeEventListener 'resize', @resizeListener
+
+    # Remove event listeners
+    document.removeEventListener 'mousedown', @mouseDownListener
+    document.removeEventListener 'mouseup', @mouseUpListener
+    document.removeEventListener 'keydown', @keyDownListener
+    document.removeEventListener 'keyup', @keyUpListener
+
+    if @mouseMoveListener?
+      document.removeEventListener 'mousemove', @mouseMoveListener
 
     super
 

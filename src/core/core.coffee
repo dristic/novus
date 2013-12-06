@@ -32,12 +32,15 @@ nv.implement
 
   keydown: (origin, callback) ->
     origin.addEventListener 'keydown', callback, false
+    callback
 
   keypress: (origin, callback) ->
     origin.addEventListener 'keypress', callback, false
+    callback
 
   keyup: (origin, callback) ->
     origin.addEventListener 'keyup', callback, false
+    callback
 
   mousedown: (origin, callback) ->
     if typeof origin is "function"
@@ -45,6 +48,7 @@ nv.implement
       origin = document
     origin.addEventListener 'mousedown', callback
     # origin.addEventListener 'touchstart', callback
+    callback
 
   mouseup: (origin, callback) ->
     if typeof origin is "function"
@@ -52,6 +56,7 @@ nv.implement
       origin = document
     origin.addEventListener 'mouseup', callback
     # origin.addEventListener 'touchend', callback
+    callback
 
   mousemove: (origin, callback) ->
     if typeof origin is "function"
@@ -59,6 +64,7 @@ nv.implement
       origin = document
     origin.addEventListener 'mousemove', callback
     # origin.addEventListener 'touchmove', callback
+    callback
 
   isMobile: () ->
     agent = navigator.userAgent.toLowerCase()
