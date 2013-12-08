@@ -84,6 +84,7 @@
         this.setSize(document.body.clientWidth, document.body.clientHeight);
         document.body.style.overflow = "hidden";
         this.fullscreenListener = function(event) {
+          console.log("set fullscreen", document.body.clientWidth, document.body.clientHeight);
           return _this.setSize(document.body.clientWidth, document.body.clientHeight);
         };
         return window.addEventListener('resize', this.fullscreenListener);
@@ -114,6 +115,7 @@
       width = document.body.clientWidth;
       height = document.body.clientHeight;
       this.ratio = Math.min(width / this.width, height / this.height);
+      console.log("resonsve", this.width, width, this.height, height, this.ratio);
       return this.source.style.webkitTransform = "scale(" + this.ratio + ")";
     };
 
@@ -429,7 +431,8 @@
         width: null,
         height: null,
         origin: null,
-        alpha: 1.0
+        alpha: 1.0,
+        scale: 1.0
       };
       if (!!options) {
         gleam.extend(defaults, options);
@@ -456,9 +459,9 @@
         context.save();
         context.source.globalAlpha = this.alpha;
         if (!this.origin) {
-          context.drawImage(this.image, this.x, this.y, this.width, this.height);
+          context.drawImage(this.image, this.x, this.y, this.width * this.scale, this.height * this.scale);
         } else {
-          context.drawImage(this.image, this.origin.x, this.origin.y, this.origin.width, this.origin.height, this.x, this.y, this.width, this.height);
+          context.drawImage(this.image, this.origin.x, this.origin.y, this.origin.width, this.origin.height, this.x, this.y, this.width * this.scale, this.height * this.scale);
         }
         return context.restore();
       }
@@ -761,7 +764,8 @@
         height: 480,
         x: 0,
         y: 0,
-        data: [0, 1, 1, 0]
+        data: [0, 1, 1, 0],
+        scale: 1
       };
       if (!!options) {
         gleam.extend(defaults, options);
@@ -789,15 +793,15 @@
         index = -1;
         framesInARow = this.image.width / this.tileWidth;
         _results = [];
-        while (y < this.height) {
-          while (x < this.width) {
+        while (y < this.height * this.scale) {
+          while (x < this.width * this.scale) {
             cell = this.data[++index];
             tileX = ((cell - 1) % framesInARow) * this.tileWidth;
             tileY = Math.floor((cell - 1) / framesInARow) * this.tileHeight;
-            context.drawImage(this.image, tileX, tileY, this.tileWidth, this.tileHeight, Math.floor(x + this.x), Math.floor(y + this.y), this.tileWidth, this.tileHeight);
-            x += this.tileWidth;
+            context.drawImage(this.image, tileX, tileY, this.tileWidth, this.tileHeight, Math.floor(x + this.x), Math.floor(y + this.y), this.tileWidth * this.scale, this.tileHeight * this.scale);
+            x += this.tileWidth * this.scale;
           }
-          y += this.tileHeight;
+          y += this.tileHeight * this.scale;
           _results.push(x = 0);
         }
         return _results;
@@ -1391,7 +1395,29 @@
 
     Rect.prototype.translate = function(dx, dy) {
       this.x += dx;
-      return this.y += dy;
+      this.y += dy;
+      return this;
+    };
+
+    Rect.prototype.width = function() {
+      return this.x2 - this.x;
+    };
+
+    Rect.prototype.height = function() {
+      return this.y2 - this.y;
+    };
+
+    Rect.prototype.outset = function(dx, dy) {
+      this.x -= dx;
+      this.x2 += dx;
+      this.y -= dy;
+      this.y2 += dy;
+      return this;
+    };
+
+    Rect.prototype.inset = function(dx, dy) {
+      this.outset(-dx, -dy);
+      return this;
     };
 
     return Rect;
@@ -3685,6 +3711,52 @@
       UIPlugin.__super__.constructor.call(this, scene, entity);
       this.hidden = entity.model.hidden;
       this.scene.fire("engine:ui:create", this);
+      this.xFunc = (function() {
+        var _this = this;
+        switch (typeof entity.model.x) {
+          case "number":
+            return function() {
+              if (_this.entity.model.anchor == null) {
+                return _this.entity.model.x;
+              } else {
+                switch (_this.entity.model.anchor) {
+                  case "topLeft":
+                  case "bottomLeft":
+                    return _this.entity.model.x;
+                  default:
+                    return window.innerWidth + _this.entity.model.x;
+                }
+              }
+            };
+          case "string":
+            return function(width) {
+              return window.innerWidth * (parseFloat(_this.entity.model.x) / 100) - ((width || _this.entity.model.width) / 2);
+            };
+        }
+      }).call(this);
+      this.yFunc = (function() {
+        var _this = this;
+        switch (typeof entity.model.y) {
+          case "number":
+            return function() {
+              if (_this.entity.model.anchor == null) {
+                return _this.entity.model.y;
+              } else {
+                switch (_this.entity.model.anchor) {
+                  case "topLeft":
+                  case "topRight":
+                    return _this.entity.model.y;
+                  default:
+                    return window.innerHeight + _this.entity.model.y;
+                }
+              }
+            };
+          case "string":
+            return function() {
+              return window.innerHeight * (parseFloat(_this.entity.model.y) / 100) - (_this.entity.model.height / 2);
+            };
+        }
+      }).call(this);
     }
 
     UIPlugin.prototype.hide = function() {
@@ -3769,8 +3841,8 @@
       this.width = this.width || this.text.measureText(context, canvas);
       if (this.hidden !== true) {
         this.updateText();
-        this.text.x = this.entity.model.x;
-        this.text.y = this.entity.model.y;
+        this.text.x = this.xFunc(this.width);
+        this.text.y = this.yFunc();
         return this.text.draw(context, canvas);
       }
     };
@@ -3798,13 +3870,15 @@
           return _this.button[key] = value;
         }
       });
+      this.entity.model.width = (_ref = this.entity.model.width) != null ? _ref : 150;
+      this.entity.model.height = (_ref1 = this.entity.model.height) != null ? _ref1 : 50;
       this.button = new gleam.Rectangle({
-        strokeStyle: (_ref = this.entity.model.strokeStyle) != null ? _ref : "#000",
-        strokeWidth: (_ref1 = this.entity.model.strokeWidth) != null ? _ref1 : 4,
-        cornerRadius: (_ref2 = this.entity.model.cornerRadius) != null ? _ref2 : 16,
+        strokeStyle: (_ref2 = this.entity.model.strokeStyle) != null ? _ref2 : "#000",
+        strokeWidth: (_ref3 = this.entity.model.strokeWidth) != null ? _ref3 : 4,
+        cornerRadius: (_ref4 = this.entity.model.cornerRadius) != null ? _ref4 : 16,
         fillStyle: typeof this.entity.model.fillStyle !== "undefined" ? this.entity.model.fillStyle : "#FFF",
-        width: (_ref3 = this.entity.model.width) != null ? _ref3 : 150,
-        height: (_ref4 = this.entity.model.height) != null ? _ref4 : 50,
+        width: this.entity.model.width,
+        height: this.entity.model.height,
         x: this.entity.model.x,
         y: this.entity.model.y
       });
@@ -3837,6 +3911,8 @@
     };
 
     ButtonUIPlugin.prototype.bounds = function() {
+      this.button.x = this.xFunc();
+      this.button.y = this.yFunc();
       return new nv.Rect(this.button.x, this.button.y, this.button.x + this.button.width, this.button.y + this.button.height);
     };
 
@@ -3844,6 +3920,8 @@
       if (this.hidden === true) {
         return;
       }
+      this.button.x = this.xFunc();
+      this.button.y = this.yFunc();
       this.text.x = this.button.x + (this.button.width / 2);
       this.text.y = this.button.y + (this.button.height / 2);
       this.button.draw(context, canvas);
@@ -3900,7 +3978,8 @@
     __extends(SliderUIPlugin, _super);
 
     function SliderUIPlugin(scene, entity) {
-      var _ref, _ref1, _ref2;
+      var modelX, modelY, _ref, _ref1, _ref2,
+        _this = this;
       SliderUIPlugin.__super__.constructor.call(this, scene, entity);
       this.gamepad = scene.get('gamepad');
       entity.model.value = (_ref = entity.model.value) != null ? _ref : 1;
@@ -3909,34 +3988,41 @@
       this.gap = (_ref1 = entity.model.gap) != null ? _ref1 : 10;
       this.height = (_ref2 = entity.model.height) != null ? _ref2 : 30;
       this.offset = 0;
+      modelX = this.xFunc();
+      modelY = this.yFunc();
       if (this.entity.model.leftText) {
         this.down = new nv.TextUIPlugin(scene, {
           model: {
             text: entity.model.leftText,
             font: entity.model.font,
             textBaseline: 'bottom',
-            x: entity.model.x,
-            y: entity.model.y + this.entity.model.lineHeight + (this.height - entity.model.lineHeight) / 2
+            x: modelX,
+            y: modelY + this.entity.model.lineHeight + (this.height - entity.model.lineHeight) / 2
           }
         });
       } else {
         this.down = new gleam.Sprite({
           src: entity.model.leftImage,
-          x: entity.model.x,
-          y: entity.model.y
+          x: modelX,
+          y: modelY
         });
       }
       this.entity.model.on('change:value', nv.bind(this, this.onValueChange));
       this.onValueChange(this.value);
+      window.addEventListener('resize', function() {
+        return _this.moveControls();
+      });
     }
 
     SliderUIPlugin.prototype.createControls = function() {
-      var lineWidth, model, x;
+      var boxLeftX, lineWidth, model, modelX, modelY, x;
       if (!this.down.width) {
         return;
       }
       model = this.entity.model;
-      x = this.entity.model.x + this.down.width + this.gap;
+      modelX = this.xFunc();
+      modelY = this.yFunc();
+      x = modelX + this.down.width + this.gap;
       if (this.down.onLoad != null) {
         this.down.y += (this.height - this.down.height) / 2;
       }
@@ -3945,15 +4031,15 @@
         width: 1,
         height: this.height,
         x: x,
-        y: this.entity.model.y
+        y: modelY
       });
-      this.boxLeftX = x + 1;
+      boxLeftX = x + 1;
       this.box = new gleam.Square({
-        color: "#FFF",
+        color: model.thumbColor || "#FFF",
         width: 10,
         height: this.height,
-        x: this.boxLeftX,
-        y: this.entity.model.y
+        x: boxLeftX,
+        y: modelY
       });
       lineWidth = this.max + this.box.width;
       this.line = new gleam.Square({
@@ -3961,32 +4047,52 @@
         width: lineWidth,
         height: 1,
         x: x,
-        y: this.entity.model.y + this.height / 2
+        y: modelY + this.height / 2
       });
       this.maxBox = new gleam.Square({
         color: "#555",
         width: 1,
         height: this.height,
         x: x + lineWidth,
-        y: this.entity.model.y
+        y: modelY
       });
-      if (this.entity.model.rightText) {
+      if (model.rightText) {
         return this.up = new nv.TextUIPlugin(this.scene, {
           model: {
-            text: this.entity.model.rightText,
-            font: this.entity.model.font,
+            text: model.rightText,
+            font: model.font,
             textBaseline: 'bottom',
             x: x + lineWidth + this.gap,
-            y: this.entity.model.y + this.entity.model.lineHeight + (this.height - this.entity.model.lineHeight) / 2
+            y: modelY + model.lineHeight + (this.height - model.lineHeight) / 2
           }
         });
       } else {
         return this.up = new gleam.Sprite({
-          src: this.entity.model.rightImage,
+          src: model.rightImage,
           x: x + lineWidth + this.gap,
           y: -100
         });
       }
+    };
+
+    SliderUIPlugin.prototype.moveControls = function() {
+      var lineWidth, modelX, modelY, x;
+      modelX = this.xFunc();
+      modelY = this.yFunc();
+      this.down.x = modelX;
+      this.down.y = modelY;
+      x = modelX + this.down.width + this.gap;
+      this.minBox.x = x;
+      this.minBox.y = modelY;
+      this.box.x = x + 1;
+      this.box.y = modelY;
+      lineWidth = this.max + this.box.width;
+      this.line.x = x;
+      this.line.y = modelY + this.height / 2;
+      this.maxBox.x = x + lineWidth;
+      this.maxBox.y = modelY;
+      this.up.x = x + lineWidth + this.gap;
+      return this.up.y = modelY + (this.height - this.up.height) / 2;
     };
 
     SliderUIPlugin.prototype.onValueChange = function(value) {
@@ -4043,7 +4149,7 @@
         return;
       }
       if (this.up.y < 0 && this.up.loaded) {
-        this.up.y = this.entity.model.y + (this.height - this.up.height) / 2;
+        this.up.y = this.yFunc() + (this.height - this.up.height) / 2;
       }
       if (this.dragging === true) {
         mouseX = this.gamepad.getState().mouse.x;
@@ -4097,13 +4203,13 @@
           this.sprite.x = -this.sprite.halfWidth;
           this.sprite.y = -this.sprite.halfHeight;
           context.save();
-          context.translate(this.entity.model.x + this.sprite.halfWidth, this.entity.model.y + this.sprite.halfHeight);
+          context.translate(this.xFunc() + this.sprite.halfWidth, this.yFunc() + this.sprite.halfHeight);
           context.source.rotate(this.entity.model.rotate);
           this.sprite.draw(context, canvas);
           return context.restore();
         } else {
-          this.sprite.x = this.entity.model.x;
-          this.sprite.y = this.entity.model.y;
+          this.sprite.x = this.xFunc();
+          this.sprite.y = this.yFunc();
           return this.sprite.draw(context, canvas);
         }
       }
@@ -4112,6 +4218,36 @@
     return SpriteUIPlugin;
 
   })(nv.UIPlugin);
+
+  nv.SpriteButtonUIPlugin = (function(_super) {
+    __extends(SpriteButtonUIPlugin, _super);
+
+    function SpriteButtonUIPlugin(scene, entity) {
+      SpriteButtonUIPlugin.__super__.constructor.call(this, scene, entity);
+      this.id = this.entity.model.id;
+      this.down = false;
+    }
+
+    SpriteButtonUIPlugin.prototype["event(engine:ui:mouse:down)"] = function(data) {
+      if (this.hidden !== true) {
+        if (this.bounds().contains(new nv.Point(data.x, data.y))) {
+          return this.down = true;
+        }
+      }
+    };
+
+    SpriteButtonUIPlugin.prototype["event(engine:ui:mouse:up)"] = function(data) {
+      if (this.down === true) {
+        if (this.bounds().contains(new nv.Point(data.x, data.y))) {
+          this.down = false;
+          return this.scene.fire("engine:ui:clicked", this);
+        }
+      }
+    };
+
+    return SpriteButtonUIPlugin;
+
+  })(nv.SpriteUIPlugin);
 
 }).call(this);
 
@@ -4408,7 +4544,7 @@
         return;
       }
       if (type === "grain") {
-        context.drawImage(this.farmer, this.entity.model.x, this.entity.model.y + 1);
+        context.drawImage(farmer, this.entity.model.x, this.entity.model.y + 1);
         divisor = 1.33;
       } else {
         context.drawImage(this.miner, this.entity.model.x, this.entity.model.y + 1);
@@ -4428,6 +4564,51 @@
 
   })(nv.RenderingPlugin);
 
+  nv.YieldRenderer = (function(_super) {
+    __extends(YieldRenderer, _super);
+
+    function YieldRenderer(scene, entity) {
+      var model;
+      YieldRenderer.__super__.constructor.call(this, scene, entity);
+      this.yields = [];
+      this.yields.push(new Image());
+      this.yields[0].src = "/assets/yield1-16.png";
+      this.yields.push(new Image());
+      this.yields[1].src = "/assets/yield2-16.png";
+      this.yields.push(new Image());
+      this.yields[2].src = "/assets/yield3-16.png";
+      model = {
+        src: this.yields[0].src,
+        x: 180,
+        y: -100,
+        width: 16,
+        height: 16,
+        anchor: "bottomLeft"
+      };
+      this.grain = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+      model = {
+        src: this.yields[0].src,
+        x: 180,
+        y: -80,
+        width: 16,
+        height: 16,
+        anchor: "bottomLeft"
+      };
+      this.gold = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+    }
+
+    YieldRenderer.prototype["event(game:resource:yields:updated)"] = function() {
+      var idx;
+      idx = Math.floor(this.entity.grainYield / 1.33);
+      this.grain.sprite.image = this.yields[idx];
+      idx = Math.floor(this.entity.goldYield / 0.8);
+      return this.gold.sprite.image = this.yields[idx];
+    };
+
+    return YieldRenderer;
+
+  })(nv.RenderingPlugin);
+
   renderers.PlayerManager = (function(_super) {
     __extends(PlayerManager, _super);
 
@@ -4436,6 +4617,8 @@
       this.flags = [];
       this.turns = [];
       this.selectedCountry = 0;
+      this.clientPlayerCountries = [];
+      this.scale = this.scene.getEntity(entities.ImageMap).scale;
     }
 
     PlayerManager.prototype["event(game:player:assigned)"] = function() {
@@ -4443,11 +4626,12 @@
       scenario = this.scene.rootModel.get('scenario');
       playerMetadata = this.scene.rootModel.config.playerMetadata;
       model = {
-        src: "/assets/turn-box.png",
-        x: 560,
-        y: 5,
-        width: 59,
-        height: 72
+        src: "/assets/beveled-round.png",
+        x: -164,
+        y: 10,
+        width: 144,
+        height: 144,
+        anchor: "topRight"
       };
       this.border = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
       this.loadFlags();
@@ -4456,45 +4640,49 @@
         player = _ref[_i];
         model = nv.extend(playerMetadata[player.model.number - 1].flag, {
           hidden: true,
-          x: 567,
-          y: 17
+          x: -120,
+          y: 55,
+          width: 64,
+          height: 64,
+          anchor: "topRight"
         });
         this.turns.push(new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model))));
         this.turns[this.entity.model.turn - 1].hidden = false;
       }
       model = {
         src: playerMetadata[this.entity.model.playerNumber - 1].flag.src,
-        x: 5,
-        y: 5,
-        width: 32,
-        height: 32
+        x: 40,
+        y: 44,
+        width: 64,
+        height: 64
       };
       this.shield = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
       return this.selectedCountry = this.entity.clientPlayer().selectedCountry().model.id;
     };
 
     PlayerManager.prototype.loadFlags = function() {
-      var country, image, player, _i, _len, _ref, _results;
+      var country, image, player, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _results;
       this.flags = [];
       _ref = this.entity.model.players;
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         player = _ref[_i];
-        _results.push((function() {
-          var _j, _len1, _ref1, _results1;
-          _ref1 = player.countries();
-          _results1 = [];
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            country = _ref1[_j];
-            image = new Image();
-            image.src = country.model.flag.src;
-            _results1.push(this.flags.push(nv.extend({
-              image: image,
-              countryId: country.model.id
-            }, country.model.flag)));
-          }
-          return _results1;
-        }).call(this));
+        _ref1 = player.countries();
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          country = _ref1[_j];
+          image = new Image();
+          image.src = country.model.flag.src;
+          this.flags.push(nv.extend({
+            image: image,
+            countryId: country.model.id
+          }, country.model.flag));
+        }
+      }
+      this.clientPlayerCountries = [];
+      _ref2 = this.entity.clientPlayer().countries();
+      _results = [];
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        country = _ref2[_k];
+        _results.push(this.clientPlayerCountries.push(country.model.id));
       }
       return _results;
     };
@@ -4509,34 +4697,57 @@
       return this.turns[turn - 1].hidden = false;
     };
 
-    PlayerManager.prototype["event(game:selected:country)"] = function(id) {
-      return this.selectedCountry = id;
+    PlayerManager.prototype["event(game:selected:country)"] = function(data) {
+      this.selectedCountry = data.id;
+      return this.countryCount = data.count;
     };
 
     PlayerManager.prototype["event(game:country:updated)"] = function() {
       return this.loadFlags();
     };
 
+    PlayerManager.prototype["event(game:map:scaled)"] = function(scale) {
+      return this.scale = scale;
+    };
+
     PlayerManager.prototype.draw = function(context, canvas) {
-      var flag, _i, _len, _ref, _results;
+      var country, data, flag, scaledX, scaledY, _i, _j, _len, _len1, _ref, _ref1, _results;
       _ref = this.flags;
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         flag = _ref[_i];
-        if (flag.countryId === this.selectedCountry) {
+        scaledX = flag.x * this.scale;
+        scaledY = flag.y * this.scale;
+        if (flag.countryId === this.selectedCountry && this.countryCount > 1) {
           context.save();
           context.source.scale(1, 0.5);
           context.setStrokeStyle("yellow");
-          context.setStrokeWidth(4);
+          context.setStrokeWidth(3);
           context.source.beginPath();
-          context.source.arc(flag.x + (flag.width / 2) - 2.5, 2 * (flag.y + flag.height) - 10, 20, 0, Math.PI * 2, false);
+          context.source.arc(scaledX + (flag.width / 2) - 1, 2 * (scaledY + flag.height) - 10, 20, 0, Math.PI * 2, false);
           context.stroke();
           context.closePath();
           context.restore();
         }
-        _results.push(context.drawImage(flag.image, flag.x, flag.y));
+        context.drawImage(flag.image, scaledX, scaledY, flag.width, flag.height);
       }
-      return _results;
+      if (this.entity.attacking) {
+        if (typeof context.setLineDash === "function") {
+          context.setLineDash([4, 4]);
+        }
+        context.setStrokeStyle("red");
+        context.setStrokeWidth(2);
+        _ref1 = this.entity.countries;
+        _results = [];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          country = _ref1[_j];
+          if (this.clientPlayerCountries.indexOf(country.model.id) !== -1) {
+            continue;
+          }
+          data = country.model;
+          _results.push(context.strokeRect(data.bounds.x * this.scale, data.bounds.y * this.scale, data.bounds.width() * this.scale, data.bounds.height() * this.scale));
+        }
+        return _results;
+      }
     };
 
     return PlayerManager;
@@ -4550,12 +4761,22 @@
       var model;
       Seasons.__super__.constructor.call(this, scene, entity);
       model = {
+        src: "/assets/beveled-round.png",
+        x: -144,
+        y: -144,
+        width: 104,
+        height: 104,
+        anchor: "bottomRight"
+      };
+      this.border = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
+      model = {
         src: "/assets/season-wheel.png",
-        x: 557,
-        y: 100,
+        x: -123,
+        y: -123,
         width: 64,
         height: 64,
-        rotate: 0
+        rotate: 0,
+        anchor: "bottomRight"
       };
       this.wheel = new nv.SpriteUIPlugin(this.scene, new nv.Entity(this.scene, [], new nv.Model(model)));
       this.season = 0;
@@ -4584,6 +4805,34 @@
     };
 
     return Seasons;
+
+  })(nv.RenderingPlugin);
+
+  renderers.Map = (function(_super) {
+    __extends(Map, _super);
+
+    function Map(scene, entity) {
+      Map.__super__.constructor.call(this, scene, entity);
+    }
+
+    Map.prototype.draw = function(context, canvas) {
+      var country, scale, _i, _len, _ref, _results;
+      if (this.entity.model.debug !== true) {
+        return;
+      }
+      scale = this.entity.scale;
+      _ref = this.entity.model.countries;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        country = _ref[_i];
+        context.setStrokeStyle("green");
+        context.setStrokeWidth(4);
+        _results.push(context.strokeRect(country.bounds.x * scale, country.bounds.y * scale, country.bounds.width() * scale, country.bounds.height() * scale));
+      }
+      return _results;
+    };
+
+    return Map;
 
   })(nv.RenderingPlugin);
 
@@ -4712,7 +4961,7 @@
     __extends(Country, _super);
 
     function Country(scene, plugins, model) {
-      var entityConfigs, landConfig, plots, position, rootModel, scenario, _i, _len, _ref;
+      var entityConfigs, plots, rootModel, scenario;
       Country.__super__.constructor.call(this, scene, plugins, model);
       rootModel = this.scene.rootModel;
       scenario = rootModel.get('scenario');
@@ -4720,14 +4969,6 @@
       this.model.set('resourceManager', this.scene.createEntity(entityConfigs.resourceManager, scenario.resources));
       this.model.resourceManager.setOwner(this);
       plots = [];
-      _ref = this.model.plots;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        position = _ref[_i];
-        landConfig = nv.extend({}, entityConfigs.land);
-        landConfig.model.options.x = position.x;
-        landConfig.model.options.y = position.y;
-        plots.push(this.scene.createEntity(landConfig));
-      }
       this.model.plots = plots;
     }
 
@@ -4913,19 +5154,19 @@
 }).call(this);
 
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  entities.Map = (function(_super) {
-    __extends(Map, _super);
+  entities.MapBase = (function(_super) {
+    __extends(MapBase, _super);
 
-    function Map(scene, plugins, model) {
-      var cache, layerModel, level, mapModel, playerAllocModel, scenario, _i,
-        _this = this;
-      scenario = scene.get('scenario');
-      mapModel = nv.extend(model, scenario.map);
-      mapModel.data = scenario.data.layer0;
-      Map.__super__.constructor.call(this, scene, plugins, mapModel);
+    function MapBase(scene, plugins, model) {
+      this.scaleLayers = __bind(this.scaleLayers, this);
+      this.scenario = scene.get('scenario');
+      this.mapWidth = this.scenario.map.width;
+      this.mapHeight = this.scenario.map.height;
+      MapBase.__super__.constructor.call(this, scene, plugins, model);
       this.down = false;
       this.origin = {
         x: 0,
@@ -4936,7 +5177,84 @@
       this.camera = scene.get('camera');
       this.camera.x = -160;
       this.camera.y = -230;
-      this.layers = [];
+      window.addEventListener('resize', this.scaleLayers);
+    }
+
+    MapBase.prototype.scaleLayers = function() {
+      this.scale = window.innerWidth / this.mapWidth;
+      this.origin.x = 0;
+      this.origin.y = 0;
+      this.camera.x = 0;
+      this.camera.y = (this.mapHeight * this.scale - window.innerHeight) / -2;
+      return this.scene.fire('game:map:scaled', this.scale);
+    };
+
+    MapBase.prototype.update = function(dt) {
+      MapBase.__super__.update.call(this, dt);
+      if (this.down === true) {
+        if (this.model.width * this.scale < this.canvas.width && this.model.height * this.scale < this.canvas.height) {
+          return;
+        }
+        if (!(this.model.width * this.scale < this.canvas.width)) {
+          this.camera.x -= (this.origin.x - this.gamepad.state.mouse.x) / this.model.speed;
+          this.origin.x = this.gamepad.state.mouse.x;
+        }
+        if (!(this.model.height * this.scale < this.canvas.height)) {
+          this.camera.y -= (this.origin.y - this.gamepad.state.mouse.y) / this.model.speed;
+          this.origin.y = this.gamepad.state.mouse.y;
+        }
+        if (this.camera.x >= 0) {
+          this.camera.x = 0;
+        } else if (this.camera.x < -(this.model.width * this.scale - this.canvas.width)) {
+          this.camera.x = -(this.model.width * this.scale - this.canvas.width);
+        }
+        if (this.camera.y >= 0) {
+          return this.camera.y = 0;
+        } else if (this.camera.y < -(this.model.height * this.scale - this.canvas.height)) {
+          return this.camera.y = -(this.model.height * this.scale - this.canvas.height);
+        }
+      }
+    };
+
+    MapBase.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
+      this.down = true;
+      return this.origin = {
+        x: data.x,
+        y: data.y
+      };
+    };
+
+    MapBase.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
+      return this.down = false;
+    };
+
+    MapBase.prototype.destroy = function() {
+      return clearTimeout(this.timeout);
+    };
+
+    return MapBase;
+
+  })(nv.Entity);
+
+  entities.TileMap = (function(_super) {
+    __extends(TileMap, _super);
+
+    function TileMap(scene, plugins, model) {
+      this.cache = __bind(this.cache, this);
+      var layerModel, level, mapModel, playerAllocModel, scenario, _i;
+      scenario = scene.get('scenario');
+      mapModel = nv.extend(model, scenario.map);
+      mapModel.data = scenario.data.layer0;
+      TileMap.__super__.constructor.call(this, scene, plugins, mapModel);
+      this.down = false;
+      this.origin = {
+        x: 0,
+        y: 0
+      };
+      this.gamepad = scene.get('gamepad');
+      this.canvas = scene.get('canvas');
+      this.camera = scene.get('camera');
+      this.layers = [this.getPlugin(nv.SpriteMapRenderingPlugin)];
       for (level = _i = 1; _i <= 4; level = ++_i) {
         if (scenario.data["layer" + level] != null) {
           layerModel = nv.extend(model, scenario.map);
@@ -4951,56 +5269,85 @@
       this.playerData = new nv.SpriteMapRenderingPlugin(scene, {
         model: playerAllocModel
       });
-      cache = function() {
-        return _this.getPlugin(nv.SpriteMapRenderingPlugin).cache(_this.model.width, _this.model.height);
-      };
-      this.timeout = setTimeout(cache, 5000);
+      this.scaleLayers();
     }
 
-    Map.prototype.update = function(dt) {
-      Map.__super__.update.call(this, dt);
-      if (this.down === true) {
-        this.camera.x -= (this.origin.x - this.gamepad.state.mouse.x) / this.model.speed;
-        this.camera.y -= (this.origin.y - this.gamepad.state.mouse.y) / this.model.speed;
-        this.origin.x = this.gamepad.state.mouse.x;
-        this.origin.y = this.gamepad.state.mouse.y;
-        if (this.camera.x > 0) {
-          this.camera.x = 0;
-        } else if (this.camera.x < -(this.model.width - this.canvas.width)) {
-          this.camera.x = -(this.model.width - this.canvas.width);
-        }
-        if (this.camera.y > 0) {
-          return this.camera.y = 0;
-        } else if (this.camera.y < -(this.model.height - this.canvas.height)) {
-          return this.camera.y = -(this.model.height - this.canvas.height);
-        }
-      }
-    };
-
-    Map.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
+    TileMap.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
       var tile;
-      this.down = true;
-      this.origin = {
-        x: data.x,
-        y: data.y
-      };
+      TileMap.__super__["event(engine:gamepad:mouse:down)"].call(this, data);
       tile = this.playerData.getTileFromScreenXY(data.x - this.camera.x, data.y - this.camera.y);
       if (tile !== 0) {
         return this.scene.fire("game:clicked:country", tile);
       }
     };
 
-    Map.prototype["event(engine:gamepad:mouse:up)"] = function(data) {
-      return this.down = false;
+    TileMap.prototype.cache = function() {
+      return this.getPlugin(nv.SpriteMapRenderingPlugin).cache(this.model.width, this.model.height);
     };
 
-    Map.prototype.destroy = function() {
-      return clearTimeout(this.timeout);
+    TileMap.prototype.scaleLayers = function() {
+      var layer, _i, _len, _ref, _results;
+      TileMap.__super__.scaleLayers.apply(this, arguments);
+      _ref = this.layers;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        layer = _ref[_i];
+        _results.push(layer.sprite.scale = this.scale);
+      }
+      return _results;
     };
 
-    return Map;
+    return TileMap;
 
-  })(nv.Entity);
+  })(entities.MapBase);
+
+  entities.ImageMap = (function(_super) {
+    __extends(ImageMap, _super);
+
+    function ImageMap(scene, plugins, model) {
+      var data, name, _ref, _ref1, _ref2;
+      ImageMap.__super__.constructor.call(this, scene, plugins, model);
+      this.image = this.getPlugin(nv.SpriteRenderingPlugin);
+      this.scaleLayers();
+      this.camera.x = ((_ref = this.model.camera) != null ? _ref.x : void 0) || 0;
+      this.camera.y = ((_ref1 = this.model.camera) != null ? _ref1.y : void 0) || 0;
+      this.model.countries = [];
+      _ref2 = this.scenario.countries;
+      for (name in _ref2) {
+        data = _ref2[name];
+        this.model.countries.push({
+          id: data.id,
+          bounds: data.bounds
+        });
+      }
+    }
+
+    ImageMap.prototype["event(engine:gamepad:mouse:down)"] = function(data) {
+      var country, pt, _i, _len, _ref, _results;
+      ImageMap.__super__["event(engine:gamepad:mouse:down)"].call(this, data);
+      pt = new nv.Point((data.x - this.camera.x) / this.scale, (data.y - this.camera.y) / this.scale);
+      _ref = this.model.countries;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        country = _ref[_i];
+        if (!country.bounds.contains(pt)) {
+          continue;
+        }
+        console.log("COUNTRY CLICKED: " + country.id);
+        this.scene.fire("game:clicked:country", country.id);
+        break;
+      }
+      return _results;
+    };
+
+    ImageMap.prototype.scaleLayers = function() {
+      ImageMap.__super__.scaleLayers.apply(this, arguments);
+      return this.image.sprite.scale = this.scale;
+    };
+
+    return ImageMap;
+
+  })(entities.MapBase);
 
 }).call(this);
 
@@ -5345,7 +5692,10 @@
               }
             } else {
               this.clientPlayer().selectCountry(id);
-              _results.push(this.scene.fire("game:selected:country", id));
+              _results.push(this.scene.fire("game:selected:country", {
+                id: id,
+                count: this.clientPlayer().countries().length
+              }));
             }
           } else {
             _results.push(void 0);
@@ -5411,12 +5761,15 @@
           if (player.model.number === scenario.countries[name].owner) {
             flag = nv.extend({}, scenario.countries[name].flag);
             flag = nv.extend(flag, rootModel.config.playerMetadata[player.model.number - 1].flag);
+            flag.width = 16;
+            flag.height = 16;
             data = nv.extend({}, scenario.countries[name]);
             data = nv.extend(data, {
               country: name,
               resources: scenario.resources,
               ratio: 0.5,
-              flag: flag
+              flag: flag,
+              bounds: new nv.Rect(flag.x, flag.y, flag.x + flag.width, flag.y + flag.height).outset(32, 32)
             });
             player.createCountry(data);
           }
@@ -5742,6 +6095,9 @@
       this.projections = new nv.Model({});
       this.active = false;
       this.season = 0;
+      this.populationYieldMultiplier = 0.1;
+      this.maxFoodPerSeason = 400;
+      this.maxGoldPerSeason = 40;
       this.seasonData = {
         farming: [
           {
@@ -5885,6 +6241,7 @@
       this.grainYield = Math.random() * this.seasonData.farming[this.season].range + this.seasonData.farming[this.season].base;
       this.goldYield = Math.random() * this.seasonData.mining[this.season].range + this.seasonData.mining[this.season].base;
       this.populationYield = null;
+      this.scene.fire("game:resource:yields:updated");
       console.log("grainYield:", this.seasonData.farming[this.season].base, this.seasonData.farming[this.season].range, this.grainYield);
       return console.log("goldYield:", this.seasonData.mining[this.season].base, this.seasonData.mining[this.season].range, this.goldYield);
     };
@@ -5934,20 +6291,25 @@
     ResourceManager.prototype.projectFarming = function() {
       var farmersPerPlot, food, grainPlots, i, laborRatio, qty, _i;
       food = 0;
-      grainPlots = this.owner.numberOfPlots('grain');
-      if (grainPlots > 0) {
-        laborRatio = 1 - this.projections.get('ratio');
-        console.log("grain yield:", this.grainYield);
-        console.log("ratio: ", laborRatio);
-        farmersPerPlot = Math.floor(this.model.get('peasants') * laborRatio / grainPlots);
-        farmersPerPlot = Math.min(farmersPerPlot, 50);
-        this.owner.setPlotData('grain', farmersPerPlot, this.grainYield);
-        console.log("farmers per plot:", farmersPerPlot);
-        for (i = _i = 1; 1 <= grainPlots ? _i <= grainPlots : _i >= grainPlots; i = 1 <= grainPlots ? ++_i : --_i) {
-          qty = this.grainYield * farmersPerPlot;
-          food += qty;
+      laborRatio = 1 - this.projections.get('ratio');
+      if (!this.model.plotsEnabled) {
+        food = this.model.get('peasants') * laborRatio * this.grainYield;
+      } else {
+        grainPlots = this.owner.numberOfPlots('grain');
+        if (grainPlots > 0) {
+          console.log("grain yield:", this.grainYield);
+          console.log("ratio: ", laborRatio);
+          farmersPerPlot = Math.floor(this.model.get('peasants') * laborRatio / grainPlots);
+          farmersPerPlot = Math.min(farmersPerPlot, 50);
+          this.owner.setPlotData('grain', farmersPerPlot, this.grainYield);
+          console.log("farmers per plot:", farmersPerPlot);
+          for (i = _i = 1; 1 <= grainPlots ? _i <= grainPlots : _i >= grainPlots; i = 1 <= grainPlots ? ++_i : --_i) {
+            qty = this.grainYield * farmersPerPlot;
+            food += qty;
+          }
         }
       }
+      food = Math.min(food, this.maxFoodPerSeason);
       console.log("food to grow:", food);
       return this.projections.set('food', Math.round(food - ((this.model.get('peasants') + this.model.get('soldiers')) * this.projections.get('rations'))));
     };
@@ -5959,20 +6321,24 @@
     ResourceManager.prototype.projectMining = function() {
       var gold, goldPlots, i, laborRatio, minersPerPlot, seasonVars, _i;
       gold = 0;
-      goldPlots = this.owner.numberOfPlots('gold');
-      if (goldPlots > 0) {
-        seasonVars = this.seasonData.mining[this.season];
-        laborRatio = this.projections.get('ratio');
-        console.log("gold yield:", this.goldYield);
-        minersPerPlot = Math.floor(this.model.get('peasants') * laborRatio / goldPlots);
-        minersPerPlot = Math.min(minersPerPlot, 50);
-        this.owner.setPlotData('gold', minersPerPlot, this.goldYield);
-        console.log("miners per plot:", minersPerPlot);
-        for (i = _i = 1; 1 <= goldPlots ? _i <= goldPlots : _i >= goldPlots; i = 1 <= goldPlots ? ++_i : --_i) {
-          gold += this.goldYield * 0.1 * minersPerPlot;
+      laborRatio = this.projections.get('ratio');
+      if (!this.model.plotsEnabled) {
+        gold = this.model.get('peasants') * laborRatio * this.goldYield * .1;
+      } else {
+        goldPlots = this.owner.numberOfPlots('gold');
+        if (goldPlots > 0) {
+          seasonVars = this.seasonData.mining[this.season];
+          console.log("gold yield:", this.goldYield);
+          minersPerPlot = Math.floor(this.model.get('peasants') * laborRatio / goldPlots);
+          minersPerPlot = Math.min(minersPerPlot, 50);
+          this.owner.setPlotData('gold', minersPerPlot, this.goldYield);
+          console.log("miners per plot:", minersPerPlot);
+          for (i = _i = 1; 1 <= goldPlots ? _i <= goldPlots : _i >= goldPlots; i = 1 <= goldPlots ? ++_i : --_i) {
+            gold += this.goldYield * 0.1 * minersPerPlot;
+          }
         }
       }
-      gold = Math.min(gold, 30);
+      gold = Math.min(gold, this.maxGoldPerSeason);
       return this.projections.set('gold', this.goldCalc(gold));
     };
 
@@ -5983,7 +6349,7 @@
       soldiersInTraining = this.projections.get('soldiersInTraining');
       currentPopulation = peasants + soldiers;
       console.log("cur pop:", peasants, soldiers, currentPopulation, soldiersInTraining);
-      this.populationYield = (_ref = this.populationYield) != null ? _ref : Math.random() * 0.1;
+      this.populationYield = (_ref = this.populationYield) != null ? _ref : Math.random() * this.populationYieldMultiplier;
       console.log("population yield", this.populationYield);
       growthTarget = Math.round(currentPopulation * (this.populationYield * this.projections.get('rations')));
       projectedPopulation = currentPopulation + growthTarget;
@@ -6093,7 +6459,7 @@
     __extends(Main, _super);
 
     function Main(name, game, rootModel) {
-      rootModel.scenario = realms.gameConfig.scenarios.pvp.twoByTwoLG;
+      rootModel.scenario = realms.gameConfig.scenarios.pvp.twoPlayer;
       Main.__super__.constructor.call(this, name, game, rootModel);
       this.send("engine:timing:start");
     }
@@ -6147,10 +6513,10 @@
       var control, doneControls, id, turnControls, type,
         _this = this;
       turnControls = {
-        "attack-button": nv.ButtonUIPlugin,
-        "create-army-button": nv.ButtonUIPlugin,
-        "rations-button": nv.ButtonUIPlugin,
-        "next-turn-button": nv.ButtonUIPlugin,
+        "attack-button": nv.SpriteButtonUIPlugin,
+        "create-army-button": nv.SpriteButtonUIPlugin,
+        "rations-button": nv.SpriteButtonUIPlugin,
+        "next-turn-button": nv.SpriteButtonUIPlugin,
         "projected-population": nv.TextUIPlugin,
         "projected-soldiers": nv.TextUIPlugin,
         "projected-food": nv.TextUIPlugin,
@@ -6270,14 +6636,46 @@
 
 (function() {
   realms.entities = {
-    map: {
-      entity: entities.Map,
+    tileMap: {
+      entity: entities.TileMap,
       plugins: [nv.SpriteMapRenderingPlugin],
       model: {
         options: {
           speed: 1.5,
           x: 0,
           y: 0
+        }
+      }
+    },
+    imageMap: {
+      entity: entities.ImageMap,
+      plugins: [nv.SpriteRenderingPlugin, renderers.Map],
+      model: {
+        options: {
+          speed: 1.5,
+          x: 0,
+          y: 0,
+          width: 1600,
+          height: 1200,
+          src: '/assets/green_island_map.png'
+        }
+      }
+    },
+    splashScreen: {
+      entity: entities.ImageMap,
+      plugins: [nv.SpriteRenderingPlugin],
+      model: {
+        options: {
+          speed: 1.5,
+          x: 0,
+          y: 0,
+          camera: {
+            x: -150,
+            y: -1
+          },
+          width: 1920,
+          height: 1080,
+          src: '/assets/splash-screen.jpg'
         }
       }
     },
@@ -6302,7 +6700,7 @@
     },
     resourceManager: {
       entity: entities.ResourceManager,
-      plugins: [],
+      plugins: [nv.YieldRenderer],
       model: {
         options: {
           population: 0,
@@ -6434,6 +6832,45 @@
   realms.scenarios = {
     pvp: {
       description: "Player v. Player",
+      twoPlayer: {
+        description: "2-players",
+        players: 2,
+        map: {
+          width: 1600,
+          height: 1200,
+          src: '/assets/green_island_map.png',
+          type: 'image'
+        },
+        resources: {
+          food: 110,
+          peasants: 50,
+          soldiers: 5,
+          gold: 0,
+          ratio: 0.5,
+          rations: 1
+        },
+        countries: {
+          Darkland: {
+            id: 1026,
+            owner: 1,
+            flag: {
+              x: 620,
+              y: 435
+            },
+            bounds: new nv.Rect(620, 435, 620, 435).translate(8, 8).outset(64, 64)
+          },
+          Danville: {
+            id: 1027,
+            owner: 2,
+            flag: {
+              x: 510,
+              y: 810
+            },
+            bounds: new nv.Rect(510, 810, 510, 810).translate(8, 8).outset(64, 64)
+          }
+        }
+      },
+      description: "Player v. Player",
       twoByTwo: {
         description: "2-players, 2-countries",
         players: 2,
@@ -6442,7 +6879,8 @@
           height: 960,
           src: '/assets/terrain_atlas.png',
           tileWidth: 32,
-          tileHeight: 32
+          tileHeight: 32,
+          type: 'tiles'
         },
         data: {
           layer0: [457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 453, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 328, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 455, 456, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 297, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 183, 801, 184, 184, 182, 183, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 424, 424, 424, 424, 424, 424, 425, 801, 184, 682, 682, 801, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 119, 182, 119, 184, 182, 183, 184, 182, 801, 682, 801, 184, 375, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 119, 184, 183, 184, 184, 801, 184, 182, 183, 184, 184, 184, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 296, 297, 457, 457, 328, 361, 374, 184, 682, 184, 184, 376, 184, 184, 801, 801, 184, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 329, 457, 457, 457, 393, 184, 182, 682, 184, 184, 184, 801, 184, 184, 184, 801, 184, 391, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 184, 184, 184, 801, 801, 682, 682, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 182, 184, 184, 801, 801, 184, 184, 801, 801, 682, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 393, 184, 184, 184, 801, 801, 184, 801, 801, 184, 184, 184, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 360, 361, 184, 682, 682, 801, 184, 376, 801, 391, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 455, 457, 457, 393, 801, 801, 801, 376, 801, 359, 360, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 393, 801, 184, 801, 801, 801, 391, 457, 457, 324, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 328, 360, 360, 360, 360, 360, 329, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 455, 456, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 454, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 452, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457, 457],
@@ -6718,16 +7156,16 @@
 (function() {
   var uiFont, version;
 
-  uiFont = 'bold 16px sans-serif';
+  uiFont = '16px sans-serif';
 
-  version = 'v0.0.8';
+  version = 'v0.1.0s';
 
   realms.gameConfig = {
     canvas: {
       id: '#game-canvas',
-      width: 640,
-      height: 480,
-      responsive: true,
+      width: 960,
+      height: 640,
+      fullscreen: true,
       css: {
         background: '000',
         margin: '0 auto 0 auto',
@@ -6770,7 +7208,7 @@
         engines: [nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.UIEngine],
         entities: {
           map: {
-            include: "map"
+            include: "splashScreen"
           },
           scroll: {
             entity: nv.Entity,
@@ -6778,8 +7216,8 @@
             model: {
               options: {
                 src: "/assets/paper-scroll-solid.png",
-                x: 120,
-                y: 70,
+                x: "50%",
+                y: 200,
                 width: 392,
                 height: 297
               }
@@ -6791,8 +7229,8 @@
             model: {
               options: {
                 src: "/assets/castle.png",
-                x: 160,
-                y: 130,
+                x: "50%",
+                y: 250,
                 width: 310,
                 height: 210,
                 alpha: 0.3
@@ -6807,9 +7245,9 @@
                 color: '#000',
                 font: 'bold 30px serif',
                 textBaseline: 'bottom',
-                text: 'Rords of the Lealm',
-                x: 190,
-                y: 140
+                text: 'Lords of the Hundred',
+                x: "50%",
+                y: 263
               }
             }
           },
@@ -6822,52 +7260,82 @@
                 font: 'bold 20px sans-serif',
                 textBaseline: 'bottom',
                 text: 'How many players?',
-                x: 215,
-                y: 220
+                x: "50%",
+                y: 395
               }
             }
           },
-          twoP2C: {
+          twoPlayer: {
             entity: nv.Entity,
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
-                id: "twoByTwoLG",
-                text: "2x2",
-                x: 204,
-                y: 260,
-                width: 64,
-                height: 64,
+                id: "twoPlayer",
+                text: "2",
+                x: "42%",
+                y: 400,
+                width: 45,
+                height: 40,
                 fillStyle: false
               }
             }
           },
-          twoP4C: {
+          threePlayer: {
             entity: nv.Entity,
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
                 id: "twoByFour",
-                text: "2x4",
-                x: 284,
-                y: 260,
-                width: 64,
-                height: 64,
+                text: "3",
+                x: "46%",
+                y: 400,
+                width: 45,
+                height: 40,
                 fillStyle: false
               }
             }
           },
-          threeP3C: {
+          fourPlayer: {
             entity: nv.Entity,
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
                 id: "threeByThree",
-                text: "3x3",
-                x: 364,
-                y: 260,
-                width: 64,
-                height: 64,
+                text: "4",
+                x: "50%",
+                y: 400,
+                width: 45,
+                height: 40,
+                fillStyle: false
+              }
+            }
+          },
+          fivePlayer: {
+            entity: nv.Entity,
+            plugins: [nv.ButtonUIPlugin],
+            model: {
+              options: {
+                id: "threeByThree",
+                text: "5",
+                x: "54%",
+                y: 400,
+                width: 45,
+                height: 40,
+                fillStyle: false
+              }
+            }
+          },
+          sixPlayer: {
+            entity: nv.Entity,
+            plugins: [nv.ButtonUIPlugin],
+            model: {
+              options: {
+                id: "threeByThree",
+                text: "6",
+                x: "58%",
+                y: 400,
+                width: 45,
+                height: 40,
                 fillStyle: false
               }
             }
@@ -6886,30 +7354,47 @@
         engines: [nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine, nv.UIEngine],
         entities: {
           map: {
-            include: "map"
+            include: "imageMap"
           },
-          panel: {
+          playerStats: {
             entity: nv.Entity,
-            plugins: [nv.PanelUIPlugin],
+            plugins: [nv.SpriteUIPlugin],
             model: {
               options: {
-                color: 'rgba(0, 0, 0, 0.5)',
-                width: 250,
-                height: 150,
+                src: "/assets/controls-chrome.png",
                 x: 0,
-                y: 0
+                y: 0,
+                width: 357,
+                height: 250
+              }
+            }
+          },
+          playerActions: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/button-bar.png",
+                x: 0,
+                y: -160,
+                width: 300,
+                height: 150,
+                anchor: "bottomLeft"
               }
             }
           },
           endTurnButton: {
             entity: nv.Entity,
-            plugins: [nv.ButtonUIPlugin],
+            plugins: [nv.SpriteButtonUIPlugin],
             model: {
               options: {
-                text: "End Turn",
+                src: "/assets/end-turn-button.png",
                 id: "next-turn-button",
-                x: 480,
-                y: 410
+                x: -164,
+                y: 145,
+                width: 144,
+                height: 144,
+                anchor: "topRight"
               }
             }
           },
@@ -6920,44 +7405,54 @@
               options: {
                 text: "End Other Turn",
                 id: "next-turn-other-button",
-                x: 480,
-                y: 410
+                x: -180,
+                y: 310,
+                anchor: "topRight"
               }
             }
           },
           createArmy: {
             entity: nv.Entity,
-            plugins: [nv.ButtonUIPlugin],
+            plugins: [nv.SpriteButtonUIPlugin],
             model: {
               options: {
-                text: "Train Soldiers",
+                src: "/assets/train-soldiers.png",
                 id: "create-army-button",
-                x: 20,
-                y: 410
+                x: 235,
+                y: -150,
+                width: 50,
+                height: 50,
+                anchor: "bottomLeft"
               }
             }
           },
           attackButton: {
             entity: nv.Entity,
-            plugins: [nv.ButtonUIPlugin],
+            plugins: [nv.SpriteButtonUIPlugin],
             model: {
               options: {
-                text: "Attack",
+                src: "/assets/cannon.png",
                 id: "attack-button",
-                x: 20,
-                y: 350
+                x: 235,
+                y: -110,
+                width: 50,
+                height: 50,
+                anchor: "bottomLeft"
               }
             }
           },
           rationsButton: {
             entity: nv.Entity,
-            plugins: [nv.ButtonUIPlugin],
+            plugins: [nv.SpriteButtonUIPlugin],
             model: {
               options: {
-                text: "Rations",
+                src: "/assets/rations.png",
                 id: "rations-button",
-                x: 20,
-                y: 290
+                x: 235,
+                y: -70,
+                width: 50,
+                height: 50,
+                anchor: "bottomLeft"
               }
             }
           },
@@ -6983,44 +7478,19 @@
               }
             }
           },
-          laborBoard: {
-            entity: nv.Entity,
-            plugins: [nv.PanelUIPlugin],
-            model: {
-              options: {
-                color: 'rgba(0, 0, 0, 0.5)',
-                width: 196,
-                height: 26,
-                x: 49,
-                y: 119
-              }
-            }
-          },
-          laborDistributionText: {
-            entity: nv.Entity,
-            plugins: [nv.TextUIPlugin],
-            model: {
-              options: {
-                color: '#CCC',
-                font: '14px sans-serif',
-                textBaseline: 'bottom',
-                text: 'Labor',
-                x: 54,
-                y: 140
-              }
-            }
-          },
           sliderControl: {
             entity: nv.Entity,
             plugins: [nv.SliderUIPlugin],
             model: {
               options: {
                 id: "population-slider",
-                leftImage: "/assets/farmer-16.wh.png",
-                rightImage: "/assets/miner-16.wh.png",
+                leftImage: "/assets/farmer-16.png",
+                rightImage: "/assets/miner-16.png",
                 font: uiFont,
-                x: 98,
-                y: 122,
+                thumbColor: "#151515",
+                x: 75,
+                y: -50,
+                anchor: "bottomLeft",
                 value: 50,
                 gap: 3,
                 height: 20,
@@ -7033,13 +7503,13 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
-                font: 'bold 20px sans-serif',
+                color: '#111',
+                font: 'bold 18px sans-serif',
                 textBaseline: 'bottom',
                 text: '{{name}}',
                 bind: entities.PlayerManager,
-                x: 35,
-                y: 32
+                x: 135,
+                y: 42
               }
             }
           },
@@ -7048,14 +7518,15 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
+                color: '#111',
                 font: uiFont,
                 textBaseline: 'bottom',
                 textAlign: 'right',
                 lineHeight: 20,
                 text: ["Peasants", "Soldiers", "Food", "Gold"],
-                x: 110,
-                y: 55
+                x: 115,
+                y: -120,
+                anchor: "bottomLeft"
               }
             }
           },
@@ -7064,46 +7535,27 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
+                color: '#111',
                 font: uiFont,
                 textBaseline: 'bottom',
                 textAlign: 'right',
                 text: "{{peasants}}",
                 bind: entities.PlayerManager,
-                x: 150,
-                y: 55
+                x: 195,
+                y: 83
               }
             }
           },
-          foodText: {
+          popIcon: {
             entity: nv.Entity,
-            plugins: [nv.TextUIPlugin],
+            plugins: [nv.SpriteUIPlugin],
             model: {
               options: {
-                color: '#CCC',
-                font: uiFont,
-                textBaseline: 'bottom',
-                textAlign: 'right',
-                text: '{{food}}',
-                bind: entities.PlayerManager,
-                x: 150,
-                y: 95
-              }
-            }
-          },
-          goldText: {
-            entity: nv.Entity,
-            plugins: [nv.TextUIPlugin],
-            model: {
-              options: {
-                color: '#CCC',
-                font: uiFont,
-                textBaseline: 'bottom',
-                textAlign: 'right',
-                text: '{{gold}}',
-                bind: entities.PlayerManager,
-                x: 150,
-                y: 115
+                src: "/assets/peasant-16.png",
+                x: 197,
+                y: 65,
+                width: 12,
+                height: 16
               }
             }
           },
@@ -7112,14 +7564,85 @@
             plugins: [nv.TextUIPlugin],
             model: {
               options: {
-                color: '#CCC',
+                color: '#111',
                 font: uiFont,
                 textBaseline: 'bottom',
                 textAlign: 'right',
                 text: '{{soldiers}}',
                 bind: entities.PlayerManager,
-                x: 150,
-                y: 75
+                x: 270,
+                y: 83
+              }
+            }
+          },
+          armyIcon: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/soldier-16.png",
+                x: 272,
+                y: 65,
+                width: 12,
+                height: 16
+              }
+            }
+          },
+          foodText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#111',
+                font: uiFont,
+                textBaseline: 'bottom',
+                textAlign: 'right',
+                text: '{{food}}',
+                bind: entities.PlayerManager,
+                x: 195,
+                y: 125
+              }
+            }
+          },
+          foodIcon: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/corn.png",
+                x: 195,
+                y: 106,
+                width: 18,
+                height: 18
+              }
+            }
+          },
+          goldText: {
+            entity: nv.Entity,
+            plugins: [nv.TextUIPlugin],
+            model: {
+              options: {
+                color: '#111',
+                font: uiFont,
+                textBaseline: 'bottom',
+                textAlign: 'right',
+                text: '{{gold}}',
+                bind: entities.PlayerManager,
+                x: 272,
+                y: 125
+              }
+            }
+          },
+          goldIcon: {
+            entity: nv.Entity,
+            plugins: [nv.SpriteUIPlugin],
+            model: {
+              options: {
+                src: "/assets/gold.png",
+                x: 272,
+                y: 106,
+                width: 18,
+                height: 18
               }
             }
           },
@@ -7135,8 +7658,9 @@
                 textAlign: 'right',
                 text: "{{p_peasants}}",
                 bind: entities.PlayerManager,
-                x: 190,
-                y: 55
+                x: 170,
+                y: -120,
+                anchor: "bottomLeft"
               }
             }
           },
@@ -7152,8 +7676,9 @@
                 textAlign: 'right',
                 text: "{{p_soldiers}}",
                 bind: entities.PlayerManager,
-                x: 190,
-                y: 75
+                x: 170,
+                y: -100,
+                anchor: "bottomLeft"
               }
             }
           },
@@ -7169,8 +7694,9 @@
                 textAlign: 'right',
                 text: '{{p_food}}',
                 bind: entities.PlayerManager,
-                x: 190,
-                y: 95
+                x: 170,
+                y: -80,
+                anchor: "bottomLeft"
               }
             }
           },
@@ -7186,8 +7712,9 @@
                 textAlign: 'right',
                 text: '{{p_gold}}',
                 bind: entities.PlayerManager,
-                x: 190,
-                y: 115
+                x: 170,
+                y: -60,
+                anchor: "bottomLeft"
               }
             }
           },
@@ -7226,8 +7753,9 @@
                 textBaseline: 'bottom',
                 text: "{{version}}",
                 bind: entities.PlayerManager,
-                x: 3,
-                y: 480
+                x: -50,
+                y: 15,
+                anchor: "topRight"
               }
             }
           },
@@ -7246,11 +7774,11 @@
                 font: '16px san-serif',
                 info: {
                   style: '#7FFF2B',
-                  color: '#222'
+                  color: '#111'
                 },
                 warning: {
                   style: 'yellow',
-                  color: '#222'
+                  color: '#111'
                 },
                 alert: {
                   style: '#D40000',
@@ -7293,7 +7821,7 @@
         engines: [nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.UIEngine],
         entities: {
           map: {
-            include: "map"
+            include: "tileMap"
           },
           title: {
             entity: nv.Entity,
