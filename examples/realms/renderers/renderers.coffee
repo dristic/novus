@@ -23,7 +23,7 @@ class nv.AssignedLaborRenderer extends nv.RenderingPlugin
     return if type is "field" or type is "dirt"
 
     if type is "grain"
-      context.drawImage @farmer, @entity.model.x, @entity.model.y + 1
+      context.drawImage farmer, @entity.model.x, @entity.model.y + 1
       divisor = 1.33
     else
       context.drawImage @miner, @entity.model.x, @entity.model.y + 1
@@ -41,12 +41,53 @@ class nv.AssignedLaborRenderer extends nv.RenderingPlugin
     context.restore()
 
 
+class nv.YieldRenderer extends nv.RenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+    @yields = []
+    @yields.push new Image()
+    @yields[0].src = "/assets/yield1-16.png"
+
+    @yields.push new Image()
+    @yields[1].src = "/assets/yield2-16.png"
+
+    @yields.push new Image()
+    @yields[2].src = "/assets/yield3-16.png"
+
+    model =
+      src: @yields[0].src
+      x: 180
+      y: -100
+      width: 16
+      height: 16
+      anchor: "bottomLeft"
+    @grain = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
+
+    model =
+      src: @yields[0].src
+      x: 180
+      y: -80
+      width: 16
+      height: 16
+      anchor: "bottomLeft"
+    @gold = new nv.SpriteUIPlugin(@scene, new nv.Entity(@scene, [], new nv.Model(model)))
+
+  "event(game:resource:yields:updated)": () ->
+    idx = Math.floor( @entity.grainYield / 1.33 )
+    @grain.sprite.image = @yields[idx]
+
+    idx = Math.floor( @entity.goldYield / 0.8 )
+    @gold.sprite.image = @yields[idx]
+
+
 class renderers.PlayerManager extends nv.RenderingPlugin
   constructor: (scene, entity) ->
     super scene, entity
     @flags = []
     @turns = []
     @selectedCountry = 0
+    @clientPlayerCountries = []
     @scale = @scene.getEntity(entities.ImageMap).scale
 
   "event(game:player:assigned)": () ->
@@ -87,6 +128,9 @@ class renderers.PlayerManager extends nv.RenderingPlugin
         image = new Image()
         image.src = country.model.flag.src
         @flags.push nv.extend {image: image, countryId: country.model.id}, country.model.flag
+    @clientPlayerCountries = []
+    for country in @entity.clientPlayer().countries()
+      @clientPlayerCountries.push country.model.id
 
   "event(game:turn:end)": (turn) ->
     for indicator in @turns
@@ -95,7 +139,7 @@ class renderers.PlayerManager extends nv.RenderingPlugin
 
   "event(game:selected:country)": (data) ->
     @selectedCountry = data.id
-    @countryCount = @data.count
+    @countryCount = data.count
 
   "event(game:country:updated)": () ->
     @loadFlags()
@@ -128,6 +172,7 @@ class renderers.PlayerManager extends nv.RenderingPlugin
       context.setStrokeWidth 2
 
       for country in @entity.countries
+        continue unless @clientPlayerCountries.indexOf(country.model.id) is -1
         data = country.model
         context.strokeRect data.bounds.x * @scale, data.bounds.y * @scale, data.bounds.width() * @scale, data.bounds.height() * @scale
 
@@ -173,3 +218,17 @@ class renderers.Seasons extends nv.RenderingPlugin
     @current += @increment
     @wheel.entity.model.rotate = Math.min(@current, @end) % (2 * Math.PI)
     @animating = @current < @end
+
+
+class renderers.Map extends nv.RenderingPlugin
+  constructor: (scene, entity) ->
+    super scene, entity
+
+  draw: (context, canvas) ->
+    return unless @entity.model.debug is true
+    scale = @entity.scale
+    for country in @entity.model.countries
+      context.setStrokeStyle "green"
+      context.setStrokeWidth 4
+
+      context.strokeRect country.bounds.x * scale, country.bounds.y * scale, country.bounds.width() * scale, country.bounds.height() * scale

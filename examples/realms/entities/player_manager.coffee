@@ -29,7 +29,7 @@ class entities.PlayerManager extends nv.Entity
             @clientPlayer().selectCountry id
             @scene.fire "game:selected:country",
               id: id
-              count: @countries.length
+              count: @clientPlayer().countries().length
     
   "event(game:mp:player)": (number) ->
     @model.playerNumber = number

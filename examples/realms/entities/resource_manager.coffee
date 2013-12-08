@@ -137,6 +137,7 @@ class entities.ResourceManager extends nv.Entity
     @grainYield = (Math.random() * @seasonData.farming[ @season ].range + @seasonData.farming[ @season ].base)
     @goldYield = (Math.random() * @seasonData.mining[ @season ].range + @seasonData.mining[ @season ].base)
     @populationYield = null
+    @scene.fire "game:resource:yields:updated"
     
     console.log "grainYield:", @seasonData.farming[@season].base, @seasonData.farming[ @season ].range, @grainYield
     console.log "goldYield:", @seasonData.mining[@season].base, @seasonData.mining[ @season ].range, @goldYield

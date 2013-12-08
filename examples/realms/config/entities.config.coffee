@@ -10,7 +10,7 @@ realms.entities =
 
   imageMap:
     entity: entities.ImageMap
-    plugins: [ nv.SpriteRenderingPlugin ]
+    plugins: [ nv.SpriteRenderingPlugin, renderers.Map ]
     model:
       options:
         speed: 1.5
@@ -52,7 +52,7 @@ realms.entities =
 
   resourceManager:
     entity: entities.ResourceManager
-    plugins: []
+    plugins: [ nv.YieldRenderer ]
     model:
       options:
         population: 0

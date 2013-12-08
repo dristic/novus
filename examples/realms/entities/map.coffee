@@ -1,11 +1,9 @@
 class entities.MapBase extends nv.Entity
   constructor: (scene, plugins, model) ->
     # load map from player chosen game scenario
-    scenario = scene.get('scenario')
-    @mapWidth = scenario.map.width
-    @mapHeight = scenario.map.height
-    # mapModel = nv.extend model, scenario.map
-    # mapModel.data = scenario.data.layer0
+    @scenario = scene.get('scenario')
+    @mapWidth = @scenario.map.width
+    @mapHeight = @scenario.map.height
 
     super scene, plugins, model
 
@@ -18,6 +16,7 @@ class entities.MapBase extends nv.Entity
     @camera = scene.get 'camera'
     @camera.x = -160
     @camera.y = -230
+
 
     window.addEventListener 'resize', @scaleLayers
 
@@ -60,10 +59,6 @@ class entities.MapBase extends nv.Entity
       x: data.x
       y: data.y
 
-    # tile = @playerData.getTileFromScreenXY(data.x - @camera.x, data.y - @camera.y)
-    # if tile isnt 0
-    #   @scene.fire "game:clicked:country", tile
-
   "event(engine:gamepad:mouse:up)": (data) ->
     @down = false
 
@@ -104,6 +99,12 @@ class entities.TileMap extends entities.MapBase
     #@timeout = setTimeout @cache, 5000
     @scaleLayers()
 
+  "event(engine:gamepad:mouse:down)": (data) ->
+    super data
+    tile = @playerData.getTileFromScreenXY(data.x - @camera.x, data.y - @camera.y)
+    if tile isnt 0
+      @scene.fire "game:clicked:country", tile
+
   cache: () =>
     @getPlugin(nv.SpriteMapRenderingPlugin).cache(@model.width, @model.height)
 
@@ -122,8 +123,25 @@ class entities.ImageMap extends entities.MapBase
     @camera.x = @model.camera?.x || 0
     @camera.y = @model.camera?.y || 0
 
+    @model.countries = []
+    for name,data of @scenario.countries
+      @model.countries.push
+        id: data.id
+        bounds: data.bounds
+
+  "event(engine:gamepad:mouse:down)": (data) ->
+    super data
+
+    pt = new nv.Point (data.x - @camera.x) / @scale, (data.y - @camera.y) / @scale
+    for country in @model.countries
+      continue unless country.bounds.contains(pt)
+      console.log "COUNTRY CLICKED: #{country.id}"
+      @scene.fire "game:clicked:country", country.id
+      break
+
   scaleLayers: () ->
     super
     @image.sprite.scale = @scale
+
 
 

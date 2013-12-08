@@ -189,16 +189,6 @@ realms.gameConfig =
       entities:
         map:
           include: "imageMap"
-        # panel:
-        #   entity: nv.Entity
-        #   plugins: [ nv.PanelUIPlugin ]
-        #   model:
-        #     options:
-        #       color: 'rgba(0, 0, 0, 0.5)'
-        #       width: 250
-        #       height: 150
-        #       x: 0
-        #       y: 0
         playerStats:
           entity: nv.Entity
           plugins: [ nv.SpriteUIPlugin ]
@@ -294,27 +284,6 @@ realms.gameConfig =
             options:
               x: 70
               y: 200
-        # laborBoard:
-        #   entity: nv.Entity
-        #   plugins: [ nv.PanelUIPlugin ]
-        #   model:
-        #     options:
-        #       color: 'rgba(0, 0, 0, 0.5)'
-        #       width: 196
-        #       height: 26
-        #       x: 49
-        #       y: 119
-        # laborDistributionText:
-        #   entity: nv.Entity
-        #   plugins: [ nv.TextUIPlugin ]
-        #   model:
-        #     options:
-        #       color: '#CCC'
-        #       font: '14px sans-serif'
-        #       textBaseline: 'bottom'
-        #       text: 'Labor'
-        #       x: 54
-        #       y: 140
         sliderControl:
           entity: nv.Entity
           plugins: [ nv.SliderUIPlugin ]
