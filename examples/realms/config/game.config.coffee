@@ -47,6 +47,21 @@ realms.gameConfig =
         src: "/assets/shield-yellow-48.png"
         width: 48
         height: 48
+    ,
+      flag:
+        src: "/assets/shield-orange-48.png"
+        width: 48
+        height: 48
+    ,
+      flag:
+        src: "/assets/shield-purple-48.png"
+        width: 48
+        height: 48
+    ,
+      flag:
+        src: "/assets/shield-green-48.png"
+        width: 48
+        height: 48
   ]
 
   scenes:
@@ -127,7 +142,7 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              id: "twoByFour"
+              id: "threePlayer"
               text: "3"
               x: "46%"
               y: 400
@@ -139,7 +154,7 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              id: "threeByThree"
+              id: "fourPlayer"
               text: "4"
               x: "50%"
               y: 400
@@ -151,7 +166,7 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              id: "threeByThree"
+              id: "fivePlayer"
               text: "5"
               x: "54%"
               y: 400
@@ -163,7 +178,7 @@ realms.gameConfig =
           plugins: [ nv.ButtonUIPlugin ]
           model:
             options:
-              id: "threeByThree"
+              id: "sixPlayer"
               text: "6"
               x: "58%"
               y: 400
@@ -310,8 +325,9 @@ realms.gameConfig =
               font: 'bold 18px sans-serif'
               textBaseline: 'bottom'
               text: '{{name}}'
+              textAlign: 'center'
               bind: entities.PlayerManager
-              x: 135
+              x: 205
               y: 42
         labels:
           entity: nv.Entity

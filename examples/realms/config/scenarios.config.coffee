@@ -18,19 +18,233 @@ realms.scenarios =
         rations: 1
       countries:
         Darkland:
+          country: 'Darkland'
           id: 1026
           owner: 1
           flag:
             x: 620
-            y: 435
+            y: 430
           bounds: new nv.Rect(620,435,620,435).translate(8,8).outset(64,64)
-        Danville:
+        Dancestershire:
+          country: 'Dancestershire'
           id: 1027
           owner: 2
           flag:
             x: 510
             y: 810
           bounds: new nv.Rect(510,810,510,810).translate(8,8).outset(64,64)
+
+    threePlayer:
+      description: "3-players"
+      players: 3
+      map:
+        width: 1600
+        height: 1200
+        src: '/assets/green_island_map.png'
+        type: 'image'
+      resources:
+        food: 110
+        peasants: 50
+        soldiers: 5
+        gold: 0
+        ratio: 0.5
+        rations: 1
+      countries:
+        Darkland:
+          country: 'Darkland'
+          id: 1026
+          owner: 1
+          flag:
+            x: 620
+            y: 430
+          bounds: new nv.Rect(620,435,620,435).translate(8,8).outset(64,64)
+        Dancestershire:
+          country: 'Dancestershire'
+          id: 1027
+          owner: 2
+          flag:
+            x: 510
+            y: 810
+          bounds: new nv.Rect(510,810,510,810).translate(8,8).outset(64,64)
+        NewShorewyk:
+          country: 'New Shorewyk'
+          id: 1028
+          owner: 3
+          flag:
+            x: 1085
+            y: 530
+          bounds: new nv.Rect(1200,600,1200,600).translate(8,8).outset(64,64)
+ 
+    fourPlayer:
+      description: "4-players"
+      players: 4
+      map:
+        width: 1600
+        height: 1200
+        src: '/assets/green_island_map.png'
+        type: 'image'
+      resources:
+        food: 110
+        peasants: 50
+        soldiers: 5
+        gold: 0
+        ratio: 0.5
+        rations: 1
+      countries:
+        Darkland:
+          country: 'Darkland'
+          id: 1026
+          owner: 1
+          flag:
+            x: 620
+            y: 430
+          bounds: new nv.Rect(620,435,620,435).translate(8,8).outset(64,64)
+        Dancestershire:
+          country: 'Dancestershire'
+          id: 1027
+          owner: 2
+          flag:
+            x: 510
+            y: 808
+          bounds: new nv.Rect(510,810,510,810).translate(8,8).outset(64,64)
+        NewShorewyk:
+          country: 'New Shorewyk'
+          id: 1028
+          owner: 3
+          flag:
+            x: 1085
+            y: 530
+          bounds: new nv.Rect(1085,530,1085,530).translate(8,8).outset(64,64)
+        Southton:
+          country: 'Southton'
+          id: 1029
+          owner: 4
+          flag:
+            x: 1049
+            y: 984
+          bounds: new nv.Rect(1049,984,1049,984).translate(8,8).outset(64,64)
+
+    fivePlayer:
+      description: "4-players"
+      players: 5
+      map:
+        width: 1600
+        height: 1200
+        src: '/assets/green_island_map.png'
+        type: 'image'
+      resources:
+        food: 110
+        peasants: 50
+        soldiers: 5
+        gold: 0
+        ratio: 0.5
+        rations: 1
+      countries:
+        Darkland:
+          country: 'Darkland'
+          id: 1026
+          owner: 1
+          flag:
+            x: 620
+            y: 430
+          bounds: new nv.Rect(620,435,620,435).translate(8,8).outset(64,64)
+        Dancestershire:
+          country: 'Dancestershire'
+          id: 1027
+          owner: 2
+          flag:
+            x: 510
+            y: 808
+          bounds: new nv.Rect(510,810,510,810).translate(8,8).outset(64,64)
+        NewShorewyk:
+          country: 'New Shorewyk'
+          id: 1028
+          owner: 3
+          flag:
+            x: 1085
+            y: 530
+          bounds: new nv.Rect(1085,530,1085,530).translate(8,8).outset(64,64)
+        Southton:
+          country: 'Southton'
+          id: 1029
+          owner: 4
+          flag:
+            x: 1049
+            y: 984
+          bounds: new nv.Rect(1049,984,1049,984).translate(8,8).outset(64,64)
+        DragonHead:
+          country: "Dragon Head"
+          id: 1029
+          owner: 5
+          flag:
+            x: 1163
+            y: 135
+          bounds: new nv.Rect(1163,135,1163,135).translate(8,8).outset(64,64)
+
+    sixPlayer:
+      description: "6-players"
+      players: 6
+      map:
+        width: 1600
+        height: 1200
+        src: '/assets/green_island_map.png'
+        type: 'image'
+      resources:
+        food: 110
+        peasants: 50
+        soldiers: 5
+        gold: 0
+        ratio: 0.5
+        rations: 1
+      countries:
+        Darkland:
+          country: 'Darkland'
+          id: 1026
+          owner: 1
+          flag:
+            x: 620
+            y: 430
+          bounds: new nv.Rect(620,435,620,435).translate(8,8).outset(64,64)
+        Dancestershire:
+          country: 'Dancestershire'
+          id: 1027
+          owner: 2
+          flag:
+            x: 510
+            y: 808
+          bounds: new nv.Rect(510,810,510,810).translate(8,8).outset(64,64)
+        NewShorewyk:
+          country: 'New Shorewyk'
+          id: 1028
+          owner: 3
+          flag:
+            x: 1085
+            y: 530
+          bounds: new nv.Rect(1085,530,1085,530).translate(8,8).outset(64,64)
+        Southton:
+          country: 'Southton'
+          id: 1029
+          owner: 4
+          flag:
+            x: 1049
+            y: 984
+          bounds: new nv.Rect(1049,984,1049,984).translate(8,8).outset(64,64)
+        DragonHead:
+          country: "Dragon Head"
+          id: 1029
+          owner: 5
+          flag:
+            x: 1163
+            y: 135
+          bounds: new nv.Rect(1163,135,1163,135).translate(8,8).outset(64,64)
+        Middleton:
+          country: "Middleton"
+          id: 1029
+          owner: 6
+          flag:
+            x: 785
+            y: 660
+          bounds: new nv.Rect(785,680,785,680).translate(8,8).outset(64,64)
 
     description: "Player v. Player"
     twoByTwo:

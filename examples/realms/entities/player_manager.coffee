@@ -80,27 +80,21 @@ class entities.PlayerManager extends nv.Entity
         if player.model.number is scenario.countries[name].owner
           flag = nv.extend {}, scenario.countries[name].flag
           flag = nv.extend flag, rootModel.config.playerMetadata[player.model.number - 1].flag
-          flag.width = 16
-          flag.height = 16
+          flag.width = 20
+          flag.height = 20
 
           data = nv.extend {}, scenario.countries[name]
           data = nv.extend data,
-            country: name
             resources: scenario.resources
             ratio: 0.5
             flag: flag
-            bounds: new nv.Rect(flag.x, flag.y, flag.x + flag.width, flag.y + flag.height).outset(32,32)
+            bounds: new nv.Rect(flag.x, flag.y, flag.x + flag.width, flag.y + flag.height).outset(40,40)
 
           player.createCountry data
 
     @countries = @scene.getEntities(entities.Country)
 
-    # @model.set 'currentPlayer', @model.players[@model.turn - 1]
-    # console.log "PLAYER =", @model.currentPlayer.model.number
-    # console.log "TURN =", @model.turn
     @scene.fire "game:player:assigned"
-    # @currentPlayer().beginTurn()
-
     @model.set 'currentPlayer', null
     @model.set 'turn', 0
     @nextPlayersTurn()

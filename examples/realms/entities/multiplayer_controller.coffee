@@ -21,15 +21,18 @@ class entities.MultiplayerController extends nv.Entity
 
       # Select the player number
       @ref.child('players').once 'value', (snapshot) =>
-        if snapshot.val() is 0 or snapshot.val() is 3 or snapshot.val() is null
-          @scene.fire "game:mp:player", 1
-          @ref.child('players').set 1
-        else if snapshot.val() is 1
-          @scene.fire "game:mp:player", 2
-          @ref.child('players').set 2
-        else if snapshot.val() is 2
-          @scene.fire "game:mp:player", 3
-          @ref.child('players').set 3
+        scenario = @scene.rootModel.get 'scenario'
+        numberPlayers = scenario.players
+        player = snapshot.val()
+
+        if player is 0 or player is numberPlayers or player is null
+          @playerNumber = 1
+          @scene.fire "game:mp:player", @playerNumber
+          @ref.child('players').set @playerNumber
+        else if player < numberPlayers
+          @playerNumber = player + 1
+          @scene.fire "game:mp:player", @playerNumber
+          @ref.child('players').set @playerNumber
         else
           # Reset the game
           @ref.child('turn').set 1
@@ -37,10 +40,11 @@ class entities.MultiplayerController extends nv.Entity
 
       # Listen for the other player to join the game
       @ref.child('players').on 'value', (snapshot) =>
-        if snapshot.val() is 2
+        player = snapshot.val() + 1
+        if player isnt @playerNumber
           @scene.fire 'game:ui:alert',
             type: 'info'
-            message: "A player has joined the game!"
+            message: "Player ##{player} has joined the game!"
 
       # Lose peasants and soldiers when attacked
       @ref.child('attacks').on 'child_added', (snapshot) =>
