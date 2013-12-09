@@ -201,6 +201,24 @@ realms.gameConfig =
         nv.ParticleEngine,
         nv.UIEngine
       ]
+      soundfx:
+        shoot:
+          asset: "/assets/sounds/battle-sounds.mp3"
+          event: "game:army:send"
+          action: "play"
+          maxPlayTime: 6000
+          fadeOut: 5000
+          startTime: 0
+        # collision:
+        #   asset: "/assets/sounds/depth_charge.wav"
+        #   event: "engine:collision:Bullet:Asteroid"
+        #   action: "play"
+        # thrusters:
+        #   asset: "/assets/sounds/bullet_whizzing.wav"
+        #   event: "entity:thrust:Ship"
+        #   action: "play"
+        #   maxPlayTime: 350
+        #   startTime: 0.15
       entities:
         map:
           include: "imageMap"

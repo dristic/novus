@@ -46,6 +46,8 @@ class entities.PlayerManager extends nv.Entity
         type: 'info'
         message: "#{data.amount} soldiers attack #{@getCountryNameById(data.country)}!"
 
+      
+
     else
       @scene.fire 'game:ui:alert',
         type: 'warning'

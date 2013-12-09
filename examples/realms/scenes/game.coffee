@@ -11,6 +11,8 @@ class scenes.Game extends nv.Scene
       @fire "scene:close"
       @game.openScene 'Gameover'
 
+    new nv.SoundFactory().wire this, @rootModel.config.scenes.game.soundfx
+
   destroy: () ->
     @send "engine:timing:stop"
     super
