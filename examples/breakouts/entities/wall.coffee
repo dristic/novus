@@ -2,7 +2,7 @@ class entities.Wall extends nv.Entity
   constructor: (scene, options = {}) ->
     super scene, options
 
-    @model.set 'width', options.width ? 20
+    @model.set 'width', options.width ? 16
     @model.set 'height', options.height ? 30 * 22
     @model.set 'physicsObjectType', 'passive'
 
@@ -23,7 +23,7 @@ nv.factory.register 'Wall', (scene, options = {}) ->
   if breakout.config.debug is true
     wall.addComponent nv.GleamRenderingComponent,
       drawable: new gleam.Square
-        width: options.width ? 20
+        width: options.width ? 16
         height: options.height ? 30 * 22
         x: options.x
         y: options.y

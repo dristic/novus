@@ -1,45 +1,39 @@
 class entities.LevelSpawner extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
-
-    # Grab the brick data to spawn bricks with
-    @brickData = scene.get("config").entities.blueBrick
-    @entityConfig = scene.get("config").entities
     
   "event(spawn:level)": (data) ->
-    levelData = @model.get("data")
+    levelData = breakout.levels[data]
     startX = 17
     x = startX # We want to center the bricks
-    y = @brickData.model.options.height # Skip the first line
+    y = levelData.height # Skip the first line
 
-    for row in levelData
+    for row in levelData.data
       for cell in row
+        color = "blue"
         switch cell
           when "X"
             # Do nothing
             a = 10
           when "b"
-            brickData = @entityConfig.blueBrick
-            brickData.model.options.x = x
-            brickData.model.options.y = y
-            @scene.createEntity brickData
+            color = "blue"
           when "o"
-            brickData = @entityConfig.orangeBrick
-            brickData.model.options.x = x
-            brickData.model.options.y = y
-            @scene.createEntity brickData
+            color = "orange"
           when "r"
-            brickData = @entityConfig.redBrick
-            brickData.model.options.x = x
-            brickData.model.options.y = y
-            @scene.createEntity brickData
+            color = "red"
           when "g"
-            brickData = @entityConfig.greenBrick
-            brickData.model.options.x = x
-            brickData.model.options.y = y
-            @scene.createEntity brickData
+            color = "green"
 
-        x += @brickData.model.options.width
+        @scene.createEntity 'Brick',
+          x: x
+          y: y
+          color: color
 
-      y += @brickData.model.options.height
+        x += levelData.width
+
+      y += levelData.height
       x = startX
+
+nv.factory.register 'LevelSpawner', (scene, options = {}) ->
+  new entities.LevelSpawner scene, options
+

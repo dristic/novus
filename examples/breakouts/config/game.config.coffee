@@ -85,6 +85,10 @@ breakout.maps.game =
       type: "Ball"
       x: 150
       y: 250
+    }, {
+      type: "LevelSpawner"
+      x: 0
+      y: 0
     }]
   }]
 

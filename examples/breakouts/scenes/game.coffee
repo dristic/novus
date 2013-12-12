@@ -14,7 +14,7 @@ class scenes.Game extends nv.Scene
     @loadMap breakout.maps.game
 
     # Spawn the level
-    @fire "spawn:level", 1
+    @fire "spawn:level", 'level1'
 
     # Start the scene
     @send "engine:timing:start"

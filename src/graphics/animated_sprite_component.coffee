@@ -14,6 +14,8 @@ class nv.AnimatedSpriteRenderingComponent extends nv.SpriteRenderingComponent
       @sprite.x = value
     @model.on 'change:y', (value) =>
       @sprite.y = value
+    @model.on 'change:currentAnimation', (value) =>
+      @play value
 
   play: (animation) ->
     @sprite.play animation

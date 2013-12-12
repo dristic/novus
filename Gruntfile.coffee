@@ -7,7 +7,7 @@ module.exports = (grunt) ->
   grunt.initConfig
     meta:
       name: 'novus'
-      version: '0.1.0'
+      version: '0.0.3'
 
     lint:
       files: ['src/**/*.js', 'test/**/*.js']
@@ -28,7 +28,7 @@ module.exports = (grunt) ->
           '* Copyright (c) <%= grunt.template.today("yyyy") %> ' +
           'Dan Ristic; Licensed MIT */'
       dist:
-        src: ['lib/vendor/zepto.min.js', 'dist/novus-<%= meta.version %>.js']
+        src: ['dist/novus-<%= meta.version %>.js']
         dest: 'dist/novus-<%= meta.version %>.min.js'
 
     uglify:
