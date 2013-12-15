@@ -24,7 +24,7 @@ realms.scenarios =
           flag:
             x: 620
             y: 430
-          bounds: new nv.Rect(620,435,620,435).translate(8,8).outset(64,64)
+          bounds: new nv.Rect(620,435,620,435).translate(20,16).outset(64,64)
         Dancestershire:
           country: 'Dancestershire'
           id: 1027
@@ -32,7 +32,7 @@ realms.scenarios =
           flag:
             x: 510
             y: 810
-          bounds: new nv.Rect(510,810,510,810).translate(8,8).outset(64,64)
+          bounds: new nv.Rect(510,810,510,810).translate(20,16).outset(64,64)
 
     threePlayer:
       description: "3-players"

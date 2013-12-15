@@ -62,6 +62,7 @@ class nv.GamepadEngine extends nv.Engine
     @scene.fire "engine:gamepad:mouse:up", data unless not @config.trackMouse
 
   update: (dt) ->
+    return unless @options.scaleCoords
     # Calculate the current ratio of the screen
     width = document.body.clientWidth
     height = document.body.clientHeight

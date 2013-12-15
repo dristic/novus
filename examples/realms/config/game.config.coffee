@@ -192,6 +192,7 @@ realms.gameConfig =
           keys:
             shoot: nv.Key.Spacebar
           trackMouse: true
+          scaleCoords: false
       engines: [
         nv.RenderingEngine,
         nv.GamepadEngine,

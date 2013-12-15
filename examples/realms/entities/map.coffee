@@ -17,11 +17,12 @@ class entities.MapBase extends nv.Entity
     @camera.x = -160
     @camera.y = -230
 
-
     window.addEventListener 'resize', @scaleLayers
 
   scaleLayers: () =>
     @scale = window.innerWidth / @mapWidth
+    console.log "scale", @scale
+
     @origin.x = 0
     @origin.y = 0
     @camera.x = 0 #(@mapWidth - window.innerWidth) / -2
@@ -133,7 +134,9 @@ class entities.ImageMap extends entities.MapBase
     super data
 
     pt = new nv.Point (data.x - @camera.x) / @scale, (data.y - @camera.y) / @scale
+    console.log "click", data.x, data.y, pt.x, pt.y, @scale
     for country in @model.countries
+      console.log "bounds", country.bounds.x, country.bounds.y
       continue unless country.bounds.contains(pt)
       console.log "COUNTRY CLICKED: #{country.id}"
       @scene.fire "game:clicked:country", country.id

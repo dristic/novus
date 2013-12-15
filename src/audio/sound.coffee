@@ -55,6 +55,7 @@ class nv.SoundPlugin extends nv.Plugin
   rewind: () ->
     @pause()
     @sound.currentTime = 0
+    @sound.volume = @options.startVolume ? 1
     @state = "stopped"
 
   stop: () ->
@@ -63,7 +64,7 @@ class nv.SoundPlugin extends nv.Plugin
   fadeOut: () ->
     fade = () =>
       @sound.volume = Math.max(0, @sound.volume - 0.05)
-      console.log "fade", @sound.volume
+      # console.log "fade", @sound.volume
       setTimeout(fade, 50) unless @state is "stopped"
     setTimeout(fade, @options.fadeOut)
 

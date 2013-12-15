@@ -2434,6 +2434,9 @@
         this.sound.currentTime = this.options.startTime;
       }
       this.sound.play();
+      if (this.options.fadeOut) {
+        this.fadeOut();
+      }
       return this.state = "playing";
     };
 
@@ -2450,6 +2453,19 @@
 
     SoundPlugin.prototype.stop = function() {
       return this.rewind();
+    };
+
+    SoundPlugin.prototype.fadeOut = function() {
+      var fade,
+        _this = this;
+      fade = function() {
+        _this.sound.volume = Math.max(0, _this.sound.volume - 0.05);
+        console.log("fade", _this.sound.volume);
+        if (_this.state !== "stopped") {
+          return setTimeout(fade, 50);
+        }
+      };
+      return setTimeout(fade, this.options.fadeOut);
     };
 
     return SoundPlugin;
@@ -5376,25 +5392,30 @@
       if (typeof Firebase !== "undefined" && Firebase !== null) {
         this.ref = new Firebase("" + this.model.url + "/game/" + this.hash);
         this.ref.child('players').once('value', function(snapshot) {
-          if (snapshot.val() === 0 || snapshot.val() === 3 || snapshot.val() === null) {
-            _this.scene.fire("game:mp:player", 1);
-            return _this.ref.child('players').set(1);
-          } else if (snapshot.val() === 1) {
-            _this.scene.fire("game:mp:player", 2);
-            return _this.ref.child('players').set(2);
-          } else if (snapshot.val() === 2) {
-            _this.scene.fire("game:mp:player", 3);
-            return _this.ref.child('players').set(3);
+          var numberPlayers, player, scenario;
+          scenario = _this.scene.rootModel.get('scenario');
+          numberPlayers = scenario.players;
+          player = snapshot.val();
+          if (player === 0 || player === numberPlayers || player === null) {
+            _this.playerNumber = 1;
+            _this.scene.fire("game:mp:player", _this.playerNumber);
+            return _this.ref.child('players').set(_this.playerNumber);
+          } else if (player < numberPlayers) {
+            _this.playerNumber = player + 1;
+            _this.scene.fire("game:mp:player", _this.playerNumber);
+            return _this.ref.child('players').set(_this.playerNumber);
           } else {
             _this.ref.child('turn').set(1);
             return _this.ref.child('players').set(0);
           }
         });
         this.ref.child('players').on('value', function(snapshot) {
-          if (snapshot.val() === 2) {
+          var player;
+          player = snapshot.val() + 1;
+          if (player !== _this.playerNumber) {
             return _this.scene.fire('game:ui:alert', {
               type: 'info',
-              message: "A player has joined the game!"
+              message: "Player #" + player + " has joined the game!"
             });
           }
         });
@@ -5761,15 +5782,14 @@
           if (player.model.number === scenario.countries[name].owner) {
             flag = nv.extend({}, scenario.countries[name].flag);
             flag = nv.extend(flag, rootModel.config.playerMetadata[player.model.number - 1].flag);
-            flag.width = 16;
-            flag.height = 16;
+            flag.width = 20;
+            flag.height = 20;
             data = nv.extend({}, scenario.countries[name]);
             data = nv.extend(data, {
-              country: name,
               resources: scenario.resources,
               ratio: 0.5,
               flag: flag,
-              bounds: new nv.Rect(flag.x, flag.y, flag.x + flag.width, flag.y + flag.height).outset(32, 32)
+              bounds: new nv.Rect(flag.x, flag.y, flag.x + flag.width, flag.y + flag.height).outset(40, 40)
             });
             player.createCountry(data);
           }
@@ -6403,6 +6423,7 @@
         _this.fire("scene:close");
         return _this.game.openScene('Gameover');
       });
+      new nv.SoundFactory().wire(this, this.rootModel.config.scenes.game.soundfx);
     }
 
     Game.prototype.destroy = function() {
@@ -6851,15 +6872,17 @@
         },
         countries: {
           Darkland: {
+            country: 'Darkland',
             id: 1026,
             owner: 1,
             flag: {
               x: 620,
-              y: 435
+              y: 430
             },
             bounds: new nv.Rect(620, 435, 620, 435).translate(8, 8).outset(64, 64)
           },
-          Danville: {
+          Dancestershire: {
+            country: 'Dancestershire',
             id: 1027,
             owner: 2,
             flag: {
@@ -6867,6 +6890,266 @@
               y: 810
             },
             bounds: new nv.Rect(510, 810, 510, 810).translate(8, 8).outset(64, 64)
+          }
+        }
+      },
+      threePlayer: {
+        description: "3-players",
+        players: 3,
+        map: {
+          width: 1600,
+          height: 1200,
+          src: '/assets/green_island_map.png',
+          type: 'image'
+        },
+        resources: {
+          food: 110,
+          peasants: 50,
+          soldiers: 5,
+          gold: 0,
+          ratio: 0.5,
+          rations: 1
+        },
+        countries: {
+          Darkland: {
+            country: 'Darkland',
+            id: 1026,
+            owner: 1,
+            flag: {
+              x: 620,
+              y: 430
+            },
+            bounds: new nv.Rect(620, 435, 620, 435).translate(8, 8).outset(64, 64)
+          },
+          Dancestershire: {
+            country: 'Dancestershire',
+            id: 1027,
+            owner: 2,
+            flag: {
+              x: 510,
+              y: 810
+            },
+            bounds: new nv.Rect(510, 810, 510, 810).translate(8, 8).outset(64, 64)
+          },
+          NewShorewyk: {
+            country: 'New Shorewyk',
+            id: 1028,
+            owner: 3,
+            flag: {
+              x: 1085,
+              y: 530
+            },
+            bounds: new nv.Rect(1200, 600, 1200, 600).translate(8, 8).outset(64, 64)
+          }
+        }
+      },
+      fourPlayer: {
+        description: "4-players",
+        players: 4,
+        map: {
+          width: 1600,
+          height: 1200,
+          src: '/assets/green_island_map.png',
+          type: 'image'
+        },
+        resources: {
+          food: 110,
+          peasants: 50,
+          soldiers: 5,
+          gold: 0,
+          ratio: 0.5,
+          rations: 1
+        },
+        countries: {
+          Darkland: {
+            country: 'Darkland',
+            id: 1026,
+            owner: 1,
+            flag: {
+              x: 620,
+              y: 430
+            },
+            bounds: new nv.Rect(620, 435, 620, 435).translate(8, 8).outset(64, 64)
+          },
+          Dancestershire: {
+            country: 'Dancestershire',
+            id: 1027,
+            owner: 2,
+            flag: {
+              x: 510,
+              y: 808
+            },
+            bounds: new nv.Rect(510, 810, 510, 810).translate(8, 8).outset(64, 64)
+          },
+          NewShorewyk: {
+            country: 'New Shorewyk',
+            id: 1028,
+            owner: 3,
+            flag: {
+              x: 1085,
+              y: 530
+            },
+            bounds: new nv.Rect(1085, 530, 1085, 530).translate(8, 8).outset(64, 64)
+          },
+          Southton: {
+            country: 'Southton',
+            id: 1029,
+            owner: 4,
+            flag: {
+              x: 1049,
+              y: 984
+            },
+            bounds: new nv.Rect(1049, 984, 1049, 984).translate(8, 8).outset(64, 64)
+          }
+        }
+      },
+      fivePlayer: {
+        description: "4-players",
+        players: 5,
+        map: {
+          width: 1600,
+          height: 1200,
+          src: '/assets/green_island_map.png',
+          type: 'image'
+        },
+        resources: {
+          food: 110,
+          peasants: 50,
+          soldiers: 5,
+          gold: 0,
+          ratio: 0.5,
+          rations: 1
+        },
+        countries: {
+          Darkland: {
+            country: 'Darkland',
+            id: 1026,
+            owner: 1,
+            flag: {
+              x: 620,
+              y: 430
+            },
+            bounds: new nv.Rect(620, 435, 620, 435).translate(8, 8).outset(64, 64)
+          },
+          Dancestershire: {
+            country: 'Dancestershire',
+            id: 1027,
+            owner: 2,
+            flag: {
+              x: 510,
+              y: 808
+            },
+            bounds: new nv.Rect(510, 810, 510, 810).translate(8, 8).outset(64, 64)
+          },
+          NewShorewyk: {
+            country: 'New Shorewyk',
+            id: 1028,
+            owner: 3,
+            flag: {
+              x: 1085,
+              y: 530
+            },
+            bounds: new nv.Rect(1085, 530, 1085, 530).translate(8, 8).outset(64, 64)
+          },
+          Southton: {
+            country: 'Southton',
+            id: 1029,
+            owner: 4,
+            flag: {
+              x: 1049,
+              y: 984
+            },
+            bounds: new nv.Rect(1049, 984, 1049, 984).translate(8, 8).outset(64, 64)
+          },
+          DragonHead: {
+            country: "Dragon Head",
+            id: 1029,
+            owner: 5,
+            flag: {
+              x: 1163,
+              y: 135
+            },
+            bounds: new nv.Rect(1163, 135, 1163, 135).translate(8, 8).outset(64, 64)
+          }
+        }
+      },
+      sixPlayer: {
+        description: "6-players",
+        players: 6,
+        map: {
+          width: 1600,
+          height: 1200,
+          src: '/assets/green_island_map.png',
+          type: 'image'
+        },
+        resources: {
+          food: 110,
+          peasants: 50,
+          soldiers: 5,
+          gold: 0,
+          ratio: 0.5,
+          rations: 1
+        },
+        countries: {
+          Darkland: {
+            country: 'Darkland',
+            id: 1026,
+            owner: 1,
+            flag: {
+              x: 620,
+              y: 430
+            },
+            bounds: new nv.Rect(620, 435, 620, 435).translate(8, 8).outset(64, 64)
+          },
+          Dancestershire: {
+            country: 'Dancestershire',
+            id: 1027,
+            owner: 2,
+            flag: {
+              x: 510,
+              y: 808
+            },
+            bounds: new nv.Rect(510, 810, 510, 810).translate(8, 8).outset(64, 64)
+          },
+          NewShorewyk: {
+            country: 'New Shorewyk',
+            id: 1028,
+            owner: 3,
+            flag: {
+              x: 1085,
+              y: 530
+            },
+            bounds: new nv.Rect(1085, 530, 1085, 530).translate(8, 8).outset(64, 64)
+          },
+          Southton: {
+            country: 'Southton',
+            id: 1029,
+            owner: 4,
+            flag: {
+              x: 1049,
+              y: 984
+            },
+            bounds: new nv.Rect(1049, 984, 1049, 984).translate(8, 8).outset(64, 64)
+          },
+          DragonHead: {
+            country: "Dragon Head",
+            id: 1029,
+            owner: 5,
+            flag: {
+              x: 1163,
+              y: 135
+            },
+            bounds: new nv.Rect(1163, 135, 1163, 135).translate(8, 8).outset(64, 64)
+          },
+          Middleton: {
+            country: "Middleton",
+            id: 1029,
+            owner: 6,
+            flag: {
+              x: 785,
+              y: 660
+            },
+            bounds: new nv.Rect(785, 680, 785, 680).translate(8, 8).outset(64, 64)
           }
         }
       },
@@ -7193,6 +7476,24 @@
           width: 48,
           height: 48
         }
+      }, {
+        flag: {
+          src: "/assets/shield-orange-48.png",
+          width: 48,
+          height: 48
+        }
+      }, {
+        flag: {
+          src: "/assets/shield-purple-48.png",
+          width: 48,
+          height: 48
+        }
+      }, {
+        flag: {
+          src: "/assets/shield-green-48.png",
+          width: 48,
+          height: 48
+        }
       }
     ],
     scenes: {
@@ -7285,7 +7586,7 @@
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
-                id: "twoByFour",
+                id: "threePlayer",
                 text: "3",
                 x: "46%",
                 y: 400,
@@ -7300,7 +7601,7 @@
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
-                id: "threeByThree",
+                id: "fourPlayer",
                 text: "4",
                 x: "50%",
                 y: 400,
@@ -7315,7 +7616,7 @@
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
-                id: "threeByThree",
+                id: "fivePlayer",
                 text: "5",
                 x: "54%",
                 y: 400,
@@ -7330,7 +7631,7 @@
             plugins: [nv.ButtonUIPlugin],
             model: {
               options: {
-                id: "threeByThree",
+                id: "sixPlayer",
                 text: "6",
                 x: "58%",
                 y: 400,
@@ -7352,6 +7653,16 @@
           }
         },
         engines: [nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine, nv.UIEngine],
+        soundfx: {
+          shoot: {
+            asset: "/assets/sounds/battle-sounds.mp3",
+            event: "game:army:send",
+            action: "play",
+            maxPlayTime: 6000,
+            fadeOut: 5000,
+            startTime: 0
+          }
+        },
         entities: {
           map: {
             include: "imageMap"
@@ -7507,8 +7818,9 @@
                 font: 'bold 18px sans-serif',
                 textBaseline: 'bottom',
                 text: '{{name}}',
+                textAlign: 'center',
                 bind: entities.PlayerManager,
-                x: 135,
+                x: 205,
                 y: 42
               }
             }

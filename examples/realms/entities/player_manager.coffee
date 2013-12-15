@@ -46,7 +46,7 @@ class entities.PlayerManager extends nv.Entity
         type: 'info'
         message: "#{data.amount} soldiers attack #{@getCountryNameById(data.country)}!"
 
-      
+
 
     else
       @scene.fire 'game:ui:alert',
@@ -90,7 +90,7 @@ class entities.PlayerManager extends nv.Entity
             resources: scenario.resources
             ratio: 0.5
             flag: flag
-            bounds: new nv.Rect(flag.x, flag.y, flag.x + flag.width, flag.y + flag.height).outset(40,40)
+            bounds: scenario.countries[name].bounds
 
           player.createCountry data
 
