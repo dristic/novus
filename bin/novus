@@ -26,10 +26,22 @@ function copyDir(dir, otherDir) {
     }
 
     items.forEach(function (item) {
+      // log("copying: " + dir + item);
       if (fs.lstatSync(dir + item).isDirectory()) {
-        copyDir(dir + item + '/', otherDir + item + '/');
+        var src = dir + item + '/',
+            dest = otherDir + item + '/';
+        // log("copy dir: " + src + " --> " + dest);
+        if (!fs.existsSync(dest)) {
+          // log("Creating " + dest);
+          fs.mkdirSync(dest);
+        }
+        copyDir(src, dest);
       } else {
-        fs.createReadStream(dir + item).pipe(fs.createWriteStream(otherDir + item));
+        if (item[0] !== '.') {
+          fs.createReadStream(dir + item).pipe(fs.createWriteStream(otherDir + item));
+        } else {
+          // log("skipping: " + item)
+        }
       }
     });
   });
