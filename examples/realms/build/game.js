@@ -2446,8 +2446,10 @@
     };
 
     SoundPlugin.prototype.rewind = function() {
+      var _ref;
       this.pause();
       this.sound.currentTime = 0;
+      this.sound.volume = (_ref = this.options.startVolume) != null ? _ref : 1;
       return this.state = "stopped";
     };
 
@@ -2460,7 +2462,6 @@
         _this = this;
       fade = function() {
         _this.sound.volume = Math.max(0, _this.sound.volume - 0.05);
-        console.log("fade", _this.sound.volume);
         if (_this.state !== "stopped") {
           return setTimeout(fade, 50);
         }
@@ -3185,6 +3186,9 @@
 
     GamepadEngine.prototype.update = function(dt) {
       var height, ratio, width;
+      if (!this.options.scaleCoords) {
+        return;
+      }
       width = document.body.clientWidth;
       height = document.body.clientHeight;
       ratio = Math.min(width / this.originalWidth, height / this.originalHeight);
@@ -5198,6 +5202,7 @@
 
     MapBase.prototype.scaleLayers = function() {
       this.scale = window.innerWidth / this.mapWidth;
+      console.log("scale", this.scale);
       this.origin.x = 0;
       this.origin.y = 0;
       this.camera.x = 0;
@@ -5342,10 +5347,12 @@
       var country, pt, _i, _len, _ref, _results;
       ImageMap.__super__["event(engine:gamepad:mouse:down)"].call(this, data);
       pt = new nv.Point((data.x - this.camera.x) / this.scale, (data.y - this.camera.y) / this.scale);
+      console.log("click", data.x, data.y, pt.x, pt.y, this.scale);
       _ref = this.model.countries;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         country = _ref[_i];
+        console.log("bounds", country.bounds.x, country.bounds.y);
         if (!country.bounds.contains(pt)) {
           continue;
         }
@@ -5789,7 +5796,7 @@
               resources: scenario.resources,
               ratio: 0.5,
               flag: flag,
-              bounds: new nv.Rect(flag.x, flag.y, flag.x + flag.width, flag.y + flag.height).outset(40, 40)
+              bounds: scenario.countries[name].bounds
             });
             player.createCountry(data);
           }
@@ -6879,7 +6886,7 @@
               x: 620,
               y: 430
             },
-            bounds: new nv.Rect(620, 435, 620, 435).translate(8, 8).outset(64, 64)
+            bounds: new nv.Rect(620, 435, 620, 435).translate(20, 16).outset(64, 64)
           },
           Dancestershire: {
             country: 'Dancestershire',
@@ -6889,7 +6896,7 @@
               x: 510,
               y: 810
             },
-            bounds: new nv.Rect(510, 810, 510, 810).translate(8, 8).outset(64, 64)
+            bounds: new nv.Rect(510, 810, 510, 810).translate(20, 16).outset(64, 64)
           }
         }
       },
@@ -7649,7 +7656,8 @@
             keys: {
               shoot: nv.Key.Spacebar
             },
-            trackMouse: true
+            trackMouse: true,
+            scaleCoords: false
           }
         },
         engines: [nv.RenderingEngine, nv.GamepadEngine, nv.SoundEngine, nv.TimingEngine, nv.DebugEngine, nv.ParticleEngine, nv.UIEngine],

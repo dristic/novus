@@ -134,9 +134,9 @@ class entities.ImageMap extends entities.MapBase
     super data
 
     pt = new nv.Point (data.x - @camera.x) / @scale, (data.y - @camera.y) / @scale
-    console.log "click", data.x, data.y, pt.x, pt.y, @scale
+    # console.log "click", data.x, data.y, pt.x, pt.y, @scale
     for country in @model.countries
-      console.log "bounds", country.bounds.x, country.bounds.y
+      # console.log "bounds", country.bounds.x, country.bounds.y
       continue unless country.bounds.contains(pt)
       console.log "COUNTRY CLICKED: #{country.id}"
       @scene.fire "game:clicked:country", country.id
