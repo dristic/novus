@@ -87,7 +87,8 @@ if (args[0] === undefined) {
     .use('/assets', connect.static('assets'))
     .use(function (req, res, next) {
       if (req.url === '/game.js') {
-        var data = new snockets().getConcatenation('game.coffee', { minify: false, async: false });
+        var entryFile = fs.existsSync('game.coffee') ? 'game.coffee' : 'game.js';
+        var data = new snockets().getConcatenation(entryFile, { minify: false, async: false });
         res.setHeader('Content-Type', 'application/javascript');
         res.end(data);
       } else if (req.url === '/' || req.url === '/index.html' || req.url === '/game') {
