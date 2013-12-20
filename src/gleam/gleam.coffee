@@ -10,3 +10,4 @@
 #= require circle
 #= require rectangle
 #= require sprite_map
+#= require iso_sprite_map

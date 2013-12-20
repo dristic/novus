@@ -1,6 +1,9 @@
 // Do any preliminary setup before everything else loads
 
 this.scenes = {};
+this.entities = {};
+
+this.tileMap = {};
 
 // Configure global engine settings
 nv.configure({

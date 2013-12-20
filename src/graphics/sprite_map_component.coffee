@@ -2,7 +2,10 @@ class nv.SpriteMapRenderingComponent extends nv.RenderingComponent
   constructor: (scene, model, options) ->
     super scene, model, options
 
-    @sprite = new gleam.SpriteMap @options
+    if options.isometric is true
+      @sprite = new gleam.IsoSpriteMap @options
+    else
+      @sprite = new gleam.SpriteMap @options
     @sprite.x = @model.get 'x'
     @sprite.y = @model.get 'y'
 

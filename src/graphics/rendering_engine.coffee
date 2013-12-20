@@ -76,7 +76,6 @@ class nv.RenderingEngine extends nv.Engine
 
   onMouseDown: (event) ->
     coords = @toGameCoords event.pageX, event.pageY
-    console.log event
     @gamepadEngine.onMouseDown event.button, coords.x, coords.y, event
 
   onMouseUp: (event) ->
