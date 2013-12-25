@@ -6,6 +6,10 @@
         <title>{{ page.title }}</title>
         <meta name="viewport" content="width=device-width">
 
+        <!-- bootstrap -->
+        <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css">
+        <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.css">
+
         <!-- syntax highlighting CSS -->
         <link rel="stylesheet" href="/css/syntax.css">
 
@@ -15,32 +19,103 @@
     </head>
     <body>
 
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
-          <div class="site">
-            <div class="header">
-              <h1 class="title"><a href="/">{{ site.name }}</a></h1>
-              <a class="extra" href="/">home</a>
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Novus Engine</a>
+          </div>
+          <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="/">Home</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li class="divider"></li>
+                  <li class="dropdown-header">Nav header</li>
+                  <li><a href="#">Separated link</a></li>
+                  <li><a href="#">One more separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>      
+
+      <div class="container">
+        <div class="jumbotron">
+          <h1>Novus</h1>
+          <p>A component-based framework for powerful web games</p>
+          <p>
+            <a class="btn btn-lg btn-success" href="http://github.com/dristic/novus">Get Started on GitHub &rsaquo;</a>
+          </p>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6">
+            <h2>What is It?</h2>
+            <p>Novus is a game engine dedicated to bringing quality games to the web. JavaScript is great, but without a good foundation, building an entire game can be a tough task. Novus looks to simplify the process through extensibility and robustness.</p>
+          </div>
+          <div class="col-lg-6">
+            <h2>Another Game Engine?</h2>
+            <p>Other game engines tend to focus on features without a plan for extensibility and system architecture. Novus is built to be component-based from the ground up, allowing your game's code to be manageable the entire way. No more long extension chains and hard to change code!</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4">
+            <h2>Features</h2>
+            <p>One, two, three</p>
+          </div>
+          <div class="col-lg-4">
+            <h2>Demos</h2>
+            <p>Platformer, Tile Map, Breakouts</p>
+          </div>
+          <div class="col-lg-4">
+            <h2>Getting Started</h2>
+            <p>Tutorial!</p>
+          </div>
+        </div>
+
+        <!--<div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">{{ site.name }}</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+              {{ content }}
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Your Name<br />
+                What You Are<br />
+                your@email.com
+              </p>
             </div>
-
-                {{ content }}
-
-            <div class="footer">
-              <div class="contact">
-                <p>
-                  Your Name<br />
-                  What You Are<br />
-                  your@email.com
-                </p>
-              </div>
-              <div class="contact">
-                <p>
-                  <a href="http://github.com/yourusername/">github.com/yourusername</a><br />
-                  <a href="http://twitter.com/yourusername/">twitter.com/yourusername</a><br />
-                </p>
-              </div>
+            <div class="contact">
+              <p>
+                <a href="http://github.com/yourusername/">github.com/yourusername</a><br />
+                <a href="http://twitter.com/yourusername/">twitter.com/yourusername</a><br />
+              </p>
             </div>
           </div>
-        </div> <!-- /container -->
+        </div>
+      </div>-->
+
+      <script src="/bower_components/jquery/jquery.js"></script>
+      <script src="/bower_components/bootstrap/dist/js/bootstrap.js"></script>
 
     </body>
 </html>
