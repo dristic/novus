@@ -6,6 +6,7 @@ tileMap.config = {
     width: 320,
     height: 410,
     scaled: true,
+    responsive: true,
     mouseMove: true,
     css: {
       backgrund: '#000',

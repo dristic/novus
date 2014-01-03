@@ -14,6 +14,7 @@ entities.Map = (function (__super) {
     });
 
     this.gamepadEngine = scene.getEngineByType(nv.GamepadEngine);
+    this.renderingEngine = scene.getEngineByType(nv.RenderingEngine);
     this.moving = false;
   }
 
@@ -22,8 +23,8 @@ entities.Map = (function (__super) {
   Map.prototype.update = function (dt) {
     if (this.moving === true) {
       var state = this.gamepadEngine.getState(),
-          x = this.lastX - state.mouse.x + this.model.x,
-          y = this.lastY - state.mouse.y + this.model.y;
+          x = this.model.x - (this.lastX - state.mouse.x);
+          y = this.model.y - (this.lastY - state.mouse.y);
 
       this.lastX = state.mouse.x;
       this.lastY = state.mouse.y;
