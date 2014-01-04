@@ -25,6 +25,10 @@ function copyDir(dir, otherDir) {
       return onError(err);
     }
 
+    if (!fs.existsSync(otherDir)) {
+      fs.mkdirSync(otherDir);
+    }
+
     items.forEach(function (item) {
       if (fs.lstatSync(dir + item).isDirectory()) {
         copyDir(dir + item + '/', otherDir + item + '/');
@@ -140,12 +144,6 @@ if (args[0] === undefined) {
   // Copy in index file
   log("Copying index file");
   fs.createReadStream('assets/index.html').pipe(fs.createWriteStream('build/index.html'));
-
-  // Make build/assets folder
-  if (!fs.existsSync('build/assets')) {
-    log("Creating build/assets/");
-    fs.mkdirSync('build/assets');
-  }
 
   // Copy in asset files
   log("Copying assets/* directory");
