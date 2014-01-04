@@ -46,7 +46,9 @@ scenes.Main = (function (__super) {
 })(nv.Scene);
 
 nv.factory.register('Player', function (scene, options) {
-  var entity = new nv.Entity(scene, options);
+  var entity = new nv.Entity(scene, options),
+      right = false,
+      left = false;
 
   entity.model.set('width', 101);
   entity.model.set('height', 171);
@@ -58,12 +60,27 @@ nv.factory.register('Player', function (scene, options) {
   });
 
   scene.on("engine:gamepad:down:right", function () {
-    entity.model.set('x', entity.model.get('x') + 1);
+    right = true;
+  });
+  scene.on("engine:gamepad:up:right", function () {
+    right = false;
   });
 
   scene.on("engine:gamepad:down:left", function () {
-    entity.model.set('x', entity.model.get('x') - 1);
+    left = true;
   });
+  scene.on("engine:gamepad:up:left", function () {
+    left = false;
+  });
+
+  entity.update = function (dt) {
+    if (right === true) {
+      entity.model.set('x', entity.model.get('x') + 3);
+    }
+    if (left === true) {
+      entity.model.set('x', entity.model.get('x') - 3);
+    }
+  };
 
   return entity;
 });
