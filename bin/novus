@@ -133,12 +133,19 @@ if (args[0] === undefined) {
 
   // Get game javascript
   log("Building JavaScript...");
-  var data = new snockets().getConcatenation('game.coffee', { minify: false, async: false });
+  var startFile = fs.existsSync('game.coffee') ? 'game.coffee' : 'game.js';
+  var data = new snockets().getConcatenation(startFile, { minify: false, async: false });
   fs.writeFileSync('build/game.js', data);
 
   // Copy in index file
   log("Copying index file");
   fs.createReadStream('assets/index.html').pipe(fs.createWriteStream('build/index.html'));
+
+  // Make build/assets folder
+  if (!fs.existsSync('build/assets')) {
+    log("Creating build/assets/");
+    fs.mkdirSync('build/assets');
+  }
 
   // Copy in asset files
   log("Copying assets/* directory");

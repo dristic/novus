@@ -4,7 +4,7 @@ entities.Map = (function (__super) {
     __super.call(this, scene, options);
 
     this.addComponent(nv.SpriteMapRenderingComponent, {
-      src: '/assets/land-iso.png',
+      src: 'assets/land-iso.png',
       tileHeight: 16,
       tileWidth: 32,
       width: 15 * 32,
@@ -14,7 +14,6 @@ entities.Map = (function (__super) {
     });
 
     this.gamepadEngine = scene.getEngineByType(nv.GamepadEngine);
-    this.renderingEngine = scene.getEngineByType(nv.RenderingEngine);
     this.moving = false;
   }
 
