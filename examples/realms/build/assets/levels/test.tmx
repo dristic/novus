@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="30" height="30" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="Terrain" tilewidth="32" tileheight="32">
+  <image source="../terrain_atlas.png" width="1024" height="1024"/>
+ </tileset>
+ <tileset firstgid="1025" name="players" tilewidth="32" tileheight="32">
+  <image source="players.png" width="160" height="32"/>
+ </tileset>
+ <layer name="Map Data" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzllsERgjAQRTdaiTfpw4NWojQgdODYiVpApAAV6crswA7rTuIMSUDEwx8gB97+vxtIpQCqP9XNsX4fQW1j02MENfShpVEyMBPnbm20GahfpdHT4vvkUKLceyNUR6MrACzmAAXU0lCvHSL00uXprFrmZVaLnkO56ClrfGTCE90jizMzFYdbMCbxCpavFus+fuUewdlNjfaqzZPenav3GqgOvHbl2vYIedaCyz3LZ+KuImStRZbSK5+t0P66uDxXyY7NdfXSlnUMLvZ8J5SyOeN7CGfNh/vp21aKDMgrinjbpi45m76S32fi8qylz5BZ7pJ9TJ+/Itv/MnS2pnp+moJ8e9PXGembegEz/pIh
+  </data>
+ </layer>
+ <layer name="Above Ground" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt0EEKACAIBVG9dB3N67WIoG2gX4h54NYRzQBAZ3r3Bf0iac/LL4fvqRRXR9E7VB2aAIAfLVMSBwU=
+  </data>
+ </layer>
+ <layer name="Players" width="30" height="30" visible="0" opacity="0.43">
+  <data encoding="base64" compression="zlib">
+   eJztzUEKACAIRFEr73/mlkVEGiglzofZziNCCGWr8nkRXek7u2vVrdN4rEyztFdnnYcrmR6uxrR2tWZkd9ePrmevXITQH3V7pgRe
+  </data>
+ </layer>
+</map>

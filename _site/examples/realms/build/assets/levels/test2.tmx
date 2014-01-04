@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="30" height="30" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="Terrain" tilewidth="32" tileheight="32">
+  <image source="../terrain_atlas.png" width="1024" height="1024"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJzt1EsOwUAAgOFRj3ABHMCZsfXmAth6txfA2itcAEu/hKRpqqamHQ1dfOmizfzzaMZKCGHFYg+l5PfnEBWmQ1DjeI2l0nH2ZMZXXdsrZVRQdWmH0XvqY4ChhjXaLbHCWnP3jAuukt2mEKKFNjrooif8d/OGEAUUDbnzndKYYY4FzHtToiuzf17dHY09DqjhiFMAXfPNtymkkcGIXpZnzsdavN4HcSep7HVYbS9u86yzr40P/l3V/RnTnGjq2te/obnV0NVxb0Wh6Xa2cfu3u//clnEDd7e+sw==
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztzUERACAMxMA6ASfFCTgBJ0UqJ4HffbIzeScCAODUVDd8Uw3Dd6pl+G51DN9S1/AFAODHAzAtA7w=
+  </data>
+ </layer>
+</map>
