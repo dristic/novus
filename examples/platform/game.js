@@ -46,6 +46,38 @@ scenes.Main = (function (__super) {
   return Main;
 })(nv.Scene);
 
+nv.factory.register('Map', function (scene, options) {
+  var entity = new nv.Entity(scene, options);
+
+  entity.addComponent(nv.SpriteMapRenderingComponent, {
+    src: 'assets/tiles.png',
+    tileHeight: 61,
+    tileWidth: 51,
+    width: 15 * 51,
+    height: 15 * 61,
+    data: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+           1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+           1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+           1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+           1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+           1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+          ],
+    isometric: false
+  });
+
+  return entity;
+});
+
 nv.factory.register('Gravity', function (scene, options) {
   var entity = new nv.Entity(scene, options);
 
@@ -56,11 +88,14 @@ nv.factory.register('Gravity', function (scene, options) {
 
 nv.factory.register('Player', function (scene, options) {
   var entity = new nv.Entity(scene, options),
+      camera = scene.getEngineByType(nv.RenderingEngine).camera,
       right = false,
       left = false;
 
   entity.model.set('width', 101);
   entity.model.set('height', 171);
+
+  camera.follow(entity.model);
 
   entity.addComponent(nv.SpriteRenderingComponent, {
     src: 'assets/images/Character Boy.png',
@@ -92,6 +127,18 @@ nv.factory.register('Player', function (scene, options) {
     }
     if (left === true) {
       entity.model.set('x', entity.model.get('x') - 3);
+    }
+
+    entity.model.set('y', entity.model.get('y') + 3);
+
+    if (entity.model.get('y') > 300) {
+      entity.model.set('y', 300);
+    }
+
+    if (entity.model.get('x') < 0) {
+      entity.model.set('x', 0);
+    } else if (entity.model.get('x') > 300) {
+      entity.model.set('x', 300);
     }
   };
 
@@ -128,6 +175,10 @@ tileMap.maps.main = {
   layers: [{
     name: "Game",
     objects: [{
+      type: "Map",
+      x: 0,
+      y: 0
+    }, {
       type: "Gravity",
       x: 40,
       y: 40
