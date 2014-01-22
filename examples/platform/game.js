@@ -33,6 +33,7 @@ scenes.Main = (function (__super) {
     this.loadEngine(nv.TimingEngine);
     this.loadEngine(nv.GamepadEngine, tileMap.config.gamepad);
     this.loadEngine(nv.RenderingEngine, tileMap.config.graphics);
+    this.loadEngine(nv.PhysicsEngine, {});
     this.loadEngine(nv.DebugEngine);
 
     this.loadMap(tileMap.maps.main);
@@ -44,6 +45,14 @@ scenes.Main = (function (__super) {
 
   return Main;
 })(nv.Scene);
+
+nv.factory.register('Gravity', function (scene, options) {
+  var entity = new nv.Entity(scene, options);
+
+  entity.addComponent(nv.GravityPhysicsComponent, {});
+
+  return entity;
+});
 
 nv.factory.register('Player', function (scene, options) {
   var entity = new nv.Entity(scene, options),
@@ -57,6 +66,10 @@ nv.factory.register('Player', function (scene, options) {
     src: 'assets/images/Character Boy.png',
     width: 101,
     height: 171
+  });
+
+  entity.addComponent(nv.RectanglePhysicsComponent, {
+    type: "both"
   });
 
   scene.on("engine:gamepad:down:right", function () {
@@ -115,6 +128,10 @@ tileMap.maps.main = {
   layers: [{
     name: "Game",
     objects: [{
+      type: "Gravity",
+      x: 40,
+      y: 40
+    }, {
       type: "Player",
       x: 40,
       y: 40
