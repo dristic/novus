@@ -54,34 +54,17 @@ nv.factory.register('Map', function (scene, options) {
     tileHeight: 61,
     tileWidth: 51,
     width: 15 * 51,
-    height: 15 * 61,
+    height: 7 * 61,
     data: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
           ],
     isometric: false
   });
-
-  return entity;
-});
-
-nv.factory.register('Gravity', function (scene, options) {
-  var entity = new nv.Entity(scene, options);
-
-  entity.addComponent(nv.GravityPhysicsComponent, {});
 
   return entity;
 });
@@ -94,6 +77,7 @@ nv.factory.register('Player', function (scene, options) {
 
   entity.model.set('width', 101);
   entity.model.set('height', 171);
+  entity.model.set('gravity', 1);
 
   camera.follow(entity.model);
 
@@ -129,16 +113,18 @@ nv.factory.register('Player', function (scene, options) {
       entity.model.set('x', entity.model.get('x') - 3);
     }
 
-    entity.model.set('y', entity.model.get('y') + 3);
+    entity.model.set('gravity', entity.model.get('gravity') + 0.1);
+    entity.model.set('y', entity.model.get('y') + entity.model.get('gravity'));
 
-    if (entity.model.get('y') > 300) {
-      entity.model.set('y', 300);
+    if (entity.model.get('y') > (7 * 61) - 171) {
+      entity.model.set('y', (7 * 61) - 171);
+      entity.model.set('gravity', 0);
     }
 
-    if (entity.model.get('x') < 0) {
-      entity.model.set('x', 0);
-    } else if (entity.model.get('x') > 300) {
-      entity.model.set('x', 300);
+    if (entity.model.get('x') < 51) {
+      entity.model.set('x', 51);
+    } else if (entity.model.get('x') > (14 * 51) - 101) {
+      entity.model.set('x', (14 * 51) - 101);
     }
   };
 
@@ -150,12 +136,12 @@ tileMap.config = {
 
   graphics: {
     id: '#game-canvas',
-    width: 320,
+    width: 500,
     height: 410,
     scaled: true,
     mouseMove: true,
     css: {
-      backgrund: '#000',
+      background: 'rgb(31, 139, 211)',
       margin: '0 auto',
       display: 'block',
     }
@@ -178,10 +164,6 @@ tileMap.maps.main = {
       type: "Map",
       x: 0,
       y: 0
-    }, {
-      type: "Gravity",
-      x: 40,
-      y: 40
     }, {
       type: "Player",
       x: 40,

@@ -1,6 +1,7 @@
 class nv.PhysicsEngine extends nv.Engine
   constructor: (scene, config) ->
     super scene, config
+
     @passiveObjects = {}
     @activeObjects = {}
     @physicsObjects = []
@@ -12,15 +13,6 @@ class nv.PhysicsEngine extends nv.Engine
   "event(entity:component:destroy)": (component) ->
     if component instanceof nv.PhysicsComponent
       @removeObject component
-
-  "event(engine:physics:create)": (collidable) ->
-    @trackObject collidable
-
-  "event(engine:physics:delete)": (collidable) ->
-    @removeObject collidable
-
-  "event(engine:physics:register)": (obj) ->
-    @physicsObjects.push obj
 
   prepare: () ->
     if @config.debug is true
@@ -36,10 +28,6 @@ class nv.PhysicsEngine extends nv.Engine
 
     drawObj obj for ida, obj of @activeObjects
     drawObj obj for ida, obj of @passiveObjects
-
-  trackObjects: (array) ->
-    for object in array
-      @trackObject object
 
   trackObject: (obj) ->
     switch obj.type
