@@ -1,5 +1,3 @@
-window.entities = entities = {}
-
 class entities.Background extends nv.Entity
   constructor: (scene, @follow, @variance) ->
     super scene, [renderers.Background], new models.Background
@@ -61,7 +59,7 @@ class entities.Cursor extends nv.Entity
     @model.drawable.x = state.mouse.x
     @model.drawable.y = state.mouse.y
 
-class WrappingEntity extends nv.Entity
+class entities.WrappingEntity extends nv.Entity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
@@ -77,66 +75,7 @@ class WrappingEntity extends nv.Entity
     if @model.y < 0 then @model.y = dimensions.height
     else if @model.y > dimensions.height then @model.y = 0
 
-class entities.Ship extends WrappingEntity
-  constructor: (scene, plugins, model) ->
-    super scene, plugins, model
-
-    @maxVelocity = 3
-
-    @emitter = new nv.ParticleEmitter @scene,
-      position: new nv.Point(-100,-100)
-      particlesPerSecond: 100
-      colors: new nv.Gradient([
-        new nv.Color(255, 100, 100, 1),
-        new nv.Color(170, 50, 50, 1),
-        new nv.Color(0, 0, 0, 0)
-      ])
-      particleLife: 0.3
-      lifeVariance: 0.4
-      angleVariation: 0.75
-      minVelocity: 100
-      maxVelocity: 100
-
-  "event(engine:gamepad:press:shoot)": () ->
-    options =
-      entity: "bullet"
-      x: this.model.points()[0].x
-      y: this.model.points()[0].y
-      angle: this.model.rotation
-    this.scene.fire "entity:create", options
-
-  "event(engine:collision:Ship:Asteroid)": (data) ->
-    @scene.fire "entity:destroyed:Ship", this
-    @scene.fire "entity:remove", this
-
-  update: (dt) ->
-    state = @scene.get('gamepad').getState()
-    if state.left then @model.rotate -0.1
-    if state.right then @model.rotate 0.1
-    if state.up
-      @model.velocity = Math.min(@model.velocity * 1.01 || 1, @maxVelocity)
-      unless @model.velocity >= @maxVelocity
-        @model.thrustVector.translate @model.velocity * Math.sin(@model.rotation) * dt * 4, -@model.velocity * Math.cos(@model.rotation) * dt * 4
-    @model.thrusters = state.up
-    @model.velocity = 0 unless @model.thrusters
-    @model.translate @model.thrustVector.x, @model.thrustVector.y
-    @scene.fire "entity:thrust:Ship" if @model.thrusters
-
-    anchor = @model.points("thrusters")[0]
-    @emitter.set 'position', new nv.Point(anchor.x, anchor.y)
-    if @model.thrusters
-      @emitter.set 'on', true
-      @emitter.set 'angle', @model.rotation + (Math.PI * 0.5)
-    else
-      @emitter.set 'on', false
-
-    @wrap()
-
-  destroy: () ->
-    @emitter.destroy()
-    super
-
-class entities.Asteroid extends WrappingEntity
+class entities.Asteroid extends entities.WrappingEntity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 
@@ -162,8 +101,8 @@ class entities.Asteroid extends WrappingEntity
         ])
         particleLife: 3
         angleVariation: 6.28
-        minVelocity: 10
-        maxVelocity: 50
+        minVelocity: 1
+        maxVelocity: 3
         on: true
 
       size = data.target.model.get('size') - 1
@@ -177,7 +116,7 @@ class entities.Asteroid extends WrappingEntity
           scale: size
           direction: data.target.model.get('direction') - 0.3
         @scene.fire 'entity:create', options
-        options = $.extend {}, options
+        options = nv.extend {}, options
         options.x += offset * 2
         options.direction += 0.6
         @scene.fire 'entity:create', options
@@ -188,7 +127,7 @@ class entities.Asteroid extends WrappingEntity
     @model.translate Math.sin(@model.direction) * @model.speed, Math.cos(@model.direction) * @model.speed
     @wrap()
 
-class entities.Bullet extends WrappingEntity
+class entities.Bullet extends entities.WrappingEntity
   constructor: (scene, plugins, model) ->
     super scene, plugins, model
 

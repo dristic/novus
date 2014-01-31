@@ -3,16 +3,17 @@
 @entities = {}
 @models = {}
 @renderers = {}
+@config = {}
+
+nv.configure
+  debug: true
 
 class @Application extends nv.Game
   constructor: () ->
-    super nv.gameConfig
-
-    # Configure global novus settings
-    nv.configure
-      debug: true
+    super
+      scenes: [ scenes.Main ]
 
     # Start the game on a new thread
     start = () =>
-      @start('Main')
+      @openScene 'Main'
     setTimeout start, 0

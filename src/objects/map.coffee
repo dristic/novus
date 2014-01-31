@@ -4,7 +4,6 @@ class nv.Map
   
   parse: () ->
     objects = []
-    console.log @data
 
     for layer in @data.layers
       for object in layer.objects
